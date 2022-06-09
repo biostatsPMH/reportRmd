@@ -1,0 +1,115 @@
+---
+output: github_document
+always_allow_html: true
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# reportRmd
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/reportRmd)](https://CRAN.R-project.org/package=reportRmd)
+<!-- badges: end -->
+
+The goal of reportRmd is to automate the reporting of clinical data in Rmarkdown environments. Functions include table one-style summary statistics, compilation of multiple univariate models, tidy output of multivariable models and side by side comparisons of univariate and multivariable models. Plotting functions include customisable survival curves, forest plots, and automated bivariate plots.
+
+## Installation
+
+You can install the development version of reportRmd from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("biostatsPMH/reportRmd")
+```
+
+## Examples
+
+### Summary statistics by Sex
+
+```{r example}
+library(reportRmd)
+data("pembrolizumab")
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1','change_ctdna_group'),
+show.tests=TRUE)
+
+```
+
+### Multiple Univariate Regression Analyses
+
+By default unstable estimates will be suppressed:
+
+```{r example-2}
+rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','cohort','pdl1','change_ctdna_group'))
+
+```
+
+Show them setting removeInf = FALSE:
+
+```{r example-2b}
+rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','cohort','pdl1','change_ctdna_group'),removeInf = FALSE)
+
+```
+
+
+### Tidy multivariable analysis
+
+```{r}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
+               family='binomial',
+               data = pembrolizumab)
+rm_mvsum(glm_fit)
+```
+
+
+### Combining univariate and multivariable models
+
+```{r}
+uvsumTable <- rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','cohort','pdl1','change_ctdna_group'),tableOnly = TRUE)
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
+               family='binomial',
+               data = pembrolizumab)
+mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
+
+rm_uv_mv(uvsumTable,mvsumTable)
+```
+
+### Plotting survival curves
+
+```{r}
+ggkmcif(response = c('os_time','os_status'),
+cov='cohort',
+data=pembrolizumab)
+```
+
+### Plotting odds ratios
+
+```{r, height=3}
+require(ggplot2)
+forestplot2(glm_fit)
+```
+
+### Plotting bivariate relationships
+
+These plots are designed for quick inspection of many variables, not for publication.
+```{r}
+require(ggplot2)
+plotuv(data=pembrolizumab, response='orr',
+covs=c('age','cohort','pdl1','change_ctdna_group'))
+
+```
+

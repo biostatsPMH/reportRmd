@@ -1,0 +1,42 @@
+Package: reportRmd
+Title: Tidy presentation of clinical reporting
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Lisa","Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut")),
+    person("Ryan","Del Bel","email = rdelbel@gmail.com",role="aut"),
+    person("Osvaldo","Espin-Garcia","email = Osvaldo.Espin-Garcia@uhnresearch.ca",role="aut"),
+    person("Yanning","Wang",email = "21yw15@queensu.ca",role="ctr"),    
+    person("Jessica","Weiss",email = "jessica.weiss@uhn.ca",role="aut"),    
+    person("Wei", "Xu",email = "wxu@uhnres.utoronto.ca",role="aut"))
+Description: reportRmd is an Rmarkdown version of the previous reportRx package 
+    to facilitate the automated reporting of descriptive statistics, multiple 
+    univariate models, multivariable models and tables combining these outputs. 
+    Plotting functions include customisable survival curves, forest plots from 
+    logistic and ordinal regression and bivariate comparison plots.
+License: MIT + file LICENSE
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
+Imports: 
+    aod,
+    cmprsk,
+    geepack,
+    geoR,
+    ggplot2,
+    ggpubr,
+    gridExtra,
+    kableExtra,
+    knitr,
+    MASS,
+    pander,
+    plyr,
+    rlang,
+    scales,
+    survival
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R'
+Depends: 
+    R (>= 2.10)
+LazyData: true
