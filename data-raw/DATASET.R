@@ -55,12 +55,12 @@ for (f in grep('_var',sheets,value=T)){
 
   # Write the Documentation File
   sink('R/data.R',append = !(f==grep('_var',sheets,value=T)[1]))
-  cat("#' ",name,'\n')
-  cat("#' ",'\n')
   cat("#' ",description,'\n')
   cat("#' ",'\n')
   cat("#' ",details,'\n')
   cat("#' ",'\n')
+  # cat("#' ",name,'\n')
+  # cat("#' ",'\n')
 
   cat("#' @format A data frame with ",nrow(datafile)," rows and ",ncol(datafile)," variables:\n",sep="")
   cat("#' \\describe{ \n",sep="")

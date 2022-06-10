@@ -3,20 +3,15 @@
 \docType{data}
 \name{ctDNA}
 \alias{ctDNA}
-\title{ctDNA
-
-Tumour size change over time
-
-Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline.}
+\title{Tumour size change over time}
 \format{
-A data frame with 270 rows and 5 variables:
-\describe{
-\item{id}{Patient ID}
-\item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
-\item{ctdna_status}{Change in ctDNA since baseline}
-\item{time}{Number of weeks on treatment}
-\item{size_change}{Percentage change in tumour measurement}
-}
+A data frame with 270 rows and 5 variables: \describe{
+\item{id}{Patient ID} \item{cohort}{Study Cohort: A = Squamous cell
+carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian,
+high grade serous, D = Melanoma, E = Other Solid Tumor}
+\item{ctdna_status}{Change in ctDNA since baseline} \item{time}{Number of
+weeks on treatment} \item{size_change}{Percentage change in tumour
+measurement} }
 }
 \source{
 \url{https://www.nature.com/articles/s43018-020-0096-5}
@@ -25,10 +20,7 @@ A data frame with 270 rows and 5 variables:
 ctDNA
 }
 \description{
-ctDNA
-
-Tumour size change over time
-
-Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline.
+Longitudinal changes in tumour size since baseline for patients by changes in
+ctDNA status (clearance, decrease or increase) since baseline.
 }
 \keyword{datasets}
