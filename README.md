@@ -1,5 +1,8 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- This file is used to create README.md
+Note that the README.md document may need updating to change
+'\<0.001' to '<0.001'. 
+-->
 
 # reportRmd
 
