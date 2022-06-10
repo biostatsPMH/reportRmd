@@ -1,0 +1,74 @@
+---
+title: "Test Report.Rmd"
+output: 
+  pdf_document
+  word_document
+date: '2022-06-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# install.packages("devtools")
+# devtools::install_github("biostatsPMH/reportRmd")
+
+library(reportRmd)
+```
+
+# Data Sets
+
+## pembrolizumab
+
+```{r}
+?pembrolizumab
+str(pembrolizumab)
+```
+
+
+## ctDNA
+
+```{r}
+?ctDNA
+str(ctDNA)
+```
+
+## testData
+
+This will NOT be submitted to CRAN - this is just for us to test with 
+
+```{r}
+?testData
+str(testData)
+```
+
+# Testing Ideas
+
+## Function Help File (ie?rm_covsum)
+
+```{r}
+?plotuv
+```
+
+The description is useful and doesn't have any types
+The argument descriptions are clear
+The see also section contains links to the relevant functions
+Please suggest any examples you think would be useful
+
+## Function Performance
+
+```{r}
+fit <- lm(l_size~age+sex+pdl1+baseline_ctdna,data=pembrolizumab)
+rm_mvsum(fit)
+```
+
+Works with continuous, categorical (ordered) and binary response
+Works with continuous response
+Works with binary response
+Works when there are factors with few observations
+Works when there is missing data
+Works when a variable name is contained in a factor name
+P values output as expected
+Output looks as expected knit in Word
+Output looks as expected knit in pdf in pdf
+
+
+

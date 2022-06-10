@@ -3,16 +3,16 @@
 \docType{data}
 \name{pembrolizumab}
 \alias{pembrolizumab}
-\title{Survival data}
+\title{Survival data
+
+Survival status and ctDNA levels for patients receiving pembrolizumab}
 \format{
 A data frame with 94 rows and 15 variables:
 \describe{
 \item{id}{Patient ID}
 \item{age}{Age at study entry}
 \item{sex}{Patient Sex}
-\item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate,
-B = Triple negative breast cancer, C = Ovarian, high grade serous,
-D = Melanoma, E = Other Solid Tumor}
+\item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
 \item{l_size}{Target lesion size at baseline}
 \item{pdl1}{PD L1 percent}
 \item{tmb}{log of TMB}
@@ -33,6 +33,8 @@ D = Melanoma, E = Other Solid Tumor}
 pembrolizumab
 }
 \description{
+Survival data
+
 Survival status and ctDNA levels for patients receiving pembrolizumab
 }
 \keyword{datasets}

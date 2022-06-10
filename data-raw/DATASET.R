@@ -80,7 +80,7 @@ for (f in grep('_var',sheets,value=T)){
   }
 
   # Remove missing values
-  datafile <- na.omit(datafile)
+#  datafile <- na.omit(datafile)
 
   # Output the Data
   eval(parse(text = paste(name,' <- datafile')))

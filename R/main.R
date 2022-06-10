@@ -621,27 +621,41 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                    type = NULL, strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    testing = FALSE, showN = TRUE, CIwidth = 0.95, reflevel=NULL)
 {
-  if (is.null(id)) {
-    missing_vars = setdiff(c(response, covs), names(data))
-    if (length(missing_vars) > 0) {
-      stop(paste("These covariates are not in the data:",
-                 paste0(missing_vars,collapse=",")))
+  missing_vars = setdiff(c(response, covs), names(data))
+  if (length(missing_vars) > 0) {
+    stop(paste("These covariates are not in the data:",
+               paste0(missing_vars,collapse=",")))
+  }
+  for (v in covs){
+    df <- na.omit(data[,c(response,v)])
+    if (v %in% response){
+      warning(paste(v,'is the response and can not appear in the covariate.\n',
+                    'It is omitted from the output.'))
+      covs <- setdiff(covs,v)
     }
+    if (length(unique(df[[v]]))==1) {
+      warning(paste(v,'has only one unique value for non-missing response.\n',
+                 'It is omitted from the output.'))
+      covs <- setdiff(covs,v)
+    }
+  }
+  if (!markup) {
+    lbld <- identity
+    addspace <- identity
+    lpvalue <- identity
+  }
+  if (!sanitize)
+    sanitizestr <- identity
+  if (!nicenames)
+    nicename <- identity
+
+  if (is.null(id)) {
     for (v in covs) {
       if (class(data[[v]])[1] %in% c("character", "ordered"))
         data[[v]] <- factor(data[[v]], ordered = F)
     }
     if (class(data[[response[1]]])[1] == "character")
       data[[v]] <- factor(data[[v]])
-    if (!markup) {
-      lbld <- identity
-      addspace <- identity
-      lpvalue <- identity
-    }
-    if (!sanitize)
-      sanitizestr <- identity
-    if (!nicenames)
-      nicename <- identity
     if (class(strata) != "numeric") {
       strataVar = strata
       strata <- sapply(strata, function(stra) {
@@ -986,22 +1000,8 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       stop(paste("This id variable is not in the data:",
                  missing_vid))
     }
-    missing_vars = setdiff(c(response, covs), names(data))
-    if (length(missing_vars) > 0) {
-      stop(paste("These covariates are not in the data:",
-                 missing_vars))
-    }
     for (v in c(response, covs)) if (class(data[[v]])[1] == "character")
       data[[v]] <- factor(data[[v]])
-    if (!markup) {
-      lbld <- identity
-      addspace <- identity
-      lpvalue <- identity
-    }
-    if (!sanitize)
-      sanitizestr <- identity
-    if (!nicenames)
-      nicename <- identity
     if (class(strata) != "numeric") {
       strataVar = strata
       strata <- sapply(strata, function(stra) {
@@ -1053,7 +1053,9 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
         x_var_str <- lbld(sanitizestr(nicename(x_var)))
         title <- NULL
         body <- NULL
-        if (type == "logistic") {
+        if (length(levels(data[[x_var]]))==1){
+          title <- c(x_var_str, "", "", "")
+        } else if (type == "logistic") {
           m2 <- geepack::geeglm(as.formula(paste(response, "~",
                                                  x_var, sep = "")), family = "binomial",
                                 data = data, id = idf, corstr = corstr)

@@ -1,15 +1,13 @@
-#'  Survival data
-#'
-#'  Survival status and ctDNA levels for patients receiving pembrolizumab
-#'
+#'  Survival data 
+#'  
+#'  Survival status and ctDNA levels for patients receiving pembrolizumab 
+#'  
 #' @format A data frame with 94 rows and 15 variables:
-#' \describe{
+#' \describe{ 
 #'   \item{id}{Patient ID}
 #'   \item{age}{Age at study entry}
 #'   \item{sex}{Patient Sex}
-#'   \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate,
-#'   B = Triple negative breast cancer, C = Ovarian, high grade serous,
-#'   D = Melanoma, E = Other Solid Tumor}
+#'   \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
 #'   \item{l_size}{Target lesion size at baseline}
 #'   \item{pdl1}{PD L1 percent}
 #'   \item{tmb}{log of TMB}
@@ -21,24 +19,41 @@
 #'   \item{os_time}{Overall survival time in months}
 #'   \item{pfs_status}{Progression free survival status, 0 = progression free, 1 = progressed}
 #'   \item{pfs_time}{Progression free survival time in months}
-#' }
-#' @source \url{https://www.nature.com/articles/s43018-020-0096-5}
-"pembrolizumab"
+#' } 
+#' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
+"pembrolizumab" 
 
 
-#' Tumour size change over time
-#'
-#' Longitudinal changes in tumour size since baseline for patients by changes in
-#' ctDNA status (clearance, decrease or increase) since baseline.
-#'
-#' @format A data frame with 270 rows and 5 variables: \describe{
-#'   \item{id}{Patient ID} \item{cohort}{Study Cohort: A = Squamous cell
-#'   carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian,
-#'   high grade serous, D = Melanoma, E = Other Solid Tumor}
-#'   \item{ctdna_status}{Change in ctDNA since baseline} \item{time}{Number of
-#'   weeks on treatment} \item{size_change}{Percentage change in tumour
-#'   measurement} }
-#' @source \url{https://www.nature.com/articles/s43018-020-0096-5}
-"ctDNA"
+#'  Tumour size change over time 
+#'  
+#'  Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline. 
+#'  
+#' @format A data frame with 270 rows and 5 variables:
+#' \describe{ 
+#'   \item{id}{Patient ID}
+#'   \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
+#'   \item{ctdna_status}{Change in ctDNA since baseline}
+#'   \item{time}{Number of weeks on treatment}
+#'   \item{size_change}{Percentage change in tumour measurement}
+#' } 
+#' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
+"ctDNA" 
+
+
+#'  Funky ctDNA data 
+#'  
+#'  There is a weird factor with all one level, the cohort variable contains a cohort level (and Cohort A) and for one cohort all the size changes are missing 
+#'  
+#' @format A data frame with 270 rows and 6 variables:
+#' \describe{ 
+#'   \item{id}{Patient ID}
+#'   \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor, cohort -for testing only}
+#'   \item{badfactor}{for testing}
+#'   \item{ctdna_status}{Change in ctDNA since baseline}
+#'   \item{time}{Number of weeks on treatment}
+#'   \item{size_change}{Percentage change in tumour measurement}
+#' } 
+#' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
+"testData" 
 
 
