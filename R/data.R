@@ -1,25 +1,3 @@
-#'  ctDNA 
-#'  
-#'  Circulating tumour DNA levels 
-#'  
-#'  ctDNA levels and RECIST status for patients with solid tumor patients treated with pembrolizumab 
-#'  
-#' @format A data frame with 186 rows and 9 variables:
-#' \describe{ 
-#'   \item{id}{Patient ID}
-#'   \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
-#'   \item{log10_change_ctdna}{Transformed value of the change in cDNA over the interval}
-#'   \item{interval_start_week}{Start of interval measured since initiation of therapy}
-#'   \item{interval_end_week}{End of interval measured since initiation of therapy}
-#'   \item{interval_recist}{Recist 1.1 status}
-#'   \item{reason_off_trial}{Reason for removal from trial}
-#'   \item{os_status}{Overall survival status}
-#'   \item{on_treatment}{Was patient on treatment at end of trial}
-#' } 
-#' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
-"ctDNA" 
-
-
 #'  pembrolizumab 
 #'  
 #'  Survival data 
@@ -46,5 +24,23 @@
 #' } 
 #' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
 "pembrolizumab" 
+
+
+#'  ctDNA 
+#'  
+#'  Tumour size change over time 
+#'  
+#'  Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline. 
+#'  
+#' @format A data frame with 270 rows and 5 variables:
+#' \describe{ 
+#'   \item{id}{Patient ID}
+#'   \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
+#'   \item{ctdna_status}{Change in ctDNA since baseline}
+#'   \item{time}{Number of weeks on treatment}
+#'   \item{size_change}{Percentage change in tumour measurement}
+#' } 
+#' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
+"ctDNA" 
 
 

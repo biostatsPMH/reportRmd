@@ -101,10 +101,18 @@ Wald global p-values are returned.
 rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 data=pembrolizumab,CIwidth=.9)
+
 # Linear model with default 95\% CI
 rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab)
+
+# GEE on correlated outcomes (not meaningful, just for demonstration)
+rm_uvsum(response = 'size_change',
+covs=c('time','ctdna_status'),
+id='id', corstr="exchangeable",
+family=gaussian("identity"),
+data=ctDNA,showN=TRUE)
 }
 \seealso{
 \code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},

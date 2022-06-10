@@ -3,13 +3,15 @@
 #' Wrapper function to fit fine and gray competing risk model using function crr
 #' from package cmprsk
 #'
-#' @param f formula for the model. Currently the formula only works by using the name
-#' of the column in a dataframe. It does not work by using $ or [] notation.
+#' @param f formula for the model. Currently the formula only works by using the
+#'   name of the column in a dataframe. It does not work by using $ or []
+#'   notation.
 #' @param data dataframe containing data
-#' @param lambda boolean indicating if you want to output the lamda used in the boxcox transformation. If so the function will return a list of length 2 with the model as the first element and a vector of length 2 as the second.
+#' @param lambda boolean indicating if you want to output the lamda used in the
+#'   boxcox transformation. If so the function will return a list of length 2
+#'   with the model as the first element and a vector of length 2 as the second.
 #' @keywords model
 #' @importFrom geoR boxcoxfit
-#' @export
 boxcoxfitRx<-function(f,data,lambda=F){
   x<-as.character(f)[3]
   y<-as.character(f)[2]
@@ -976,8 +978,6 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     return(table)
   }
   else {
-    idf <- data[[id]]
-    idf <- as.matrix(idf)
     if (is.null(corstr)) {
       stop(paste('You must provide correlation structure (i.e. corstr="independence") with id variable.'))
     }
@@ -1038,10 +1038,11 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       stop("strata can only be used with coxph")
     }
     out <- lapply(covs, function(x_var) {
-      # data <- dplyr::select(data, dplyr::any_of(c(response,
-      #                                             x_var, strataVar)))
-      data <- data[,intersect(c(response, x_var, strataVar),names(data))]
+      data <- data[,intersect(c(response, x_var, strataVar,id),names(data))]
+      data <- data[order(data[[id]]),]
       data <- stats::na.omit(data)
+      idf <- as.numeric(as.factor(data[[id]]))
+      idf <- as.matrix(idf)
       x_var_str <- x_var
       if (testing)
         print(x_var)
@@ -1073,7 +1074,8 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                                                  x_var, sep = "")), data = data, id = idf, corstr = corstr, family = family)
           m <- summary(m2)$coefficients
           globalpvalue <- try(aod::wald.test(b = m2$coefficients[-1],
-                                             Sigma = (m2$geese$vbeta)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3])
+                                             Sigma = (m2$geese$vbeta)[-1, -1],
+                                             Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3],silent = T)
           if (class(globalpvalue) == "try-error")
             globalpvalue <- "NA"
           T_mult = stats::qt(1 - (1 - CIwidth)/2, m2$df.residual)
@@ -1733,7 +1735,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
             scale_linetype_manual(breaks=c('0','1'),values = c(0,1)) +
             scale_x_discrete(labels= function(x) wrp_lbl(x))
           if (showPoints) {
-            p <- p +geom_jitter( data=coloured_points,aes(colour=.data[[response]]), alpha=0.9)
+            p <- p +geom_jitter(data=coloured_points,aes(colour=.data[[response]]), alpha=0.9)
             p <- p +geom_jitter(data= black_points,
                                 color="black", size=0.4, alpha=0.9)
           }
@@ -1880,7 +1882,6 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 #' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
-
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,keep.rownames=FALSE,fontsize,chunk_label){
 
   # strip tibble aspects
@@ -2250,10 +2251,18 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' rm_uvsum(response = c('os_time','os_status'),
 #' covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 #' data=pembrolizumab,CIwidth=.9)
+#'
 #' # Linear model with default 95% CI
 #' rm_uvsum(response = 'baseline_ctdna',
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab)
+#'
+#' # GEE on correlated outcomes (not meaningful, just for demonstration)
+#' rm_uvsum(response = 'size_change',
+#' covs=c('time','ctdna_status'),
+#' id='id', corstr="exchangeable",
+#' family=gaussian("identity"),
+#' data=ctDNA,showN=TRUE)
 rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                      tableOnly=FALSE,removeInf=TRUE,p.adjust='none',chunk_label,
                      id = NULL,corstr = NULL,family = NULL,type = NULL,strata = 1,

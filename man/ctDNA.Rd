@@ -5,21 +5,17 @@
 \alias{ctDNA}
 \title{ctDNA
 
-Circulating tumour DNA levels
+Tumour size change over time
 
-ctDNA levels and RECIST status for patients with solid tumor patients treated with pembrolizumab}
+Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline.}
 \format{
-A data frame with 186 rows and 9 variables:
+A data frame with 270 rows and 5 variables:
 \describe{
 \item{id}{Patient ID}
 \item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
-\item{log10_change_ctdna}{Transformed value of the change in cDNA over the interval}
-\item{interval_start_week}{Start of interval measured since initiation of therapy}
-\item{interval_end_week}{End of interval measured since initiation of therapy}
-\item{interval_recist}{Recist 1.1 status}
-\item{reason_off_trial}{Reason for removal from trial}
-\item{os_status}{Overall survival status}
-\item{on_treatment}{Was patient on treatment at end of trial}
+\item{ctdna_status}{Change in ctDNA since baseline}
+\item{time}{Number of weeks on treatment}
+\item{size_change}{Percentage change in tumour measurement}
 }
 }
 \source{
@@ -31,8 +27,8 @@ ctDNA
 \description{
 ctDNA
 
-Circulating tumour DNA levels
+Tumour size change over time
 
-ctDNA levels and RECIST status for patients with solid tumor patients treated with pembrolizumab
+Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline.
 }
 \keyword{datasets}

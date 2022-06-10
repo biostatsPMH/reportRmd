@@ -7,12 +7,15 @@
 boxcoxfitRx(f, data, lambda = F)
 }
 \arguments{
-\item{f}{formula for the model. Currently the formula only works by using the name
-of the column in a dataframe. It does not work by using $ or [] notation.}
+\item{f}{formula for the model. Currently the formula only works by using the
+name of the column in a dataframe. It does not work by using $ or []
+notation.}
 
 \item{data}{dataframe containing data}
 
-\item{lambda}{boolean indicating if you want to output the lamda used in the boxcox transformation. If so the function will return a list of length 2 with the model as the first element and a vector of length 2 as the second.}
+\item{lambda}{boolean indicating if you want to output the lamda used in the
+boxcox transformation. If so the function will return a list of length 2
+with the model as the first element and a vector of length 2 as the second.}
 }
 \description{
 Wrapper function to fit fine and gray competing risk model using function crr
