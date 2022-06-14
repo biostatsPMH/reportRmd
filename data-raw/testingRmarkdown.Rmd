@@ -85,5 +85,13 @@ for (i in 1:3){
 # FIXED
 
 
+m1 <- crrRx(as.formula('time+status~sex'), lung)
+rm_mvsum(model=m1, data = lung, showN = F)
+
+# Error in mvsum(model = model, data = data, digits = digits, markup = FALSE,  : 
+#   Supplied data frame does not have the correct number of non-missing rows.
+
+
+
 ```
 
