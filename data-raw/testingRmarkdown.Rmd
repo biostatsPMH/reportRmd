@@ -84,7 +84,6 @@ for (i in 1:3){
 }
 # FIXED
 
-
 m1 <- crrRx(as.formula('time+status~sex'), lung)
 rm_mvsum(model=m1, data = lung, showN = F)
 
