@@ -1293,7 +1293,10 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
     } else {
       stop('Supplied data frame does not have the correct number of non-missing rows.')
     }
-  } else{
+  } else if (type=='coxph'){
+    if (missing(data)) stop("Data can not be derived from model, data argument must be supplied.")
+    data <- na.omit(data[,c(dimnames(model$y)[[2]],betanames)])
+  } else {
     stop("Data can not be derived from model, check model object.")
   }
   beta = betaWithCI(beta, CIwidth)
