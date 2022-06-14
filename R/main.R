@@ -1291,7 +1291,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
     } else if (model$n==nrow(stats::na.omit(data))) {
       data <- stats::na.omit(data)
     } else {
-      stop('Supplied data frame does not have the correct number of non-missing rows.')
+      stop('For crr models, the supplied data frame can contain only non-missing data.\n Run na.omit() on a data frame containing only model variables.')
     }
   } else if (type=='coxph'){
     if (missing(data)) stop("Data can not be derived from model, data argument must be supplied.")
