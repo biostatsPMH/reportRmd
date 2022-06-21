@@ -24,7 +24,6 @@ Imports:
     aod,
     cmprsk,
     geepack,
-    geoR,
     ggplot2,
     ggpubr,
     gridExtra,

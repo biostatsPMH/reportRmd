@@ -1,3 +1,33 @@
+.negloglik.boxcox <- function (lambda.val, data, xmat, lik.method = "ML")
+{
+  if (length(lambda.val) == 2) {
+    data <- data + lambda.val[2]
+    lambda <- lambda.val[1]
+  }
+  else lambda <- lambda.val
+  lambda <- unname(lambda)
+  n <- length(data)
+  beta.size <- ncol(xmat)
+  if (isTRUE(all.equal(unname(lambda), 0)))
+    yt <- log(data)
+  else yt <- ((data^lambda) - 1)/lambda
+  beta <- solve(crossprod(xmat), crossprod(xmat, yt))
+  ss <- sum((drop(yt) - drop(xmat %*% beta))^2)
+  if (lik.method == "ML")
+    neglik <- (n/2) * log(ss) - ((lambda - 1) * sum(log(data)))
+  if (lik.method == "RML") {
+    xx <- crossprod(xmat)
+    if (length(as.vector(xx)) == 1)
+      choldet <- 0.5 * log(xx)
+    else choldet <- sum(log(diag(chol(xx))))
+    neglik <- ((n - beta.size)/2) * log(ss) + choldet - ((lambda -
+                                                            1) * sum(log(data)))
+  }
+  if (mode(neglik) != "numeric")
+    neglik <- Inf
+  return(drop(neglik))
+}
+
 #' Retrieve columns number from Excel columns specified as unquoted letters
 #' @param ... unquoted excel column headers (i.e. excelCol(A,CG,AA)) separated by commas
 #' @importFrom rlang as_string

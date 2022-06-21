@@ -11,7 +11,6 @@
 #'   boxcox transformation. If so the function will return a list of length 2
 #'   with the model as the first element and a vector of length 2 as the second.
 #' @keywords model
-#' @importFrom geoR boxcoxfit
 boxcoxfitRx<-function(f,data,lambda=F){
   x<-as.character(f)[3]
   y<-as.character(f)[2]
@@ -23,7 +22,7 @@ boxcoxfitRx<-function(f,data,lambda=F){
   temp<-modelmatrix(f2,df1)
   ff<-list(temp[[1]][,-1,drop=F],temp[[2,drop=F]])
   temp<-temp[[1]][,1,drop=F]
-  lambda1<-unlist(unlist(geoR::boxcoxfit(ff[[1]],ff[[2]],lambda2=T))[1:2])
+  lambda1<-unlist(unlist(geoR_boxcoxfit(ff[[1]],ff[[2]],lambda2=T))[1:2])
   ff[[1]]<-((ff[[1]]+lambda1[2])^lambda1[1]-1)/lambda1[1]
   df<-merge(df1,temp,by="tempindexboxcoxfitRx")[,-1,drop=F]
   df[,time]<-ff[[1]]
@@ -32,6 +31,112 @@ boxcoxfitRx<-function(f,data,lambda=F){
   if(lambda)  return(list(out,lambda1))
   return(out)
 }
+
+#' Parameter Estimation for the Box-Cox Transformation
+#'
+#' This function is copied from the geoR package which has been removed from the
+#' CRAN repository.
+#'
+#' For more information see:
+#' https://cran.r-project.org/web/packages/geoR/index.html
+#' @param object a vector with the data
+#' @param xmat a matrix with covariates values. Defaults to rep(1, length(y)).
+#' @param lambda numerical value(s) for the transformation parameter lambda.
+#'   Used as the initial value in the function for parameter estimation. If not
+#'   provided default values are assumed. If multiple values are passed the one
+#'   with highest likelihood is used as initial value.
+#' @param lambda2 ogical or numerical value(s) of the additional transformation
+#'   (see DETAILS below). Defaults to NULL. If TRUE this parameter is also
+#'   estimated and the initial value is set to the absolute value of the minimum
+#'   data. A numerical value is provided it is used as the initial value.
+#'   Multiple values are allowed as for lambda.
+#' @param add.to.data a constant value to be added to the data.
+#' @importFrom stats optim optimize
+geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 0)
+{
+  call.fc <- match.call()
+  data <- object + add.to.data
+  if (is.null(lambda2) && any(data <= 0))
+    stop("Transformation requires positive data")
+  data <- as.vector(data)
+  n <- length(data)
+  if (missing(xmat))
+    xmat <- rep(1, n)
+  xmat <- as.matrix(xmat)
+  if (any(xmat[, 1] != 1))
+    xmat <- cbind(1, xmat)
+  xmat <- xmat[!is.na(data), , drop = FALSE]
+  data <- data[!is.na(data)]
+  n <- length(data)
+  beta.size <- ncol(xmat)
+  if (nrow(xmat) != length(data))
+    stop("xmat and data have incompatible lengths")
+  lik.method <- "ML"
+  if (all(data > 0))
+    absmin <- 0
+  else absmin <- abs(min(data)) + 1e-05 * diff(range(data))
+  if (!is.null(lambda2)) {
+    if (missing(lambda))
+      lambda.ini <- seq(-2, 2, by = 0.2)
+    else lambda.ini <- lambda
+    lambda2.ini <- 0
+    if (isTRUE(lambda2))
+      lambda2.ini <- absmin
+    else if (mode(lambda2) == "numeric")
+      lambda2.ini <- lambda2
+    lambdas.ini <- as.matrix(expand.grid(lambda.ini, lambda2.ini))
+    if (length(as.matrix(lambdas.ini)) > 2) {
+      lamlik <- apply(lambdas.ini, 1, .negloglik.boxcox,
+                      data = data + absmin, xmat = xmat, lik.method = lik.method)
+      lambdas.ini <- lambdas.ini[which(lamlik == min(lamlik)),
+      ]
+    }
+    lambdas.ini <- unname(drop(lambdas.ini))
+    lik.lambda <- stats::optim(par = lambdas.ini, fn = .negloglik.boxcox,
+                        method = "L-BFGS-B", lower = c(-Inf, absmin), data = data,
+                        xmat = xmat, lik.method = lik.method)
+  }
+  else {
+    lik.lambda <- stats::optimize(.negloglik.boxcox, interval = c(-5,
+                                                           5), data = data, xmat = xmat, lik.method = lik.method)
+    lik.lambda <- list(par = lik.lambda$minimum, value = lik.lambda$objective,
+                       convergence = 0, message = "function optimize used")
+  }
+  lambda.fit <- lik.lambda$par
+  if (length(lambda.fit) == 1)
+    lambda.fit <- c(lambda.fit, 0)
+  data <- data + lambda.fit[2]
+  if (isTRUE(all.equal(unname(lambda.fit[1]), 0)))
+    yt <- log(data)
+  else yt <- ((data^lambda.fit[1]) - 1)/lambda.fit[1]
+  beta <- solve(crossprod(xmat), crossprod(xmat, yt))
+  mu <- drop(xmat %*% beta)
+  sigmasq <- sum((yt - mu)^2)/n
+  if (lik.method == "ML")
+    loglik <- drop((-(n/2) * (log(2 * pi) + log(sigmasq) +
+                                1)) + (lambda.fit[1] - 1) * sum(log(data)))
+  temp <- 1 + lambda.fit[1] * mu
+  fitted.y <- ((temp^((1/lambda.fit[1]) - 2)) * (temp^2 + ((1 -
+                                                              lambda.fit[1])/2) * sigmasq))
+  variance.y <- (temp^((2/lambda.fit[1]) - 2)) * sigmasq
+  if (beta.size == 1) {
+    fitted.y <- unique(fitted.y)
+    variance.y <- unique(fitted.y)
+  }
+  beta <- drop(beta)
+  if (length(beta) > 1)
+    names(beta) <- paste("beta", 0:(beta.size - 1), sep = "")
+  if (length(lik.lambda$par) == 1)
+    lambda.fit <- lambda.fit[1]
+  if (length(lik.lambda$par) == 2)
+    names(lambda.fit) <- c("lambda", "lambda2")
+  res <- list(lambda = lambda.fit, beta.normal = drop(beta),
+              sigmasq.normal = sigmasq, loglik = loglik, optim.results = lik.lambda)
+  res$call <- call.fc
+  oldClass(res) <- "boxcoxfit"
+  return(res)
+}
+
 
 #' fit crr model
 #'
