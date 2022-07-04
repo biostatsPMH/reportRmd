@@ -266,8 +266,6 @@ Missing
 
 ### Multiple Univariate Regression Analyses
 
-By default unstable estimates will be suppressed:
-
 ``` r
 rm_uvsum(data=pembrolizumab, response='orr',
 covs=c('age','cohort','pdl1','change_ctdna_group'))
@@ -463,7 +461,7 @@ Increase from baseline
 </tbody>
 </table>
 
-Show them setting removeInf = FALSE:
+Hiding unstable estimates setting removeInf = TRUE:
 
 ``` r
 rm_uvsum(data=pembrolizumab, response='orr',

@@ -13,6 +13,7 @@ uvsum(
   corstr = NULL,
   family = NULL,
   type = NULL,
+  gee = FALSE,
   strata = 1,
   markup = TRUE,
   sanitize = TRUE,
@@ -20,7 +21,8 @@ uvsum(
   testing = FALSE,
   showN = TRUE,
   CIwidth = 0.95,
-  reflevel = NULL
+  reflevel = NULL,
+  returnModels = FALSE
 )
 }
 \arguments{
@@ -33,19 +35,31 @@ models to}
 
 \item{digits}{number of digits to round to}
 
-\item{id}{character vector which identifies clusters. Only used for geeglm}
+\item{id}{character vector which identifies clusters. Used for GEE and coxph
+models.}
 
 \item{corstr}{character string specifying the correlation structure. Only
 used for geeglm. The following are permitted: '"independence"',
 '"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'}
 
-\item{family}{description of the error distribution and link function to be
-used in the model. Only used for geeglm}
+\item{family}{specify details of the model used. This argument does not need
+to be specified and should be used with caution. By default, gaussian
+errors are used for linear models, the binomial family with logit link is
+used for logistic regression and poisson with log link is used for poisson
+regression. This can be specified with the type argument, or will be
+inferred from the data type. See \code{\link{family}}. Ignored for ordinal
+and survival regression and if the type argument is not explicitly
+specified.}
 
 \item{type}{string indicating he type of univariate model to fit. The
 function will try and guess what type you want based on your response. If
 you want to override this you can manually specify the type. Options
-include "linear", "logistic", "coxph", "crr", "boxcox", "ordinal", "geeglm"}
+include "linear", "logistic", "poisson", coxph", "crr", "boxcox" and
+"ordinal"}
+
+\item{gee}{boolean indicating if gee models should be fit to account for
+correlated observations. If TRUE then the id argument must specify the
+column in the data which indicates the correlated clusters.}
 
 \item{strata}{character vector of covariates to stratify by. Only used for
 coxph and crr}
@@ -66,8 +80,10 @@ before the model fits.}
 \item{CIwidth}{width of confidence interval, default is 0.95}
 
 \item{reflevel}{manual specification of the reference level. Only used for
-ordinal This will allow you to see which model is not fitting if the
-function throws an error}
+ordinal. This may allow you to debug if the function throws an error.}
+
+\item{returnModels}{boolean indicating if a list of fitted models should be
+returned.}
 }
 \description{
 Returns a dataframe corresponding to a univariate regression table
@@ -76,6 +92,16 @@ Returns a dataframe corresponding to a univariate regression table
 Univariate summaries for a number of covariates, the type of model can be
 specified. If unspecified the function will guess the appropriate model based
 on the response variable.
+
+Confidence intervals are extracted using confint where possible. Otherwise
+Student t distribution is used for linear models and the Normal distribution
+is used for proportions.
+
+returnModels can be used to return a list of the univariate models, which
+will be the same length as covs. The data used to run each model will include
+all cases with observations on the response and covariate. For gee models the
+data are re-ordered so that the ids appear sequentially and proper estimates
+are given.
 }
 \seealso{
 \code{\link{lm}},\code{\link{glm}},\code{\link{crr}},\code{\link{coxph}},

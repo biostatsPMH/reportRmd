@@ -71,7 +71,7 @@ test_that("covsum rounds variables correctly", {
   expect_equal(names(output) , c("Covariate",'n=228'))
   expect_equal(output$Covariate , c("Status","0","1","Sex","Male","Female","wt loss","Mean (sd)","Median (Q1,Q3)","Missing","OneLevelFactor","one level","x pred","Mean (sd)",'Median (Q1,Q3)'))
   expect_equal(output$`n=228`,c("","63 (27.6)","165 (72.4)","","138 (60.5)","90 (39.5)","","9.832 (13.140)","7.000 (0.000,15.750)","14","","228 (100.0)","",mean_sd,med_Q1_Q3))
-  
+
 })
 
 test_that("covsum calculates rows correctly", {
@@ -80,51 +80,51 @@ test_that("covsum calculates rows correctly", {
                   covs=c('group','group2','group3','group4'),
                   markup=F,percentage = 'row',testcat = 'Fisher')
   expect_equal(names(output) ,c("Covariate","Full Sample (n=9)","1 (n=3)","2 (n=4)",'3 (n=2)',"p-value") )
-  expect_equal(output$Covariate , c("group", "A", "B", "C", "I", "Missing", "group2", "A", "group3", 
+  expect_equal(output$Covariate , c("group", "A", "B", "C", "I", "Missing", "group2", "A", "group3",
                                     "A", "Missing", "group4", "A", "B", "Missing"))
-  expect_equal(output[,3],c("", "2 (50)", "0 (0)", "0 (0)", "0 (0)", "1", "", "3 (33)", 
+  expect_equal(output[,3],c("", "2 (50)", "0 (0)", "0 (0)", "0 (0)", "1", "", "3 (33)",
                             "", "3 (38)", "0", "", "3 (100)", "0 (0)", "0"))
-  
-  expect_equal(output[,4],c("", "1 (25)", "1 (50)", "1 (100)", "1 (100)", "0", "", "4 (44)", 
+
+  expect_equal(output[,4],c("", "1 (25)", "1 (50)", "1 (100)", "1 (100)", "0", "", "4 (44)",
                             "", "4 (50)", "0", "", "0 (0)", "4 (100)", "0"))
-  expect_equal(output[,5],c("", "1 (25)", "1 (50)", "0 (0)", "0 (0)", "0", "", "2 (22)", 
+  expect_equal(output[,5],c("", "1 (25)", "1 (50)", "0 (0)", "0 (0)", "0", "", "2 (22)",
                             "", "1 (12)", "1", "", "0 (0)", "0 (0)", "2"))
-  
+
 })
 
 test_that("covsum includes missing correctly", {
   output = covsum(data=lung_missing,maincov = 'ph.ecog',
                   covs=c('Sex','AgeGroup','age','meal.cal'),include_missing = TRUE,pvalue = FALSE)
-  
-  expect_equal(names(output) ,c("Covariate", "Full Sample (n=228)", "0 (n=49)", "1 (n=86)", 
+
+  expect_equal(names(output) ,c("Covariate", "Full Sample (n=228)", "0 (n=49)", "1 (n=86)",
                                 "2 (n=41)", "3 (n=1)", "NA (n=51)") )
 
-  expect_equal(output[,2],c("", "138 (61)", "90 (39)", "", "2 (1)", "17 (10)", "58 (33)", 
-                            "65 (37)", "34 (19)", "2 (1)", "\\textbf{50}", "", "62.4 (9.1)", 
+  expect_equal(output[,2],c("", "138 (61)", "90 (39)", "", "2 (1)", "17 (10)", "58 (33)",
+                            "65 (37)", "34 (19)", "2 (1)", "\\textbf{50}", "", "62.4 (9.1)",
                             "63 (39,82)", "", "928.8 (402.2)", "975 (96,2600)", "\\textbf{47}"))
 
-  expect_equal(output[,4],c("", "53 (62)", "33 (38)", "", "1 (1)", "6 (9)", "21 (31)", 
-                            "28 (42)", "11 (16)", "0 (0)", "\\textbf{19}", "", "61.7 (9.2)", 
+  expect_equal(output[,4],c("", "53 (62)", "33 (38)", "", "1 (1)", "6 (9)", "21 (31)",
+                            "28 (42)", "11 (16)", "0 (0)", "\\textbf{19}", "", "61.7 (9.2)",
                             "64 (40,80)", "", "940.9 (343.6)", "975 (280,2450)", "\\textbf{21}"))
-  
+
 })
 
 test_that("covsum includes missing correctly when presenting row percentages", {
   output = covsum(data=lung_missing,maincov = 'ph.ecog',
                   covs=c('Sex','AgeGroup','age','meal.cal'),include_missing = TRUE,pvalue = FALSE,percentage = 'row',digits.cat = 3)
-  
-  expect_equal(names(output) ,c("Covariate", "Full Sample (n=228)", "0 (n=49)", "1 (n=86)", 
+
+  expect_equal(names(output) ,c("Covariate", "Full Sample (n=228)", "0 (n=49)", "1 (n=86)",
                                 "2 (n=41)", "3 (n=1)", "NA (n=51)") )
-  
-  expect_equal(output[,2],c("", "138", "90", "", "2", "17", "58", "65", "34", "2", "\\textbf{50}", 
-                            "", "62.4 (9.1)", "63 (39,82)", "", "928.8 (402.2)", "975 (96,2600)", 
+
+  expect_equal(output[,2],c("", "138", "90", "", "2", "17", "58", "65", "34", "2", "\\textbf{50}",
+                            "", "62.4 (9.1)", "63 (39,82)", "", "928.8 (402.2)", "975 (96,2600)",
                             "\\textbf{47}"))
-  
-  expect_equal(output[,4],c("", "53 (38.406)", "33 (36.667)", "", "1 (50.000)", "6 (35.294)", 
-                            "21 (36.207)", "28 (43.077)", "11 (32.353)", "0 (0.000)", "\\textbf{19}", 
-                            "", "61.7 (9.2)", "64 (40,80)", "", "940.9 (343.6)", "975 (280,2450)", 
+
+  expect_equal(output[,4],c("", "53 (38.406)", "33 (36.667)", "", "1 (50.000)", "6 (35.294)",
+                            "21 (36.207)", "28 (43.077)", "11 (32.353)", "0 (0.000)", "\\textbf{19}",
+                            "", "61.7 (9.2)", "64 (40,80)", "", "940.9 (343.6)", "975 (280,2450)",
                             "\\textbf{21}"))
-  
+
 })
 
 
@@ -135,15 +135,17 @@ test_that("uvsum logistic regression CIS are correct",{
     x1=summary(m1)$coefficients
     m2 = glm(Status~x_pred,data=lung,family='binomial')
     x2=summary(m2)$coefficients
-    # TODO: update the wald CIs to likelihood profile CIs?
-    # expected = c(  paste(format(round(exp(x1[2,1]),digits),nsmall=digits),
-    #                      paste0("(",paste0(format(round(exp(confint(m1,level=ci_width)[2,]),digits),nsmall=digits),collapse=","),")")),
-    #                paste(format(round(exp(x2[2,1]),digits),nsmall=digits),
-    #                       paste0("(",paste0(format(round(exp(confint(m2,level=ci_width)[2,]),digits),nsmall=digits),collapse=","),")")))
+    digits <- 2
+#    DONE: updated the wald CIs to likelihood profile CIs?
     expected = c(  paste(format(round(exp(x1[2,1]),digits),nsmall=digits),
-                         paste0("(",paste0(format(round(c(exp(x1[2,1]-qnorm(1-(1-ci_width)/2)*x1[2,2]),exp(x1[2,1]+qnorm(1-(1-ci_width)/2)*x1[2,2])),digits),nsmall=digits),collapse=","),")")),
+                         paste0("(",paste0(format(round(exp(confint(m1,level=ci_width)[2,]),digits),nsmall=digits),collapse=","),")")),
                    paste(format(round(exp(x2[2,1]),digits),nsmall=digits),
-                         paste0("(",paste0(format(round(c(exp(x2[2,1]-qnorm(1-(1-ci_width)/2)*x2[2,2]),exp(x2[2,1]+qnorm(1-(1-ci_width)/2)*x2[2,2])),digits),nsmall=digits),collapse=","),")")))
+                          paste0("(",paste0(format(round(exp(confint(m2,level=ci_width)[2,]),digits),nsmall=digits),collapse=","),")")))
+    # OLD - WALD CIs
+    # expected = c(  paste(format(round(exp(x1[2,1]),digits),nsmall=digits),
+    #                      paste0("(",paste0(format(round(c(exp(x1[2,1]-qnorm(1-(1-ci_width)/2)*x1[2,2]),exp(x1[2,1]+qnorm(1-(1-ci_width)/2)*x1[2,2])),digits),nsmall=digits),collapse=","),")")),
+    #                paste(format(round(exp(x2[2,1]),digits),nsmall=digits),
+    #                      paste0("(",paste0(format(round(c(exp(x2[2,1]-qnorm(1-(1-ci_width)/2)*x2[2,2]),exp(x2[2,1]+qnorm(1-(1-ci_width)/2)*x2[2,2])),digits),nsmall=digits),collapse=","),")")))
     output = uvsum(response = 'Status',
                    covs=c('x_null','x_pred'),
                    data=lung,
@@ -232,7 +234,7 @@ test_that("uvsum outputs geeglm models correctly",{
   # gee1 <- geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   # mf2 <- formula(Weight ~ Time)
   # gee2 <- geeglm(mf2, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
-  output = uvsum(response = 'Weight',covs=c('Cu','Time'),
+  output = uvsum(response = 'Weight',covs=c('Cu','Time'), gee=T,
                  data=dietox, id='Pig', family=gaussian("identity"), corstr="ar1",markup=FALSE)
   names = c('Covariate','Estimate(95\\%CI)','p-value','Global p-value','N')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')

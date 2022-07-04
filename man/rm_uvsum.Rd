@@ -12,9 +12,10 @@ rm_uvsum(
   covTitle = "",
   caption = NULL,
   tableOnly = FALSE,
-  removeInf = TRUE,
+  removeInf = FALSE,
   p.adjust = "none",
   chunk_label,
+  gee = FALSE,
   id = NULL,
   corstr = NULL,
   family = NULL,
@@ -24,7 +25,8 @@ rm_uvsum(
   testing = FALSE,
   showN = TRUE,
   CIwidth = 0.95,
-  reflevel = NULL
+  reflevel = NULL,
+  returnModels = FALSE
 )
 }
 \arguments{
@@ -51,6 +53,10 @@ from the table}
 \item{p.adjust}{p-adjustments to be performed (Global p-values only)}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{gee}{boolean indicating if gee models should be fit to account for
+correlated observations. If TRUE then the id argument must specify the
+column in the data which indicates the correlated clusters.}
 
 \item{id}{character vector which identifies clusters. Only used for geeglm}
 
@@ -82,6 +88,10 @@ before the model fits.}
 \item{reflevel}{manual specification of the reference level. Only used for
 ordinal regression This will allow you to see which model is not fitting if
 the function throws an error}
+
+\item{returnModels}{boolean indicating if a list of fitted models should be
+returned. If this is TRUE then the models will be returned, but the output
+will be suppressed.}
 }
 \description{
 A table with the model parameters from running separate univariate models on

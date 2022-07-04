@@ -50,7 +50,6 @@ show.tests=TRUE)
 
 ### Multiple Univariate Regression Analyses
 
-By default unstable estimates will be suppressed:
 
 ```{r example-2}
 rm_uvsum(data=pembrolizumab, response='orr',
@@ -58,7 +57,7 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 ```
 
-Show them setting removeInf = FALSE:
+Hiding unstable estimates setting removeInf = TRUE:
 
 ```{r example-2b}
 rm_uvsum(data=pembrolizumab, response='orr',
