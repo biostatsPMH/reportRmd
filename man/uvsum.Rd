@@ -18,7 +18,6 @@ uvsum(
   markup = TRUE,
   sanitize = TRUE,
   nicenames = TRUE,
-  testing = FALSE,
   showN = TRUE,
   CIwidth = 0.95,
   reflevel = NULL,
@@ -71,9 +70,6 @@ break LaTeX}
 
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}
-
-\item{testing}{boolean to indicate if you want to print out the covariates
-before the model fits.}
 
 \item{showN}{boolean indicating if you want to show sample sizes}
 

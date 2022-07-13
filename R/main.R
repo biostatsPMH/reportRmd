@@ -93,12 +93,12 @@ geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 
     }
     lambdas.ini <- unname(drop(lambdas.ini))
     lik.lambda <- stats::optim(par = lambdas.ini, fn = .negloglik.boxcox,
-                        method = "L-BFGS-B", lower = c(-Inf, absmin), data = data,
-                        xmat = xmat, lik.method = lik.method)
+                               method = "L-BFGS-B", lower = c(-Inf, absmin), data = data,
+                               xmat = xmat, lik.method = lik.method)
   }
   else {
     lik.lambda <- stats::optimize(.negloglik.boxcox, interval = c(-5,
-                                                           5), data = data, xmat = xmat, lik.method = lik.method)
+                                                                  5), data = data, xmat = xmat, lik.method = lik.method)
     lik.lambda <- list(par = lik.lambda$minimum, value = lik.lambda$objective,
                        convergence = 0, message = "function optimize used")
   }
@@ -726,8 +726,6 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
 #'   break LaTeX
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
-#' @param testing boolean to indicate if you want to print out the covariates
-#'   before the model fits.
 #' @param showN boolean indicating if you want to show sample sizes
 #' @param CIwidth width of confidence interval, default is 0.95
 #' @param reflevel manual specification of the reference level. Only used for
@@ -745,7 +743,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
 #' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint
 uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, family = NULL,
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
-                   testing = FALSE, showN = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
+                   showN = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
 {
 
   missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
@@ -891,7 +889,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     if (gee){
       data <- data[order(data[[id]]),]
       idf <- as.numeric(as.factor(data[[id]]))
-     # idf <- as.matrix(idf)
+      # idf <- as.matrix(idf)
     }
     if (class(data[[x_var]])[1] %in% c("ordered", "factor")) {
       data[[x_var]] = droplevels(data[[x_var]])
@@ -963,9 +961,9 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     else if (type %in% c("linear", "boxcox")) {
       if (gee){
         eval(parse(text = paste0('m2 <- geepack::geeglm(',
-                                paste(response, "~",x_var, sep = ""),
-                                ',data = data, id = idf, corstr = "',corstr,
-                                '", family = ',family,')')))
+                                 paste(response, "~",x_var, sep = ""),
+                                 ',data = data, id = idf, corstr = "',corstr,
+                                 '", family = ',family,')')))
         m <- summary(m2)$coefficients
         globalpvalue <- try(aod::wald.test(b = m2$coefficients[-1],
                                            Sigma = vcov(m2)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3],silent = T)
@@ -1181,7 +1179,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
                                                                                   deparse(model$call$data))))), silent = TRUE)
   }
   else {
-    stop("type must be either polr, coxph, logistic, lm, geeglm, crr, lme (or NULL)")
+    stop("type must be either polr, coxph, glm, lm, geeglm, crr, lme (or NULL)")
   }
   if ("data.frame" %in% class(ss_data)) {
     if ('(weights)' %in% names(ss_data))
@@ -1491,12 +1489,13 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=T,colours='default',sho
   if (rmRef) tab = tab[setdiff(1:nrow(tab),which(tab$estimate.label=='1.0 (Reference)')),]
 
 
-  yvals=1
-  for (i in 2:nrow(tab)) {
-    yvals = c(yvals, ifelse(tab$var.order[i]==tab$var.order[i-1],
-                            yvals[i-1]+.5,
-                            yvals[i-1]+1))
-  }
+  # yvals=1
+  # for (i in 2:nrow(tab)) {
+  #   yvals = c(yvals, ifelse(tab$var.order[i]==tab$var.order[i-1],
+  #                           yvals[i-1]+.5,
+  #                           yvals[i-1]+1))
+  # }
+  yvals=1:nrow(tab)
   tab$estimate.label = ifelse(is.na(tab$estimate.label),'',tab$estimate.label)
   tab$estimate.label = ifelse(tab$estimate.label == '1.0 (Reference)','(Reference)',tab$estimate.label)
 
@@ -1545,10 +1544,11 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=T,colours='default',sho
     scale_y_continuous(breaks = yLabels$y.pos,labels=yLabels$labels) +
     scale_colour_manual(values=colours)+
     theme_bw() +
-    theme(axis.text.y = element_text(hjust=0),
+    theme(axis.text.y = element_text(face=ifelse(tab$variable ==tab$var.name | is.na(tab$var.name),"bold","plain"),
+                                     hjust = 0),
+          # does nothing                                     lineheight =ifelse(tab$variable ==tab$var.name & !is.na(tab$var.name),rel(.75),rel(1))),
           panel.grid.major.y = element_blank(),
           panel.grid.minor.y = element_blank())
-
 
   if (logScale) p + scale_x_log10(breaks=scales::log_breaks(n=nxTicks)) else p
 }
@@ -1829,10 +1829,10 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,r
   to_indent = as.vector(to_indent)
 
   if (length(rows_bold)>0){
-      arrInd <- as.matrix(expand.grid(rows_bold,1:ncol(tab)))
-      arrInd <- arrInd[!is.na(tab[arrInd]),]
-      bold_cells <- rbind(bold_cells,arrInd)
-      dimnames(bold_cells) <- NULL
+    arrInd <- as.matrix(expand.grid(rows_bold,1:ncol(tab)))
+    arrInd <- arrInd[!is.na(tab[arrInd]),]
+    bold_cells <- rbind(bold_cells,arrInd)
+    dimnames(bold_cells) <- NULL
   }
   if (out_fmt=='doc'){
     caption = if (!is.null(caption)) {ifelse(chunk_label=='NOLABELTOADD',caption,paste0('(\\#tab:',chunk_label,')',caption))}
@@ -1947,10 +1947,10 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
     coltypes <- unlist(lapply(data, class))
     numCols <- names(coltypes)[coltypes=='numeric']
     if (length(numCols)>0){
-    colRound <- cbind(numCols,digits)
-    colDigits <- as.numeric(colRound[,2])
-    names(colDigits) <- colRound[,1]
-    for (v in numCols) data[[v]] <- sapply(data[[v]],function(x) niceNum(x,digits=colDigits[v]))
+      colRound <- cbind(numCols,digits)
+      colDigits <- as.numeric(colRound[,2])
+      names(colDigits) <- colRound[,1]
+      for (v in numCols) data[[v]] <- sapply(data[[v]],function(x) niceNum(x,digits=colDigits[v]))
     }
   }
 
@@ -1983,6 +1983,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
   if (boldheaders) rows_bold = header_rows else rows_bold=numeric(0)
   outTable(tab=data,to_indent=to_indent,rows_bold=rows_bold,caption=caption)
 }
+
 
 #' Outputs a descriptive covariate table
 #'
@@ -2082,7 +2083,7 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
     new_p <- sapply(p_vals,formatp)
     tab[['p-value']] <- new_p
     if (length(to_bold_p)>0)    bold_cells <- rbind(bold_cells,
-                        matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
+                                                    matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
   }
 
   if (tableOnly){
@@ -2114,7 +2115,8 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' @param covs character vector with the names of columns to fit univariate
 #'   models to
 #' @param data dataframe containing data
-#' @param digits number of digits to round to
+#' @param digits number of digits to round estimates and CI to. Does not affect
+#'   p-values.
 #' @param covTitle character with the names of the covariate (predictor) column.
 #'   The default is to leave this empty for output or, for table only output to
 #'   use the column name 'Covariate'.
@@ -2136,7 +2138,8 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' @param type string indicating the type of univariate model to fit. The
 #'   function will try and guess what type you want based on your response. If
 #'   you want to override this you can manually specify the type. Options
-#'   include "linear", "logistic", "coxph", "crr", "boxcox", "ordinal", "geeglm"
+#'   include "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal",
+#'   "geeglm"
 #' @param strata character vector of covariates to stratify by. Only used for
 #'   coxph and crr
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
@@ -2167,6 +2170,11 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab)
 #'
+#' # Poisson models returned as model list
+#' rm_uvsum(response = 'baseline_ctdna',
+#' covs=c('age','sex','l_size','pdl1','tmb'),
+#' data=pembrolizumab, returnModels=T)
+#'
 #' # GEE on correlated outcomes (not meaningful, just for demonstration)
 #' rm_uvsum(response = 'size_change',
 #' covs=c('time','ctdna_status'),
@@ -2184,7 +2192,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   rtn <- uvsum(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
                gee=gee,id = id,
                corstr = corstr,family = family,type = type,strata = strata,
-               nicenames = nicenames,testing = testing,showN = showN,
+               nicenames = nicenames,showN = showN,
                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels)
   if (returnModels) tab <- rtn[[1]] else tab <- rtn
   cap_warn <- character(0)
@@ -2192,7 +2200,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
     # Do not display unstable estimates
     inf_values =  grep('Inf',tab[,2])
     if (length(inf_values)>0){
-       if ('Global p-values' %in% names(tab)) to_hide <-2:4 else to_hide <-2:3
+      if ('Global p-values' %in% names(tab)) to_hide <-2:4 else to_hide <-2:3
       tab[inf_values,to_hide] <-NA
       cap_warn <- paste0(cap_warn,ifelse(identical(cap_warn,character(0)),'',', '),
                          'Covariates with unstable estimates:',
@@ -2220,7 +2228,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 
     to_bold_p <- which(tab[["Global p-value"]]<.05 & !tab[["Global p-value"]]=="")
     if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
-                        matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
+                                                 matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
 
   } else {
     raw_p <- tab[["p-value"]]
@@ -2229,7 +2237,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   }
   to_bold_p <- which(tab[["p-value"]]<.05 & !tab[["p-value"]]=="")
   if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
-                      matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
+                                               matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
   names(tab)[1] <-covTitle
   if (tableOnly){
@@ -2245,7 +2253,6 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
            chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
 
 }
-
 
 
 #' Format a regression model nicely for Rmarkdown
@@ -2311,7 +2318,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
                          !tab[["Global p-value"]]=="" &
                          !is.na(tab[["Global p-value"]]))
     if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
-                        matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
+                                                 matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
 
   } else {
     raw_p <- tab[["p-value"]]
@@ -2322,7 +2329,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
                        !tab[["p-value"]]=="" &
                        !is.na(tab[["p-value"]]))
   if (length(to_bold_p)>0)  bold_cells <- rbind(bold_cells,
-                      matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
+                                                matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
 
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
@@ -2652,7 +2659,8 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
                     pval = TRUE,HR=FALSE,HR_pval=FALSE,conf.curves=FALSE,conf.type = "log",table = TRUE,times = NULL,xlab = "Time",ylab=NULL ,
                     main = NULL,stratalabs = NULL,strataname = nicename(cov),
                     stratalabs.table=NULL,strataname.table=strataname,
-                    median.text=FALSE,median.lines=FALSE,median.CI=FALSE,set.time.text=NULL,set.time.line=F,set.time=5,set.time.CI=FALSE,
+                    median.text=FALSE,median.lines=FALSE,median.CI=FALSE,
+                    set.time.text=NULL,set.time.line=F,set.time=5,set.time.CI=FALSE,
                     censor.marks = TRUE,censor.size = 3,censor.stroke = 1.5,
                     fsize = 15, nsize = 4.5, lsize = 1.5, psize = 4.5,
                     median.size=4.5,median.pos=NULL,median.lsize=1.1,
@@ -2674,7 +2682,10 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
 
   data <- data[!remove,]
 
-  if(print.n.missing==T & sum(remove) > 0) print(paste(sum(remove),"observations have been removed due to missing data"))
+  if (print.n.missing==T & sum(remove)==1 ) {
+    message('1 observation with missing data was removed.')
+  } else if(print.n.missing==T & sum(remove) > 0) print(paste(sum(remove),'observations with missing data were removed.'))
+
 
   if (!is.factor(data[,cov])  & !is.numeric(data[,cov]) & !is.null(cov)){ message("Coercing the cov variable to factor"); data[,cov] <- factor(data[,cov])}
 
@@ -2701,7 +2712,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
     col <- color_palette_surv_ggplot(col_length)
   }
 
-  # Specifing the type of plot ----------------------------------------------
+  # Specifying the type of plot ----------------------------------------------
 
 
   #Specifying KM or CIF & is.null(type)
@@ -2735,9 +2746,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
   }
 
   # Labels ------------------------------------------------------------------
-
   multiple_lines <- !is.null(cov)
-
 
 
   # HR and p-val cox----------------------------------------------------------------------
@@ -2773,7 +2782,6 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
 
   }
   # Model fitting KM and creating a dataframe of times--------------------------------------------------------
-
   if(type=="KM"){
     if(!multiple_lines){
 
@@ -2789,9 +2797,6 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
         median_txt <- if(median.CI==TRUE) {paste0(round_sprintf(median_vals,digits=median.digits),"(",round_sprintf(median_lower,digits=median.digits),"-",
                                                   round_sprintf(median_upper,digits=median.digits),")")
         }else round_sprintf(median_vals,digits=median.digits)
-
-
-
       }
       if(!is.null(set.time.text)|set.time.line==T){
 
@@ -2861,10 +2866,6 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
         if(!is.null(set.time.text)) stratalabs <- paste0(stratalabs,", ",final.set.text)
       }
     }
-
-
-
-
     df <- NULL
     df <- data.frame(time = sfit$time,
                      n.risk = sfit$n.risk,  n.censor = sfit$n.censor,
@@ -2940,8 +2941,6 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
           set.surv <- rbind(keep_sum,set.surv)
 
         }
-
-
       }
 
       if(table){ #Sfit is for the numbers at risk so both events are counted the same way
@@ -3087,7 +3086,6 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
   leg.pos <- legend.pos
   d <- length(levels(df$strata))
 
-
   if(!multiple_lines & (type=="KM" | (type=="CIF" & length(plot.event)==1))){
     leg.pos <- 'none'
   }else if(is.null(legend.pos)) {
@@ -3129,24 +3127,28 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
 
   }
 
-  # Modiyfing axis, titles, fonts, and theming -------------------------------
+  # Modifying axis, titles, fonts, and themeing -------------------------------
 
 
   p <- p+
-    theme_classic() +
-    theme(axis.title.x = element_text(vjust = 0.5)) +
-    theme(text = element_text(size = fsize),
-          axis.text=element_text(size=fsize)) +  ##increase font size
+    theme_classic(base_size=fsize) +
+    theme(
+      axis.text.x = element_text(margin = margin(t = 0), vjust = 1),
+      axis.text.x.top = element_text(margin = margin(b = 0), vjust = 0),
+      axis.text.y = element_text(margin = margin(r = 0), hjust = 1),
+      axis.text.y.right = element_text(margin = margin(l = 0), hjust = 0),
+      axis.title.x.bottom = element_text(vjust = 4))+
     scale_x_continuous(paste0("\n",xlab), breaks = times,
                        limits = c(0, maxxval)) +
     coord_cartesian(xlim=c(0,maxxlim)) + ### changes the actual plotted limits if needed
     scale_y_continuous(paste0(ylab,"\n"), limits = ylim) +
     theme(panel.grid.minor = element_blank()) +
-    theme(legend.key = element_rect(colour = "transparent", fill = "transparent")) +
-    theme(legend.background=element_blank()) +
+    theme(legend.key = element_rect(colour = "transparent", fill = "transparent"),
+          legend.background=element_blank(),
+          legend.position = leg.pos) +
     labs(linetype = linetype_name, col=col_name) +
-    ggtitle(main) + theme(plot.title = element_text(face="bold",hjust = 0.5))+
-    theme(legend.position = leg.pos)
+    ggtitle(main) +
+    theme(plot.title = element_text(face="bold",hjust = 0.5,size = fsize))
 
 
   # censoring ---------------------------------------------------------------

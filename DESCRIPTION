@@ -15,6 +15,7 @@ Description: reportRmd is an Rmarkdown version of the previous reportRx package
     logistic and ordinal regression and bivariate comparison plots.
 License: MIT + file LICENSE
 Suggests: 
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
@@ -39,3 +40,4 @@ Collate: 'helper.R' 'main.R' 'globals.R' 'data.R'
 Depends: 
     R (>= 2.10)
 LazyData: true
+VignetteBuilder: knitr

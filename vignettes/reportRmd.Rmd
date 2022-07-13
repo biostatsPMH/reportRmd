@@ -1,0 +1,38 @@
+---
+title: "reportRmd"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{reportRmd}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(reportRmd)
+```
+
+
+# Data Sets
+
+## pembrolizumab
+
+Survival data with 15 variables on 94 patients
+```{r}
+?pembrolizumab
+str(pembrolizumab)
+```
+
+
+## ctDNA
+Repeated measures on participants over time tracking the change in tumour size and the ctDNA clearance status.
+```{r}
+?ctDNA
+str(ctDNA)
+```

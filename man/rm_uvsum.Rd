@@ -37,7 +37,8 @@ models to}
 
 \item{data}{dataframe containing data}
 
-\item{digits}{number of digits to round to}
+\item{digits}{number of digits to round estimates and CI to. Does not affect
+p-values.}
 
 \item{covTitle}{character with the names of the covariate (predictor) column.
 The default is to leave this empty for output or, for table only output to
@@ -70,7 +71,8 @@ used in the model. Only used for geeglm}
 \item{type}{string indicating the type of univariate model to fit. The
 function will try and guess what type you want based on your response. If
 you want to override this you can manually specify the type. Options
-include "linear", "logistic", "coxph", "crr", "boxcox", "ordinal", "geeglm"}
+include "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal",
+"geeglm"}
 
 \item{strata}{character vector of covariates to stratify by. Only used for
 coxph and crr}
@@ -116,6 +118,11 @@ data=pembrolizumab,CIwidth=.9)
 rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab)
+
+# Poisson models returned as model list
+rm_uvsum(response = 'baseline_ctdna',
+covs=c('age','sex','l_size','pdl1','tmb'),
+data=pembrolizumab, returnModels=T)
 
 # GEE on correlated outcomes (not meaningful, just for demonstration)
 rm_uvsum(response = 'size_change',

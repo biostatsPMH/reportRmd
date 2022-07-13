@@ -1,8 +1,10 @@
 ---
 title: "Test Report.Rmd"
 output: 
-  pdf_document
-  word_document
+  word_document:
+    toc: no
+  pdf_document:
+    latex_engine: xelatex
 date: '2022-06-10'
 ---
 
