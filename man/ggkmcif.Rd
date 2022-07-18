@@ -62,7 +62,7 @@ ggkmcif(
   median.digits = 3,
   set.time.digits = 3,
   returns = FALSE,
-  print.n.missing = T
+  print.n.missing = TRUE
 )
 }
 \arguments{

@@ -70,4 +70,12 @@ Wald global p-values are returned.
 glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
 data=pembrolizumab,family = 'binomial')
 rm_mvsum(glm_fit)
+
+#linear model with p-value adjustment
+lm_fit=lm(baseline_ctdna~age+sex+l_size+tmb,data=pembrolizumab)
+rm_mvsum(lm_fit,p.adjust = "bonferroni")
+#Coxph
+require(survival)
+res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
+rm_mvsum(res.cox)
 }

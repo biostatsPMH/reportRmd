@@ -22,7 +22,6 @@ rm_uvsum(
   type = NULL,
   strata = 1,
   nicenames = TRUE,
-  testing = FALSE,
   showN = TRUE,
   CIwidth = 0.95,
   reflevel = NULL,
@@ -80,9 +79,6 @@ coxph and crr}
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}
 
-\item{testing}{boolean to indicate if you want to print out the covariates
-before the model fits.}
-
 \item{showN}{boolean indicating if you want to show sample sizes}
 
 \item{CIwidth}{width of confidence interval, default is 0.95}
@@ -119,10 +115,14 @@ rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab)
 
+# Logistic model with default 95\% CI
+rm_uvsum(response = 'os_status',
+covs=c('age','sex','l_size','pdl1','tmb'),
+data=pembrolizumab,family = binomial)
 # Poisson models returned as model list
 rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
-data=pembrolizumab, returnModels=T)
+data=pembrolizumab, returnModels=TRUE)
 
 # GEE on correlated outcomes (not meaningful, just for demonstration)
 rm_uvsum(response = 'size_change',

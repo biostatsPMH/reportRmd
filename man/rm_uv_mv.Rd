@@ -39,12 +39,29 @@ must also appear in the uvsum table.
 }
 \examples{
 require(survival)
+
 uvTab <- rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 data=pembrolizumab,tableOnly=TRUE)
 mv_surv_fit <- coxph(Surv(os_time,os_status)~age+sex+
 baseline_ctdna+l_size+change_ctdna_group, data=pembrolizumab)
 uvTab <- rm_mvsum(mv_surv_fit)
+
+#linear model
+uvtab<-rm_uvsum(response = 'baseline_ctdna',
+covs=c('age','sex','l_size','pdl1','tmb'),
+data=pembrolizumab,tableOnly=TRUE)
+lm_fit=lm(baseline_ctdna~age+sex+l_size+tmb,data=pembrolizumab)
+mvtab<-rm_mvsum(lm_fit,tableOnly = TRUE)
+rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
+
+#logistic model
+uvtab<-rm_uvsum(response = 'os_status',
+covs=c('age','sex','l_size','pdl1','tmb'),
+data=pembrolizumab,family = binomial,tableOnly=TRUE)
+logis_fit<-glm(os_status~age+sex+l_size+pdl1+tmb,data = pembrolizumab,family = 'binomial')
+mvtab<-rm_mvsum(logis_fit,tableOnly = TRUE)
+rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
 }
 \seealso{
 \code{\link{rm_uvsum}},\code{\link{rm_mvsum}}

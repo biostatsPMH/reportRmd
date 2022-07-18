@@ -15,6 +15,7 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+
 ```
 
 # reportRmd
@@ -53,15 +54,7 @@ show.tests=TRUE)
 
 ```{r example-2}
 rm_uvsum(data=pembrolizumab, response='orr',
-covs=c('age','cohort','pdl1','change_ctdna_group'))
-
-```
-
-Hiding unstable estimates setting removeInf = TRUE:
-
-```{r example-2b}
-rm_uvsum(data=pembrolizumab, response='orr',
-covs=c('age','cohort','pdl1','change_ctdna_group'),removeInf = FALSE)
+covs=c('age','pdl1','change_ctdna_group'))
 
 ```
 
@@ -80,14 +73,33 @@ rm_mvsum(glm_fit)
 
 ```{r}
 uvsumTable <- rm_uvsum(data=pembrolizumab, response='orr',
-covs=c('age','cohort','pdl1','change_ctdna_group'),tableOnly = TRUE)
+covs=c('age','sex','pdl1','change_ctdna_group'),tableOnly = TRUE)
 
-glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
                family='binomial',
                data = pembrolizumab)
 mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
 
 rm_uv_mv(uvsumTable,mvsumTable)
+```
+
+### Survival Probabilities at different times by sex
+```{r}
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+ strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
+
+```
+
+### Logrank test on KM Survival Curves by sex
+```{r}
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
+            covs='sex',digits=1)
+```
+
+### Logrank test on Survival Curves by sex stratifying by cohort
+```{r}
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
+            covs='sex',strata='cohort',digits=1)
 ```
 
 ### Plotting survival curves
@@ -100,7 +112,7 @@ data=pembrolizumab)
 
 ### Plotting odds ratios
 
-```{r, height=3}
+```{r, height=2}
 require(ggplot2)
 forestplot2(glm_fit)
 ```
