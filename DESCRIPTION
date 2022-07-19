@@ -1,13 +1,13 @@
 Package: reportRmd
-Title: Tidy presentation of clinical reporting
-Version: 0.0.0.9000
+Title: 'Tidy Presentation of Clinical Reporting'
+Version: 0.0.1
 Authors@R: c(
-    person("Lisa","Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut")),
-    person("Ryan","Del Bel","email = rdelbel@gmail.com",role="aut"),
-    person("Osvaldo","Espin-Garcia","email = Osvaldo.Espin-Garcia@uhnresearch.ca",role="aut"),
-    person("Yanning","Wang",email = "21yw15@queensu.ca",role="ctr"),    
-    person("Jessica","Weiss",email = "jessica.weiss@uhn.ca",role="aut"),    
-    person("Wei", "Xu",email = "wxu@uhnres.utoronto.ca",role="aut"))
+    person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut")),
+    person(given="Ryan",family="Del Bel","email = rdelbel@gmail.com",role="aut"),
+    person(given="Osvaldo",family="Espin-Garcia","email = Osvaldo.Espin-Garcia@uhnresearch.ca",role="aut"),
+    person(given="Yanning",family="Wang",email = "21yw15@queensu.ca",role="ctr"),    
+    person(given="Jessica",family="Weiss",email = "jessica.weiss@uhn.ca",role="aut"),    
+    person(given="Wei", family="Xu",email = "wxu@uhnres.utoronto.ca",role="aut"))
 Description: reportRmd is an Rmarkdown version of the previous reportRx package 
     to facilitate the automated reporting of descriptive statistics, multiple 
     univariate models, multivariable models and tables combining these outputs. 

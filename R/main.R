@@ -187,15 +187,15 @@ crrRx<-function(f,data){
 etsum<- function(data,response,group=1,times=c(12,24)){
 
   ### coerse data into a data.frame in case isn't
-  if( class(data)[1]!="data.frame") data <- data.frame(data)
+  if( inherits(data,"data.frame")) data <- data.frame(data) else stop('data must be a data frame')
 
-  if ( (class(group)=="numeric" & group!=1) | (class(group)!="numeric" & !is.factor(data[,group])) )
+  if ( (inherits(group,"numeric") & group!=1) | (!inherits(group,"numeric") & !is.factor(data[,group])) )
     stop("group variable must be factor or leave unspecified for no group")
 
   if( length(response)>2 )
     stop("'response' must be a vector of length 2, etsum does not work for interval censored data yet.")
 
-  if( !class(data[,response[2]]) %in% c("numeric","integer") ) stop("Status indicator (variable ",response[2],") must be numeric/integer for etsum to work properly. See ?Surv for more info.")
+  if( !inherits(data[,response[2]],c("numeric","integer")) ) stop("Status indicator (variable ",response[2],") must be numeric/integer for etsum to work properly. See ?Surv for more info.")
 
   # check for status indicator (2 for typical survival, will stop if there are more than two levels)
   if( length(unique(data[,response[2]]))>2 ){
@@ -203,7 +203,7 @@ etsum<- function(data,response,group=1,times=c(12,24)){
   }
   stind <- as.matrix(Surv(data[,response[1]], data[,response[2]]))[,2] # This variable is needed to later create a subset across non-events (or censored to be more precise, i.e. stind==0)
 
-  if(class(group)=="numeric"){
+  if(inherits(group,"numeric")){
     kfit <- summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",group,sep=""))  ,data=data))
     maxtime = max(kfit$time)
     times[times>maxtime] = maxtime
@@ -212,7 +212,7 @@ etsum<- function(data,response,group=1,times=c(12,24)){
     tab$times = round(as.numeric(as.character(tab$times)),1)
     tbl <- kfit2$table
   }else{
-    if(class(data[,group])!="factor")
+    if(!inherits(data[,group],"factor"))
       stop("group variable must be factor or leave unspecified for no group")
     tab <- lapply(levels(data[,group]),function(level){
       # subdata <- subset(data,data[,group]==level)
@@ -229,7 +229,7 @@ etsum<- function(data,response,group=1,times=c(12,24)){
     tab = unique(tab)
   }
 
-  if(class(group)!="numeric"){
+  if(!inherits(group,"numeric")){
 
     kfit <- summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",group,sep=""))  ,data=data))
     med = by(data,data[,group],function(x) median(x[,response[1]],na.rm=TRUE))
@@ -350,17 +350,22 @@ etsum<- function(data,response,group=1,times=c(12,24)){
 #' used for two groups and an ANOVA will be used for three or more. The
 #' statistical test used can be displayed by specifying show.tests=TRUE.
 #'
+#' The number of decimals places to display the statistics can be changed with
+#' digits, but this will not change the display of p-values. If more significant
+#' digits are required for p-values then use tableOnly=TRUE and format as
+#' desired.
+#'
 #' @param data dataframe containing data
 #' @param covs character vector with the names of columns to include in table
 #' @param maincov covariate to stratify table by
-#' @param digits number of digits for summarizing mean data
+#' @param digits number of digits for summarizing mean data, does not affect
+#'   p-values
 #' @param numobs named list overriding the number of people you expect to have
 #'   the covariate
 #' @param markup boolean indicating if you want latex markup
 #' @param sanitize boolean indicating if you want to sanitize all strings to not
 #'   break LaTeX
-#' @param nicenames boolean
-#' indicating if you want to replace . and _ in strings
+#' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
 #' @param IQR boolean indicating if you want to display the inter quantile range
 #'   (Q1,Q3) as opposed to (min,max) in the summary for continuous variables
@@ -388,8 +393,7 @@ etsum<- function(data,response,group=1,times=c(12,24)){
 #'   \emph{column} (default) or \emph{row}
 #' @keywords dataframe
 #' @importFrom stats lm sd
-#' @seealso
-#'   \code{\link{fisher.test}},\code{\link{chisq.test}},
+#' @seealso \code{\link{fisher.test}},\code{\link{chisq.test}},
 #'   \code{\link{wilcox.test}},\code{\link{kruskal.test}},and
 #'   \code{\link{anova}}
 covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanitize=TRUE,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,pvalue=TRUE,show.tests=FALSE,excludeLevels=NULL,full=TRUE,
@@ -398,7 +402,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
   # New LA 18 Feb, test for presence of variables in data and convert character to factor
   missing_vars = setdiff(covs,names(data))
   if (length(missing_vars)>0){  stop(paste('These covariates are not in the data:',paste0(missing_vars,collapse=",")))}
-  for (v in c(maincov,covs)) if (class(data[[v]])[1]=='character') data[[v]] <- factor(data[[v]])
+  for (v in c(maincov,covs)) if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
 
   missing_testcat <- missing(testcat)
   testcont <- match.arg(testcont)
@@ -468,7 +472,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
           if ((missing_testcat & lowcounts)|testcat=='Fisher'){
             p_type <- 'Fisher Exact'
             p <- try(stats::fisher.test(pdata[[maincov]], pdata[[cov]])$p.value,silent=TRUE)
-            if (class(p)[1]=='try-error'){
+            if (is.error(p)){
               set.seed(1)
               p <- try(stats::fisher.test(pdata[[maincov]], pdata[[cov]],simulate.p.value =  T)$p.value,silent=TRUE)
               p_type <- 'MC sim'
@@ -477,7 +481,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
             p_type = 'Chi Sq'
             p = try(stats::chisq.test(pdata[[maincov]], pdata[[cov]])$p.value,silent=TRUE)
           }
-          if (class(p) == "try-error") p <- NA
+          if (is.error(p)) p <- NA
           p <- lpvalue(p)
         }
       }
@@ -589,7 +593,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
               p <-try(stats::anova(stats::lm(data[[cov]] ~ data[[maincov]]))[5][[1]][1],silent=TRUE)
             }}
 
-          if (class(p) == "try-error")
+          if (is.error(p))
             p <- NA
           p <- lpvalue(p)
         }
@@ -770,9 +774,9 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   }
   if (!sanitize)  sanitizestr <- identity
   if (!nicenames) nicename <- identity
-  for (v in covs) if (class(data[[v]])[1] %in% c("character", "ordered")) data[[v]] <- factor(data[[v]], ordered = F)
-  if (class(data[[response[1]]])[1] == "character") data[[v]] <- factor(data[[v]])
-  if (class(strata) != "numeric") {
+  for (v in covs) if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
+  if (inherits(data[[response[1]]],"character")) data[[v]] <- factor(data[[v]])
+  if (!inherits(strata,"numeric")) {
     strataVar = strata
     strata <- sapply(strata, function(stra) {
       paste("strata(", stra, ")", sep = "")
@@ -809,8 +813,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       beta <- "HR"
     }
     else if (type == "ordinal") {
-      if (!class(data[[response[1]]])[1] %in% c("factor",
-                                                "ordered")) {
+      if (!inherits(data[[response[1]]],c("factor","ordered"))) {
         warning("Response variable is not a factor, will be converted to an ordered factor")
         data[[response]] <- factor(data[[response]],
                                    ordered = T)
@@ -828,7 +831,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   else {
     if (length(response) == 2) {
       # Check that responses are numeric
-      for (i in 1:2) if (class(data[[response[i]]])[1] != 'numeric') stop('Both response variables must be numeric')
+      for (i in 1:2) if (!inherits(data[[response[i]]],'numeric')) stop('Both response variables must be numeric')
       if (length(unique(data[[response[2]]])) < 3) {
         type <- "coxph"
       }
@@ -842,7 +845,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       beta <- "OR"
       family="binomial"
     }
-    else if ("ordered" %in% class(data[[response[1]]])) {
+    else if (inherits(data[[response[1]]],"ordered")) {
       type <- "ordinal"
       beta <- "OR"
       if (!is.null(reflevel)) {
@@ -850,13 +853,13 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                                            ref = reflevel)
       }
     }
-    else if ("integer" %in% class(data[[response[1]]])) {
+    else if (inherits(data[[response[1]]],"integer")) {
       type <- "poisson"
       beta <- "RR"
       family="poisson"
     }
     else {
-      if (class(data[[response]])[1] != 'numeric') stop('Response variable must be numeric')
+      if (!inherits(data[[response[1]]],"numeric")) stop('Response variable must be numeric')
       type <- "linear"
       beta <- "Estimate"
       family='gaussian'
@@ -891,7 +894,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       idf <- as.numeric(as.factor(data[[id]]))
       # idf <- as.matrix(idf)
     }
-    if (class(data[[x_var]])[1] %in% c("ordered", "factor")) {
+    if (inherits(data[[x_var]],c("ordered", "factor"))) {
       data[[x_var]] = droplevels(data[[x_var]])
     }
     if (is.factor(data[[x_var]])) {
@@ -1009,7 +1012,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       }
     }
     hrmat <- matrix(hr,ncol = 3)
-    if (class(globalpvalue) == "try-error")  globalpvalue <- "NA"
+    if (is.error(globalpvalue))  globalpvalue <- "NA"
     if (is.factor(data[[x_var]])){
       hazardratio <- c("Reference", apply(hrmat, 1, psthr,digits))
 
@@ -1103,12 +1106,12 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
     sanitizestr <- identity
   if (!nicenames)
     nicename <- identity
-  if (class(model)[1] %in% c("lm", "lme", "multinom",
-                             "survreg", "polr")) {
+  if (inherits(model,c("lm", "lme", "multinom",
+                             "survreg", "polr"))) {
     call <- Reduce(paste,
                    deparse(stats::formula(model$terms),
                            width.cutoff = 500))
-  }  else if (class(model)[1] %in% c("crr")) {
+  }  else if (inherits(model,c("crr"))) {
     call <- paste(deparse(model$call), collapse = "")
   }  else call <- paste(deparse(model$formula), collapse = "")
   call <- unlist(strsplit(call, "~", fixed = T))[2]
@@ -1181,7 +1184,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
   else {
     stop("type must be either polr, coxph, glm, lm, geeglm, crr, lme (or NULL)")
   }
-  if ("data.frame" %in% class(ss_data)) {
+  if (inherits(ss_data,"data.frame")) {
     if ('(weights)' %in% names(ss_data))
       names(ss_data)<- gsub('[(]weights[)]',as.character(model$call[['weights']]),names(ss_data))
     data <- ss_data
@@ -1200,10 +1203,10 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
   beta = betaWithCI(beta, CIwidth)
   ucall = unique(call)
   indx = try(matchcovariate(betanames, ucall),silent = T)
-  if ('try-error' %in% class(indx)) stop('This function not yet implemented for complex function calls. Try re-specifying the model.')
+  if (is.error(indx)) stop('This function not yet implemented for complex function calls. Try re-specifying the model.')
   data = data.frame(data)
   for (v in ucall) {
-    if (class(data[[v]])[1] == "character")
+    if (inherits(data[[v]], "character"))
       data[[v]] <- factor(data[[v]])
   }
   if (min(indx) == -1)
@@ -1241,12 +1244,12 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
       f <- paste0('. ~ . -',oldcovname)
       if ( length(f)==1){
         m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data,method='ML'),silent=TRUE)
-        if (!('try-error' %in% class(m_small))){
+        if (!is.error(m_small)){
           m_new <- stats::update(model,method='ML')
           globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_new)[,"p-value"]))) # LRT
         }
       }
-      if (is.na(globalpvalue)| 'try-error' %in% class(globalpvalue)) {
+      if (is.na(globalpvalue)| is.error(globalpvalue)) {
         globalpvalue <- try(aod::wald.test(b = model$coef$fixed[covariateindex],
                                            Sigma = vcov(model)[covariateindex, covariateindex],
                                            Terms = seq_along(covariateindex))$result$chi2[3])
@@ -1283,7 +1286,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = T)
     }
-    if (class(globalpvalue) == "try-error") globalpvalue <- "NA"
+    if (is.error(globalpvalue)) globalpvalue <- "NA"
     if (!identical(lpvalue,identity)) globalpvalue <- lpvalue(globalpvalue,digits)
     if (type == "coxph" | type == "crr") {
       hazardratio <- c(apply(matrix(summary(model, conf.int = CIwidth)$conf.int[covariateindex,
@@ -1475,7 +1478,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
 #' forestplot2(glm_fit)
 forestplot2 = function(model,conf.level=0.95,orderByRisk=T,colours='default',showEst=TRUE,rmRef=FALSE,logScale=TRUE,nxTicks=5){
 
-  if (class(model)[1]=='glm'){
+  if (inherits(model,'glm')){
     if(model$family$link=='log'){
       x_lab = 'Relative Risk'
     } else if (model$family$link=='logit'){
@@ -1593,13 +1596,13 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
   bp_min <-20
   for (v in c(response,covs)){
     if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
-    if (class(data[[v]])=='character') data[[v]] <- factor(data[[v]])
+    if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
   }
 
   if (is.null(response_title)) response_title = response
   response_title = niceStr(response_title)
   plist <- NULL
-  if (class(data[[response]])[1] %in% c('factor','ordered')){
+  if (inherits(data[[response]],c('factor','ordered'))){
     use_common_legend = TRUE
     levels(data[[response]]) = niceStr(levels(data[[response]]))
     for (x_var in covs){
@@ -1607,7 +1610,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
       # remove missing data, if requested
       if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
 
-      if (class(pdata[[x_var]])[1] =='numeric' ){
+      if (inherits(pdata[[x_var]],'numeric')){
         if (all(table(pdata[[response]])<bp_min)){
           p<-ggplot(data=pdata, aes(x=.data[[response]],y=.data[[x_var]],fill=.data[[response]]),colour=.data[[response]]) +
             geom_dotplot(binaxis = "y",stackdir = "center",dotsize = .8  ) +
@@ -1678,7 +1681,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
       # remove missing data, if requested
       if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
 
-      if (class(pdata[[x_var]])[1] =='numeric' ){
+      if (inherits(pdata[[x_var]],'numeric')){
         p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]])) +
           geom_point()
       } else{
@@ -1777,7 +1780,8 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 #' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
-outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,keep.rownames=FALSE,fontsize,chunk_label){
+outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
+                     rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,keep.rownames=FALSE,fontsize,chunk_label){
 
   # strip tibble aspects
   tab=as.data.frame(tab)
@@ -1920,7 +1924,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,r
 nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRUE,boldheaders=TRUE,hdr_prefix='',hdr_suffix='',digits=2,tableOnly=FALSE){
 
   # strip any grouped data or tibble properties
-  if ('data.frame' %in% class(data)){
+  if (inherits(data,'data.frame')){
     colNames <- names(data)
     data <- data.frame(data)
   } else stop('data must be a data.frame')
@@ -2102,6 +2106,10 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #' Wald global p-values are returned.
 #'
+#' The number of decimals places to display the statistics can be changed with
+#' digits, but this will not change the display of p-values. If more significant
+#' digits are required for p-values then use tableOnly=TRUE and format as
+#' desired.
 #' @param response string vector with name of response
 #' @param covs character vector with the names of columns to fit univariate
 #'   models to
@@ -2238,7 +2246,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   names(tab)[1] <-covTitle
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
-    if (length(cap_warn)>0) warning(cap_warn)
+    if (length(cap_warn)>0) message(cap_warn)
     attr(tab,'indented') <- to_indent
     return(tab)
   }
@@ -2264,10 +2272,15 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #' Wald global p-values are returned.
 #'
+#' The number of decimals places to display the statistics can be changed with
+#' digits, but this will not change the display of p-values. If more significant
+#' digits are required for p-values then use tableOnly=TRUE and format as
+#' desired.
 #' @param model model fit
 #' @param data data that model was fit on (an attempt will be made to extract
 #'   this from the model)
-#' @param digits number of digits to round to
+#' @param digits number of digits to round estimates to, does not affect
+#'   p-values
 #' @param covTitle character with the names of the covariate (predictor) column.
 #'   The default is to leave this empty for output or, for table only output to
 #'   use the column name 'Covariate'.
@@ -2399,8 +2412,8 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
 #' rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
 rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',caption=NULL,tableOnly=FALSE,chunk_label){
   # Check that tables are data frames and not kable objects
-  if (!'data.frame' %in% class(uvsumTable)) stop('uvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
-  if (!'data.frame' %in% class(mvsumTable)) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
+  if (!inherits(uvsumTable,'data.frame')) stop('uvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
+  if (!inherits(mvsumTable,'data.frame')) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
   # Check that the first columns have the same name
   if (names(uvsumTable)[1] != names(mvsumTable)[1]) stop('The covariate columns must have the same name in both tables')
   # Check that there is overlap between the variables
@@ -3468,22 +3481,22 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
   if (missing(time)) stop('time is a required argument')
   if (missing(status)) stop('status is a required argument')
   if (missing(covs)) stop('covs is a required argument')
-  if  (!'data.frame' %in% class(data)) stop('data must be supplied as a data frame')
-  if( !'character' %in% class(time)| length(time)>1)
+  if  (!inherits(data,'data.frame')) stop('data must be supplied as a data frame')
+  if( !inherits(time,'character' )| length(time)>1)
     stop('time must be supplied as a string indicating a variable in data')
-  if (!'character' %in% class(status)| length(status)>1)
+  if (!inherits(status,'character' )| length(status)>1)
     stop('status must be supplied as a string indicating a variable in data')
-  if (!'character' %in% class(covs))
+  if (!inherits(covs,'character' ))
     stop('covs must be supplied as a character vector or string indicating variables in data')
   missing_vars = na.omit(setdiff(c(time, status,covs), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=",")))
-  if (length(intersect(covs,strata))>0) stop('A variable can appear in covs or strata but not both.')
   if (missing(strata)){
     s_f <- ''
     lr_txt <- ''
   } else {
-    if (!'character' %in% class(strata) | length(strata)>1 | !strata %in% names(data)) stop('strata must be supplied as a string indicating a variable in data')
+    if (!inherits(strata,'character' ) | length(strata)>1 | !strata %in% names(data)) stop('strata must be supplied as a string indicating a variable in data')
+    if (length(intersect(covs,strata))>0) stop('A variable can appear in covs or strata but not both.')
     s_f <- paste0('+strata(',strata,')')
     lr_txt <-paste('stratified by',strata)
   }
@@ -3502,7 +3515,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
   mtbl <- data.frame(t(cbind(otbl,gtbl)))
   m_CI <- apply(mtbl[,grep('median|LCL|UCL',names(mtbl))],1,function(x) psthr(x,y=digits))
   m_CI_nm <-paste0('Median (',CIwidth*100,'%CI)')
-  if ('numeric' %in% class(lr_test$obs)) {
+  if (inherits(lr_test$obs,'numeric')) {
     ob <- lr_test$obs
     ex <- lr_test$exp
     df <- length(lr_test$obs)-1
@@ -3596,19 +3609,23 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(status)) stop('status is a required argument')
-  if (missing(covs)) stop('covs is a required argument')
   if (missing(survtimes)) stop('survtimes must be specified as a numeric vector')
   if (missing(survtimeunit)) survtimeunit <- ''
-  if  (!'data.frame' %in% class(data)) stop('data must be supplied as a data frame')
-  if( !'character' %in% class(time)| length(time)>1)
+  if  (!inherits(data,'data.frame')) stop('data must be supplied as a data frame')
+  if( !inherits(time,'character')| length(time)>1)
     stop('time must be supplied as a string indicating a variable in data')
-  if (!'character' %in% class(status)| length(status)>1)
+  if (!inherits(status,'character')| length(status)>1)
     stop('status must be supplied as a string indicating a variable in data')
-  if (!'character' %in% class(covs))
+  if (!missing(covs)){
+  if (!inherits(covs,'character'))
     stop('covs must be supplied as a character vector or string indicating variables in data')
+  }
   if (is.null(survtimesLbls)) survtimesLbls = survtimes
   if (length(survtimesLbls)!=length(survtimes)) stop('If supplied, the survtimesLbls vector must be the same length as survtime')
-  if (length(intersect(covs,strata))>0) stop('A variable can appear in covs or strata but not both.')
+  if (!missing(strata) & !missing(covs)){
+    if (length(intersect(covs,strata))>0) stop('A variable can appear in covs or strata but not both.')
+
+  }
   timelbl <- paste0('Time (',survtimeunit,')')
   data <- data.frame(data)
   n_cols <- c('n.risk','n.event','n.censor')
@@ -3627,7 +3644,7 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
     colsToExtract <- c(2:6,14,15)
   }  else{ # CoxPH
     sfit<- survival::survfit(survival::coxph(as.formula(paste0("Surv(",time,',',status,') ~',
-                                                               paste(covs,sep='+'))),
+                                                               paste(covs,collapse='+'))),
                                              data = data),conf.type=conf.type,conf.int=CIwidth)
     colsToExtract <- c(2:6,10,11)
   }
@@ -3645,7 +3662,7 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
   names(header) <- names(ofit)
 
   if (!is.null(strata)){
-    if (class(data[[strata]])[1] %in% c('ordered','factor')){
+    if (inherits(data[[strata]],c('ordered','factor'))){
       levelnames <- levels(data[[strata]])
       levelnames <- levelnames[levelnames %in% unique(data[[strata]])]
     } else  levelnames <- unique(data[[strata]])

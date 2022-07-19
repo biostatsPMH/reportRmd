@@ -51,8 +51,16 @@ output. Median survival times are included by default but can be removed
 setting median=FALSE
 }
 \examples{
+#' # Differences between sex
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
+covs='sex',digits=1)
+
+# Differences between sex, stratified by cohort
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 covs='sex',strata='cohort',digits=1)
+# Differences between sex/cohort groups
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
+covs=c('sex','cohort'),digits=1)
 }
 \seealso{
 \code{\link{survdiff}}

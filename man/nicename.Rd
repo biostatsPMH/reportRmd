@@ -2,14 +2,18 @@
 % Please edit documentation in R/helper.R
 \name{nicename}
 \alias{nicename}
-\title{Clean strings for printing}
+\title{lean strings for printing}
 \usage{
-nicename(strings)
+nicename(strings, check_numbers = TRUE)
 }
 \arguments{
 \item{strings}{vector of strings to give a nice name}
+
+\item{check_numbers}{boolean indicating if numbers with decimals should be
+checked for and retained.}
 }
 \description{
-Returns strings with . and _ replaced by a space. This is nice when printing column names of your dataframe in a report
+Returns strings with . and _ replaced by a space. This is nice when printing
+column names of your dataframe in a report
 }
 \keyword{helper}

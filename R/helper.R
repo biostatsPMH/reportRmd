@@ -1,3 +1,5 @@
+is.error <- function(x) inherits(x, "try-error")
+
 .negloglik.boxcox <- function (lambda.val, data, xmat, lik.method = "ML")
 {
   if (length(lambda.val) == 2) {
@@ -142,18 +144,33 @@ cap <- function(x) {
         sep = "", collapse = " ")
 }
 
-#'Clean strings for printing
+#' lean strings for printing
 #'
-#' Returns strings with . and _ replaced by a space. This is nice when printing column names of your dataframe in a report
+#' Returns strings with . and _ replaced by a space. This is nice when printing
+#' column names of your dataframe in a report
 #' @param strings vector of strings to give a nice name
+#' @param check_numbers boolean indicating if numbers with decimals should be
+#'   checked for and retained.
 #' @keywords helper
-nicename<-function(strings){
-  out<-sapply(strings,function(x){
-    x<-chartr(".", " ",x)
-    x<-chartr("_", " ",x)
-    return(x)})
+nicename <-function (strings,check_numbers=TRUE)
+{
+  out <- sapply(strings, function(x) {
+    original_x <- x
+    x <- chartr(".", " ", x)
+    x <- chartr("_", " ", x)
+
+    if(check_numbers){
+      p.positions <- gregexpr(pattern ='\\d\\.[0-9]+',original_x)[[1]]+1
+      for(pos in p.positions){
+        substr(x,pos,pos) <- '.'
+      }
+
+    }
+    return(x)
+  })
   return(out)
 }
+
 
 #' Formats p-values
 #'
@@ -164,27 +181,40 @@ nicename<-function(strings){
 #' @param digits the number of significant digits to return
 #' @export
 pvalue<-function(x,digits){
-  if(is.na(x)|class(x)=="character") return(x)
+  if(is.na(x)|inherits(x,"character")) return(x)
   else if (x<=0.001) return("<0.001")
   else return(signif(x,digits))
 }
 
 formatp<- function(pvalues,digits=2){
+  # see code below for use of digits, this argument is now ignored
   p_out <- sapply(pvalues, function(x){
     xsig <-suppressWarnings(as.numeric(x))
-    if (digits>3) {
-      fmtX <- ifelse(round(x,digits)==0,paste0("<0.",paste(rep(0,digits-1),collapse=''),'1'),
-                     format(round(x,digits),nsmall=digits,scientific = FALSE))
-    } else{
-      fmtX <- ifelse(xsig<0.001,"<0.001",
-                     ifelse(xsig<0.01,format(round(xsig,3),nsmall=3),
-                            format(round(xsig,2),nsmall=2)))
-    }
+    fmtX <- ifelse(xsig<0.001,"<0.001",
+                   ifelse(xsig<0.01,format(round(xsig,3),nsmall=3),
+                          format(round(xsig,2),nsmall=2)))
     x <- ifelse(x=='excl','excl',fmtX)
   })
   p_out = unname(p_out)
   return(p_out)
 }
+
+# formatp<- function(pvalues,digits=2){
+#   p_out <- sapply(pvalues, function(x){
+#     xsig <-suppressWarnings(as.numeric(x))
+#     if (digits>3) {
+#       fmtX <- ifelse(round(x,digits)==0,paste0("<0.",paste(rep(0,digits-1),collapse=''),'1'),
+#                      format(round(x,digits),nsmall=digits,scientific = FALSE))
+#     } else{
+#       fmtX <- ifelse(xsig<0.001,"<0.001",
+#                      ifelse(xsig<0.01,format(round(xsig,3),nsmall=3),
+#                             format(round(xsig,2),nsmall=2)))
+#     }
+#     x <- ifelse(x=='excl','excl',fmtX)
+#   })
+#   p_out = unname(p_out)
+#   return(p_out)
+# }
 
 sanitize <- function(str) {
   result <- str
@@ -238,7 +268,7 @@ addspace<-function(x){
 #' @param sigdigits number of significant digit to report
 lpvalue <- function (x, sigdigits = 2)
 {
-  if (is.na(x) | class(x) == "character")
+  if (is.na(x) | inherits(x,"character") )
     return(x)
   else if (x <= 0.001)
     return("\\textbf{$<$0.001}")
@@ -338,7 +368,7 @@ break_function <- function(xmax){
 
 lpvalue2 <- function (x,digits)
 {
-  if (is.na(x) | class(x) == "character")
+  if (is.na(x) |    inherits(x,"character") )
     return(x)
   else if (x < 10^-(digits))
     return(paste0("p < ",10^-(digits)))

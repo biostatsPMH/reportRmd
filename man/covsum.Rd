@@ -33,7 +33,8 @@ covsum(
 
 \item{maincov}{covariate to stratify table by}
 
-\item{digits}{number of digits for summarizing mean data}
+\item{digits}{number of digits for summarizing mean data, does not affect
+p-values}
 
 \item{numobs}{named list overriding the number of people you expect to have
 the covariate}
@@ -43,8 +44,7 @@ the covariate}
 \item{sanitize}{boolean indicating if you want to sanitize all strings to not
 break LaTeX}
 
-\item{nicenames}{boolean
-indicating if you want to replace . and _ in strings
+\item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}
 
 \item{IQR}{boolean indicating if you want to display the inter quantile range
@@ -92,6 +92,11 @@ unsuccessful then a second attempt will be made computing p-values using MC
 simulation. If testcont='ANOVA' then the t-test with unequal variance will be
 used for two groups and an ANOVA will be used for three or more. The
 statistical test used can be displayed by specifying show.tests=TRUE.
+
+The number of decimals places to display the statistics can be changed with
+digits, but this will not change the display of p-values. If more significant
+digits are required for p-values then use tableOnly=TRUE and format as
+desired.
 }
 \seealso{
 \code{\link{fisher.test}},\code{\link{chisq.test}},

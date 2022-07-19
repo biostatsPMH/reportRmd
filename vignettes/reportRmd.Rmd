@@ -1,22 +1,193 @@
 ---
 title: "reportRmd"
-output: rmarkdown::html_vignette
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 vignette: >
-  %\VignetteIndexEntry{reportRmd
-  %\VignetteEngine{knitr::rmarkdown
-  %\VignetteEncoding{UTF-8
+  %\VignetteIndexEntry{reportRmd}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main table features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models. 
+
+A word of caution. The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit. 
+
+<!--
+## Styles
+Currently `html_pretty` supports three page themes, `cayman` (the default),
+`tactile`, and `architect`. And there are also two syntax highlight styles:
+`github` to mimic the syntax highlight on Github, and `vignette` that is used by
+`html_vignette`. If no highlight parameter is given, the default style created
+by Pandoc will be used.
+-->
+
+```{r setup, include=FALSE}
+library(reportRmd)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-```{r setup
-library(reportRmd)
+# Summary statistics 
+
+Basic summary statistics
+
+```{r}
+rm_covsum(data=pembrolizumab, 
+covs=c('age','sex'),IQR=TRUE)
+
 ```
+
+This will produce summary statistics by Sex, and indicate which statistical test was used
+
+```{r}
+data("pembrolizumab")
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1','change_ctdna_group'),
+show.tests=TRUE)
+
+```
+
+# Univariate regression
+
+Combining multiple univariate regression analyses into a single table
+
+```{r }
+rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','pdl1','change_ctdna_group'))
+
+```
+
+If the response is continuous linear regression is the default
+
+```{r }
+rm_uvsum(data=pembrolizumab, response='l_size',
+covs=c('age','cohort'))
+
+```
+
+...unless two variables are specified and then survival analysis is run
+If the response is continuous linear regression is the default
+
+```{r }
+rm_uvsum(data=pembrolizumab, response=c('os_time','os_status'),
+covs=c('age','pdl1','change_ctdna_group'))
+
+```
+
+# Multivariable analysis
+
+To create a nice display of multivariable models the model needs to first be fit.
+
+```{r}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
+               family='binomial',
+               data = pembrolizumab)
+rm_mvsum(glm_fit)
+```
+
+
+# Combining univariate and multivariable models
+
+To display both models in a single table run the rm_uvsum and rm_mvsum functions with `tableOnly=TRUE` and combine.
+
+```{r}
+uvsumTable <- rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'),tableOnly = TRUE)
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
+
+rm_uv_mv(uvsumTable,mvsumTable)
+```
+
+This can also be done with adjusted p-values, but when combined the raw p-values are dropped
+
+```{r}
+uvsumTable <- rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'),tableOnly = TRUE,p.adjust='holm')
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE,p.adjust='holm')
+
+rm_uv_mv(uvsumTable,mvsumTable)
+```
+
+They are still in the individual tables though
+
+```{r}
+outTable(mvsumTable)
+```
+
+# Survival Probabilities 
+
+Displaying survival probabilities at different times by sex using Kaplan Meier estimates
+
+```{r}
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+ strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
+
+```
+
+Displaying survival probabilities at different times by sex using Cox PH estimates
+
+```{r}
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+ strata="sex",survtimes=seq(12,72,12),survtimeunit='months',type='PH')
+
+```
+
+Displaying survival probabilities at different times by sex, adjusting for age using Cox PH estimates
+
+```{r}
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status', covs='age',
+ strata="sex",survtimes=seq(12,72,12),survtimeunit='months',type='PH')
+
+```
+
+# Differences in Survival Curves
+
+Logrank test on KM Survival Curves by sex
+```{r}
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
+            covs='sex',digits=1)
+```
+
+### Logrank test on Survival Curves by sex stratifying by cohort
+```{r}
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
+            covs='sex',strata='cohort',digits=1)
+```
+
+### Plotting survival curves
+
+```{r, fig.width=7,fig.height=5}
+ggkmcif(response = c('os_time','os_status'),
+cov='cohort',
+data=pembrolizumab)
+```
+
+### Plotting odds ratios
+
+```{r, , fig.width=7, fig.height=2}
+require(ggplot2)
+forestplot2(glm_fit)
+```
+
+### Plotting bivariate relationships
+
+These plots are designed for quick inspection of many variables, not for publication.
+```{r, , fig.width=7, fig.height=4}
+plotuv(data=pembrolizumab, response='orr',
+covs=c('age','cohort','pdl1','change_ctdna_group'))
+
+```
+
 
 # Data Sets
 

@@ -103,6 +103,11 @@ LRT is used to obtain a global p-value. For coxph models the model is re-run
 without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned.
+
+The number of decimals places to display the statistics can be changed with
+digits, but this will not change the display of p-values. If more significant
+digits are required for p-values then use tableOnly=TRUE and format as
+desired.
 }
 \examples{
 # Coxph model with 90\% CI
