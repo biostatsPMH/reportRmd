@@ -59,13 +59,21 @@ Output the table nicely to whatever format is appropriate. This is the output
 function used by the rm_* printing functions.
 }
 \details{
-Entire rows can be bolded, and the first column can be indented. Currently
-there is no support for cell-specific formatting. By default, underscores in
-column names are converted to spaces. To disable this set rm_ to FALSE
+Entire rows can be bolded, or specific cells. Currently indentation refers to
+the first column only. By default, underscores in column names are converted
+to spaces. To disable this set rm_ to FALSE
 }
 \examples{
 # To make custom changes or change the fontsize in PDF/HTML
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
 outTable(tab, fontsize=7)
+
+# To bold columns with the variable names
+ rows_bold <- c(1,4,7,10,13)
+ outTable(tab,rows_bold = rows_bold)
+
+ # To bold the estimates for male/female
+ bold_cells <- as.matrix(expand.grid(5:6,1:ncol(test)))
+ outTable(tab,bold_cells= bold_cells)
 }

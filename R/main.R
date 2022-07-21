@@ -399,10 +399,22 @@ etsum<- function(data,response,group=1,times=c(12,24)){
 covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanitize=TRUE,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,pvalue=TRUE,show.tests=FALSE,excludeLevels=NULL,full=TRUE,
                    digits.cat = 0,testcont = c('rank-sum test','ANOVA'),testcat = c('Chi-squared','Fisher'),include_missing=FALSE,percentage=c('column','row'))
 {
-  # New LA 18 Feb, test for presence of variables in data and convert character to factor
-  missing_vars = setdiff(covs,names(data))
+  if (missing(data)) stop('data is a required argument')
+  if (missing(covs)) stop('covs is a required argument')
+  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.') else data <- data.frame(data)
+  if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
+  if (!is.null(maincov)){
+    if (!inherits(maincov,'character')|length(maincov)>1) stop('maincov must be supplied as a string indicating a variable in data')
+  }
+  missing_vars = setdiff(c(maincov,covs),names(data))
   if (length(missing_vars)>0){  stop(paste('These covariates are not in the data:',paste0(missing_vars,collapse=",")))}
-  for (v in c(maincov,covs)) if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
+  for (v in c(maincov,covs)) {
+    if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
+    if (inherits(data[[v]],c('Date','POSIXt'))) {
+      covs <- setdiff(covs,v)
+      message(paste('Dates can not be summarised in this version of reportRmd.\n The variable',v,'does not appear in the table.'))
+    }
+  }
 
   missing_testcat <- missing(testcat)
   testcont <- match.arg(testcont)
@@ -749,12 +761,21 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    showN = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
 {
-
-  missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
+  if (missing(data)) stop('data is a required argument')
+  if (missing(covs)) stop('covs is a required argument')
+  if (missing(response)) stop('response is a required argument')
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
+  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.') else data <- data.frame(data)
+  if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
+  missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=",")))
-  for (v in covs){
+  for (v in covs) {
+    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
+    if (inherits(data[[v]],c('Date','POSIXt'))) {
+      covs <- setdiff(covs,v)
+      message(paste('Dates can not be used as predictors, try creating a time variable.\n The variable',v,'does not appear in the table.'))
+    }
     df <- na.omit(data[,c(response,v)])
     if (v %in% response){
       warning(paste(v,'is the response and can not appear in the covariate.\n',
@@ -767,6 +788,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       covs <- setdiff(covs,v)
     }
   }
+
   if (!markup) {
     lbld <- identity
     addspace <- identity
@@ -774,7 +796,6 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   }
   if (!sanitize)  sanitizestr <- identity
   if (!nicenames) nicename <- identity
-  for (v in covs) if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
   if (inherits(data[[response[1]]],"character")) data[[v]] <- factor(data[[v]])
   if (!inherits(strata,"numeric")) {
     strataVar = strata
@@ -1739,8 +1760,6 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
   }}
 
 
-
-
 # Rmarkdown Reporting --------------------------------------------------------------
 
 #' Print tables to PDF/Latex HTML or Word
@@ -1748,9 +1767,9 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
 #' Output the table nicely to whatever format is appropriate. This is the output
 #' function used by the rm_* printing functions.
 #'
-#' Entire rows can be bolded, and the first column can be indented. Currently
-#' there is no support for cell-specific formatting. By default, underscores in
-#' column names are converted to spaces. To disable this set rm_ to FALSE
+#' Entire rows can be bolded, or specific cells. Currently indentation refers to
+#' the first column only. By default, underscores in column names are converted
+#' to spaces. To disable this set rm_ to FALSE
 #'
 #' @param tab a table to format
 #' @param row.names a string specifying the column name to assign to the
@@ -1780,6 +1799,14 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 #' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
+#'
+#' # To bold columns with the variable names
+#'  rows_bold <- c(1,4,7,10,13)
+#'  outTable(tab,rows_bold = rows_bold)
+#'
+#'  # To bold the estimates for male/female
+#'  bold_cells <- as.matrix(expand.grid(5:6,1:ncol(test)))
+#'  outTable(tab,bold_cells= bold_cells)
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
                      rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,keep.rownames=FALSE,fontsize,chunk_label){
 
@@ -1825,9 +1852,13 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 
   if (length(rows_bold)>0){
     arrInd <- as.matrix(expand.grid(rows_bold,1:ncol(tab)))
-    arrInd <- arrInd[!is.na(tab[arrInd]),]
     bold_cells <- rbind(bold_cells,arrInd)
     dimnames(bold_cells) <- NULL
+    bold_cells <- bold_cells[!duplicated(bold_cells),]
+  }
+  if (!is.null(bold_cells)){
+    bold_cells <- bold_cells[!duplicated(bold_cells),]
+    bold_cells <- bold_cells[!is.na(tab[bold_cells]),]
   }
   if (out_fmt=='doc'){
     caption = if (!is.null(caption)) {ifelse(chunk_label=='NOLABELTOADD',caption,paste0('(\\#tab:',chunk_label,')',caption))}
@@ -1845,8 +1876,17 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
   } else {  # For PDF, HTML
     # set NA to empty in kable
     options(knitr.kable.NA = '')
-    if(!is.null(caption)) caption <- sanitize(caption)
-    if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) kableExtra::cell_spec(x, out_fmt, bold = T))
+    if (out_fmt=='latex') {
+      names(tab) <- sanitize(names(tab))
+      if(!is.null(caption)) caption <- sanitize(caption)
+      for (v in 1:ncol(tab)) tab[[v]] <- sanitize(tab[[v]])
+      if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) lbld(x))
+    }
+    if (out_fmt=='html') {
+      if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
+      for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
+    }
+#    if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) kableExtra::cell_spec(x, out_fmt, bold = T))
     names(tab) <- sanitize(names(tab))
     # This may not work as expected if a small table is split over pages
     # better to also repeat table headers
