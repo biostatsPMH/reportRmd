@@ -74,6 +74,6 @@ outTable(tab, fontsize=7)
  outTable(tab,rows_bold = rows_bold)
 
  # To bold the estimates for male/female
- bold_cells <- as.matrix(expand.grid(5:6,1:ncol(test)))
+ bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
  outTable(tab,bold_cells= bold_cells)
 }

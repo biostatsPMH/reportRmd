@@ -409,6 +409,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
   missing_vars = setdiff(c(maincov,covs),names(data))
   if (length(missing_vars)>0){  stop(paste('These covariates are not in the data:',paste0(missing_vars,collapse=",")))}
   for (v in c(maincov,covs)) {
+    if (inherits(data[[v]],'logical')) data[[v]] <- factor(data[[v]])
     if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
     if (inherits(data[[v]],c('Date','POSIXt'))) {
       covs <- setdiff(covs,v)
@@ -1613,7 +1614,8 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=T,colours='default',sho
 #' plotuv(data=pembrolizumab,  response='cbr',
 #' covs=c('age','sex','l_size','baseline_ctdna'),showN=TRUE)
 #' @seealso \code{\link{ggplot}} and \code{\link{ggarrange}}
-plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,response_title=NULL,return_plotlist=FALSE,ncol=2,p_margins=c(0,0.2,1,.2)){
+plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
+                   response_title=NULL,return_plotlist=FALSE,ncol=2,p_margins=c(0,0.2,1,.2)){
   bp_min <-20
   for (v in c(response,covs)){
     if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
@@ -1805,7 +1807,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,res
 #'  outTable(tab,rows_bold = rows_bold)
 #'
 #'  # To bold the estimates for male/female
-#'  bold_cells <- as.matrix(expand.grid(5:6,1:ncol(test)))
+#'  bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
 #'  outTable(tab,bold_cells= bold_cells)
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
                      rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,keep.rownames=FALSE,fontsize,chunk_label){
@@ -3681,13 +3683,12 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
   if (type=='KM'){
     sfit <- survival::survfit(as.formula(paste0("survival::Surv(",time,',',status,') ~1')),
                               data = data,conf.type=conf.type,conf.int=CIwidth)
-    colsToExtract <- c(2:6,14,15)
   }  else{ # CoxPH
     sfit<- survival::survfit(survival::coxph(as.formula(paste0("Surv(",time,',',status,') ~',
                                                                paste(covs,collapse='+'))),
                                              data = data),conf.type=conf.type,conf.int=CIwidth)
-    colsToExtract <- c(2:6,10,11)
   }
+  colsToExtract <- which(names(sfit) %in% c("time","n.risk","n.event","n.censor","sr","surv","lower","upper"))
   if (nrow(data)-sfit$n==1) {
     message('1 observation with missing data was removed.')
   } else if (nrow(data)>sfit$n) message(paste(nrow(data)-sfit$n ,'observations with missing data were removed.'))
@@ -3695,7 +3696,6 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
 
   ofit <- summary(sfit,times=survtimes,extend=!is.null(survtimes))
   ofit <- data.frame(do.call(cbind,ofit[colsToExtract]))
-  estCIcols <- c("surv","lower","upper")
   ofit$N <- sfit$n
   survtime_est[['Overall']] <- ofit
   header <- data.frame(matrix(nrow = 1,ncol=ncol(ofit)))
@@ -3725,7 +3725,7 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
 
   out <- lapply(names(survtime_est),function(x){
     xtbl <- survtime_est[[x]]
-    xtbl$sr <- apply(xtbl[,estCIcols], 1, psthr,digits)
+    xtbl$sr <- apply(xtbl[,c("surv","lower","upper")], 1, psthr,digits)
     hdtxt <- ifelse(x=='Overall',x,
                     ifelse(is.null(strata.prefix),x,
                            paste(strata.prefix,x,sep='=')))

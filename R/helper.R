@@ -236,12 +236,6 @@ sanitize <- function(str) {
   return(result)
 }
 
-#' Fix special text in latex bold
-fbs <- function(str){
-  result <- str
-  result <- gsub("\\textbf{\\$<\\$0.001}","\\$<\\$\\textbf{0.001}",str)
-return(result)
-}
 #' Sanitizes strings to not break LaTeX
 #'
 #' Strings with special charaters will break LaTeX if returned 'asis' by knitr. This happens every time we use one of the main reportRx functions. We first sanitize our strings with this function to stop LaTeX from breaking.
@@ -267,8 +261,8 @@ hbld<-function(strings){sapply(strings,function(x){
   if(is.na(x)) return(x)
   return(paste('<span style="font-weight: bold;">',x,"</span>",sep=""))})}
 
-#' Hacky awful work around to prevent errors when $ are used in covariate level names
-#' only affects view output.
+# Hacky awful work around to prevent errors when $ are used in covariate level names
+# only affects view output.
 rmds <- function(s){
   sapply(s,function(x){
     gsub("^[$]",'',x)
