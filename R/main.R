@@ -401,7 +401,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
 {
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument')
-  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.') else data <- data.frame(data)
+  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
   if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
   if (!is.null(maincov)){
     if (!inherits(maincov,'character')|length(maincov)>1) stop('maincov must be supplied as a string indicating a variable in data')
@@ -416,6 +416,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
       message(paste('Dates can not be summarised in this version of reportRmd.\n The variable',v,'does not appear in the table.'))
     }
   }
+  if (!all(names(data[,c(maincov,covs)])==names(data.frame(data[,c(maincov,covs)])))) warning('Non-standard variable names may cause problems. Check output.' )
 
   missing_testcat <- missing(testcat)
   testcont <- match.arg(testcont)
@@ -762,33 +763,6 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    showN = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
 {
-  if (missing(data)) stop('data is a required argument')
-  if (missing(covs)) stop('covs is a required argument')
-  if (missing(response)) stop('response is a required argument')
-  if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
-  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.') else data <- data.frame(data)
-  if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
-  missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
-  if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
-                                           paste0(missing_vars,collapse=",")))
-  for (v in covs) {
-    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
-    if (inherits(data[[v]],c('Date','POSIXt'))) {
-      covs <- setdiff(covs,v)
-      message(paste('Dates can not be used as predictors, try creating a time variable.\n The variable',v,'does not appear in the table.'))
-    }
-    df <- na.omit(data[,c(response,v)])
-    if (v %in% response){
-      warning(paste(v,'is the response and can not appear in the covariate.\n',
-                    'It is omitted from the output.'))
-      covs <- setdiff(covs,v)
-    }
-    if (length(unique(df[[v]]))==1) {
-      warning(paste(v,'has only one unique value for non-missing response.\n',
-                    'It is omitted from the output.'))
-      covs <- setdiff(covs,v)
-    }
-  }
 
   if (!markup) {
     lbld <- identity
@@ -797,7 +771,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   }
   if (!sanitize)  sanitizestr <- identity
   if (!nicenames) nicename <- identity
-  if (inherits(data[[response[1]]],"character")) data[[v]] <- factor(data[[v]])
+  if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
   if (!inherits(strata,"numeric")) {
     strataVar = strata
     strata <- sapply(strata, function(stra) {
@@ -1224,9 +1198,10 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
   }
   beta = betaWithCI(beta, CIwidth)
   ucall = unique(call)
+  if (length(setdiff(ucall,names(data)))>0) stop('Currently this function is only implemented to work with standard variable names.\n Try converting the data to a standard data.frame with data.frame(data) and re-running the model to use rm_mvsum.')
   indx = try(matchcovariate(betanames, ucall),silent = T)
   if (is.error(indx)) stop('This function not yet implemented for complex function calls. Try re-specifying the model.')
-  data = data.frame(data)
+  #data = data.frame(data)
   for (v in ucall) {
     if (inherits(data[[v]], "character"))
       data[[v]] <- factor(data[[v]])
@@ -1268,17 +1243,17 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
         m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data,method='ML'),silent=TRUE)
         if (!is.error(m_small)){
           m_new <- stats::update(model,method='ML')
-          globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_new)[,"p-value"]))) # LRT
+          globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_new)[,"p-value"])),silent=T) # LRT
         }
       }
       if (is.na(globalpvalue)| is.error(globalpvalue)) {
         globalpvalue <- try(aod::wald.test(b = model$coef$fixed[covariateindex],
                                            Sigma = vcov(model)[covariateindex, covariateindex],
-                                           Terms = seq_along(covariateindex))$result$chi2[3])
+                                           Terms = seq_along(covariateindex))$result$chi2[3],silent = T)
       }
     } else if (type=='glm'){
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = T)
-      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model,test='LRT')[,"Pr(>Chi)"])))
+      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model,test='LRT')[,"Pr(>Chi)"])),silent = T)
     } else if (type == "polr") {
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(Chi)"])),silent=TRUE)
@@ -1792,6 +1767,10 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #'   for right, with no separations. For example, to set the left column to be
 #'   centred, the middle column right-aligned and the right column left aligned
 #'   use: align='crl'
+#' @param applyAttributes boolean indicating if the function should use
+#'   to_indent and bold_cells formatting attributes. This will only work
+#'   properly if the dimensions of the table output from rm_covsum, rm_uvsum etc
+#'   haven't changed.
 #' @param keep.rownames should the row names be included in the output
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @param chunk_label only used knitting to Word docs to allow cross-referencing
@@ -1810,7 +1789,8 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #'  bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
 #'  outTable(tab,bold_cells= bold_cells)
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
-                     rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,keep.rownames=FALSE,fontsize,chunk_label){
+                     rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,
+                     applyAttributes=TRUE,keep.rownames=FALSE,fontsize,chunk_label){
 
   # strip tibble aspects
   tab=as.data.frame(tab)
@@ -1849,6 +1829,14 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 
   chunk_label = ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label)
 
+  if (applyAttributes){
+    if (!is.null(attr(tab,'dimchk'))){
+      if (all(attr(tab,'dimchk')==dim(tab))){
+        if (!is.null(attr(tab,'to_indent'))) to_indent <- attr(tab,'to_indent')
+        if (!is.null(attr(tab,'bold_cells'))) bold_cells <- attr(tab,'bold_cells')
+      }
+    }
+  }
   if (is.null(to_indent)) to_indent = numeric(0)
   to_indent = as.vector(to_indent)
 
@@ -1859,8 +1847,8 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
     bold_cells <- bold_cells[!duplicated(bold_cells),]
   }
   if (!is.null(bold_cells)){
-    bold_cells <- bold_cells[!duplicated(bold_cells),]
-    bold_cells <- bold_cells[!is.na(tab[bold_cells]),]
+    bold_cells <- bold_cells[!duplicated(bold_cells),,drop=FALSE]
+    bold_cells <- bold_cells[!is.na(tab[bold_cells]),,drop=FALSE]
   }
   if (out_fmt=='doc'){
     caption = if (!is.null(caption)) {ifelse(chunk_label=='NOLABELTOADD',caption,paste0('(\\#tab:',chunk_label,')',caption))}
@@ -1888,8 +1876,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
       if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
       for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
     }
-#    if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) kableExtra::cell_spec(x, out_fmt, bold = T))
-    names(tab) <- sanitize(names(tab))
+#    names(tab) <- sanitize(names(tab))
     # This may not work as expected if a small table is split over pages
     # better to also repeat table headers
     if (nrow(tab)>30){
@@ -2055,6 +2042,9 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' @param all.stats boolean indicating if all summary statistics (Q1,Q3 +
 #'   min,max on a separate line) should be displayed. Overrides IQR.
 #' @param pvalue boolean indicating if you want p-values included in the table
+#' @param unformattedp boolean indicating if you would like the p-value to be
+#'   returned unformated (ie not rounded or prefixed with '<'). Best used with
+#'   tableOnly = T and outTable function. See examples.
 #' @param show.tests boolean indicating if the type of statistical used should
 #'   be shown in a column beside the pvalues. Ignored if pvalue=FALSE.
 #' @param testcont test of choice for continuous variables,one of
@@ -2083,9 +2073,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   by maincov
 #' @export
 #' @seealso \code{\link{covsum}},\code{\link{fisher.test}},
-#' \code{\link{chisq.test}},
-#'   \code{\link{wilcox.test}}, \code{\link{kruskal.test}}, \code{\link{anova}},
-#'   and \code{\link{outTable}}
+#'   \code{\link{chisq.test}}, \code{\link{wilcox.test}},
+#'   \code{\link{kruskal.test}}, \code{\link{anova}}, and \code{\link{outTable}}
 #' @examples
 #' rm_covsum(data=pembrolizumab, maincov = 'orr',
 #' covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
@@ -2095,11 +2084,21 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 #' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
+#'
+#' # To return unformatted p-values
+#' tab <- rm_covsum(data=pembrolizumab, maincov = 'orr',
+#' covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
+#' show.tests=TRUE,unformattedp=TRUE,tableOnly=TRUE)
+#' outTable(tab,digits=5)
+#' outTable(tab,digits=5, applyAttributes=FALSE) # remove bold/indent
+
 rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTitle='',
-                      digits=1,digits.cat = 0,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,pvalue=TRUE,show.tests=FALSE,
+                      digits=1,digits.cat = 0,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,
+                      pvalue=TRUE,unformattedp=FALSE,show.tests=FALSE,
                       testcont = c('rank-sum test','ANOVA'),testcat = c('Chi-squared','Fisher'),
                       full=TRUE,include_missing=FALSE,percentage=c('column','row'),
                       excludeLevels=NULL,numobs=NULL,markup=TRUE, sanitize= TRUE,chunk_label){
+  if (unformattedp) formatp <- function(x) {as.numeric(x)}
 
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   argsToPass <- intersect(names(formals(covsum)),names(argList))
@@ -2125,6 +2124,9 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
+    attr(tab, 'to_indent') <- to_indent
+    attr(tab,'bold_cells') <- bold_cells
+    attr(tab,'dimchk') <- dim(tab)
     return(tab)
   }
 
@@ -2166,6 +2168,9 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' @param removeInf boolean indicating if infinite estimates should be removed
 #'   from the table
 #' @param p.adjust p-adjustments to be performed (Global p-values only)
+#' @param unformattedp boolean indicating if you would like the p-value to be
+#'   returned unformated (ie not rounded or prefixed with '<'). Should be used
+#'   in conjunction with the digtis argument.
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param  gee boolean indicating if gee models should be fit to account for
 #'   correlated observations. If TRUE then the id argument must specify the
@@ -2226,12 +2231,46 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' family=gaussian("identity"),
 #' data=ctDNA,showN=TRUE)
 rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
-                     tableOnly=FALSE,removeInf=FALSE,p.adjust='none',chunk_label,
+                     tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
+                     chunk_label,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
                      strata = 1,
                      nicenames = TRUE,showN = TRUE,CIwidth = 0.95,
                      reflevel=NULL,returnModels=FALSE){
 
+  if (missing(data)) stop('data is a required argument')
+  if (missing(covs)) stop('covs is a required argument')
+  if (missing(response)) stop('response is a required argument')
+  if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
+  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
+  if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
+  missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
+  if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
+                                           paste0(missing_vars,collapse=",")))
+  if (strata==1) nm <- c(response,covs) else nm <- c(strata,response,covs)
+  if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
+
+  for (v in covs) {
+    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
+    if (inherits(data[[v]],c('Date','POSIXt'))) {
+      covs <- setdiff(covs,v)
+      message(paste('Dates can not be used as predictors, try creating a time variable.\n The variable',v,'does not appear in the table.'))
+    }
+
+    df <- na.omit(data[,c(response,v)])
+    if (v %in% response){
+      warning(paste(v,'is the response and can not appear in the covariate.\n',
+                    'It is omitted from the output.'))
+      covs <- setdiff(covs,v)
+    }
+    if (length(unique(df[[v]]))==1) {
+      warning(paste(v,'has only one unique value for non-missing response.\n',
+                    'It is omitted from the output.'))
+      covs <- setdiff(covs,v)
+    }
+  }
+
+  if (unformattedp) formatp <- function (x,...){x}
   # get the table
   rtn <- uvsum(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
                gee=gee,id = id,
@@ -2286,10 +2325,13 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                                                matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
   names(tab)[1] <-covTitle
+
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
     if (length(cap_warn)>0) message(cap_warn)
-    attr(tab,'indented') <- to_indent
+    attr(tab, 'to_indent') <- to_indent
+    attr(tab,'bold_cells') <- bold_cells
+    attr(tab,'dimchk') <- dim(tab)
     return(tab)
   }
   if (returnModels) return (rtn$models)
@@ -2332,6 +2374,9 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' @param caption table caption
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param p.adjust p-adjustments to be performed (Global p-values only)
+#' @param unformattedp boolean indicating if you would like the p-value to be
+#'   returned unformated (ie not rounded or prefixed with '<'). Should be used
+#'   in conjuction with the digits argument.
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param markup boolean indicating if you want latex markup
 #' @param sanitize boolean indicating if you want to sanitize all strings to not
@@ -2351,8 +2396,9 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' require(survival)
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox)
-rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,caption=NULL,tableOnly=FALSE,p.adjust='none',chunk_label, markup = T,sanitize = T,nicenames = T){
-
+rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
+                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, markup = T,sanitize = T,nicenames = T){
+  if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
                sanitize = FALSE, nicenames = FALSE,showN=showN,CIwidth = CIwidth)
@@ -2397,8 +2443,13 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
   names(tab)[1] <-covTitle
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
+    attr(tab, 'to_indent') <- to_indent
+    attr(tab,'bold_cells') <- bold_cells
+    attr(tab,'dimchk') <- dim(tab)
     return(tab)
   }
+
+
   outTable(tab=tab,to_indent=to_indent,bold_cells = bold_cells,
            caption=caption, digits = digits,
            chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
@@ -2771,7 +2822,12 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
     numeric = T
     if(is.null(cut)) cut <- median(data[,cov],na.rm = T)
     data[,cov] <- factor(ifelse(data[,cov]<=cut,paste0("<=",round(cut,2)),paste0(">",round(cut,2))),levels = c(paste0("<=",round(cut,2)),paste0(">",round(cut,2))))
-    if(is.null(stratalabs)) stratalabs = c(paste0("\u2264",round(cut,2)),paste0(">",round(cut,2)))
+    out_fmt = ifelse(is.null(knitr::pandoc_to()),'html',
+                     ifelse(knitr::pandoc_to(c('doc','docx')),'doc',
+                            ifelse(knitr::is_latex_output(),'latex','html')))
+  #  le_code <- ifelse(out_fmt=='latex',"\\le","\u2264")
+    le_code <- "\u2264"
+    if(is.null(stratalabs)) stratalabs = c(paste0(le_code,round(cut,2)),paste0(">",round(cut,2)))
   }
 
   data[,cov] <- droplevels(data[,cov])

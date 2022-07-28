@@ -14,6 +14,7 @@ outTable(
   caption = NULL,
   digits,
   align,
+  applyAttributes = TRUE,
   keep.rownames = FALSE,
   fontsize,
   chunk_label
@@ -47,6 +48,11 @@ argument accepts a single string with 'l' for left, 'c' for centre and 'r'
 for right, with no separations. For example, to set the left column to be
 centred, the middle column right-aligned and the right column left aligned
 use: align='crl'}
+
+\item{applyAttributes}{boolean indicating if the function should use
+to_indent and bold_cells formatting attributes. This will only work
+properly if the dimensions of the table output from rm_covsum, rm_uvsum etc
+haven't changed.}
 
 \item{keep.rownames}{should the row names be included in the output}
 

@@ -14,6 +14,7 @@ rm_mvsum(
   caption = NULL,
   tableOnly = FALSE,
   p.adjust = "none",
+  unformattedp = FALSE,
   chunk_label,
   markup = T,
   sanitize = T,
@@ -43,6 +44,10 @@ comparison, can be useful for interactions}
 \item{tableOnly}{boolean indicating if unformatted table should be returned}
 
 \item{p.adjust}{p-adjustments to be performed (Global p-values only)}
+
+\item{unformattedp}{boolean indicating if you would like the p-value to be
+returned unformated (ie not rounded or prefixed with '<'). Should be used
+in conjuction with the digits argument.}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 

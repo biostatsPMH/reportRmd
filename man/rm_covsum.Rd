@@ -17,6 +17,7 @@ rm_covsum(
   IQR = FALSE,
   all.stats = FALSE,
   pvalue = TRUE,
+  unformattedp = FALSE,
   show.tests = FALSE,
   testcont = c("rank-sum test", "ANOVA"),
   testcat = c("Chi-squared", "Fisher"),
@@ -61,6 +62,10 @@ with a space}
 min,max on a separate line) should be displayed. Overrides IQR.}
 
 \item{pvalue}{boolean indicating if you want p-values included in the table}
+
+\item{unformattedp}{boolean indicating if you would like the p-value to be
+returned unformated (ie not rounded or prefixed with '<'). Best used with
+tableOnly = T and outTable function. See examples.}
 
 \item{show.tests}{boolean indicating if the type of statistical used should
 be shown in a column beside the pvalues. Ignored if pvalue=FALSE.}
@@ -123,11 +128,17 @@ show.tests=TRUE)
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
 outTable(tab, fontsize=7)
+
+# To return unformatted p-values
+tab <- rm_covsum(data=pembrolizumab, maincov = 'orr',
+covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
+show.tests=TRUE,unformattedp=TRUE,tableOnly=TRUE)
+outTable(tab,digits=5)
+outTable(tab,digits=5, applyAttributes=FALSE) # remove bold/indent
 }
 \seealso{
 \code{\link{covsum}},\code{\link{fisher.test}},
-\code{\link{chisq.test}},
-\code{\link{wilcox.test}}, \code{\link{kruskal.test}}, \code{\link{anova}},
-and \code{\link{outTable}}
+\code{\link{chisq.test}}, \code{\link{wilcox.test}},
+\code{\link{kruskal.test}}, \code{\link{anova}}, and \code{\link{outTable}}
 }
 \keyword{dataframe}

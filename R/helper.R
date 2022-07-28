@@ -261,6 +261,14 @@ hbld<-function(strings){sapply(strings,function(x){
   if(is.na(x)) return(x)
   return(paste('<span style="font-weight: bold;">',x,"</span>",sep=""))})}
 
+# try to implement this later
+hsan <- function(strings){
+  sapply(strings,function(x){
+    if(is.null(x)) return(x)
+    if(is.na(x)) return(x)
+    return(paste('<span style="display: inline">&#36 ',x,'&#36</span>'))
+  })
+}
 # Hacky awful work around to prevent errors when $ are used in covariate level names
 # only affects view output.
 rmds <- function(s){
