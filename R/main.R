@@ -2654,6 +2654,10 @@ rm_etsum<-function(data,response,group=1,times=c(12,14),units="months"){
 #' risk. You can specify if you want confidence bands, the hazard ratio, and
 #' pvalues, as well as the units of time used.
 #'
+#' Note that for proper pdf output of special characters the following code
+#' needs to be included in the first chunk of the rmd
+#' knitr::opts_chunk$set(dev="cairo_pdf")
+#'
 #' @param response character vector with names of columns to use for response
 #' @param cov String specifying the column name of stratification variable
 #' @param data dataframe containing your data

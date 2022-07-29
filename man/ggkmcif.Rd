@@ -225,6 +225,11 @@ This function will plot a KM or CIF curve with option to add the number at
 risk. You can specify if you want confidence bands, the hazard ratio, and
 pvalues, as well as the units of time used.
 }
+\details{
+Note that for proper pdf output of special characters the following code
+needs to be included in the first chunk of the rmd
+knitr::opts_chunk$set(dev="cairo_pdf")
+}
 \examples{
 # Simple plot without confidence intervals
 ggkmcif(response = c('os_time','os_status'),
