@@ -129,7 +129,7 @@ outTable(mvsumTable)
 Displaying survival probabilities at different times by sex using Kaplan Meier estimates
 
 ```{r}
-rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
  strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
 
 ```
@@ -137,7 +137,7 @@ rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 Displaying survival probabilities at different times by sex using Cox PH estimates
 
 ```{r}
-rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
  strata="sex",survtimes=seq(12,72,12),survtimeunit='months',type='PH')
 
 ```
@@ -145,7 +145,7 @@ rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 Displaying survival probabilities at different times by sex, adjusting for age using Cox PH estimates
 
 ```{r}
-rm_survsum(data=pembrolizumab,time='os_time',status='os_status', covs='age',
+rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
  strata="sex",survtimes=seq(12,72,12),survtimeunit='months',type='PH')
 
 ```

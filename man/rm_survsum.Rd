@@ -2,20 +2,18 @@
 % Please edit documentation in R/main.R
 \name{rm_survsum}
 \alias{rm_survsum}
-\title{Display survival rates and events for specified times}
+\title{Summarise survival data by group}
 \usage{
 rm_survsum(
   data,
   time,
   status,
-  covs = NULL,
-  strata = NULL,
-  type = "KM",
+  group,
   survtimes,
   survtimeunit,
-  strata.prefix = NULL,
   survtimesLbls = NULL,
   CIwidth = 0.95,
+  unformattedp = FALSE,
   conf.type = "log",
   na.action = "na.omit",
   showCounts = TRUE,
@@ -31,16 +29,9 @@ rm_survsum(
 
 \item{status}{string indicating event status variable}
 
-\item{covs}{character vector with the names of variables to adjust for in
-coxph fit}
-
-\item{strata}{string indicating the variable to group observations by. If
-this is left as NULL (the default) then event counts and survival rates are
+\item{group}{string or character vector indicating the variable(s) to group
+observations by. If this is left as NULL (the default) then summaries are
 provided for the entire cohort.}
-
-\item{type}{survival function, if no covs are specified defaults to
-Kaplan-Meier, otherwise the Cox PH model is fit. Use type='PH' to fit a Cox
-PH model with no covariates.}
 
 \item{survtimes}{numeric vector specifying when survival probabilities should
 be calculated.}
@@ -48,12 +39,14 @@ be calculated.}
 \item{survtimeunit}{unit of time to suffix to the time column label if
 survival probabilities are requested, should be plural}
 
-\item{strata.prefix}{character value describing the grouping variable}
-
 \item{survtimesLbls}{if supplied, a vector the same length as survtimes with
 descriptions (useful for displaying years with data provided in months)}
 
 \item{CIwidth}{width of the survival probabilities, default is 95\%}
+
+\item{unformattedp}{boolean indicating if you would like the p-value to be
+returned unformated (ie not rounded or prefixed with '<'). Should be used
+in conjunction with the digits argument.}
 
 \item{conf.type}{type of confidence interval see \code{\link{survfit}} for
 details. Default is 'log'.}
@@ -71,29 +64,26 @@ columns should be output, default is TRUE}
 \item{tableOnly}{should a dataframe or a formatted object be returned}
 }
 \description{
-This is a wrapper for the survfit function to output a tidy display for
-reporting. Either Kaplan Meier or Cox Proportional Hazards models may be used
-to estimate the survival probabilities.
+Displays event counts, median survival time and survival rates at specified
+times points for the entire cohort and by group. The logrank test of
+differences in survival curves is displayed.
 }
 \details{
-If covariates are supplied then a Cox proportional hazards model is fit for
-the entire cohort and each strata. Otherwise the default is for Kaplan-Meier
-estimates. Setting type = 'PH' will force a proportional hazards model.
+This summary table is supplied for simple group comparisons only. To examine
+differences in groups with stratification see \code{\link{rm_survdiff}}. To
+summarise differences in survival rates controlling for covariates see
+\code{\link{rm_survtime}}.
 }
 \examples{
-# Kaplan-Mieir survival probabilities with time displayed in years
+# Survival Summary by cohort, displayed in years
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
-strata="cohort",type='KM',survtimes=seq(12,72,12),
+group="cohort",survtimes=seq(12,72,12),
 survtimesLbls=seq(1,6,1),
 survtimeunit='years')
 
-# Cox Proportional Hazards survivial probabilities
+# Survival Summary by Sex and ctDNA group
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
-strata="cohort",type='PH',survtimes=seq(12,72,12),survtimeunit='months')
-
-# Cox Proportional Hazards survivial probabilities controlling for age
-rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
-covs='age',strata="cohort",survtimes=seq(12,72,12),survtimeunit='months')
+group=c('sex','change_ctdna_group'),survtimes=seq(12,24),survtimeunit='mo')
 
 }
 \seealso{

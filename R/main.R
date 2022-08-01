@@ -933,8 +933,8 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     else if (type %in% c("logistic","poisson")) {
       if (gee){
         eval(parse(text = paste0("m2 <- geepack::geeglm(",paste(response, "~",x_var, sep = ""),
-                                ",family = ",family,",",
-                                "data = data, id = idf, corstr = '",corstr,"')")))
+                                 ",family = ",family,",",
+                                 "data = data, id = idf, corstr = '",corstr,"')")))
         globalpvalue <- try(aod::wald.test(b = m2$coefficients[-1],
                                            Sigma = (m2$geese$vbeta)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3])
         m <- summary(m2)$coefficients
@@ -1103,7 +1103,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
   if (!nicenames)
     nicename <- identity
   if (inherits(model,c("lm", "lme", "multinom",
-                             "survreg", "polr"))) {
+                       "survreg", "polr"))) {
     call <- Reduce(paste,
                    deparse(stats::formula(model$terms),
                            width.cutoff = 500))
@@ -1876,7 +1876,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
       if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
       for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
     }
-#    names(tab) <- sanitize(names(tab))
+    #    names(tab) <- sanitize(names(tab))
     # This may not work as expected if a small table is split over pages
     # better to also repeat table headers
     if (nrow(tab)>30){
@@ -2170,7 +2170,7 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' @param p.adjust p-adjustments to be performed (Global p-values only)
 #' @param unformattedp boolean indicating if you would like the p-value to be
 #'   returned unformated (ie not rounded or prefixed with '<'). Should be used
-#'   in conjunction with the digtis argument.
+#'   in conjunction with the digits argument.
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param  gee boolean indicating if gee models should be fit to account for
 #'   correlated observations. If TRUE then the id argument must specify the
@@ -2829,7 +2829,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
     out_fmt = ifelse(is.null(knitr::pandoc_to()),'html',
                      ifelse(knitr::pandoc_to(c('doc','docx')),'doc',
                             ifelse(knitr::is_latex_output(),'latex','html')))
-  #  le_code <- ifelse(out_fmt=='latex',"\\le","\u2264")
+    #  le_code <- ifelse(out_fmt=='latex',"\\le","\u2264")
     le_code <- "\u2264"
     if(is.null(stratalabs)) stratalabs = c(paste0(le_code,round(cut,2)),paste0(">",round(cut,2)))
   }
@@ -3555,6 +3555,8 @@ ggkmcif_paste <- function(list_gg){
 #' @param includeVarNames boolean indicating if the variable names should be
 #'   included in the output table, default is FALSE
 #' @param digits the number of digits in the survival rate
+#' @param showCols character vector indicating which of the optional columns to
+#'   display, defaults to c('N','Observed','Expected')
 #' @param CIwidth width of the median survival estimates, default is 95%
 #' @param conf.type type of confidence interval see \code{\link{survfit}} for
 #'   details. Default is 'log'.
@@ -3577,7 +3579,7 @@ ggkmcif_paste <- function(list_gg){
 
 #' @export
 rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
-                        digits=1,CIwidth=0.95,
+                        digits=1,showCols=c('N','Observed','Expected'),CIwidth=0.95,
                         conf.type='log',caption=NULL,tableOnly=FALSE){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
@@ -3644,9 +3646,125 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
   if (!includeVarNames){
     for (v in covs) lr_data$group <- gsub(paste0(v,'='),'',lr_data$group)
   }
+  lr_data <- lr_data[,setdiff(names(lr_data),setdiff(c('N','Observed','Expected'),showCols))]
   if (tableOnly) return(lr_data)
   to_indent <- setdiff(1:nrow(lr_data),c(1,nrow(lr_data),nrow(lr_data)-1))
   outTable(lr_data,to_indent=to_indent,caption=caption,align=c('lrrrr'))
+
+}
+
+#' Summarise survival data by group
+#'
+#' Displays event counts, median survival time and survival rates at specified
+#' times points for the entire cohort and by group. The logrank test of
+#' differences in survival curves is displayed.
+#'
+#' This summary table is supplied for simple group comparisons only. To examine
+#' differences in groups with stratification see \code{\link{rm_survdiff}}. To
+#' summarise differences in survival rates controlling for covariates see
+#' \code{\link{rm_survtime}}.
+#'
+#' @param data data frame containing survival data
+#' @param time string indicating survival time variable
+#' @param status string indicating event status variable
+#' @param group string or character vector indicating the variable(s) to group
+#'   observations by. If this is left as NULL (the default) then summaries are
+#'   provided for the entire cohort.
+#' @param survtimes numeric vector specifying when survival probabilities should
+#'   be calculated.
+#' @param survtimeunit unit of time to suffix to the time column label if
+#'   survival probabilities are requested, should be plural
+#' @param survtimesLbls if supplied, a vector the same length as survtimes with
+#'   descriptions (useful for displaying years with data provided in months)
+#' @param CIwidth width of the survival probabilities, default is 95%
+#' @param unformattedp boolean indicating if you would like the p-value to be
+#'   returned unformated (ie not rounded or prefixed with '<'). Should be used
+#'   in conjunction with the digits argument.
+#' @param conf.type type of confidence interval see \code{\link{survfit}} for
+#'   details. Default is 'log'.
+#' @param na.action default is to omit missing values, but can be set to throw
+#'   and error using na.action='na.fail'
+#' @param showCounts boolean indicating if the at risk, events and censored
+#'   columns should be output, default is TRUE
+#' @param digits the number of digits in the survival rate, default is 2.
+#' @param caption table caption for markdown output
+#' @param tableOnly should a dataframe or a formatted object be returned
+#' @importFrom  survival survfit Surv
+#' @seealso \code{\link{survfit}}
+#' @export
+#' @examples
+#' # Survival Summary by cohort, displayed in years
+#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+#' group="cohort",survtimes=seq(12,72,12),
+#' survtimesLbls=seq(1,6,1),
+#' survtimeunit='years')
+#'
+#' # Survival Summary by Sex and ctDNA group
+#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+#' group=c('sex','change_ctdna_group'),survtimes=seq(12,24),survtimeunit='mo')
+#'
+rm_survsum <- function(data,time,status,group,survtimes,
+                       survtimeunit,survtimesLbls=NULL,CIwidth=0.95,unformattedp=FALSE,
+                       conf.type='log',
+                       na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE){
+  if (missing(data)) stop('data is a required argument')
+  if (missing(time)) stop('time is a required argument')
+  if (missing(group)) stop('group is a required argument')
+  if (missing(survtimes)) stop('survtimes must be specified as a numeric vector')
+  if (missing(survtimeunit)) stop('survtimeunit must be specified as a character. Example survtimeunit="year"')
+  timelbl <- paste0('Time (',survtimeunit,')')
+  if  (!inherits(data,'data.frame')) stop('data must be supplied as a data frame')
+  if( !inherits(time,'character')| length(time)>1)
+    stop('time must be supplied as a string indicating a variable in data')
+  if (!inherits(status,'character')| length(status)>1)
+    stop('status must be supplied as a string indicating a variable in data')
+  if (is.null(survtimesLbls)) survtimesLbls <- survtimes
+  if (length(survtimesLbls)!=length(survtimes)) stop('If supplied, the survtimesLbls vector must be the same length as survtime')
+  if (unformattedp) formatp <- function (x,...){x}
+
+  data <- data.frame(data)
+  n_cols <- c('n.risk','n.event','n.censor')
+
+  missing_vars = na.omit(setdiff(c(time, status,group), names(data)))
+  if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
+                                           paste0(missing_vars,collapse=",")))
+
+  sfit <- survival::survfit(as.formula(paste0("survival::Surv(",time,',',status,') ~',paste(group,collapse='+'))),
+                            data = data,conf.type=conf.type,conf.int=CIwidth)
+  nFit <- sum(sfit$n,na.rm=TRUE)
+  colsToExtract <- which(names(sfit) %in% c("strata","time","sr","surv","lower","upper"))
+  if (nrow(data)-nFit==1) {
+    message('1 observation with missing data was removed.')
+  } else if (nrow(data)>nFit) message(paste(nrow(data)-nFit ,'observations with missing data were removed.'))
+
+  ofit <- summary(sfit,times=survtimes,extend=!is.null(survtimes))
+  tb <- data.frame(do.call(cbind,ofit[colsToExtract]))
+  tb$strata <- factor(tb$strata,levels=unique(as.numeric(ofit$strata)),labels = levels(ofit$strata))
+  tb$sr <- apply(tb[,c("surv","lower","upper")], 1, psthr,digits)
+  w <- matrix(nrow=length(unique(tb$strata)),ncol=length(unique(tb$time)),
+              dimnames=list(unique(tb$strata),unique(tb$time)))
+  for (i in 1:nrow(tb)) w[which(rownames(w)==tb$strata[i]),which(colnames(w)==tb$time[i])] <- tb$sr[i]
+  mtbl <- summary(sfit)$table
+  m_CI <- apply(mtbl[,grep('median|LCL|UCL',colnames(mtbl))],1,function(x) psthr(x,y=digits))
+  lr <- survival::survdiff(as.formula(paste0("survival::Surv(",time,',',status,') ~',
+                                             paste0(group,collapse = '+'))),data = data)
+  nt <- paste0(lr$obs,'/',lr$n)
+  w <- cbind(nt,m_CI,w)
+  df <- length(lr$obs)-1
+
+
+  gl <- rownames(w)
+  for (v in group) gl <- gsub(paste0(v,'='),"",gl)
+  tab <- cbind(gl,data.frame(w))
+  rownames(tab) <- NULL
+  names(tab) <- c(paste(group,collapse = ','),'Events/Total',paste0('Median (',CIwidth*100,'%CI)'),paste0(survtimesLbls,survtimeunit," (", CIwidth*100,"% CI)"))
+  tab <- rbind(tab,c(rep("",length(survtimes)),'Log Rank Test','ChiSq',paste(niceNum(lr$chisq,1),'on',df,'df')))
+  tab <- rbind(tab,c(rep("",length(survtimes)+1),'p-value',formatp(pchisq(lr$chisq,df))))
+  if (tableOnly){
+    return(tab)
+  }
+  outTable(tab,caption=caption,
+           align = paste0('l',paste0(rep('r',ncol(tab)-1),collapse = '')))
 
 }
 
@@ -3677,6 +3795,8 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #' @param strata.prefix character value describing the grouping variable
 #' @param survtimesLbls if supplied, a vector the same length as survtimes with
 #'   descriptions (useful for displaying years with data provided in months)
+#' @param showCols character vector specifying which of the optional columns to
+#'   display, defaults to c('At Risk','Events','Censored')
 #' @param CIwidth width of the survival probabilities, default is 95%
 #' @param conf.type type of confidence interval see \code{\link{survfit}} for
 #'   details. Default is 'log'.
@@ -3692,35 +3812,36 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #' @export
 #' @examples
 #' # Kaplan-Mieir survival probabilities with time displayed in years
-#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+#' rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 #' strata="cohort",type='KM',survtimes=seq(12,72,12),
 #' survtimesLbls=seq(1,6,1),
 #' survtimeunit='years')
 #'
 #' # Cox Proportional Hazards survivial probabilities
-#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+#' rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 #' strata="cohort",type='PH',survtimes=seq(12,72,12),survtimeunit='months')
 #'
 #' # Cox Proportional Hazards survivial probabilities controlling for age
-#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+#' rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 #' covs='age',strata="cohort",survtimes=seq(12,72,12),survtimeunit='months')
 #'
-rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtimes,
-                       survtimeunit,strata.prefix=NULL,survtimesLbls=NULL,CIwidth=0.95,conf.type='log',
-                       na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE){
+rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtimes,
+                        survtimeunit,strata.prefix=NULL,survtimesLbls=NULL,
+                        showCols=c('At Risk','Events','Censored'),CIwidth=0.95,conf.type='log',
+                        na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(status)) stop('status is a required argument')
   if (missing(survtimes)) stop('survtimes must be specified as a numeric vector')
-  if (missing(survtimeunit)) survtimeunit <- ''
+  if (missing(survtimeunit)) timelbl <- 'Time' else timelbl <- paste0('Time (',survtimeunit,')')
   if  (!inherits(data,'data.frame')) stop('data must be supplied as a data frame')
   if( !inherits(time,'character')| length(time)>1)
     stop('time must be supplied as a string indicating a variable in data')
   if (!inherits(status,'character')| length(status)>1)
     stop('status must be supplied as a string indicating a variable in data')
   if (!missing(covs)){
-  if (!inherits(covs,'character'))
-    stop('covs must be supplied as a character vector or string indicating variables in data')
+    if (!inherits(covs,'character'))
+      stop('covs must be supplied as a character vector or string indicating variables in data')
   }
   if (is.null(survtimesLbls)) survtimesLbls = survtimes
   if (length(survtimesLbls)!=length(survtimes)) stop('If supplied, the survtimesLbls vector must be the same length as survtime')
@@ -3810,6 +3931,7 @@ rm_survsum <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtime
   names(tab) <- gsub('n.event','Events',names(tab))
   names(tab) <- gsub('n.censor','Censored',names(tab))
   names(tab) <- gsub('n.risk','At Risk',names(tab))
+  tab <- tab[,setdiff(names(tab),setdiff(c('At Risk','Events','Censored'),showCols))]
 
   if (tableOnly){
     return(tab)

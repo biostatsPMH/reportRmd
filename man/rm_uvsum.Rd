@@ -55,7 +55,7 @@ from the table}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformated (ie not rounded or prefixed with '<'). Should be used
-in conjunction with the digtis argument.}
+in conjunction with the digits argument.}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 

@@ -68,7 +68,7 @@ StatTest
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">age</span>
+<span style="font-weight: bold;">age</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -121,7 +121,7 @@ Median (Min,Max)
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">pdl1</span>
+<span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -192,7 +192,7 @@ Missing
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">change ctdna group</span>
+<span style="font-weight: bold;">change ctdna group</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -293,7 +293,7 @@ N
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">age</span>
+<span style="font-weight: bold;">age</span>
 </td>
 <td style="text-align:right;">
 0.96 (0.91,1.00)
@@ -307,13 +307,13 @@ N
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">pdl1</span>
+<span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
 0.97 (0.95,0.98)
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">\<0.001</span>
+<span style="font-weight: bold;">\<0.001</span>
 </td>
 <td style="text-align:right;">
 93
@@ -321,12 +321,12 @@ N
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">change ctdna group</span>
+<span style="font-weight: bold;">change ctdna group</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">0.002</span>
+<span style="font-weight: bold;">0.002</span>
 </td>
 <td style="text-align:right;">
 73
@@ -389,12 +389,12 @@ Global p-value
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">change ctdna group</span>
+<span style="font-weight: bold;">change ctdna group</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">0.009</span>
+<span style="font-weight: bold;">0.009</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -425,7 +425,7 @@ Increase from baseline
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">pdl1</span>
+<span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
 0.97 (0.95,1.00)
@@ -438,14 +438,14 @@ Increase from baseline
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">cohort</span>
+<span style="font-weight: bold;">cohort</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">0.004</span>
+<span style="font-weight: bold;">0.004</span>
 </td>
 </tr>
 <tr>
@@ -531,6 +531,8 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1,
 mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
 
 rm_uv_mv(uvsumTable,mvsumTable)
+#> Warning in rm_uv_mv(uvsumTable, mvsumTable): Please re-generate the uvsumTable
+#> to correct variable indenting
 ```
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -558,7 +560,7 @@ p (adj)
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">age</span>
+<span style="font-weight: bold;">age</span>
 </td>
 <td style="text-align:right;">
 0.96 (0.91,1.00)
@@ -576,7 +578,7 @@ p (adj)
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">sex</span>
+<span style="font-weight: bold;">sex</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -592,8 +594,8 @@ p (adj)
 </td>
 </tr>
 <tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Female
+<td style="text-align:left;">
+<span style="font-weight: bold;">Female</span>
 </td>
 <td style="text-align:right;">
 Reference
@@ -609,8 +611,8 @@ Reference
 </td>
 </tr>
 <tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Male
+<td style="text-align:left;">
+<span style="font-weight: bold;">Male</span>
 </td>
 <td style="text-align:right;">
 0.41 (0.13,1.22)
@@ -627,7 +629,7 @@ Male
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">pdl1</span>
+<span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
 0.97 (0.95,0.98)
@@ -636,18 +638,18 @@ Male
 93
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">\<0.001</span>
+<span style="font-weight: bold;">\<0.001</span>
 </td>
 <td style="text-align:right;">
 0.98 (0.96,1.00)
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">0.02</span>
+<span style="font-weight: bold;">0.02</span>
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style=" font-weight: bold;    ">change ctdna group</span>
+<span style="font-weight: bold;">change ctdna group</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -655,17 +657,17 @@ Male
 73
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">0.002</span>
+<span style="font-weight: bold;">0.002</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style=" font-weight: bold;    ">0.004</span>
+<span style="font-weight: bold;">0.004</span>
 </td>
 </tr>
 <tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Decrease from baseline
+<td style="text-align:left;">
+<span style="font-weight: bold;">Decrease from baseline</span>
 </td>
 <td style="text-align:right;">
 Reference
@@ -676,20 +678,48 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-Reference
 </td>
 <td style="text-align:right;">
 </td>
 </tr>
 <tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Increase from baseline
+<td style="text-align:left;">
+<span style="font-weight: bold;">Increase from baseline</span>
 </td>
 <td style="text-align:right;">
 28.74 (5.20,540.18)
 </td>
 <td style="text-align:right;">
 40
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -702,10 +732,183 @@ Increase from baseline
 </tbody>
 </table>
 
+### Simple survival summary table
+
+Shows events, median survival, survival rates at different times and the
+log rank test. Does not allow for covariates or strata, just simple
+tests between groups
+
+``` r
+ rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+ group="cohort",survtimes=seq(12,36,12),
+ survtimesLbls=seq(1,3,1),
+ survtimeunit='yr')
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+cohort
+</th>
+<th style="text-align:right;">
+Events/Total
+</th>
+<th style="text-align:right;">
+Median (95%CI)
+</th>
+<th style="text-align:right;">
+1yr (95% CI)
+</th>
+<th style="text-align:right;">
+2yr (95% CI)
+</th>
+<th style="text-align:right;">
+3yr (95% CI)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+A
+</td>
+<td style="text-align:right;">
+12/16
+</td>
+<td style="text-align:right;">
+8.30 (4.24,NA)
+</td>
+<td style="text-align:right;">
+0.38 (0.20,0.71)
+</td>
+<td style="text-align:right;">
+0.23 (0.09,0.59)
+</td>
+<td style="text-align:right;">
+0.23 (0.09,0.59)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+B
+</td>
+<td style="text-align:right;">
+16/18
+</td>
+<td style="text-align:right;">
+8.82 (4.67,20.73)
+</td>
+<td style="text-align:right;">
+0.32 (0.16,0.64)
+</td>
+<td style="text-align:right;">
+0.06 (9.6e-03,0.42)
+</td>
+<td style="text-align:right;">
+0.06 (9.6e-03,0.42)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+C
+</td>
+<td style="text-align:right;">
+12/18
+</td>
+<td style="text-align:right;">
+17.56 (7.95,NA)
+</td>
+<td style="text-align:right;">
+0.61 (0.42,0.88)
+</td>
+<td style="text-align:right;">
+0.44 (0.27,0.74)
+</td>
+<td style="text-align:right;">
+0.31 (0.15,0.64)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+D
+</td>
+<td style="text-align:right;">
+4/12
+</td>
+<td style="text-align:right;">
+NA (6.44,NA)
+</td>
+<td style="text-align:right;">
+0.67 (0.45,0.99)
+</td>
+<td style="text-align:right;">
+0.67 (0.45,0.99)
+</td>
+<td style="text-align:right;">
+0.67 (0.45,0.99)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+E
+</td>
+<td style="text-align:right;">
+20/30
+</td>
+<td style="text-align:right;">
+14.26 (9.69,NA)
+</td>
+<td style="text-align:right;">
+0.63 (0.48,0.83)
+</td>
+<td style="text-align:right;">
+0.34 (0.20,0.57)
+</td>
+<td style="text-align:right;">
+0.29 (0.15,0.53)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+Log Rank Test
+</td>
+<td style="text-align:right;">
+ChiSq
+</td>
+<td style="text-align:right;">
+11.3 on 4 df
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+p-value
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+</tr>
+</tbody>
+</table>
+
 ### Survival Probabilities at different times by sex
 
 ``` r
-rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
  strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
 ```
 
@@ -1153,7 +1356,7 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ### Plotting odds ratios
 
@@ -1165,7 +1368,7 @@ forestplot2(glm_fit)
 #> Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -1180,4 +1383,4 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />

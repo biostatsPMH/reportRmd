@@ -12,6 +12,7 @@ rm_survdiff(
   strata,
   includeVarNames = FALSE,
   digits = 1,
+  showCols = c("N", "Observed", "Expected"),
   CIwidth = 0.95,
   conf.type = "log",
   caption = NULL,
@@ -33,6 +34,9 @@ rm_survdiff(
 included in the output table, default is FALSE}
 
 \item{digits}{the number of digits in the survival rate}
+
+\item{showCols}{character vector indicating which of the optional columns to
+display, defaults to c('N','Observed','Expected')}
 
 \item{CIwidth}{width of the median survival estimates, default is 95\%}
 
