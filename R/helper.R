@@ -63,6 +63,7 @@ niceNum <- function(x,digits=2){
   return(gsub(" ","",rndx))
 }
 
+csep<-function(){return(", ")}
 
 #' Paste with parentheses
 #'
@@ -73,7 +74,7 @@ niceNum <- function(x,digits=2){
 #'@examples
 #'#pstprn(c(1,2,3,4,5))
 #'#pstprn(c("Hello","Hi",2))
-pstprn<-function(x){paste(x[1]," (",paste(x[-1],collapse=","),")",sep="")}
+pstprn<-function(x){paste(x[1]," (",paste(x[-1],collapse=csep()),")",sep="")}
 
 #' Round and paste with parentheses
 #'

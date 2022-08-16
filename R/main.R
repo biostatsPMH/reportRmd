@@ -407,7 +407,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
     if (!inherits(maincov,'character')|length(maincov)>1) stop('maincov must be supplied as a string indicating a variable in data')
   }
   missing_vars = setdiff(c(maincov,covs),names(data))
-  if (length(missing_vars)>0){  stop(paste('These covariates are not in the data:',paste0(missing_vars,collapse=",")))}
+  if (length(missing_vars)>0){  stop(paste('These covariates are not in the data:',paste0(missing_vars,collapse=csep())))}
   for (v in c(maincov,covs)) {
     if (inherits(data[[v]],'logical')) data[[v]] <- factor(data[[v]])
     if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
@@ -633,17 +633,17 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
           meansd <- paste(niceNum(sumCov["Mean"],digits), " (", niceNum(sd(subdata[[cov]], na.rm = T),digits), ")", sep = "")
           mmm <- if (IQR |all.stats) {
             if(all(c(sumCov['Median'],sumCov["1st Qu."],sumCov["3rd Qu."]) ==floor(c(sumCov['Median'],sumCov["1st Qu."],sumCov["3rd Qu."])))){
-              paste(sumCov['Median'], " (", sumCov["1st Qu."], ",", sumCov["3rd Qu."],")", sep = "")
-            } else {paste(niceNum(sumCov['Median'],digits), " (", niceNum(sumCov["1st Qu."],digits), ",", niceNum(sumCov["3rd Qu."],digits),")", sep = "")}
+              paste(sumCov['Median'], " (", sumCov["1st Qu."], csep(), sumCov["3rd Qu."],")", sep = "")
+            } else {paste(niceNum(sumCov['Median'],digits), " (", niceNum(sumCov["1st Qu."],digits), csep(), niceNum(sumCov["3rd Qu."],digits),")", sep = "")}
           } else {
             if(all(c(sumCov['Median'],sumCov["Min."],sumCov["Max."]) ==floor(c(sumCov['Median'],sumCov["Min."],sumCov["Max."])))){
-              paste(sumCov["Median"], " (", sumCov["Min."], ",",sumCov["Max."], ")", sep = "")
-            } else {paste(niceNum(sumCov['Median'],digits), " (", niceNum(sumCov["Min."],digits), ",", niceNum(sumCov["Max."],digits),")", sep = "")}
+              paste(sumCov["Median"], " (", sumCov["Min."], csep(),sumCov["Max."], ")", sep = "")
+            } else {paste(niceNum(sumCov['Median'],digits), " (", niceNum(sumCov["Min."],digits), csep(), niceNum(sumCov["Max."],digits),")", sep = "")}
           }
           if (all.stats) {
             mmm <- c(mmm,if(all(c(sumCov["Min."],sumCov["Max."]) ==floor(c(sumCov["Min."],sumCov["Max."])))){
-              paste("(", sumCov["Min."], ",",sumCov["Max."], ")", sep = "")
-            } else {paste("(", niceNum(sumCov["Min."],digits), ",", niceNum(sumCov["Max."],digits),")", sep = "")})
+              paste("(", sumCov["Min."], csep(),sumCov["Max."], ")", sep = "")
+            } else {paste("(", niceNum(sumCov["Min."],digits), csep(), niceNum(sumCov["Max."],digits),")", sep = "")})
           }}
         tbl <- c(meansd, mmm, lbld(missing))
         return(tbl)}
@@ -2246,7 +2246,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
   missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
-                                           paste0(missing_vars,collapse=",")))
+                                           paste0(missing_vars,collapse=csep())))
   if (strata==1) nm <- c(response,covs) else nm <- c(strata,response,covs)
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
 
@@ -3594,7 +3594,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
     stop('covs must be supplied as a character vector or string indicating variables in data')
   missing_vars = na.omit(setdiff(c(time, status,covs), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
-                                           paste0(missing_vars,collapse=",")))
+                                           paste0(missing_vars,collapse=csep())))
   if (missing(strata)){
     s_f <- ''
     lr_txt <- ''
@@ -3727,7 +3727,7 @@ rm_survsum <- function(data,time,status,group,survtimes,
 
   missing_vars = na.omit(setdiff(c(time, status,group), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
-                                           paste0(missing_vars,collapse=",")))
+                                           paste0(missing_vars,collapse=csep())))
 
   sfit <- survival::survfit(as.formula(paste0("survival::Surv(",time,',',status,') ~',paste(group,collapse='+'))),
                             data = data,conf.type=conf.type,conf.int=CIwidth)
@@ -3855,7 +3855,7 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
 
   missing_vars = na.omit(setdiff(c(time, status,covs,strata), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
-                                           paste0(missing_vars,collapse=",")))
+                                           paste0(missing_vars,collapse=csep())))
 
   if (!is.null(covs)) type <- 'PH'
   if (is.null(covs) & type =='PH') covs <- '1'

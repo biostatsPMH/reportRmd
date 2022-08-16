@@ -106,13 +106,13 @@ Mean (sd)
 Median (Min,Max)
 </td>
 <td style="text-align:right;">
-59.1 (21.1,81.8)
+59.1 (21.1, 81.8)
 </td>
 <td style="text-align:right;">
-56.6 (34.1,78.2)
+56.6 (34.1, 78.2)
 </td>
 <td style="text-align:right;">
-61.2 (21.1,81.8)
+61.2 (21.1, 81.8)
 </td>
 <td style="text-align:right;">
 </td>
@@ -159,13 +159,13 @@ Mean (sd)
 Median (Min,Max)
 </td>
 <td style="text-align:right;">
-0 (0,100)
+0 (0, 100)
 </td>
 <td style="text-align:right;">
-0.5 (0.0,100.0)
+0.5 (0.0, 100.0)
 </td>
 <td style="text-align:right;">
-0 (0,100)
+0 (0, 100)
 </td>
 <td style="text-align:right;">
 </td>
@@ -296,7 +296,7 @@ N
 <span style="font-weight: bold;">age</span>
 </td>
 <td style="text-align:right;">
-0.96 (0.91,1.00)
+0.96 (0.91, 1.00)
 </td>
 <td style="text-align:right;">
 0.09
@@ -310,7 +310,7 @@ N
 <span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
-0.97 (0.95,0.98)
+0.97 (0.95, 0.98)
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">\<0.001</span>
@@ -350,7 +350,7 @@ Reference
 Increase from baseline
 </td>
 <td style="text-align:right;">
-28.74 (5.20,540.18)
+28.74 (5.20, 540.18)
 </td>
 <td style="text-align:right;">
 </td>
@@ -416,7 +416,7 @@ Reference
 Increase from baseline
 </td>
 <td style="text-align:right;">
-19.99 (2.08,191.60)
+19.99 (2.08, 191.60)
 </td>
 <td style="text-align:right;">
 </td>
@@ -428,7 +428,7 @@ Increase from baseline
 <span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
-0.97 (0.95,1.00)
+0.97 (0.95, 1.00)
 </td>
 <td style="text-align:right;">
 0.07
@@ -465,7 +465,7 @@ Reference
 B
 </td>
 <td style="text-align:right;">
-2.6e+07 (0e+00,Inf)
+2.6e+07 (0e+00, Inf)
 </td>
 <td style="text-align:right;">
 1.00
@@ -478,7 +478,7 @@ B
 C
 </td>
 <td style="text-align:right;">
-4.2e+07 (0e+00,Inf)
+4.2e+07 (0e+00, Inf)
 </td>
 <td style="text-align:right;">
 1.00
@@ -491,7 +491,7 @@ C
 D
 </td>
 <td style="text-align:right;">
-0.07 (4.2e-03,1.09)
+0.07 (4.2e-03, 1.09)
 </td>
 <td style="text-align:right;">
 0.06
@@ -504,7 +504,7 @@ D
 E
 </td>
 <td style="text-align:right;">
-0.44 (0.04,5.10)
+0.44 (0.04, 5.10)
 </td>
 <td style="text-align:right;">
 0.51
@@ -563,7 +563,7 @@ p (adj)
 <span style="font-weight: bold;">age</span>
 </td>
 <td style="text-align:right;">
-0.96 (0.91,1.00)
+0.96 (0.91, 1.00)
 </td>
 <td style="text-align:right;">
 94
@@ -615,7 +615,7 @@ Reference
 <span style="font-weight: bold;">Male</span>
 </td>
 <td style="text-align:right;">
-0.41 (0.13,1.22)
+0.41 (0.13, 1.22)
 </td>
 <td style="text-align:right;">
 36
@@ -632,7 +632,7 @@ Reference
 <span style="font-weight: bold;">pdl1</span>
 </td>
 <td style="text-align:right;">
-0.97 (0.95,0.98)
+0.97 (0.95, 0.98)
 </td>
 <td style="text-align:right;">
 93
@@ -641,7 +641,7 @@ Reference
 <span style="font-weight: bold;">\<0.001</span>
 </td>
 <td style="text-align:right;">
-0.98 (0.96,1.00)
+0.98 (0.96, 1.00)
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.02</span>
@@ -687,7 +687,7 @@ Reference
 <span style="font-weight: bold;">Increase from baseline</span>
 </td>
 <td style="text-align:right;">
-28.74 (5.20,540.18)
+28.74 (5.20, 540.18)
 </td>
 <td style="text-align:right;">
 40
@@ -724,7 +724,7 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-24.71 (2.87,212.70)
+24.71 (2.87, 212.70)
 </td>
 <td style="text-align:right;">
 </td>
@@ -740,8 +740,10 @@ tests between groups
 
 ``` r
  rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
- group="cohort",survtimes=seq(12,36,12),
- survtimesLbls=seq(1,3,1),
+ group="cohort",survtimes=c(12,24),
+# group="cohort",survtimes=seq(12,36,12),
+# survtimesLbls=seq(1,3,1),
+ survtimesLbls=c(1,2),
  survtimeunit='yr')
 ```
 
@@ -763,9 +765,6 @@ Median (95%CI)
 <th style="text-align:right;">
 2yr (95% CI)
 </th>
-<th style="text-align:right;">
-3yr (95% CI)
-</th>
 </tr>
 </thead>
 <tbody>
@@ -777,16 +776,13 @@ A
 12/16
 </td>
 <td style="text-align:right;">
-8.30 (4.24,NA)
+8.30 (4.24, NA)
 </td>
 <td style="text-align:right;">
-0.38 (0.20,0.71)
+0.38 (0.20, 0.71)
 </td>
 <td style="text-align:right;">
-0.23 (0.09,0.59)
-</td>
-<td style="text-align:right;">
-0.23 (0.09,0.59)
+0.23 (0.09, 0.59)
 </td>
 </tr>
 <tr>
@@ -797,16 +793,13 @@ B
 16/18
 </td>
 <td style="text-align:right;">
-8.82 (4.67,20.73)
+8.82 (4.67, 20.73)
 </td>
 <td style="text-align:right;">
-0.32 (0.16,0.64)
+0.32 (0.16, 0.64)
 </td>
 <td style="text-align:right;">
-0.06 (9.6e-03,0.42)
-</td>
-<td style="text-align:right;">
-0.06 (9.6e-03,0.42)
+0.06 (9.6e-03, 0.42)
 </td>
 </tr>
 <tr>
@@ -817,16 +810,13 @@ C
 12/18
 </td>
 <td style="text-align:right;">
-17.56 (7.95,NA)
+17.56 (7.95, NA)
 </td>
 <td style="text-align:right;">
-0.61 (0.42,0.88)
+0.61 (0.42, 0.88)
 </td>
 <td style="text-align:right;">
-0.44 (0.27,0.74)
-</td>
-<td style="text-align:right;">
-0.31 (0.15,0.64)
+0.44 (0.27, 0.74)
 </td>
 </tr>
 <tr>
@@ -837,16 +827,13 @@ D
 4/12
 </td>
 <td style="text-align:right;">
-NA (6.44,NA)
+NA (6.44, NA)
 </td>
 <td style="text-align:right;">
-0.67 (0.45,0.99)
+0.67 (0.45, 0.99)
 </td>
 <td style="text-align:right;">
-0.67 (0.45,0.99)
-</td>
-<td style="text-align:right;">
-0.67 (0.45,0.99)
+0.67 (0.45, 0.99)
 </td>
 </tr>
 <tr>
@@ -857,22 +844,17 @@ E
 20/30
 </td>
 <td style="text-align:right;">
-14.26 (9.69,NA)
+14.26 (9.69, NA)
 </td>
 <td style="text-align:right;">
-0.63 (0.48,0.83)
+0.63 (0.48, 0.83)
 </td>
 <td style="text-align:right;">
-0.34 (0.20,0.57)
-</td>
-<td style="text-align:right;">
-0.29 (0.15,0.53)
+0.34 (0.20, 0.57)
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -888,8 +870,6 @@ ChiSq
 </tr>
 <tr>
 <td style="text-align:left;">
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -961,7 +941,7 @@ Overall
 2
 </td>
 <td style="text-align:right;">
-0.53 (0.44,0.64)
+0.53 (0.44, 0.64)
 </td>
 </tr>
 <tr>
@@ -978,7 +958,7 @@ Overall
 7
 </td>
 <td style="text-align:right;">
-0.33 (0.24,0.44)
+0.33 (0.24, 0.44)
 </td>
 </tr>
 <tr>
@@ -995,7 +975,7 @@ Overall
 21
 </td>
 <td style="text-align:right;">
-0.28 (0.20,0.40)
+0.28 (0.20, 0.40)
 </td>
 </tr>
 <tr>
@@ -1026,7 +1006,7 @@ Female
 1
 </td>
 <td style="text-align:right;">
-0.55 (0.44,0.69)
+0.55 (0.44, 0.69)
 </td>
 </tr>
 <tr>
@@ -1043,7 +1023,7 @@ Female
 4
 </td>
 <td style="text-align:right;">
-0.34 (0.24,0.50)
+0.34 (0.24, 0.50)
 </td>
 </tr>
 <tr>
@@ -1060,7 +1040,7 @@ Female
 14
 </td>
 <td style="text-align:right;">
-0.29 (0.18,0.45)
+0.29 (0.18, 0.45)
 </td>
 </tr>
 <tr>
@@ -1091,7 +1071,7 @@ Male
 1
 </td>
 <td style="text-align:right;">
-0.50 (0.36,0.69)
+0.50 (0.36, 0.69)
 </td>
 </tr>
 <tr>
@@ -1108,7 +1088,7 @@ Male
 3
 </td>
 <td style="text-align:right;">
-0.31 (0.18,0.52)
+0.31 (0.18, 0.52)
 </td>
 </tr>
 <tr>
@@ -1125,7 +1105,7 @@ Male
 7
 </td>
 <td style="text-align:right;">
-0.27 (0.15,0.48)
+0.27 (0.15, 0.48)
 </td>
 </tr>
 </tbody>
@@ -1172,7 +1152,7 @@ Overall
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-14.0 (9.0,20.1)
+14.0 (9.0, 20.1)
 </td>
 </tr>
 <tr>
@@ -1189,7 +1169,7 @@ Female
 41.8
 </td>
 <td style="text-align:right;">
-14.3 (9.7,23.8)
+14.3 (9.7, 23.8)
 </td>
 </tr>
 <tr>
@@ -1206,7 +1186,7 @@ Male
 22.2
 </td>
 <td style="text-align:right;">
-11.2 (6.1,25.3)
+11.2 (6.1, 25.3)
 </td>
 </tr>
 <tr>
@@ -1280,7 +1260,7 @@ Overall
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-14.0 (9.0,20.1)
+14.0 (9.0, 20.1)
 </td>
 </tr>
 <tr>
@@ -1297,7 +1277,7 @@ Female
 43.0
 </td>
 <td style="text-align:right;">
-14.3 (9.7,23.8)
+14.3 (9.7, 23.8)
 </td>
 </tr>
 <tr>
@@ -1314,7 +1294,7 @@ Male
 21.0
 </td>
 <td style="text-align:right;">
-11.2 (6.1,25.3)
+11.2 (6.1, 25.3)
 </td>
 </tr>
 <tr>

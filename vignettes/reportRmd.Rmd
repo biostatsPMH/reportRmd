@@ -26,7 +26,7 @@ by Pandoc will be used.
 
 ```{r setup, include=FALSE}
 library(reportRmd)
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
 ```
 
 # Summary statistics 
