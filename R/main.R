@@ -2516,11 +2516,11 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',caption=NULL,tableOnly=FA
     stop(paste('The following variables were not in the univariate model:',paste0(setdiff(mvsumTable[,1],uvsumTable[,1]),collapse=", "),
                '\nRun uvsum with all the variables in the multivariable model.'))
   }
-  if (is.null(attr(uvsumTable,'indented'))) {
+  if (is.null(attr(uvsumTable,'to_indent'))) {
     warning('Please re-generate the uvsumTable to correct variable indenting')
     to_indent <- numeric(0)
   } else{
-    to_indent <- attr(uvsumTable,'indented')
+    to_indent <- attr(uvsumTable,'to_indent')
   }
   if (is.null(attr(mvsumTable,'covs'))){
     stop('Please re-generate the mvsumTable to identify the covariates')
@@ -2532,7 +2532,7 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',caption=NULL,tableOnly=FA
     p_cols <- grep('p-value',names(t))
     # add a column for the variable name
     vname <- character(nrow(t))
-    vname[setdiff(1:nrow(t),attr(t,'indented'))] <- t[,1][setdiff(1:nrow(t),attr(t,'indented'))]
+    vname[setdiff(1:nrow(t),attr(t,'to_indent'))] <- t[,1][setdiff(1:nrow(t),attr(t,'to_indent'))]
     for (i in 1:nrow(t)) vname[i] <- ifelse(vname[i]=='',vname[i-1],vname[i])
     if ('Global p-value' %in% names(t)){
       t[['Global p-value']][t[['Global p-value']]==''] <- NA
@@ -2570,8 +2570,7 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',caption=NULL,tableOnly=FA
                                                matrix(cbind(to_bold_p, which(names(out)=='p (adj)')),ncol=2))
 
   outTable(tab=out,to_indent=to_indent,bold_cells = bold_cells,
-           caption=caption,
-           chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
+           caption=caption)
 }
 
 #' Print Event time summary
