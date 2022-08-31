@@ -3641,7 +3641,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
   rownames(lr_data) <- NULL
   lr_data <- rbind(lr_data,c('Log Rank Test',NA,NA,NA,
                              paste('ChiSq =',niceNum(lr_test$chisq,1),'on',df,'df')))
-  lr_data <- rbind(lr_data,c(lr_txt,NA,NA,NA,paste('p-value =',formatp(pchisq(lr_test$chisq,df)))))
+  lr_data <- rbind(lr_data,c(lr_txt,NA,NA,NA,paste('p-value =',formatp(pchisq(lr_test$chisq,df,lower.tail = FALSE)))))
   if (!includeVarNames){
     for (v in covs) lr_data$group <- gsub(paste0(v,'='),'',lr_data$group)
   }
@@ -3758,7 +3758,7 @@ rm_survsum <- function(data,time,status,group,survtimes,
   rownames(tab) <- NULL
   names(tab) <- c(paste(group,collapse = ','),'Events/Total',paste0('Median (',CIwidth*100,'%CI)'),paste0(survtimesLbls,survtimeunit," (", CIwidth*100,"% CI)"))
   tab <- rbind(tab,c(rep("",length(survtimes)),'Log Rank Test','ChiSq',paste(niceNum(lr$chisq,1),'on',df,'df')))
-  tab <- rbind(tab,c(rep("",length(survtimes)+1),'p-value',formatp(pchisq(lr$chisq,df))))
+  tab <- rbind(tab,c(rep("",length(survtimes)+1),'p-value',formatp(pchisq(lr$chisq,df,lower.tail = FALSE))))
   if (tableOnly){
     return(tab)
   }
