@@ -124,21 +124,23 @@ They are still in the individual tables though
 outTable(mvsumTable)
 ```
 
-# Survival Probabilities 
+# Simple Survival Summaries 
 
 Displaying survival probabilities at different times by sex using Kaplan Meier estimates
 
 ```{r}
-rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+ group="sex",survtimes=seq(12,36,12),survtimeunit='months')
 
 ```
+
+# Survival Times in Long Format
 
 Displaying survival probabilities at different times by sex using Cox PH estimates
 
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='months',type='PH')
+ strata="sex",survtimes=seq(12,72,12),survtimeunit='mo',type='PH')
 
 ```
 
@@ -146,48 +148,43 @@ Displaying survival probabilities at different times by sex, adjusting for age u
 
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='months',type='PH')
+ strata="sex",survtimes=seq(12,72,12),survtimeunit='mo',type='PH')
 
 ```
 
-# Differences in Survival Curves
 
-Logrank test on KM Survival Curves by sex
-```{r}
-rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
-            covs='sex',digits=1)
-```
-
-### Logrank test on Survival Curves by sex stratifying by cohort
+# Stratified Survival Summary
 ```{r}
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
             covs='sex',strata='cohort',digits=1)
 ```
 
-### Plotting survival curves
+# Plotting Functions
 
-```{r, fig.width=7,fig.height=5}
-ggkmcif(response = c('os_time','os_status'),
-cov='cohort',
-data=pembrolizumab)
-```
+## Plotting bivariate relationships
 
-### Plotting odds ratios
+These plots are designed for quick inspection of many variables, not for publication. This is the plotting version of rm_uvsum
 
-```{r, , fig.width=7, fig.height=2}
-require(ggplot2)
-forestplot2(glm_fit)
-```
-
-### Plotting bivariate relationships
-
-These plots are designed for quick inspection of many variables, not for publication.
 ```{r, , fig.width=7, fig.height=4}
 plotuv(data=pembrolizumab, response='orr',
 covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 ```
 
+## Plotting odds ratios
+
+```{r, , fig.width=7, fig.height=2}
+require(ggplot2)
+forestplot2(glm_fit)
+```
+
+## Plotting survival curves
+
+```{r, fig.width=7,fig.height=5}
+ggkmcif(response = c('os_time','os_status'),
+cov='cohort',
+data=pembrolizumab)
+```
 
 # Data Sets
 

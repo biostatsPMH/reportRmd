@@ -2106,8 +2106,10 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
   covsumArgs[["markup"]] <- FALSE; covsumArgs[["sanitize"]] <- FALSE
   tab <- do.call(covsum,covsumArgs)
   if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
-  to_indent <- which(!tab$Covariate %in% output_var_names)
-  to_bold_name <- which(tab$Covariate %in% output_var_names)
+  # first occurrence of each variable in the first column
+  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+  to_indent <- setdiff(1:nrow(tab),vI)
+  to_bold_name <- vI
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
   names(tab)[1] <-covTitle
   bold_cells <- arrayInd(to_bold_name, dim(tab))
@@ -2294,8 +2296,9 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   if (p.adjust!='none') cap_warn <- paste0(cap_warn,'. Global p-values were adjusted according to the ',p.adjust,' method.')
 
   if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
-  to_indent <- which(!tab$Covariate %in% output_var_names)
-  to_bold_name <- which(tab$Covariate %in% output_var_names)
+  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+  to_indent <- setdiff(1:nrow(tab),vI)
+  to_bold_name <- vI
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
@@ -3692,6 +3695,16 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #' @seealso \code{\link{survfit}}
 #' @export
 #' @examples
+#' # Simple median survival table
+#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status')
+#'
+#' # Survival table with yearly survival rates
+#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+#' survtimes=c(12,24),survtimesLbls=1:2, survtimeunit='yr')
+#'
+#' #Median survival by group
+#' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',group='sex')
+#'
 #' # Survival Summary by cohort, displayed in years
 #' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 #' group="cohort",survtimes=seq(12,72,12),
@@ -3700,24 +3713,22 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #'
 #' # Survival Summary by Sex and ctDNA group
 #' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
-#' group=c('sex','change_ctdna_group'),survtimes=seq(12,24),survtimeunit='mo')
+#' group=c('sex','change_ctdna_group'),survtimes=c(12,24),survtimeunit='mo')
 #'
-rm_survsum <- function(data,time,status,group,survtimes,
+rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
                        survtimeunit,survtimesLbls=NULL,CIwidth=0.95,unformattedp=FALSE,
                        conf.type='log',
                        na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
-  if (missing(group)) stop('group is a required argument')
-  if (missing(survtimes)) stop('survtimes must be specified as a numeric vector')
-  if (missing(survtimeunit)) stop('survtimeunit must be specified as a character. Example survtimeunit="year"')
-  timelbl <- paste0('Time (',survtimeunit,')')
+  if (missing(survtimeunit)) if (!is.null(survtimes)) stop('survtimeunit must be specified if survtimes are set. Example survtimeunit="year"')
+  if (!is.null(survtimes)) timelbl <- paste0('Time (',survtimeunit,')')
   if  (!inherits(data,'data.frame')) stop('data must be supplied as a data frame')
   if( !inherits(time,'character')| length(time)>1)
     stop('time must be supplied as a string indicating a variable in data')
   if (!inherits(status,'character')| length(status)>1)
     stop('status must be supplied as a string indicating a variable in data')
-  if (is.null(survtimesLbls)) survtimesLbls <- survtimes
+  if (!is.null(survtimes)) if (is.null(survtimesLbls))  survtimesLbls <- survtimes
   if (length(survtimesLbls)!=length(survtimes)) stop('If supplied, the survtimesLbls vector must be the same length as survtime')
   if (unformattedp) formatp <- function (x,...){x}
 
@@ -3728,37 +3739,59 @@ rm_survsum <- function(data,time,status,group,survtimes,
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))
 
-  sfit <- survival::survfit(as.formula(paste0("survival::Surv(",time,',',status,') ~',paste(group,collapse='+'))),
+  sfit <- survival::survfit(as.formula(paste0("survival::Surv(",time,',',status,') ~',ifelse(is.null(group),"1",paste(group,collapse='+')))),
                             data = data,conf.type=conf.type,conf.int=CIwidth)
   nFit <- sum(sfit$n,na.rm=TRUE)
-  colsToExtract <- which(names(sfit) %in% c("strata","time","sr","surv","lower","upper"))
   if (nrow(data)-nFit==1) {
     message('1 observation with missing data was removed.')
   } else if (nrow(data)>nFit) message(paste(nrow(data)-nFit ,'observations with missing data were removed.'))
 
-  ofit <- summary(sfit,times=survtimes,extend=!is.null(survtimes))
-  tb <- data.frame(do.call(cbind,ofit[colsToExtract]))
-  tb$strata <- factor(tb$strata,levels=unique(as.numeric(ofit$strata)),labels = levels(ofit$strata))
-  tb$sr <- apply(tb[,c("surv","lower","upper")], 1, psthr,digits)
-  w <- matrix(nrow=length(unique(tb$strata)),ncol=length(unique(tb$time)),
-              dimnames=list(unique(tb$strata),unique(tb$time)))
-  for (i in 1:nrow(tb)) w[which(rownames(w)==tb$strata[i]),which(colnames(w)==tb$time[i])] <- tb$sr[i]
+  if (!is.null(survtimes)) {
+    ofit <- summary(sfit,times=survtimes,extend=!is.null(survtimes))
+    colsToExtract <- which(names(sfit) %in% c("strata","time","sr","surv","lower","upper"))
+    tb <- data.frame(do.call(cbind,ofit[colsToExtract]))
+    tb$sr <- apply(tb[,c("surv","lower","upper")], 1, psthr,digits)
+    if (!is.null(group)){
+      tb$strata <- factor(tb$strata,levels=unique(as.numeric(ofit$strata)),labels = levels(ofit$strata))
+      w <- matrix(nrow=length(unique(tb$strata)),ncol=length(unique(tb$time)),
+                  dimnames=list(unique(tb$strata),unique(tb$time)))
+      for (i in 1:nrow(tb)) w[which(rownames(w)==tb$strata[i]),which(colnames(w)==tb$time[i])] <- tb$sr[i]
+    } else{
+      w <- matrix(nrow=1,ncol=length(unique(tb$time)))
+      colnames(w) <- unique(tb$time)
+      for (i in 1:nrow(tb)) w[1,which(colnames(w)==tb$time[i])] <- tb$sr[i]
+    }
+  } else w <- NULL
+
   mtbl <- summary(sfit)$table
-  m_CI <- apply(mtbl[,grep('median|LCL|UCL',colnames(mtbl))],1,function(x) psthr(x,y=digits))
-  lr <- survival::survdiff(as.formula(paste0("survival::Surv(",time,',',status,') ~',
-                                             paste0(group,collapse = '+'))),data = data)
-  nt <- paste0(lr$obs,'/',lr$n)
-  w <- cbind(nt,m_CI,w)
-  df <- length(lr$obs)-1
+  if (inherits(mtbl,'matrix')){
+    m_CI <- apply(mtbl[,grep('median|LCL|UCL',colnames(mtbl))],1,function(x) psthr(x,y=digits))
+    lr <- survival::survdiff(as.formula(paste0("survival::Surv(",time,',',status,') ~',
+                                               paste0(group,collapse = '+'))),data = data)
+    nt <- paste0(lr$obs,'/',lr$n)
+    w <- cbind(nt,m_CI,w)
+    df <- length(lr$obs)-1
+    gl <- rownames(w)
+    for (v in group) gl <- gsub(paste0(v,'='),"",gl)
+    tab <- cbind(gl,data.frame(w))
+    rownames(tab) <- NULL
+    nm <- c(paste(group,collapse = ','),'Events/Total',paste0('Median (',CIwidth*100,'%CI)'))
+    if (!is.null(survtimes)) nm <- c(nm,paste0(survtimesLbls,survtimeunit," (", CIwidth*100,"% CI)"))
+    names(tab) <- nm
+    tab <- rbind(tab,c(rep("",length(survtimes)),'Log Rank Test','ChiSq',paste(niceNum(lr$chisq,1),'on',df,'df')))
+    tab <- rbind(tab,c(rep("",length(survtimes)+1),'p-value',formatp(pchisq(lr$chisq,df,lower.tail = FALSE))))
+  } else{
+    m_CI <- psthr(mtbl[grep('median|LCL|UCL',names(mtbl))],y=digits)
+    nt <-paste0(mtbl["events"],"/",mtbl["n.start"])
+    w <- cbind(nt,m_CI,w)
+    tab <- data.frame(w)
+    rownames(tab) <- NULL
+    nm <- c('Events/Total',paste0('Median (',CIwidth*100,'%CI)'))
+    if (!is.null(survtimes)) nm <- c(nm,paste0(survtimesLbls,survtimeunit," (", CIwidth*100,"% CI)"))
+    names(tab) <- nm
 
+  }
 
-  gl <- rownames(w)
-  for (v in group) gl <- gsub(paste0(v,'='),"",gl)
-  tab <- cbind(gl,data.frame(w))
-  rownames(tab) <- NULL
-  names(tab) <- c(paste(group,collapse = ','),'Events/Total',paste0('Median (',CIwidth*100,'%CI)'),paste0(survtimesLbls,survtimeunit," (", CIwidth*100,"% CI)"))
-  tab <- rbind(tab,c(rep("",length(survtimes)),'Log Rank Test','ChiSq',paste(niceNum(lr$chisq,1),'on',df,'df')))
-  tab <- rbind(tab,c(rep("",length(survtimes)+1),'p-value',formatp(pchisq(lr$chisq,df,lower.tail = FALSE))))
   if (tableOnly){
     return(tab)
   }

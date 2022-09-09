@@ -96,24 +96,7 @@ Does not allow for covariates or strata, just simple tests between groups
 
 ```
 
-### Survival Probabilities at different times by sex
-```{r}
-rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
 
-```
-
-### Logrank test on KM Survival Curves by sex
-```{r}
-rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
-            covs='sex',digits=1)
-```
-
-### Logrank test on Survival Curves by sex stratifying by cohort
-```{r}
-rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
-            covs='sex',strata='cohort',digits=1)
-```
 
 ### Plotting survival curves
 

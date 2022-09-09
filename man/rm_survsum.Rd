@@ -8,8 +8,8 @@ rm_survsum(
   data,
   time,
   status,
-  group,
-  survtimes,
+  group = NULL,
+  survtimes = NULL,
   survtimeunit,
   survtimesLbls = NULL,
   CIwidth = 0.95,
@@ -75,6 +75,16 @@ summarise differences in survival rates controlling for covariates see
 \code{\link{rm_survtime}}.
 }
 \examples{
+# Simple median survival table
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status')
+
+# Survival table with yearly survival rates
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
+survtimes=c(12,24),survtimesLbls=1:2, survtimeunit='yr')
+
+#Median survival by group
+rm_survsum(data=pembrolizumab,time='os_time',status='os_status',group='sex')
+
 # Survival Summary by cohort, displayed in years
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 group="cohort",survtimes=seq(12,72,12),
@@ -83,7 +93,7 @@ survtimeunit='years')
 
 # Survival Summary by Sex and ctDNA group
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
-group=c('sex','change_ctdna_group'),survtimes=seq(12,24),survtimeunit='mo')
+group=c('sex','change_ctdna_group'),survtimes=c(12,24),survtimeunit='mo')
 
 }
 \seealso{

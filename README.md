@@ -531,8 +531,6 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1,
 mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
 
 rm_uv_mv(uvsumTable,mvsumTable)
-#> Warning in rm_uv_mv(uvsumTable, mvsumTable): Please re-generate the uvsumTable
-#> to correct variable indenting
 ```
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -594,8 +592,8 @@ p (adj)
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Female</span>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Female
 </td>
 <td style="text-align:right;">
 Reference
@@ -611,8 +609,8 @@ Reference
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Male</span>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Male
 </td>
 <td style="text-align:right;">
 0.41 (0.13, 1.22)
@@ -666,8 +664,8 @@ Reference
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Decrease from baseline</span>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Decrease from baseline
 </td>
 <td style="text-align:right;">
 Reference
@@ -678,48 +676,20 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-28.74 (5.20, 540.18)
-</td>
-<td style="text-align:right;">
-40
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
 Reference
 </td>
 <td style="text-align:right;">
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Increase from baseline
 </td>
 <td style="text-align:right;">
+28.74 (5.20, 540.18)
 </td>
 <td style="text-align:right;">
+40
 </td>
 <td style="text-align:right;">
 </td>
@@ -879,450 +849,7 @@ ChiSq
 p-value
 </td>
 <td style="text-align:right;">
-0.98
-</td>
-</tr>
-</tbody>
-</table>
-
-### Survival Probabilities at different times by sex
-
-``` r
-rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='months')
-```
-
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:left;">
-Time (months)
-</th>
-<th style="text-align:right;">
-At Risk
-</th>
-<th style="text-align:right;">
-Events
-</th>
-<th style="text-align:right;">
-Censored
-</th>
-<th style="text-align:right;">
-Survival Rate (95% CI)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Overall
-</td>
-<td style="text-align:right;">
-94
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-12
-</td>
-<td style="text-align:right;">
-48
-</td>
-<td style="text-align:right;">
-44
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-0.53 (0.44, 0.64)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-24
-</td>
-<td style="text-align:right;">
-24
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:right;">
-0.33 (0.24, 0.44)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-36
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-0.28 (0.20, 0.40)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Female
-</td>
-<td style="text-align:right;">
-58
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-12
-</td>
-<td style="text-align:right;">
-31
-</td>
-<td style="text-align:right;">
-26
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.55 (0.44, 0.69)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-24
-</td>
-<td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-0.34 (0.24, 0.50)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-36
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-0.29 (0.18, 0.45)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Male
-</td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-12
-</td>
-<td style="text-align:right;">
-17
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.50 (0.36, 0.69)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-24
-</td>
-<td style="text-align:right;">
-8
-</td>
-<td style="text-align:right;">
-6
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-0.31 (0.18, 0.52)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-36
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-7
-</td>
-<td style="text-align:right;">
-0.27 (0.15, 0.48)
-</td>
-</tr>
-</tbody>
-</table>
-
-### Logrank test on KM Survival Curves by sex
-
-``` r
-rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
-            covs='sex',digits=1)
-```
-
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:left;">
-group
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Observed
-</th>
-<th style="text-align:right;">
-Expected
-</th>
-<th style="text-align:right;">
-Median (95%CI)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Overall
-</td>
-<td style="text-align:right;">
-94
-</td>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-14.0 (9.0, 20.1)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Female
-</td>
-<td style="text-align:right;">
-58
-</td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-41.8
-</td>
-<td style="text-align:right;">
-14.3 (9.7, 23.8)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Male
-</td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-22.2
-</td>
-<td style="text-align:right;">
-11.2 (6.1, 25.3)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Log Rank Test
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-ChiSq = 0.5 on 1 df
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-p-value = 0.54
-</td>
-</tr>
-</tbody>
-</table>
-
-### Logrank test on Survival Curves by sex stratifying by cohort
-
-``` r
-rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
-            covs='sex',strata='cohort',digits=1)
-```
-
-<table class="table" style="margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:left;">
-group
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Observed
-</th>
-<th style="text-align:right;">
-Expected
-</th>
-<th style="text-align:right;">
-Median (95%CI)
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-Overall
-</td>
-<td style="text-align:right;">
-94
-</td>
-<td style="text-align:right;">
-64
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-14.0 (9.0, 20.1)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Female
-</td>
-<td style="text-align:right;">
-58
-</td>
-<td style="text-align:right;">
-39
-</td>
-<td style="text-align:right;">
-43.0
-</td>
-<td style="text-align:right;">
-14.3 (9.7, 23.8)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Male
-</td>
-<td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
-25
-</td>
-<td style="text-align:right;">
-21.0
-</td>
-<td style="text-align:right;">
-11.2 (6.1, 25.3)
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Log Rank Test
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-ChiSq = 1.9 on 1 df
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-stratified by cohort
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-p-value = 0.83
+0.02
 </td>
 </tr>
 </tbody>
@@ -1336,7 +863,7 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ### Plotting odds ratios
 
@@ -1348,7 +875,7 @@ forestplot2(glm_fit)
 #> Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -1363,4 +890,4 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
