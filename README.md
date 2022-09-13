@@ -26,9 +26,19 @@ curves, forest plots, and automated bivariate plots.
 You can install the development version of reportRmd from
 [GitHub](https://github.com/) with:
 
+If the devtools and prettydoc packages are not installed, then will need
+to be installed first.
+
 ``` r
 # install.packages("devtools")
+# install.packages("prettydoc")
 devtools::install_github("biostatsPMH/reportRmd",build_vignettes=TRUE)
+```
+
+Comprehensive examples are given in the vignette
+
+``` r
+#vignette('reportRmd')
 ```
 
 ## Examples
@@ -863,7 +873,7 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ### Plotting odds ratios
 
@@ -875,7 +885,7 @@ forestplot2(glm_fit)
 #> Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -890,4 +900,4 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />

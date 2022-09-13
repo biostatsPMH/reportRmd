@@ -31,9 +31,17 @@ The goal of reportRmd is to automate the reporting of clinical data in Rmarkdown
 
 You can install the development version of reportRmd from [GitHub](https://github.com/) with:
 
+If the devtools and prettydoc packages are not installed, then will need to be installed first.
+
 ``` r
 # install.packages("devtools")
+# install.packages("prettydoc")
 devtools::install_github("biostatsPMH/reportRmd",build_vignettes=TRUE)
+```
+
+Comprehensive examples are given in the vignette
+```{r}
+#vignette('reportRmd')
 ```
 
 ## Examples
