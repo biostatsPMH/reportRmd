@@ -1462,7 +1462,9 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
 #'   1.0. Default is red, black, green
 #' @param showEst logical, should the risks be displayed on the plot in text
 #' @param rmRef logical, should the reference levels be removed for the plot?
-#' @param logScale logical, should OR/RR be shown on log scale, defaults to TRUE
+#' @param logScale logical, should OR/RR be shown on log scale, defaults to
+#'   TRUE. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
+#'   linear scale.
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @import ggplot2
@@ -2229,6 +2231,7 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' # GEE on correlated outcomes (not meaningful, just for demonstration)
 #' rm_uvsum(response = 'size_change',
 #' covs=c('time','ctdna_status'),
+#' gee=TRUE,
 #' id='id', corstr="exchangeable",
 #' family=gaussian("identity"),
 #' data=ctDNA,showN=TRUE)

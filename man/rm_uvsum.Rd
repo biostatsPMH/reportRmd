@@ -137,6 +137,7 @@ data=pembrolizumab, returnModels=TRUE)
 # GEE on correlated outcomes (not meaningful, just for demonstration)
 rm_uvsum(response = 'size_change',
 covs=c('time','ctdna_status'),
+gee=TRUE,
 id='id', corstr="exchangeable",
 family=gaussian("identity"),
 data=ctDNA,showN=TRUE)

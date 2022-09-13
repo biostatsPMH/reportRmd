@@ -30,7 +30,9 @@ regression}
 
 \item{rmRef}{logical, should the reference levels be removed for the plot?}
 
-\item{logScale}{logical, should OR/RR be shown on log scale, defaults to TRUE}
+\item{logScale}{logical, should OR/RR be shown on log scale, defaults to
+TRUE. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
+linear scale.}
 
 \item{nxTicks}{Number of tick marks supplied to the log_breaks function to
 produce}

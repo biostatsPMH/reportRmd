@@ -31,7 +31,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
 
 # Summary statistics 
 
-Basic summary statistics
+Basic summary statistics. Set IQR = TRUE for IQR instead of min/max. To show both use all.stats=TRUE
+
 
 ```{r}
 rm_covsum(data=pembrolizumab, 
@@ -39,13 +40,41 @@ covs=c('age','sex'),IQR=TRUE)
 
 ```
 
-This will produce summary statistics by Sex, and indicate which statistical test was used
+This will produce summary statistics by Sex, and indicate which statistical test was used (`show.tests=TRUE`)
 
 ```{r}
-data("pembrolizumab")
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
+
+```
+
+Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for t-tests/ANOVA
+
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1'),
+testcont='ANOVA',
+show.tests=TRUE)
+
+```
+
+The default is to indicate percentages by columns (ie percentages within columns add to 100)
+
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('cohort'),
+pvalue = FALSE)
+
+```
+
+But you can also specify to show by row instead
+
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('cohort'),
+pvalue = FALSE,
+percentage='row')
 
 ```
 
@@ -68,7 +97,6 @@ covs=c('age','cohort'))
 ```
 
 ...unless two variables are specified and then survival analysis is run
-If the response is continuous linear regression is the default
 
 ```{r }
 rm_uvsum(data=pembrolizumab, response=c('os_time','os_status'),
@@ -76,15 +104,34 @@ covs=c('age','pdl1','change_ctdna_group'))
 
 ```
 
-# Multivariable analysis
-
-To create a nice display of multivariable models the model needs to first be fit.
+Correlated observations can be handled using GEE
 
 ```{r}
-glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
+ rm_uvsum(response = 'size_change',
+ covs=c('time','ctdna_status'),
+ gee=TRUE,
+ id='id', corstr="exchangeable",
+ family=gaussian("identity"),
+ data=ctDNA,showN=TRUE)
+```
+
+If you want to check the underlying models, set `returnModels = TRUE`
+
+```{r}
+ rm_uvsum(response = 'orr',
+ covs=c('age','sex','cohort'),
+ data=pembrolizumab,returnModels = TRUE)
+```
+
+# Multivariable analysis
+
+To create a nice display for multivariable models the model needs to first be fit.
+
+```{r}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit)
+rm_mvsum(glm_fit, showN = TRUE)
 ```
 
 
@@ -99,7 +146,7 @@ covs=c('age','sex','pdl1','change_ctdna_group'),tableOnly = TRUE)
 glm_fit <- glm(orr~change_ctdna_group+pdl1,
                family='binomial',
                data = pembrolizumab)
-mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
+mvsumTable <- rm_mvsum(glm_fit, showN = TRUE,tableOnly = TRUE)
 
 rm_uv_mv(uvsumTable,mvsumTable)
 ```
@@ -118,7 +165,7 @@ mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE,p.adjust='holm')
 rm_uv_mv(uvsumTable,mvsumTable)
 ```
 
-They are still in the individual tables though
+Both raw and adjusted p-values still in the individual tables though
 
 ```{r}
 outTable(mvsumTable)
@@ -140,7 +187,7 @@ Displaying survival probabilities at different times by sex using Cox PH estimat
 
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='mo',type='PH')
+ strata="sex",survtimes=c(12,24),survtimeunit='mo',type='PH')
 
 ```
 
@@ -148,7 +195,7 @@ Displaying survival probabilities at different times by sex, adjusting for age u
 
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
- strata="sex",survtimes=seq(12,72,12),survtimeunit='mo',type='PH')
+ strata="sex",survtimes=c(12,24),survtimeunit='mo',type='PH')
 
 ```
 
@@ -173,8 +220,12 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 ## Plotting odds ratios
 
+This will default to a log scale, but can be set to linear using `logscale=FALSE`
 ```{r, , fig.width=7, fig.height=2}
 require(ggplot2)
+glm_fit <- glm(orr~age+sex+change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
 forestplot2(glm_fit)
 ```
 
@@ -185,6 +236,14 @@ ggkmcif(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab)
 ```
+
+
+# PDF Output
+
+For pdf to be correctly generate when using survival curves it is recommended that the cairo format be used. This can be specified with the following command in the setup code chunk:
+
+`knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")`
+
 
 # Data Sets
 
