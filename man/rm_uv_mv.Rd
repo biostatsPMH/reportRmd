@@ -8,6 +8,7 @@ rm_uv_mv(
   uvsumTable,
   mvsumTable,
   covTitle = "",
+  vif = FALSE,
   caption = NULL,
   tableOnly = FALSE,
   chunk_label
@@ -21,6 +22,9 @@ rm_uv_mv(
 \item{covTitle}{character with the names of the covariate (predictor) column.
 The default is to leave this empty for output or, for table only output to
 use the column name 'Covariate'.}
+
+\item{vif}{boolean indicating if the variance inflation factor should be
+shown if present in the mvsumTable. Default is FALSE.}
 
 \item{caption}{table caption}
 

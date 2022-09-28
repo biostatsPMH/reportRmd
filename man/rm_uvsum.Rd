@@ -115,6 +115,7 @@ digits are required for p-values then use tableOnly=TRUE and format as
 desired.
 }
 \examples{
+# Examples are for demonstration and are not meaningful
 # Coxph model with 90\% CI
 rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
@@ -134,7 +135,7 @@ rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab, returnModels=TRUE)
 
-# GEE on correlated outcomes (not meaningful, just for demonstration)
+# GEE on correlated outcomes
 rm_uvsum(response = 'size_change',
 covs=c('time','ctdna_status'),
 gee=TRUE,

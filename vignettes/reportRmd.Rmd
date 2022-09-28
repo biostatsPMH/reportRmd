@@ -1,19 +1,23 @@
 ---
 title: "reportRmd"
 date: "`r Sys.Date()`"
-output:
-  prettydoc::html_pretty:
-    theme: tactile
-    highlight: github
+output: 
+  pdf_document:
+    toc: yes
 vignette: >
   %\VignetteIndexEntry{reportRmd}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
+\newpage
+
+# Overview
 reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models. 
 
-A word of caution. The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit. 
+A word of caution: 
+
+The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit. 
 
 <!--
 ## Styles
@@ -29,10 +33,19 @@ library(reportRmd)
 knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
 ```
 
+\newpage
 # Summary statistics 
 
-Basic summary statistics. Set IQR = TRUE for IQR instead of min/max. To show both use all.stats=TRUE
+Basic summary statistics
 
+
+```{r}
+rm_covsum(data=pembrolizumab, 
+covs=c('age','sex'))
+
+```
+
+Set `IQR = T` for interquartile range instead of Min/Max
 
 ```{r}
 rm_covsum(data=pembrolizumab, 
@@ -40,7 +53,25 @@ covs=c('age','sex'),IQR=TRUE)
 
 ```
 
-This will produce summary statistics by Sex, and indicate which statistical test was used (`show.tests=TRUE`)
+Or `all.stats=T` for both
+```{r}
+rm_covsum(data=pembrolizumab, 
+covs=c('age','sex'),all.stats = TRUE)
+
+```
+
+\newpage
+
+This will produce summary statistics by Sex
+
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1','change_ctdna_group'))
+
+```
+
+To indicate which statistical test was used  use `show.tests=TRUE`
+
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
@@ -48,6 +79,8 @@ covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
 
 ```
+
+\newpage
 
 Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for t-tests/ANOVA
 
@@ -58,6 +91,8 @@ testcont='ANOVA',
 show.tests=TRUE)
 
 ```
+
+\newpage
 
 The default is to indicate percentages by columns (ie percentages within columns add to 100)
 
@@ -77,6 +112,8 @@ pvalue = FALSE,
 percentage='row')
 
 ```
+
+\newpage
 
 # Univariate regression
 
@@ -104,6 +141,8 @@ covs=c('age','pdl1','change_ctdna_group'))
 
 ```
 
+\newpage
+
 Correlated observations can be handled using GEE
 
 ```{r}
@@ -119,21 +158,33 @@ If you want to check the underlying models, set `returnModels = TRUE`
 
 ```{r}
  rm_uvsum(response = 'orr',
- covs=c('age','sex','cohort'),
+ covs=c('age','sex'),
  data=pembrolizumab,returnModels = TRUE)
 ```
 
+\newpage
+
 # Multivariable analysis
 
-To create a nice display for multivariable models the model needs to first be fit.
+To create a nice display for multivariable models the model needs to first be fit. By default, the variance inflation factor will be shown to check for multicollinearity. To suppress this column set `vif=FALSE`. Note: variance inflation factors are not computed (yet) for multilevel or GEE models.
 
 ```{r}
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit, showN = TRUE)
+rm_mvsum(glm_fit, showN = TRUE, vif=TRUE)
 ```
 
+
+p-values can be adjusted for multiple comparisons using any of the options available in the `p.adjust` function. This argument is also available for univariate models run with rm_uvsum.
+
+```{r}
+rm_mvsum(glm_fit, showN = TRUE, vif=TRUE,p.adjust = 'holm')
+
+```
+
+
+\newpage
 
 # Combining univariate and multivariable models
 
@@ -151,6 +202,8 @@ mvsumTable <- rm_mvsum(glm_fit, showN = TRUE,tableOnly = TRUE)
 rm_uv_mv(uvsumTable,mvsumTable)
 ```
 
+\newpage
+
 This can also be done with adjusted p-values, but when combined the raw p-values are dropped
 
 ```{r}
@@ -165,11 +218,37 @@ mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE,p.adjust='holm')
 rm_uv_mv(uvsumTable,mvsumTable)
 ```
 
-Both raw and adjusted p-values still in the individual tables though
+\newpage
+
+# Changing the output
+
+If you need to make changes to the tables, setting `tableOnly=TRUE` will return  a data frame for any of the `rm_` functions. Changes can be made, and the table output using `outTable()`
 
 ```{r}
+mvsumTable <- rm_mvsum(glm_fit, showN = TRUE,tableOnly = TRUE)
+names(mvsumTable)[1] <-'Predictor'
 outTable(mvsumTable)
 ```
+
+# Combining tables
+
+Tables can be nested with the `nestTable()` function
+```{r}
+cohortA <- rm_uvsum(data=subset(pembrolizumab,cohort=='A'), 
+                     response = 'pdl1',
+                     covs=c('age','sex'),
+                     tableOnly = T)
+cohortA$Cohort <- 'Cohort A'
+cohortE <- rm_uvsum(data=subset(pembrolizumab,cohort=='E'), 
+                     response = 'pdl1',
+                     covs=c('age','sex'),
+                     tableOnly = T)
+cohortE$Cohort <- 'Cohort E'
+nestTable(rbind(cohortA,cohortE),head_col = 'Cohort',to_col = 'Covariate')
+
+```
+
+\newpage
 
 # Simple Survival Summaries 
 
@@ -181,6 +260,8 @@ rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 
 ```
 
+\newpage
+
 # Survival Times in Long Format
 
 Displaying survival probabilities at different times by sex using Cox PH estimates
@@ -191,6 +272,7 @@ rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 
 ```
 
+
 Displaying survival probabilities at different times by sex, adjusting for age using Cox PH estimates
 
 ```{r}
@@ -200,11 +282,15 @@ rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
 ```
 
 
+\newpage
+
 # Stratified Survival Summary
 ```{r}
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
             covs='sex',strata='cohort',digits=1)
 ```
+
+\newpage
 
 # Plotting Functions
 
@@ -218,6 +304,8 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 ```
 
+\newpage
+
 ## Plotting odds ratios
 
 This will default to a log scale, but can be set to linear using `logscale=FALSE`
@@ -229,6 +317,8 @@ glm_fit <- glm(orr~age+sex+change_ctdna_group+pdl1,
 forestplot2(glm_fit)
 ```
 
+\newpage
+
 ## Plotting survival curves
 
 ```{r, fig.width=7,fig.height=5}
@@ -237,6 +327,8 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
+
+\newpage
 
 # PDF Output
 

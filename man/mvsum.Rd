@@ -12,7 +12,8 @@ mvsum(
   markup = T,
   sanitize = T,
   nicenames = T,
-  CIwidth = 0.95
+  CIwidth = 0.95,
+  vif = TRUE
 )
 }
 \arguments{
@@ -31,9 +32,12 @@ comparison, can be useful for interactions}
 break LaTeX}
 
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
-with a space}
+with a space.}
 
 \item{CIwidth}{width for confidence intervals, defaults to 0.95}
+
+\item{vif}{boolean indicating if the variance inflation factor should be
+included. See details}
 }
 \description{
 Returns a dataframe with the model summary and global p-value for multi-level
@@ -46,5 +50,21 @@ LRT is used to obtain a global p-value. For coxph models the model is re-run
 without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned.
+
+If the variance inflation factor is requested (VIF=T) then a generalised VIF
+will be calculated in the same manner as the car package.
+
+VIF for competing risk models is computed by fitting a linear model with a
+dependent variable comprised of the sum of the model independent variables
+and then calculating VIF from this linear model.
+}
+\references{
+John Fox & Georges Monette (1992) Generalized Collinearity
+Diagnostics, Journal of the American Statistical Association, 87:417,
+178-183, DOI: 10.1080/01621459.1992.10475190
+
+John Fox and Sanford Weisberg (2019). An {R} Companion to
+Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
+https://socialsciences.mcmaster.ca/jfox/Books/Companion
 }
 \keyword{dataframe}

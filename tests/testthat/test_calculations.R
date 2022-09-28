@@ -190,7 +190,7 @@ test_that("mvsum outputs lm models correctly",{
     output = mvsum(fit_lm,markup=FALSE)
     covs = c('age','Sex','Male','Female')
     est = c('0.03 (-0.16, 0.23)','','Reference','-3.38 (-7.00, 0.25)')
-    names = c('Covariate','Estimate(95\\%CI)','p-value')
+    names = c('Covariate','Estimate(95\\%CI)','p-value','VIF')
     expect_equal(output[,1],covs)
     expect_equal(output[,2],est)
     expect_equal(names(output),names)
@@ -199,7 +199,7 @@ test_that("mvsum outputs lm models correctly",{
 test_that("mvsum outputs glm linear models correctly",{
   fit_glm = glm(wt.loss~age+Sex,data=lung)
   output = mvsum(fit_glm,markup=FALSE,CIwidth = .99)
-  names = c('Covariate','Estimate(99\\%CI)','p-value')
+  names = c('Covariate','Estimate(99\\%CI)','p-value','VIF')
   covs = c('age','Sex','Male','Female')
   est = c('0.03 (-0.22, 0.29)','','Reference','-3.38 (-8.16, 1.40)')
   expect_equal(output[,1],covs)
@@ -209,7 +209,7 @@ test_that("mvsum outputs glm linear models correctly",{
 
 test_that("mvsum outputs glm binomial models correctly",{
   fit_glm = glm(Status~age+Sex,data=lung,family='binomial')
-  output = mvsum(fit_glm,markup=FALSE)
+  output = mvsum(fit_glm,markup=FALSE,vif=FALSE)
   names = c('Covariate','OR(95\\%CI)','p-value')
   covs = c('age','Sex','Male','Female')
   est = c('1.03 (1.00, 1.07)','','Reference','0.35 (0.19, 0.64)')
@@ -220,7 +220,7 @@ test_that("mvsum outputs glm binomial models correctly",{
 
 test_that("mvsum outputs glm poisson models correctly",{
   fit_glm = glm(status~age+Sex,data=lung,family='poisson')
-  output = mvsum(fit_glm,markup=FALSE)
+  output = mvsum(fit_glm,markup=FALSE,vif=FALSE)
   names = c('Covariate','RR(95\\%CI)','p-value')
   covs = c('age','Sex','Male','Female')
   est = c('1.00 (0.99, 1.01)','','Reference','0.88 (0.72, 1.09)')

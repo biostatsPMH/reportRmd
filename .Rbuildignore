@@ -4,5 +4,13 @@
 ^README\.Rmd$
 ^cran-comments\.md$
 ^data-raw$
-^doc$
+^docs$
+^images$
+^index\.Rmd$
 ^Meta$
+^.nojekyll$
+^_bookdown\.yml$
+^CRAN-SUBMISSION$
+^cran-comments\.md$
+^CRAN-RELEASE$
+^\.github$

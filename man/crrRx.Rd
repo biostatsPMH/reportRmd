@@ -27,7 +27,7 @@ dimnames(cov)[[2]] <- c('x1','x2','x3')
 df <- data.frame(ftime,fstatus,cov)
 m1 <- crrRx(as.formula('ftime+fstatus~x1+x2+x3'),df)
 # Nicely output to report:
-rm_mvsum(m1,data=df,showN = TRUE)
+rm_mvsum(m1,data=df,showN = TRUE,vif=TRUE)
 }
 \seealso{
 \code{\link{crr}}

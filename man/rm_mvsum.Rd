@@ -11,6 +11,7 @@ rm_mvsum(
   covTitle = "",
   showN = FALSE,
   CIwidth = 0.95,
+  vif = TRUE,
   caption = NULL,
   tableOnly = FALSE,
   p.adjust = "none",
@@ -38,6 +39,9 @@ use the column name 'Covariate'.}
 comparison, can be useful for interactions}
 
 \item{CIwidth}{width for confidence intervals, defaults to 0.95}
+
+\item{vif}{boolean indicating if the variance inflation factor should be
+included. See details}
 
 \item{caption}{table caption}
 
@@ -72,6 +76,9 @@ without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned.
 
+If the variance inflation factor is requested (VIF=T) then a generalised VIF
+will be calculated in the same manner as the car package.
+
 The number of decimals places to display the statistics can be changed with
 digits, but this will not change the display of p-values. If more significant
 digits are required for p-values then use tableOnly=TRUE and format as
@@ -88,5 +95,14 @@ rm_mvsum(lm_fit,p.adjust = "bonferroni")
 #Coxph
 require(survival)
 res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
-rm_mvsum(res.cox)
+rm_mvsum(res.cox, vif=TRUE)
+}
+\references{
+John Fox & Georges Monette (1992) Generalized Collinearity
+Diagnostics, Journal of the American Statistical Association, 87:417,
+178-183, DOI: 10.1080/01621459.1992.10475190
+
+John Fox and Sanford Weisberg (2019). An {R} Companion to
+Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
+https://socialsciences.mcmaster.ca/jfox/Books/Companion
 }

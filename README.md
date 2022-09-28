@@ -31,15 +31,12 @@ to be installed first.
 
 ``` r
 # install.packages("devtools")
-# install.packages("prettydoc")
-devtools::install_github("biostatsPMH/reportRmd",build_vignettes=TRUE)
+devtools::install_github("biostatsPMH/reportRmd")
 ```
 
-Comprehensive examples are given in the vignette
+## Documentation
 
-``` r
-#vignette('reportRmd')
-```
+[Online Documentation](https://biostatsPMH.github.io/reportRmd/)
 
 ## Examples
 
@@ -394,6 +391,9 @@ p-value
 <th style="text-align:right;">
 Global p-value
 </th>
+<th style="text-align:right;">
+VIF
+</th>
 </tr>
 </thead>
 <tbody>
@@ -408,6 +408,9 @@ Global p-value
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+1.00
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -420,6 +423,8 @@ Reference
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -427,6 +432,8 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 19.99 (2.08, 191.60)
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -445,6 +452,9 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+1.18
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -457,6 +467,9 @@ Increase from baseline
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>
 </td>
+<td style="text-align:right;">
+1.04
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -464,6 +477,8 @@ A
 </td>
 <td style="text-align:right;">
 Reference
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -482,6 +497,8 @@ B
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -492,6 +509,8 @@ C
 </td>
 <td style="text-align:right;">
 1.00
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -508,6 +527,8 @@ D
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -518,6 +539,8 @@ E
 </td>
 <td style="text-align:right;">
 0.51
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -873,7 +896,7 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
 
 ### Plotting odds ratios
 
@@ -885,7 +908,7 @@ forestplot2(glm_fit)
 #> Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -900,4 +923,4 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />

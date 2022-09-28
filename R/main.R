@@ -160,7 +160,7 @@ geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 
 #' df <- data.frame(ftime,fstatus,cov)
 #' m1 <- crrRx(as.formula('ftime+fstatus~x1+x2+x3'),df)
 #' # Nicely output to report:
-#' rm_mvsum(m1,data=df,showN = TRUE)
+#' rm_mvsum(m1,data=df,showN = TRUE,vif=TRUE)
 #' @export
 crrRx<-function(f,data){
   k<-as.character(f)[3]
@@ -827,7 +827,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   else {
     if (length(response) == 2) {
       # Check that responses are numeric
-      for (i in 1:2) if (!inherits(data[[response[i]]],'numeric')) stop('Both response variables must be numeric')
+      for (i in 1:2) if (!is.numeric(data[[response[i]]])) stop('Both response variables must be numeric')
       if (length(unique(data[[response[2]]])) < 3) {
         type <- "coxph"
       }
@@ -1077,6 +1077,13 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #' Wald global p-values are returned.
 #'
+#' If the variance inflation factor is requested (VIF=T) then a generalised VIF
+#' will be calculated in the same manner as the car package.
+#'
+#' VIF for competing risk models is computed by fitting a linear model with a
+#' dependent variable comprised of the sum of the model independent variables
+#' and then calculating VIF from this linear model.
+#'
 #' @param model fitted model object
 #' @param data dataframe containing data
 #' @param digits number of digits to round to
@@ -1086,12 +1093,20 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' @param sanitize boolean indicating if you want to sanitize all strings to not
 #'   break LaTeX
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
-#'   with a space
+#'   with a space.
 #' @param CIwidth width for confidence intervals, defaults to 0.95
+#' @param vif boolean indicating if the variance inflation factor should be
+#'   included. See details
 #' @keywords dataframe
 #' @importFrom stats na.omit formula model.frame anova qnorm vcov
+#' @references John Fox & Georges Monette (1992) Generalized Collinearity
+#'   Diagnostics, Journal of the American Statistical Association, 87:417,
+#'   178-183, DOI: 10.1080/01621459.1992.10475190
+#' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
+#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
+#'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
 mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, nicenames = T,
-                   CIwidth = 0.95)
+                   CIwidth = 0.95, vif=TRUE)
 {
   if (!markup) {
     lbld <- identity
@@ -1231,8 +1246,9 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
     })
     levelnames <- unlist(lapply(levelnameslist, function(x) paste(x,
                                                                   collapse = ":")))
-    levelnames <- addspace(sanitizestr(nicename(levelnames)))
-    covariatename <- lbld(sanitizestr(nicename(oldcovname)))
+    # levelnames <- addspace(sanitizestr(nicename(levelnames)))
+    # covariatename <- lbld(sanitizestr(nicename(oldcovname)))
+    covariatename <- oldcovname
     reference = NULL
     title = NULL
     body = NULL
@@ -1343,25 +1359,10 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
     }
     if (length(betaname[[1]]) == 1) {
       if (!is.factor(data[, oldcovname])) {
-        # LA 3 June 2022 show both for demonstration
-        title <- c(nicename(covariatename), hazardratio,
-                   pvalues, globalpvalue)
-        # # LA 2 June 2022 use regular p-values for continuous predictors
-        # title <- c(nicename(covariatename), hazardratio,
-        #            "", pvalues)
-        # Original Code
-        # title <- c(nicename(covariatename), hazardratio,
-        #            "", globalpvalue)
+        # title <- c(nicename(covariatename), hazardratio,pvalues, globalpvalue)
+        title <- c(covariatename, hazardratio,pvalues, globalpvalue)
       }     else if (length(levelnames) == 1) {
-        # LA 3 June 2022 show both for demonstration
-        title <- c(covariatename, "", pvalues,
-                   globalpvalue)
-        # # LA 2 June 2022 use regular p-values for one-level factors
-        # title <- c(covariatename, "", "",
-        #            pvalues)
-        # Original Code
-        # title <- c(covariatename, "", "",
-        #            globalpvalue)
+        title <- c(covariatename, "", pvalues,globalpvalue)
         if (!is.null(data))
           reference <- c(addspace(sanitizestr(names(table(data[,
                                                                which(names(data) == oldcovname)]))[1])),
@@ -1389,9 +1390,6 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
         title <- c(covariatename, hazardratio, pvalues,
                    globalpvalue)
 
-        # Original Code
-        # title <- c(covariatename, hazardratio, "",
-        #            globalpvalue)
       }
     }
     out <- rbind(title, reference, body)
@@ -1441,6 +1439,26 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
   if (!showN) table <- table[, -which(colnames(table)=="N")]
+  if (vif) {
+    if (type=='geeglm'|type=='lme'){
+        message('VIF not yet implemented for mixed effects/GEE models.')
+    } else {
+      if (type=='crr'){
+        xnm <- intersect(names(data),names(model$coef))
+        data$y <- rowSums(data[,xnm],na.rm = TRUE)+stats::rnorm(nrow(data),0,2)
+        mvif <- lm(formula = paste('y~',paste(xnm,collapse = '+')),data=data)
+        VIF <- try(GVIF(mvif),silent = TRUE)
+      } else VIF <- try(GVIF(model),silent = TRUE)
+      if (!inherits(VIF,'try-error')) {
+        if (nrow(VIF)>1){
+        vifcol <- character(nrow(table))
+        ind <- match(VIF$Covariate,table$Covariate)
+        for (x in 1:length(ind)) vifcol[ind[x]] <- niceNum(VIF$VIF[x],digits = digits)
+        table <- cbind(table,VIF=vifcol)
+      }
+        } else warning('VIF could not be computed for the model.')
+    }}
+  if (nicenames) table[,1] <- nicename(table[,1])
   colnames(table) <- sapply(colnames(table), lbld)
   attr(table,'covs') <- ucall
   return(table)
@@ -2208,6 +2226,7 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
 #' @export
 #' @examples
+#' # Examples are for demonstration and are not meaningful
 #' # Coxph model with 90% CI
 #' rm_uvsum(response = c('os_time','os_status'),
 #' covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
@@ -2228,7 +2247,7 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab, returnModels=TRUE)
 #'
-#' # GEE on correlated outcomes (not meaningful, just for demonstration)
+#' # GEE on correlated outcomes
 #' rm_uvsum(response = 'size_change',
 #' covs=c('time','ctdna_status'),
 #' gee=TRUE,
@@ -2362,6 +2381,9 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #' Wald global p-values are returned.
 #'
+#' If the variance inflation factor is requested (VIF=T) then a generalised VIF
+#' will be calculated in the same manner as the car package.
+#'
 #' The number of decimals places to display the statistics can be changed with
 #' digits, but this will not change the display of p-values. If more significant
 #' digits are required for p-values then use tableOnly=TRUE and format as
@@ -2377,6 +2399,8 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' @param showN boolean indicating sample sizes should be shown for each
 #'   comparison, can be useful for interactions
 #' @param CIwidth width for confidence intervals, defaults to 0.95
+#' @param vif boolean indicating if the variance inflation factor should be
+#'   included. See details
 #' @param caption table caption
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param p.adjust p-adjustments to be performed (Global p-values only)
@@ -2390,6 +2414,12 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
 #' @export
+#' @references John Fox & Georges Monette (1992) Generalized Collinearity
+#'   Diagnostics, Journal of the American Statistical Association, 87:417,
+#'   178-183, DOI: 10.1080/01621459.1992.10475190
+#' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
+#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
+#'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
 #' @examples
 #' glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
 #' data=pembrolizumab,family = 'binomial')
@@ -2401,13 +2431,13 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' #Coxph
 #' require(survival)
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
-#' rm_mvsum(res.cox)
-rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
+#' rm_mvsum(res.cox, vif=TRUE)
+rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95, vif=TRUE,
                      caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, markup = T,sanitize = T,nicenames = T){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
-               sanitize = FALSE, nicenames = FALSE,showN=showN,CIwidth = CIwidth)
+               sanitize = FALSE, nicenames = FALSE,showN=showN,CIwidth = CIwidth,vif=vif)
 
   to_indent <- setdiff(1:nrow(tab),
                        sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
@@ -2478,6 +2508,8 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
 #' @param covTitle character with the names of the covariate (predictor) column.
 #'   The default is to leave this empty for output or, for table only output to
 #'   use the column name 'Covariate'.
+#' @param vif boolean indicating if the variance inflation factor should be
+#'   shown if present in the mvsumTable. Default is FALSE.
 #' @param caption table caption
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param chunk_label only used if output is to Word to allow cross-referencing
@@ -2509,7 +2541,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
 #' logis_fit<-glm(os_status~age+sex+l_size+pdl1+tmb,data = pembrolizumab,family = 'binomial')
 #' mvtab<-rm_mvsum(logis_fit,tableOnly = TRUE)
 #' rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
-rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',caption=NULL,tableOnly=FALSE,chunk_label){
+rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,tableOnly=FALSE,chunk_label){
   # Check that tables are data frames and not kable objects
   if (!inherits(uvsumTable,'data.frame')) stop('uvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
   if (!inherits(mvsumTable,'data.frame')) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
@@ -2552,7 +2584,11 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',caption=NULL,tableOnly=FA
   x[[1]]$varOrder = 1:nrow(x[[1]])
   names(x[[1]])[2] <- paste('Unadjusted',names(x[[1]])[2])
   names(x[[2]])[2] <- paste('Adjusted',names(x[[2]])[2])
-  for (vn in setdiff(names(x[[2]])[3:ncol(x[[2]])],'var_level')) names(x[[2]]) <- gsub(vn, paste(vn,'(adj)'),names(x[[2]]))
+  vifind <- which(names(x[[2]])=='VIF')
+  if (length(vifind)>0){
+    if (!vif) x[[2]] <- x[[2]][,-vifind] else x[[2]] <- x[[2]][,c(setdiff(1:ncol(x[[2]]),vifind),vifind)]
+  }
+  for (vn in setdiff(names(x[[2]])[3:ncol(x[[2]])],c('VIF','var_level'))) names(x[[2]]) <- gsub(vn, paste(vn,'(adj)'),names(x[[2]]))
   out <- merge(x[[1]],x[[2]],by='var_level',all=TRUE)
   out <- out[,-which(names(out)=='var_level')]
   out <- out[,-grep('[.]y',names(out))]
@@ -2822,7 +2858,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
 
   if (print.n.missing==T & sum(remove)==1 ) {
     message('1 observation with missing data was removed.')
-  } else if(print.n.missing==T & sum(remove) > 0) print(paste(sum(remove),'observations with missing data were removed.'))
+  } else if(print.n.missing==T & sum(remove) > 0) message(paste(sum(remove),'observations with missing data were removed.'))
 
 
   if (!is.factor(data[,cov])  & !is.numeric(data[,cov]) & !is.null(cov)){ message("Coercing the cov variable to factor"); data[,cov] <- factor(data[,cov])}
@@ -3185,10 +3221,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
     df$lower <- NA
 
 
-
-
-    if(conf.type!="log" & conf.type!="none") print("Only log confidence intervals avaliable for CIF")
-
+    if(conf.type!="log" & conf.type!="none") message("Only log confidence intervals avaliable for CIF")
 
 
     if(conf.type=="log") {
@@ -3493,10 +3526,6 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
                             heights = unit(c(2, .1, .25), c("null", "null", "null")))
 
     if(returns) {
-      # a <- arrangeGrob(p, blank.pic, data.table,
-      #                  clip = FALSE, nrow = 3, ncol = 1,
-      #                  heights = unit(c(2, .1, .25), c("null", "null", "null")))
-
       if(table==TRUE){
         a <- list(p,blank.pic,data.table)
       } else a <- p
@@ -3976,3 +4005,4 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
            align = ifelse(showCounts,'lrrrr','lr'))
 
 }
+

@@ -35,14 +35,12 @@ If the devtools and prettydoc packages are not installed, then will need to be i
 
 ``` r
 # install.packages("devtools")
-# install.packages("prettydoc")
-devtools::install_github("biostatsPMH/reportRmd",build_vignettes=TRUE)
+devtools::install_github("biostatsPMH/reportRmd")
 ```
 
-Comprehensive examples are given in the vignette
-```{r}
-#vignette('reportRmd')
-```
+## Documentation
+
+[Online Documentation](https://biostatsPMH.github.io/reportRmd/)
 
 ## Examples
 

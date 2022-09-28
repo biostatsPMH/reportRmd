@@ -358,6 +358,34 @@ matchcovariate=function(betanames,ucall){
   return (out)
 }
 
+# Adapted From the CAR package
+GVIF <- function(model){
+  v <- vcov(model)
+  ind <- attr(model.matrix(model), "assign")
+  if (0 %in% ind) {
+    v <- v[-1, -1]
+    ind <- ind[-1]
+  }
+  xvar <- labels(terms(model))
+  if (length(xvar)<2) {
+    return(data.frame(Covariate=xvar,VIF=NA))
+  }
+
+  R <- stats::cov2cor(v)
+  detR <- det(R)
+  result <- matrix(0, length(xvar), 2)
+  for (var in 1:length(xvar)) {
+    terms <- which(ind == var)
+    result[var, 1] <- det(as.matrix(R[terms, terms])) * det(as.matrix(R[-terms,
+                                                                        -terms]))/detR
+    result[var, 2] <- length(terms)
+  }
+  if (all(result[, 2] == 1)){
+    rtn <- result[, 1]
+  } else rtn <- result[, 1]^(1/(2 * result[, 2]))
+  data.frame(Covariate=xvar,VIF=rtn)
+}
+
 # (ggsurv) ---------------------------------------------------------
 
 round_sprintf <- function(value,digits){
