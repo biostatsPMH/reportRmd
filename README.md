@@ -26,8 +26,8 @@ curves, forest plots, and automated bivariate plots.
 You can install the development version of reportRmd from
 [GitHub](https://github.com/) with:
 
-If the devtools and prettydoc packages are not installed, then will need
-to be installed first.
+If the devtools package is not installed, uncomment the first line of
+code to install it.
 
 ``` r
 # install.packages("devtools")
@@ -412,6 +412,7 @@ VIF
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
 1.00
@@ -482,6 +483,7 @@ Increase from baseline
 <span style="font-weight: bold;">0.004</span>
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
 1.04
