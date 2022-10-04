@@ -374,7 +374,7 @@ Increase from baseline
 glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit)
+rm_mvsum(glm_fit,showN=T)
 ```
 
 <table class="table" style="margin-left: auto; margin-right: auto;">
@@ -390,6 +390,9 @@ p-value
 </th>
 <th style="text-align:right;">
 Global p-value
+</th>
+<th style="text-align:right;">
+N
 </th>
 <th style="text-align:right;">
 VIF
@@ -409,6 +412,8 @@ VIF
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+</td>
+<td style="text-align:right;">
 1.00
 </td>
 </tr>
@@ -424,6 +429,9 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+33
+</td>
+<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -436,6 +444,9 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+40
 </td>
 <td style="text-align:right;">
 </td>
@@ -453,6 +464,9 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+73
+</td>
+<td style="text-align:right;">
 1.18
 </td>
 </tr>
@@ -466,6 +480,8 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 1.04
@@ -483,6 +499,9 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -496,6 +515,9 @@ B
 1.00
 </td>
 <td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+11
 </td>
 <td style="text-align:right;">
 </td>
@@ -513,6 +535,9 @@ C
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -528,6 +553,9 @@ D
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -541,6 +569,9 @@ E
 0.51
 </td>
 <td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+28
 </td>
 <td style="text-align:right;">
 </td>

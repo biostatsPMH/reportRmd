@@ -71,7 +71,7 @@ covs=c('age','pdl1','change_ctdna_group'))
 glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit)
+rm_mvsum(glm_fit,showN=T)
 ```
 
 

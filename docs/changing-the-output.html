@@ -197,9 +197,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="changing-the-output" class="section level1 hasAnchor" number="6">
 <h1><span class="header-section-number">6</span> Changing the output<a href="changing-the-output.html#changing-the-output" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>If you need to make changes to the tables, setting <code>tableOnly=TRUE</code> will return a data frame for any of the <code>rm_</code> functions. Changes can be made, and the table output using <code>outTable()</code></p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="changing-the-output.html#cb21-1" aria-hidden="true" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb21-2"><a href="changing-the-output.html#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mvsumTable)[<span class="dv">1</span>] <span class="ot">&lt;-</span><span class="st">&#39;Predictor&#39;</span></span>
-<span id="cb21-3"><a href="changing-the-output.html#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">outTable</span>(mvsumTable)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="changing-the-output.html#cb23-1" aria-hidden="true" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-2"><a href="changing-the-output.html#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(mvsumTable)[<span class="dv">1</span>] <span class="ot">&lt;-</span><span class="st">&#39;Predictor&#39;</span></span>
+<span id="cb23-3"><a href="changing-the-output.html#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">outTable</span>(mvsumTable)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -231,6 +231,7 @@ VIF
 <span style="font-weight: bold;">0.004</span>
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
 1.01

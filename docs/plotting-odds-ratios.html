@@ -197,11 +197,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="plotting-odds-ratios" class="section level2 hasAnchor" number="11.2">
 <h2><span class="header-section-number">11.2</span> Plotting odds ratios<a href="plotting-odds-ratios.html#plotting-odds-ratios" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>This will default to a log scale, but can be set to linear using <code>logscale=FALSE</code></p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="plotting-odds-ratios.html#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(ggplot2)</span>
-<span id="cb28-2"><a href="plotting-odds-ratios.html#cb28-2" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>age<span class="sc">+</span>sex<span class="sc">+</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
-<span id="cb28-3"><a href="plotting-odds-ratios.html#cb28-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
-<span id="cb28-4"><a href="plotting-odds-ratios.html#cb28-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
-<span id="cb28-5"><a href="plotting-odds-ratios.html#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forestplot2</span>(glm_fit)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="plotting-odds-ratios.html#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(ggplot2)</span>
+<span id="cb30-2"><a href="plotting-odds-ratios.html#cb30-2" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>age<span class="sc">+</span>sex<span class="sc">+</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
+<span id="cb30-3"><a href="plotting-odds-ratios.html#cb30-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb30-4"><a href="plotting-odds-ratios.html#cb30-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb30-5"><a href="plotting-odds-ratios.html#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forestplot2</span>(glm_fit)</span></code></pre></div>
 <p><img src="images/forestplot.png" />
 </p>
 </div>

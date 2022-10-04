@@ -202,8 +202,18 @@ If you want to check the underlying models, set `returnModels = TRUE`
 
 ```{r}
  rm_uvsum(response = 'orr',
- covs=c('age','sex'),
+ covs=c('age'),
  data=pembrolizumab,returnModels = TRUE)
+```
+
+The data analysed can be examined by interrogating the data object appended to each model
+
+```{r}
+mList <-  rm_uvsum(response = 'orr',
+ covs=c('age'),
+ data=pembrolizumab,returnModels = TRUE)
+head(mList$age$data)
+
 ```
 
 ## Adjusting p-values

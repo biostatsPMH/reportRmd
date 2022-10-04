@@ -197,15 +197,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="combining-univariate-and-multivariable-models" class="section level1 hasAnchor" number="5">
 <h1><span class="header-section-number">5</span> Combining univariate and multivariable models<a href="combining-univariate-and-multivariable-models.html#combining-univariate-and-multivariable-models" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>To display both models in a single table run the rm_uvsum and rm_mvsum functions with <code>tableOnly=TRUE</code> and combine.</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="combining-univariate-and-multivariable-models.html#cb20-1" aria-hidden="true" tabindex="-1"></a>uvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb20-2"><a href="combining-univariate-and-multivariable-models.html#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb20-3"><a href="combining-univariate-and-multivariable-models.html#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-4"><a href="combining-univariate-and-multivariable-models.html#cb20-4" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
-<span id="cb20-5"><a href="combining-univariate-and-multivariable-models.html#cb20-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
-<span id="cb20-6"><a href="combining-univariate-and-multivariable-models.html#cb20-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
-<span id="cb20-7"><a href="combining-univariate-and-multivariable-models.html#cb20-7" aria-hidden="true" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb20-8"><a href="combining-univariate-and-multivariable-models.html#cb20-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-9"><a href="combining-univariate-and-multivariable-models.html#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_uv_mv</span>(uvsumTable,mvsumTable)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="combining-univariate-and-multivariable-models.html#cb22-1" aria-hidden="true" tabindex="-1"></a>uvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb22-2"><a href="combining-univariate-and-multivariable-models.html#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-3"><a href="combining-univariate-and-multivariable-models.html#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="combining-univariate-and-multivariable-models.html#cb22-4" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
+<span id="cb22-5"><a href="combining-univariate-and-multivariable-models.html#cb22-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb22-6"><a href="combining-univariate-and-multivariable-models.html#cb22-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb22-7"><a href="combining-univariate-and-multivariable-models.html#cb22-7" aria-hidden="true" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-8"><a href="combining-univariate-and-multivariable-models.html#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="combining-univariate-and-multivariable-models.html#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_uv_mv</span>(uvsumTable,mvsumTable)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -347,6 +347,7 @@ Male
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>

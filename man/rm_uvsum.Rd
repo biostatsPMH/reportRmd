@@ -94,7 +94,9 @@ the function throws an error}
 
 \item{returnModels}{boolean indicating if a list of fitted models should be
 returned. If this is TRUE then the models will be returned, but the output
-will be suppressed.}
+will be suppressed. In addition to the model elements a data element will
+be appended to each model so that the fitted data can be examined, if
+necessary. See Details}
 }
 \description{
 A table with the model parameters from running separate univariate models on
@@ -131,9 +133,10 @@ rm_uvsum(response = 'os_status',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab,family = binomial)
 # Poisson models returned as model list
-rm_uvsum(response = 'baseline_ctdna',
+mList <- rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab, returnModels=TRUE)
+# mList$sex$data # will expose the modelled data
 
 # GEE on correlated outcomes
 rm_uvsum(response = 'size_change',

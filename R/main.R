@@ -888,7 +888,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     if (gee){
       data <- data[order(data[[id]]),]
       idf <- as.numeric(as.factor(data[[id]]))
-      # idf <- as.matrix(idf)
+      data$idf <- idf
     }
     if (inherits(data[[x_var]],c("ordered", "factor"))) {
       data[[x_var]] = droplevels(data[[x_var]])
@@ -995,7 +995,6 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                               ',method = "logistic",Hess = TRUE)')))
       m <- data.frame(summary(m2)$coef)
       m <- m[grep(x_var, rownames(summary(m2)$coef)),]
-      # nterms = length(m2$coefficients)
 
       m2_null <- stats::update(m2,data=m2$model,formula=as.formula(paste0(response,'~1' )))
       globalpvalue <- try(as.vector(stats::na.omit(anova(m2_null,m2)[,"Pr(Chi)"])))
@@ -1044,7 +1043,10 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       }
       out <- cbind(out, n_by_level)
     }
-    if (returnModels) modelList[[x_var]] <<- m2
+    if (returnModels) {
+      m2$data <- data
+      modelList[[x_var]] <<- m2
+    }
     rownames(out) <- NULL
     colnames(out) <- NULL
     return(list(out, nrow(out)))
@@ -1395,7 +1397,7 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
     out <- rbind(title, reference, body)
     if (out[1, 2] == "") {
       if (length(grep(":", title[1])) > 0) {
-        ss_N = c("", unlist(lapply(levelnameslist,
+        ss_N = unlist(lapply(levelnameslist,
                                    function(level) {
                                      N <- mapply(function(cn, lvl) {
                                        if (cn == lvl) {
@@ -1405,11 +1407,24 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
                                        }
                                      }, oldcovname, level)
                                      return(min(N))
-                                   })))
+                                   }))
+        # ss_N = c("", unlist(lapply(levelnameslist,
+        #                            function(level) {
+        #                              N <- mapply(function(cn, lvl) {
+        #                                if (cn == lvl) {
+        #                                  nrow(data)
+        #                                } else {
+        #                                  sum(data[[cn]] == lvl)
+        #                                }
+        #                              }, oldcovname, level)
+        #                              return(min(N))
+        #                            })))
       }
       else {
-        ss_N = c("", table(data[[oldcovname]]))
+        # ss_N = c("", table(data[[oldcovname]]))
+        ss_N = as.vector(table(data[[oldcovname]]))
       }
+      ss_N <- c(nrow(data),ss_N) # Add in the total for the variable
     }
     else {
       ss_N = nrow(data)
@@ -2219,7 +2234,9 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #'   the function throws an error
 #' @param returnModels boolean indicating if a list of fitted models should be
 #'   returned. If this is TRUE then the models will be returned, but the output
-#'   will be suppressed.
+#'   will be suppressed. In addition to the model elements a data element will
+#'   be appended to each model so that the fitted data can be examined, if
+#'   necessary. See Details
 #' @seealso
 #' \code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
 #' \code{\link{coxph}},
@@ -2243,9 +2260,10 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' data=pembrolizumab,family = binomial)
 
 #' # Poisson models returned as model list
-#' rm_uvsum(response = 'baseline_ctdna',
+#' mList <- rm_uvsum(response = 'baseline_ctdna',
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab, returnModels=TRUE)
+#' # mList$sex$data # will expose the modelled data
 #'
 #' # GEE on correlated outcomes
 #' rm_uvsum(response = 'size_change',
