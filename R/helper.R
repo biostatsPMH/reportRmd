@@ -1,4 +1,5 @@
 is.error <- function(x) inherits(x, "try-error")
+csep<-function(){return(", ")}
 
 .negloglik.boxcox <- function (lambda.val, data, xmat, lik.method = "ML")
 {
@@ -30,50 +31,27 @@ is.error <- function(x) inherits(x, "try-error")
   return(drop(neglik))
 }
 
-#' Retrieve columns number from Excel columns specified as unquoted letters
-#' @param ... unquoted excel column headers (i.e. excelCol(A,CG,AA)) separated by commas
-#' @importFrom rlang as_string
-#' @export
-#' @examples
-#' ## Find the column numbers for excel columns AB, CE and BB
-#' # excelCol(AB,CE,bb)
-excelCol<- function(...){
-  args <- as.list(match.call())[-1]
-  args <-unname(unlist(lapply(args,function(x) {rlang::as_string(x)})))
-  if (sum(unlist(lapply(args, function(x) grepl("[^A-Za-z]",x))))>0) {
-    stop('Only valid Excel column names can be supplied, separated by commas.')
-  }
-  rtn<-sapply(args, function(x){
-    colHead <- toupper(x)
-    if (nchar(colHead)>1){
-      l1 = substr(colHead,1,1)
-      l2 = substr(colHead,2,2)
-      rtn <- 26*which(LETTERS==l1)+which(LETTERS==l2)
-    } else {
-      rtn <- which(LETTERS==colHead)
-    }
-  })
-  names(rtn) <- toupper(names(rtn))
-  return(rtn)
-}
 
 
+#' Round retaining digits
+#'
+#' Round retaining digits
+#'@param x a vector
+#'@param digits numeric
+#'@keywords helper
 niceNum <- function(x,digits=2){
   rndx = sapply(x, function(x) {format(round(as.numeric(x),digits),nsmall=digits)})
   return(gsub(" ","",rndx))
 }
 
-csep<-function(){return(", ")}
+
 
 #' Paste with parentheses
 #'
 #' Paste with parentheses
 #'
-#' @param x a vector
+#'@param x a vector
 #'@keywords helper
-#'@examples
-#'#pstprn(c(1,2,3,4,5))
-#'#pstprn(c("Hello","Hi",2))
 pstprn<-function(x){paste(x[1]," (",paste(x[-1],collapse=csep()),")",sep="")}
 
 #' Round and paste with parentheses
@@ -83,9 +61,6 @@ pstprn<-function(x){paste(x[1]," (",paste(x[-1],collapse=csep()),")",sep="")}
 #' @param x a numeric vector
 #' @param y integer corresponding to the number of digits to round by
 #'@keywords helper
-#'@examples
-#'#psthr(c(1.111111,2.2222222,3.333333))
-# LA updated to always return a formatted string
 psthr<- function (x, y = 2)
 {
   x <- sapply(x, function(x) {
@@ -93,6 +68,7 @@ psthr<- function (x, y = 2)
   })
   pstprn(x)
 }
+
 covnm<-function(betanames,call){
   sapply(betanames,function(betaname){
 
@@ -145,7 +121,7 @@ cap <- function(x) {
         sep = "", collapse = " ")
 }
 
-#' lean strings for printing
+#' Lean strings for printing
 #'
 #' Returns strings with . and _ replaced by a space. This is nice when printing
 #' column names of your dataframe in a report
@@ -180,15 +156,20 @@ nicename <-function (strings,check_numbers=TRUE)
 #'
 #' @param x an integer
 #' @param digits the number of significant digits to return
-#' @export
+#' @keywords helper
 pvalue<-function(x,digits){
   if(is.na(x)|inherits(x,"character")) return(x)
   else if (x<=0.001) return("<0.001")
   else return(signif(x,digits))
 }
 
-formatp<- function(pvalues,digits=2){
-  # see code below for use of digits, this argument is now ignored
+#' Specific p-value formatting
+#'
+#' If p < 0.001 returns "<0.001", if p < 0.01 returns p to 3 decimal places
+#' otherwise returns p to 2 decimal places
+#' @param pvalues a vector of p values
+#' @keywords helper
+formatp<- function(pvalues){
   p_out <- sapply(pvalues, function(x){
     xsig <-suppressWarnings(as.numeric(x))
     fmtX <- ifelse(xsig<0.001,"<0.001",
@@ -200,22 +181,6 @@ formatp<- function(pvalues,digits=2){
   return(p_out)
 }
 
-# formatp<- function(pvalues,digits=2){
-#   p_out <- sapply(pvalues, function(x){
-#     xsig <-suppressWarnings(as.numeric(x))
-#     if (digits>3) {
-#       fmtX <- ifelse(round(x,digits)==0,paste0("<0.",paste(rep(0,digits-1),collapse=''),'1'),
-#                      format(round(x,digits),nsmall=digits,scientific = FALSE))
-#     } else{
-#       fmtX <- ifelse(xsig<0.001,"<0.001",
-#                      ifelse(xsig<0.01,format(round(xsig,3),nsmall=3),
-#                             format(round(xsig,2),nsmall=2)))
-#     }
-#     x <- ifelse(x=='excl','excl',fmtX)
-#   })
-#   p_out = unname(p_out)
-#   return(p_out)
-# }
 
 sanitize <- function(str) {
   result <- str
@@ -237,11 +202,14 @@ sanitize <- function(str) {
   return(result)
 }
 
-#' Sanitizes strings to not break LaTeX
+#'Sanitizes strings to not break LaTeX
 #'
-#' Strings with special charaters will break LaTeX if returned 'asis' by knitr. This happens every time we use one of the main reportRx functions. We first sanitize our strings with this function to stop LaTeX from breaking.
+#'Strings with special charaters will break LaTeX if returned 'asis' by knitr.
+#'This happens every time we use one of the main reportRx functions. We first
+#'sanitize our strings with this function to stop LaTeX from breaking.
 #'
 #'@param str a vector of strings to sanitize
+#' @keywords helper
 sanitizestr<-function(str){
   as.vector(sapply(str,function(char){sanitize(char)}))
 }
@@ -249,6 +217,7 @@ sanitizestr<-function(str){
 #' Bold strings in LaTeX
 #'
 #'@param strings A vector of strings to bold.
+#' @keywords helper
 lbld<-function(strings){sapply(strings,function(x){
   if(is.null(x)) return(x)
   if(is.na(x)) return(x)
@@ -257,21 +226,17 @@ lbld<-function(strings){sapply(strings,function(x){
 #' Bold strings in HTML
 #'
 #'@param strings A vector of strings to bold.
+#' @keywords helper
 hbld<-function(strings){sapply(strings,function(x){
   if(is.null(x)) return(x)
   if(is.na(x)) return(x)
   return(paste('<span style="font-weight: bold;">',x,"</span>",sep=""))})}
 
-# # try to implement this later
-# hsan <- function(strings){
-#   sapply(strings,function(x){
-#     if(is.null(x)) return(x)
-#     if(is.na(x)) return(x)
-#     return(paste('<span style="display: inline">&#36 ',x,'&#36</span>'))
-#   })
-# }
-# work around to prevent errors when $ are used in covariate level names
-# only affects view output.
+
+#' Replace dollar signs with html for proper HTML output
+#'
+#'@param s a character vector
+#'@keywords helper
 rmds <- function(s){
   sapply(s,function(x){
     # gsub("^[$]",'',x)
@@ -284,6 +249,7 @@ rmds <- function(s){
 #'Add spaces to strings in LaTeX. Returns appends ~~~ before the string
 #'
 #'@param x string
+#'@keywords helper
 addspace<-function(x){
   paste("~~~",x,sep="")
 }
@@ -292,6 +258,7 @@ addspace<-function(x){
 #' Returns <0.001 if pvalue is <0.001. Else rounds the pvalue to specified significant digits. Will bold the p-value if it is <= 0.05
 #' @param x an integer
 #' @param sigdigits number of significant digit to report
+#'@keywords helper
 lpvalue <- function (x, sigdigits = 2)
 {
   if (is.na(x) | inherits(x,"character") )
@@ -305,7 +272,6 @@ lpvalue <- function (x, sigdigits = 2)
     return(paste("\\textbf{", x, "}", sep = ""))
   else return(x)
 }
-
 
 
 removedollar<-function(x){
@@ -359,7 +325,7 @@ matchcovariate=function(betanames,ucall){
   return (out)
 }
 
-# Adapted From the CAR package
+# Adapted From the CAR package to compute VIF
 GVIF <- function(model){
   v <- vcov(model)
   ind <- attr(model.matrix(model), "assign")

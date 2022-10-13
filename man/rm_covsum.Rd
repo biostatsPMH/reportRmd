@@ -102,8 +102,8 @@ break LaTeX}
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 }
 \value{
-A formatted table displaying a summary of the covariates stratified
-by maincov
+A character vector of the table source code, unless tableOnly=TRUE in
+which case a data frame is returned
 }
 \description{
 Returns a data frame corresponding to a descriptive table.
@@ -126,7 +126,7 @@ show.tests=TRUE)
 
 # To make custom changes or change the fontsize in PDF/HTML
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
+covs=c('age','sex','pdl1','tmb','l_size'),show.tests=TRUE,tableOnly = TRUE)
 outTable(tab, fontsize=7)
 
 # To return unformatted p-values

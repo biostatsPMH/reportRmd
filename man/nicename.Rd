@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper.R
 \name{nicename}
 \alias{nicename}
-\title{lean strings for printing}
+\title{Lean strings for printing}
 \usage{
 nicename(strings, check_numbers = TRUE)
 }

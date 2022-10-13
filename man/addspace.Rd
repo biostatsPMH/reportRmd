@@ -12,3 +12,4 @@ addspace(x)
 \description{
 Add spaces to strings in LaTeX. Returns appends ~~~ before the string
 }
+\keyword{helper}

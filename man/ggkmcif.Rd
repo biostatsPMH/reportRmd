@@ -27,7 +27,7 @@ ggkmcif(
   median.lines = FALSE,
   median.CI = FALSE,
   set.time.text = NULL,
-  set.time.line = F,
+  set.time.line = FALSE,
   set.time = 5,
   set.time.CI = FALSE,
   censor.marks = TRUE,
@@ -51,7 +51,7 @@ ggkmcif(
   pval.pos = NULL,
   plot.event = 1,
   event = c("col", "linetype"),
-  flip.CIF = F,
+  flip.CIF = FALSE,
   cut = NULL,
   eventlabs = NULL,
   event.name = NULL,
@@ -219,6 +219,12 @@ specified time}
 
 \item{print.n.missing}{Logical, should the number of missing be shown !Needs
 to be checked}
+}
+\value{
+Nothing is returned unless returns = TRUE is used. With returns =
+TRUE,  if table=TRUE (the default) a table style graphic with survival plot
+and number at risk table is returned. Otherwise a plot with the survival
+curves is returned.
 }
 \description{
 This function will plot a KM or CIF curve with option to add the number at

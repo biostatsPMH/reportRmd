@@ -47,6 +47,10 @@ details. Default is 'log'.}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
 }
+\value{
+A character vector of the survival table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 This is a wrapper function around the survdiff function to display overall
 event rates and group-specific rates along with the log-rank test of a

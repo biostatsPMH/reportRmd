@@ -32,6 +32,10 @@ shown if present in the mvsumTable. Default is FALSE.}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 }
+\value{
+A character vector of the table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 This function will combine rm_uvsum and rm_mvsum outputs into a single table.
 The tableOnly argument must be set to TRUE when tables to be combined are

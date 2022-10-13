@@ -74,6 +74,10 @@ columns should be output, default is TRUE}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
 }
+\value{
+A character vector of the survival table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 This is a wrapper for the survfit function to output a tidy display for
 reporting. Either Kaplan Meier or Cox Proportional Hazards models may be used

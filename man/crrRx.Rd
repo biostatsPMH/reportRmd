@@ -13,6 +13,9 @@ notation.}
 
 \item{data}{dataframe containing data}
 }
+\value{
+a competing risk model with the call appended to the list
+}
 \description{
 Wrapper function to fit fine and gray competing risk model using function crr
 from package cmprsk

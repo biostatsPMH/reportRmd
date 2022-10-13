@@ -63,6 +63,10 @@ columns should be output, default is TRUE}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
 }
+\value{
+A character vector of the survival table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 Displays event counts, median survival time and survival rates at specified
 times points for the entire cohort and by group. The logrank test of

@@ -44,6 +44,11 @@ call, defaults to 2}
 \item{p_margins}{sets the TRBL margins of the individual plots, defaults to
 c(0,0.2,1,.2)}
 }
+\value{
+a list containing plots for each variable in covs
+
+a plot object
+}
 \description{
 This function is designed to accompany \code{\link{uvsum}} as a means of
 visualising the results, and uses similar syntax.

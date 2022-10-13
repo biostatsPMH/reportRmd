@@ -14,7 +14,4 @@ psthr(x, y = 2)
 \description{
 Round and paste with parentheses
 }
-\examples{
-#psthr(c(1.111111,2.2222222,3.333333))
-}
 \keyword{helper}

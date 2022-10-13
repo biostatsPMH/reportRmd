@@ -12,3 +12,4 @@ hbld(strings)
 \description{
 Bold strings in HTML
 }
+\keyword{helper}

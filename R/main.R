@@ -1,3 +1,30 @@
+#' Retrieve columns number from spreadsheet columns specified as unquoted letters
+#' @param ... unquoted excel column headers (i.e. excelCol(A,CG,AA)) separated by commas
+#' @importFrom rlang as_string
+#' @returns a numeric vector corresponding to columns in a spreadsheet
+#' @export
+#' @examples
+#' ## Find the column numbers for excel columns AB, CE and BB
+#' excelCol(AB,CE,bb)
+excelCol<- function(...){
+  args <- as.list(match.call())[-1]
+  args <-unname(unlist(lapply(args,function(x) {rlang::as_string(x)})))
+  if (sum(unlist(lapply(args, function(x) grepl("[^A-Za-z]",x))))>0) {
+    stop('Only valid Excel column names can be supplied, separated by commas.')
+  }
+  rtn<-sapply(args, function(x){
+    colHead <- toupper(x)
+    if (nchar(colHead)>1){
+      l1 = substr(colHead,1,1)
+      l2 = substr(colHead,2,2)
+      rtn <- 26*which(LETTERS==l1)+which(LETTERS==l2)
+    } else {
+      rtn <- which(LETTERS==colHead)
+    }
+  })
+  names(rtn) <- toupper(names(rtn))
+  return(rtn)
+}
 #' fit box cox transformed linear model
 #'
 #' Wrapper function to fit fine and gray competing risk model using function crr
@@ -10,8 +37,10 @@
 #' @param lambda boolean indicating if you want to output the lamda used in the
 #'   boxcox transformation. If so the function will return a list of length 2
 #'   with the model as the first element and a vector of length 2 as the second.
+#' @returns a list containing the linear model (lm) object and, if requested,
+#'   lambda
 #' @keywords model
-boxcoxfitRx<-function(f,data,lambda=F){
+boxcoxfitRx<-function(f,data,lambda=FALSE){
   x<-as.character(f)[3]
   y<-as.character(f)[2]
   time<- gsub("\\s","",unlist(strsplit(y,"+",fixed=TRUE))[1])
@@ -148,6 +177,7 @@ geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 
 #'   notation.
 #' @param data dataframe containing data
 #' @keywords model
+#' @returns a competing risk model with the call appended to the list
 #' @importFrom cmprsk crr
 #' @seealso \code{\link{crr}}
 #' @examples
@@ -171,171 +201,6 @@ crrRx<-function(f,data){
   return(m1)
 }
 
-
-#' Get event time summary dataframe
-#'
-#' This function will output a dataframe with useful summary statistics from a
-#' coxph model
-#'
-#' @param data dataframe containing data
-#' @param response character vector with names of columns to use for response
-#' @param group string specifying the column name of stratification variable
-#' @param times numeric vector of times you want survival time probabilities
-#'   for.
-#' @keywords dataframe
-#' @importFrom stats reshape median as.formula
-etsum<- function(data,response,group=1,times=c(12,24)){
-
-  ### coerse data into a data.frame in case isn't
-  if( inherits(data,"data.frame")) data <- data.frame(data) else stop('data must be a data frame')
-
-  if ( (inherits(group,"numeric") & group!=1) | (!inherits(group,"numeric") & !is.factor(data[,group])) )
-    stop("group variable must be factor or leave unspecified for no group")
-
-  if( length(response)>2 )
-    stop("'response' must be a vector of length 2, etsum does not work for interval censored data yet.")
-
-  if( !inherits(data[,response[2]],c("numeric","integer")) ) stop("Status indicator (variable ",response[2],") must be numeric/integer for etsum to work properly. See ?Surv for more info.")
-
-  # check for status indicator (2 for typical survival, will stop if there are more than two levels)
-  if( length(unique(data[,response[2]]))>2 ){
-    stop("There are more than two status indicators, etsum does not work for summarizing competing risk data.")
-  }
-  stind <- as.matrix(Surv(data[,response[1]], data[,response[2]]))[,2] # This variable is needed to later create a subset across non-events (or censored to be more precise, i.e. stind==0)
-
-  if(inherits(group,"numeric")){
-    kfit <- summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",group,sep=""))  ,data=data))
-    maxtime = max(kfit$time)
-    times[times>maxtime] = maxtime
-    kfit2 <- summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",group,sep="")) ,data=data),times=times)
-    tab <- as.data.frame(cbind(strata=as.character(kfit2$strata), times=kfit2$time, SR=paste(round(kfit2$surv*100,0)," (",round(kfit2$lower*100,0),"-",round(kfit2$upper*100,0),")",sep="")))
-    tab$times = round(as.numeric(as.character(tab$times)),1)
-    tbl <- kfit2$table
-  }else{
-    if(!inherits(data[,group],"factor"))
-      stop("group variable must be factor or leave unspecified for no group")
-    tab <- lapply(levels(data[,group]),function(level){
-      # subdata <- subset(data,data[,group]==level)
-      subdata <- data[data[,group]==level,]
-      # kfit<-summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",1,sep=""))  ,data=subdata))
-      # maxtime=max(kfit$time)
-      # times[times>maxtime]=maxtime
-      kfit2 <- summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",1,sep="")) ,data=subdata),times=times, extend=TRUE)
-      list(cbind(strata=paste0(group,"=",level),times=kfit2$time,SR=paste(round(kfit2$surv*100,0)," (",round(kfit2$lower*100,0),"-",round(kfit2$upper*100,0),")",sep="")),kfit2$table)})
-    tbl = t(sapply(tab,"[[",2))
-    rownames(tbl) = sapply(levels(data[,group]),function(level)paste0(group,"=",level))
-    tab = do.call(rbind.data.frame,lapply(tab,"[[",1))
-    tab$times = round(as.numeric(as.character(tab$times)),1)
-    tab = unique(tab)
-  }
-
-  if(!inherits(group,"numeric")){
-
-    kfit <- summary(survival::survfit(as.formula(paste("Surv(",response[1],",",response[2],")~",group,sep=""))  ,data=data))
-    med = by(data,data[,group],function(x) median(x[,response[1]],na.rm=TRUE))
-    min = by(data,data[,group],function(x) min(x[,response[1]],na.rm=TRUE))
-    max = by(data,data[,group],function(x) max(x[,response[1]],na.rm=TRUE))
-
-    ### compute med, min, max follow up times among the non-events
-    if( sum(stind!=0,na.rm = TRUE)!=nrow(data) ){
-      data_noev = data[stind==0,]
-      med_nonev = by(data_noev, data_noev[ , group], function(x) median(x[,
-                                                                          response[1]], na.rm = T))
-      min_nonev = by(data_noev, data_noev[ , group], function(x) min(x[,
-                                                                       response[1]], na.rm = T))
-      max_nonev = by(data_noev, data_noev[ , group], function(x) max(x[,
-                                                                       response[1]], na.rm = T))
-    }else med_nonev = min_nonev = max_nonev = NA
-
-    survtimes <- data.frame(strata=as.character(kfit$strata),kfit$time)
-    minst <- round(as.numeric(by(survtimes,survtimes$strata,function(x) min(x[,2]))),1)
-    maxst <- round(as.numeric(by(survtimes,survtimes$strata,function(x) max(x[,2]))),1)
-
-    # tab <- reshape::cast(tab, strata ~ times, value="SR")
-    ### avoid the 'reshape' package dependency with rshape function
-    tab <- stats::reshape(tab[,c("strata","times","SR")], v.names="SR", timevar="times", idvar="strata", direction="wide")
-    names(tab) <- gsub("SR[.]","",names(tab))
-
-    names <- names(tab)
-    tab <- data.frame(tab)
-    names(tab) <- names
-    tab[,1] <- levels(data[,group]) # assumes order in tab is the same as the levels, which seems safe given that tab was generated using lapply on each level
-    if(length(times)>1){
-      indx <- c(0,sapply(sort(as.numeric(names(tab)[-1])),function(x){which(as.numeric(names(tab)[-1])==x)}))+1
-      tab <- tab[,indx]
-      tab <- tab[c(2:length(tab),1)]
-    }else{
-      tab <- tab[c(2:length(tab),1)]
-    }
-    noeventsindx <- ifelse(length(which(tbl[,"events"]==0))!=0,
-                           which(tbl[,"events"]==0),NA)
-    if(!is.na(noeventsindx)){
-      for(i in noeventsindx){
-        if(i==1){
-          minst<-c(0,minst)
-          maxst<-c(0,maxst)
-        }else if(i>length(minst)){
-          minst<-c(minst,0)
-          maxst<-c(maxst,0)
-        }else{
-          minst<-c(minst[1:i-1],0,minst[i:length(minst)])
-          maxst<-c(maxst[1:i-1],0,maxst[i:length(maxst)])
-        }}}
-
-
-    tab<-cbind("n"=tbl[,"records"],
-               "Events"=tbl[,"events"],
-               "MedKM"= round(tbl[,"median"],1),
-               "LCI"=round(tbl[,"0.95LCL"],1),
-               "UCI"=round(tbl[,"0.95UCL"],1),
-               "MedFU"=round(as.numeric(med),1),
-               "MinFU"=round(as.numeric(min),1),
-               "MaxFU"=round(as.numeric(max),1),
-               "MinET"=minst,"MaxET"=maxst,
-               MedFU.nonev = round(as.numeric(med_nonev), 1),
-               MinFU.nonev = round(as.numeric(min_nonev), 1),
-               MaxFU.nonev = round(as.numeric(max_nonev), 1),
-               tab)
-    rownames(tab) <- NULL
-
-  }else{
-    med = median(data[,response[1]],na.rm=TRUE)
-    min = min(data[,response[1]],na.rm=TRUE)
-    max = max(data[,response[1]],na.rm=TRUE)
-
-    ### compute med, min, max follow up times among the non-events
-    if( sum(stind!=0,na.rm=TRUE)!=nrow(data) ){
-      med_nonev = median(data[stind==0, response[1]], na.rm = T)
-      min_nonev = min(data[stind==0, response[1]], na.rm = T)
-      max_nonev = max(data[stind==0, response[1]], na.rm = T)
-    }else med_nonev = min_nonev = max_nonev = NA
-
-    if(length(times)>1){
-      tab <- data.frame(t(tab))
-      rownames(tab) <- NULL
-      names(tab) <- as.numeric(as.matrix(tab[1,]))
-      tab <- tab[-1,]
-    }else{
-      rownames(tab) <- NULL
-      names(tab)[2] <- round(as.numeric(as.character(times)),1)
-      tab <- tab[-1]
-    }
-    tab<-cbind("n"=tbl[["records"]],
-               "Events"=tbl[["events"]],
-               "MedKM"=round(tbl[["median"]],1),
-               "LCI"=round(tbl[["0.95LCL"]],1),
-               "UCI"=round(tbl[["0.95UCL"]],1),
-               "MedFU"=round(as.numeric(med),1),
-               "MinFU"=round(as.numeric(min),1),
-               "MaxFU"=round(as.numeric(max),1),
-               "MinET"=round(min(kfit$time),1),"MaxET"=round(max(kfit$time),1),
-               MedFU.nonev = round(as.numeric(med_nonev), 1),
-               MinFU.nonev = round(as.numeric(min_nonev), 1),
-               MaxFU.nonev = round(as.numeric(max_nonev), 1),tab)
-    rownames(tab) <- NULL
-  }
-  return(tab)
-}
 
 
 
@@ -487,7 +352,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
             p_type <- 'Fisher Exact'
             p <- try(stats::fisher.test(pdata[[maincov]], pdata[[cov]])$p.value,silent=TRUE)
             if (is.error(p)){
-              set.seed(1)
+              message('Using MC sim. Use set.seed() prior to function for reproducible results.')
               p <- try(stats::fisher.test(pdata[[maincov]], pdata[[cov]],simulate.p.value =  T)$p.value,silent=TRUE)
               p_type <- 'MC sim'
             }
@@ -1107,7 +972,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
 #'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
-mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, nicenames = T,
+mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    CIwidth = 0.95, vif=TRUE)
 {
   if (!markup) {
@@ -1503,12 +1368,13 @@ mvsum <- function (model, data, digits=2, showN = F, markup = T, sanitize = T, n
 #' @import ggplot2
 #' @importFrom scales log_breaks
 #' @keywords plot
+#' @return a plot object
 #' @export
 #' @examples
 #' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' forestplot2(glm_fit)
-forestplot2 = function(model,conf.level=0.95,orderByRisk=T,colours='default',showEst=TRUE,rmRef=FALSE,logScale=TRUE,nxTicks=5){
+forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',showEst=TRUE,rmRef=FALSE,logScale=TRUE,nxTicks=5){
 
   if (inherits(model,'glm')){
     if(model$family$link=='log'){
@@ -1611,10 +1477,12 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=T,colours='default',sho
 #' @param p_margins sets the TRBL margins of the individual plots, defaults to
 #'   c(0,0.2,1,.2)
 #' @keywords plot
+#' @returns a list containing plots for each variable in covs
 #' @importFrom ggplot2 ggplot aes_string geom_boxplot geom_point geom_text
 #'   stat_summary scale_x_discrete stat theme labs .data
 #' @importFrom ggpubr ggarrange
 #' @importFrom stats median
+#' @return a plot object
 #' @export
 #' @examples
 #' ## Run multiple univariate analyses on the pembrolizumab dataset to predict cbr and
@@ -1809,11 +1677,13 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #' @param keep.rownames should the row names be included in the output
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @param chunk_label only used knitting to Word docs to allow cross-referencing
+#' @return A character vector of the table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @examples
 #' # To make custom changes or change the fontsize in PDF/HTML
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-#' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
+#' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=TRUE,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
 #'
 #' # To bold columns with the variable names
@@ -1900,6 +1770,8 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 
   } else {  # For PDF, HTML
     # set NA to empty in kable
+    oldop <- options()
+    on.exit(options(oldop))
     options(knitr.kable.NA = '')
     if (out_fmt=='latex') {
       names(tab) <- sanitize(names(tab))
@@ -1973,6 +1845,8 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 #'   number or a vector corresponding to the number of numeric columns
 #' @param tableOnly boolean indicating if the table should be formatted for
 #'   printing or returned as a data frame
+#' @return A character vector of the table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @examples
 #' ## Investigate models to predict baseline ctDNA and tumour size and display together
@@ -1992,7 +1866,13 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
     colNames <- names(data)
     data <- data.frame(data)
   } else stop('data must be a data.frame')
-  # ensure that the data are sorted by the header column and covariates in the order they first appear
+  if (length(which(names(data)==head_col))==0) stop ('head_col must be a string specifying a variable in data')
+  if (length(which(names(data)==to_col))==0) stop ('to_col must be a string specifying a variable in data')
+  # re-order columns so that the head_col and to_col appear to the left
+  colOrd <- c(which(names(data)==head_col),which(names(data)==to_col),
+              setdiff(1:ncol(data),c(which(names(data)==head_col),which(names(data)==to_col))))
+  data <- data[,colOrd]
+  # ensure that the data are sorted by the header column and to column in the order they first appear
   # necessary if there is a misplaced row
   data[[head_col]] <- factor(data[[head_col]],levels=unique(data[[head_col]]),ordered = T)
   data[[to_col]] <- factor(data[[to_col]],levels=unique(data[[to_col]]),ordered = T)
@@ -2104,8 +1984,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' @param sanitize boolean indicating if you want to sanitize all strings to not
 #'   break LaTeX
 #' @keywords dataframe
-#' @return A formatted table displaying a summary of the covariates stratified
-#'   by maincov
+#' @return A character vector of the table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @seealso \code{\link{covsum}},\code{\link{fisher.test}},
 #'   \code{\link{chisq.test}}, \code{\link{wilcox.test}},
@@ -2117,7 +1997,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'
 #' # To make custom changes or change the fontsize in PDF/HTML
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-#' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
+#' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=TRUE,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
 #'
 #' # To return unformatted p-values
@@ -2126,7 +2006,6 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' show.tests=TRUE,unformattedp=TRUE,tableOnly=TRUE)
 #' outTable(tab,digits=5)
 #' outTable(tab,digits=5, applyAttributes=FALSE) # remove bold/indent
-
 rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTitle='',
                       digits=1,digits.cat = 0,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,
                       pvalue=TRUE,unformattedp=FALSE,show.tests=FALSE,
@@ -2241,6 +2120,8 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 #' \code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
 #' \code{\link{coxph}},
 #' \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
+#' @return A character vector of the table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @examples
 #' # Examples are for demonstration and are not meaningful
@@ -2346,7 +2227,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   if ("Global p-value" %in% names(tab)){
     raw_p <- ifelse(tab[["Global p-value"]]=='',tab[["p-value"]],tab[["Global p-value"]])
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-    p_sig <- sapply(p_sig,formatp,digits = digits)
+    p_sig <- sapply(p_sig,formatp)
     gp_vals <- which(tab[["Global p-value"]]!='' & !is.na(tab[["Global p-value"]]))
     tab[["Global p-value"]][gp_vals]  <- p_sig[gp_vals]
     p_vals <- which(tab[["p-value"]]!='' & !is.na(tab[["p-value"]]))
@@ -2359,7 +2240,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   } else {
     raw_p <- tab[["p-value"]]
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-    tab[["p-value"]] <- sapply(p_sig,formatp,digits = digits)
+    tab[["p-value"]] <- sapply(p_sig,formatp)
   }
   if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
 
@@ -2386,7 +2267,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 }
 
 
-#' Format a regression model nicely for Rmarkdown
+#' Format a regression model nicely for 'Rmarkdown'
 #'
 #' Multivariable (or univariate) regression models are re-formatted for
 #' reporting and a global p-value is added for the evaluation of factor
@@ -2431,6 +2312,8 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #'   break LaTeX
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
+#' @return A character vector of the table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @references John Fox & Georges Monette (1992) Generalized Collinearity
 #'   Diagnostics, Journal of the American Statistical Association, 87:417,
@@ -2451,7 +2334,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
 rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95, vif=TRUE,
-                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, markup = T,sanitize = T,nicenames = T){
+                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, markup = TRUE,sanitize = TRUE,nicenames = TRUE){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
@@ -2470,7 +2353,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
   if ("Global p-value" %in% names(tab)){
     raw_p <- ifelse(tab[["Global p-value"]]=='',tab[["p-value"]],tab[["Global p-value"]])
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-    p_sig <- sapply(p_sig,formatp,digits = digits)
+    p_sig <- sapply(p_sig,formatp)
     tab[["Global p-value"]][tab[["Global p-value"]]!='']  <- p_sig[tab[["Global p-value"]]!='']
     tab[["p-value"]][tab[["Global p-value"]]=='']  <- p_sig[tab[["Global p-value"]]=='']
     to_bold_p <- which(tab[["Global p-value"]]<.05 &
@@ -2482,7 +2365,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
   } else {
     raw_p <- tab[["p-value"]]
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-    tab[["p-value"]] <- sapply(p_sig,formatp,digits = digits)
+    tab[["p-value"]] <- sapply(p_sig,formatp)
   }
   if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
 
@@ -2533,6 +2416,8 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @seealso
 #'   \code{\link{rm_uvsum}},\code{\link{rm_mvsum}}
+#' @return A character vector of the table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @examples
 #' require(survival)
@@ -2633,75 +2518,6 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,ta
            caption=caption)
 }
 
-#' Print Event time summary
-#'
-#' Wrapper for the etsum function that prints paragraphs of text in R Markdown
-#'
-#' @param data data frame containing data
-#' @param response character vector with names of columns to use for response
-#' @param group string specifying the column name of stratification variable
-#' @param times numeric vector of times you want survival time probabilities for.
-#' @param units string indicating the unit of time. Use lower case and plural.
-#' @keywords print
-#' @export
-#' @examples
-#' rm_etsum(pembrolizumab,c("os_time","os_status"),"sex")
-#' rm_etsum(pembrolizumab,c("os_time","os_status"))
-#' rm_etsum(pembrolizumab,c("os_time","os_status"),"sex",c(1,2,3),"months")
-rm_etsum<-function(data,response,group=1,times=c(12,14),units="months"){
-  t<-etsum(data,response,group,times)
-
-  names<-names(t)
-  if("strata"%in% names){
-    strta<-sapply(t[,"strata"],function(x) paste(x,": ",sep=""))
-    offset<-2
-    ofst<-1
-  }else{
-    strta=matrix(c("",""))
-    offset<-1
-    ofst<-0
-  }
-
-
-  out<-sapply(seq_len(nrow(t)),function(i){
-
-    if(is.na(t[i,3])) {km<-paste("The KM median event time has not been achieved due to lack of events.",sep="")
-    }else if (!is.na(t[i,5])){km<-paste("The KM median event time is ",t[i,3]," with 95",sanitizestr("%")," confidence Interval (",t[i,4],",",t[i,5],").",sep="")
-    }else{km<-paste("The KM median event time is ",t[i,3]," ",units," with 95",sanitizestr("%")," confidence Interval (",t[i,4],",",t[i,10],").",sep="")}
-
-    # if at least one event
-    if(t[i,2]!=0){
-      flet<-paste(" The first and last event times occurred at ",t[i,9],
-                  " and ",t[i,10]," ",units," respectively. ",sep="")
-
-      psindex=14:(ncol(t)-ofst)
-      psindex=psindex[which(!is.na(t[i,psindex]))]
-      if(length(psindex)>1){
-        lastindex=psindex[length(psindex)]
-        firstindex=psindex[-length(psindex)]
-        ps<-paste("The ",paste(names[firstindex],collapse=",")," and ",names[lastindex]," " ,substring(units,1,nchar(units)-1),
-                  " probabilities of 'survival' and their 95",sanitizestr("%")," confidence intervals are ",
-                  paste(sapply(t[i,firstindex],function(x) paste(x)),collapse=",")," and ",t[i,lastindex]," percent.",sep="")
-
-      }else{
-        ps<-paste("The ",names[psindex]," ",substring(units,1,nchar(units)-1),
-                  " probability of 'survival' and 95",sanitizestr("%")," confidence interval is ",
-                  t[i,psindex]," percent.",sep="")
-      }
-      #if no events
-    }else{
-      km=""
-      ps=""
-      flet=""
-    }
-
-
-    out<-paste0(ifelse(strta[i]=='','',paste0('**',sanitizestr(nicename(strta[i])),'**'))," There are ",t[i,1]," patients. There were ",t[i,2],
-                " (",round(100*t[i,2]/t[i,1],0),sanitizestr("%"),") events. The median and range of the follow-up times is ",
-                t[i,6]," (",t[i,7],"-",t[i,8],") ",units,". ",km,flet,ps,sep="")
-    cat("\n",out,"\n")
-  })
-}
 
 
 # Survival Curves --------------------------------------------------------------
@@ -2846,19 +2662,24 @@ rm_etsum<-function(data,response,group=1,times=c(12,14),units="months"){
 #' ggkmcif(c('os_time','os_status'),'sex',data = pembrolizumab, type = 'KM',
 #' HR=TRUE, HR_pval = TRUE, conf.curves = TRUE,conf.type='log-log',
 #' set.time.CI = TRUE, censor.marks=TRUE)
+#' @return Nothing is returned unless returns = TRUE is used. With returns =
+#'   TRUE,  if table=TRUE (the default) a table style graphic with survival plot
+#'   and number at risk table is returned. Otherwise a plot with the survival
+#'   curves is returned.
 #' @export
 ggkmcif <- function(response,cov=NULL,data,type=NULL,
-                    pval = TRUE,HR=FALSE,HR_pval=FALSE,conf.curves=FALSE,conf.type = "log",table = TRUE,times = NULL,xlab = "Time",ylab=NULL ,
+                    pval = TRUE,HR=FALSE,HR_pval=FALSE,conf.curves=FALSE,conf.type = "log",table = TRUE,
+                    times = NULL,xlab = "Time",ylab=NULL ,
                     main = NULL,stratalabs = NULL,strataname = nicename(cov),
                     stratalabs.table=NULL,strataname.table=strataname,
                     median.text=FALSE,median.lines=FALSE,median.CI=FALSE,
-                    set.time.text=NULL,set.time.line=F,set.time=5,set.time.CI=FALSE,
+                    set.time.text=NULL,set.time.line=FALSE,set.time=5,set.time.CI=FALSE,
                     censor.marks = TRUE,censor.size = 3,censor.stroke = 1.5,
                     fsize = 10, nsize = 3, lsize = 1, psize = 3.5,
                     median.size=3,median.pos=NULL,median.lsize=1,
                     set.size=3,set.pos=NULL,set.lsize=1,
                     ylim=c(0,1), col=NULL,linetype=NULL, xlim=NULL,
-                    legend.pos = NULL,  pval.pos=NULL,plot.event=1,event=c("col","linetype"),flip.CIF =F,
+                    legend.pos = NULL,  pval.pos=NULL,plot.event=1,event=c("col","linetype"),flip.CIF =FALSE,
                     cut=NULL,eventlabs=NULL,event.name=NULL,Numbers_at_risk_text="Numbers at risk",
                     HR.digits = 2,HR.pval.digits=3, pval.digits=3,
                     median.digits=3,set.time.digits=3,returns = FALSE,print.n.missing=TRUE){
@@ -3565,6 +3386,8 @@ modify_ggkmcif <- function(list_gg){
 #' This function puts together a survival curve, and a number at risk table
 #'
 #' @param list_gg list containing the results of ggkmcif
+#' @return a gtable with three elements, the survival curve, a spacer and the
+#'   number at risk table
 #' @export
 #' @examples
 #' plot <- ggkmcif(response=c('pfs_time','pfs_status'),
@@ -3628,7 +3451,8 @@ ggkmcif_paste <- function(list_gg){
 #' # Differences between sex/cohort groups
 #' rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 #' covs=c('sex','cohort'),digits=1)
-
+#' @return A character vector of the survival table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
                         digits=1,showCols=c('N','Observed','Expected'),CIwidth=0.95,
@@ -3743,6 +3567,8 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #' @param tableOnly should a dataframe or a formatted object be returned
 #' @importFrom  survival survfit Surv
 #' @seealso \code{\link{survfit}}
+#' @return A character vector of the survival table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @examples
 #' # Simple median survival table
@@ -3891,6 +3717,8 @@ rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
 #' @param tableOnly should a dataframe or a formatted object be returned
 #' @importFrom  survival survfit Surv
 #' @seealso \code{\link{survfit}}
+#' @return A character vector of the survival table source code, unless tableOnly=TRUE in
+#'   which case a data frame is returned
 #' @export
 #' @examples
 #' # Kaplan-Mieir survival probabilities with time displayed in years

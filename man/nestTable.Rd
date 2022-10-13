@@ -47,6 +47,10 @@ number or a vector corresponding to the number of numeric columns}
 \item{tableOnly}{boolean indicating if the table should be formatted for
 printing or returned as a data frame}
 }
+\value{
+A character vector of the table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 This function accepts a data frame (via the data argument) and combines two
 columns into a single column with values from the head_col serving as headers

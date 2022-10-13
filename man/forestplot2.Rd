@@ -7,7 +7,7 @@
 forestplot2(
   model,
   conf.level = 0.95,
-  orderByRisk = T,
+  orderByRisk = TRUE,
   colours = "default",
   showEst = TRUE,
   rmRef = FALSE,
@@ -36,6 +36,9 @@ linear scale.}
 
 \item{nxTicks}{Number of tick marks supplied to the log_breaks function to
 produce}
+}
+\value{
+a plot object
 }
 \description{
 This function will accept a log or logistic regression fit from glm, and

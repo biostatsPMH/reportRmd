@@ -60,6 +60,10 @@ haven't changed.}
 
 \item{chunk_label}{only used knitting to Word docs to allow cross-referencing}
 }
+\value{
+A character vector of the table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 Output the table nicely to whatever format is appropriate. This is the output
 function used by the rm_* printing functions.
@@ -72,7 +76,7 @@ to spaces. To disable this set rm_ to FALSE
 \examples{
 # To make custom changes or change the fontsize in PDF/HTML
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-covs=c('age','sex','pdl1','tmb','l_size'),show.tests=T,tableOnly = TRUE)
+covs=c('age','sex','pdl1','tmb','l_size'),show.tests=TRUE,tableOnly = TRUE)
 outTable(tab, fontsize=7)
 
 # To bold columns with the variable names

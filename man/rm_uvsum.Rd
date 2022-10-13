@@ -98,6 +98,10 @@ will be suppressed. In addition to the model elements a data element will
 be appended to each model so that the fitted data can be examined, if
 necessary. See Details}
 }
+\value{
+A character vector of the table source code, unless tableOnly=TRUE in
+which case a data frame is returned
+}
 \description{
 A table with the model parameters from running separate univariate models on
 each covariate. For factors with more than two levels a Global p-value is

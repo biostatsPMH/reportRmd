@@ -9,6 +9,10 @@ ggkmcif_paste(list_gg)
 \arguments{
 \item{list_gg}{list containing the results of ggkmcif}
 }
+\value{
+a gtable with three elements, the survival curve, a spacer and the
+number at risk table
+}
 \description{
 This function puts together a survival curve, and a number at risk table
 }

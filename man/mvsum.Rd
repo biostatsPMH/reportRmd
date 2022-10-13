@@ -8,10 +8,10 @@ mvsum(
   model,
   data,
   digits = 2,
-  showN = F,
-  markup = T,
-  sanitize = T,
-  nicenames = T,
+  showN = FALSE,
+  markup = TRUE,
+  sanitize = TRUE,
+  nicenames = TRUE,
   CIwidth = 0.95,
   vif = TRUE
 )

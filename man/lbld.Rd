@@ -12,3 +12,4 @@ lbld(strings)
 \description{
 Bold strings in LaTeX
 }
+\keyword{helper}

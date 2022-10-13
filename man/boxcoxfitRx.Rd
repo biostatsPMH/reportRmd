@@ -4,7 +4,7 @@
 \alias{boxcoxfitRx}
 \title{fit box cox transformed linear model}
 \usage{
-boxcoxfitRx(f, data, lambda = F)
+boxcoxfitRx(f, data, lambda = FALSE)
 }
 \arguments{
 \item{f}{formula for the model. Currently the formula only works by using the
@@ -16,6 +16,10 @@ notation.}
 \item{lambda}{boolean indicating if you want to output the lamda used in the
 boxcox transformation. If so the function will return a list of length 2
 with the model as the first element and a vector of length 2 as the second.}
+}
+\value{
+a list containing the linear model (lm) object and, if requested,
+lambda
 }
 \description{
 Wrapper function to fit fine and gray competing risk model using function crr

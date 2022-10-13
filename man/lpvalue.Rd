@@ -14,3 +14,4 @@ lpvalue(x, sigdigits = 2)
 \description{
 Returns <0.001 if pvalue is <0.001. Else rounds the pvalue to specified significant digits. Will bold the p-value if it is <= 0.05
 }
+\keyword{helper}

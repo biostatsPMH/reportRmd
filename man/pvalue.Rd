@@ -15,3 +15,4 @@ pvalue(x, digits)
 Returns <0.001 if pvalue is <0.001. Else rounds the pvalue to specified
 significant digits
 }
+\keyword{helper}

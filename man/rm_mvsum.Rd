@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{rm_mvsum}
 \alias{rm_mvsum}
-\title{Format a regression model nicely for Rmarkdown}
+\title{Format a regression model nicely for 'Rmarkdown'}
 \usage{
 rm_mvsum(
   model,
@@ -17,9 +17,9 @@ rm_mvsum(
   p.adjust = "none",
   unformattedp = FALSE,
   chunk_label,
-  markup = T,
-  sanitize = T,
-  nicenames = T
+  markup = TRUE,
+  sanitize = TRUE,
+  nicenames = TRUE
 )
 }
 \arguments{
@@ -62,6 +62,10 @@ break LaTeX}
 
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}
+}
+\value{
+A character vector of the table source code, unless tableOnly=TRUE in
+which case a data frame is returned
 }
 \description{
 Multivariable (or univariate) regression models are re-formatted for
