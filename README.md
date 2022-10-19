@@ -9,9 +9,12 @@ Note that the README.md document may need updating to change
 <!-- badges: start -->
 
 [![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+Stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/reportRmd)](https://CRAN.R-project.org/package=reportRmd)
+[![metacran
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/reportRmd)](https://cran.r-project.org/package=reportRmd)
+
 <!-- badges: end -->
 
 The goal of reportRmd is to automate the reporting of clinical data in
@@ -23,11 +26,14 @@ curves, forest plots, and automated bivariate plots.
 
 ## Installation
 
+Installing from CRAN:
+
+``` r
+install.packages('reportRmd')
+```
+
 You can install the development version of reportRmd from
 [GitHub](https://github.com/) with:
-
-If the devtools package is not installed, uncomment the first line of
-code to install it.
 
 ``` r
 # install.packages("devtools")
