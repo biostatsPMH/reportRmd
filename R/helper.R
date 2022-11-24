@@ -40,9 +40,10 @@ csep<-function(){return(", ")}
 #'@param digits numeric
 #'@keywords helper
 niceNum <- function(x,digits=2){
-  if(is.na(x)) return(x)
-  if(is.null(x)) return(x)
-  rndx = sapply(x, function(x) {format(round(as.numeric(x),digits),nsmall=digits)})
+  rndx = sapply(x, function(x) {
+    if(is.na(x)) return(x)
+    if(is.null(x)) return(x)
+    format(round(as.numeric(x),digits),nsmall=digits)})
   return(gsub(" ","",rndx))
 }
 

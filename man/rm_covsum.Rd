@@ -24,10 +24,9 @@ rm_covsum(
   full = TRUE,
   include_missing = FALSE,
   percentage = c("column", "row"),
+  dropLevels = TRUE,
   excludeLevels = NULL,
   numobs = NULL,
-  markup = TRUE,
-  sanitize = TRUE,
   chunk_label
 )
 }
@@ -85,6 +84,9 @@ be included in statistical tests}
 \item{percentage}{choice of how percentages are presented, one of
 \emph{column} (default) or \emph{row}}
 
+\item{dropLevels}{logical, indicating if empty factor levels be dropped from
+the output, default is TRUE.}
+
 \item{excludeLevels}{a named list of covariate levels to exclude from
 statistical tests in the form list(varname =c('level1','level2')). These
 levels will be excluded from association tests, but not the table. This can
@@ -93,11 +95,6 @@ presented). Ignored if pvalue=FALSE.}
 
 \item{numobs}{named list overriding the number of people you expect to have
 the covariate}
-
-\item{markup}{boolean indicating if you want latex markup}
-
-\item{sanitize}{boolean indicating if you want to sanitize all strings to not
-break LaTeX}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 }

@@ -239,6 +239,8 @@ crrRx<-function(f,data){
 #' @param pvalue boolean indicating if you want p-values included in the table
 #' @param show.tests boolean indicating if the type of statistical used should
 #'   be shown in a column beside the pvalues. Ignored if pvalue=FALSE.
+#' @param dropLevels logical, indicating if empty factor levels be dropped from
+#'   the output, default is TRUE.
 #' @param excludeLevels a named list of covariate levels to exclude from
 #'   statistical tests in the form list(varname =c('level1','level2')). These
 #'   levels will be excluded from association tests, but not the table. This can
@@ -261,7 +263,7 @@ crrRx<-function(f,data){
 #' @seealso \code{\link{fisher.test}},\code{\link{chisq.test}},
 #'   \code{\link{wilcox.test}},\code{\link{kruskal.test}},and
 #'   \code{\link{anova}}
-covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanitize=TRUE,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,pvalue=TRUE,show.tests=FALSE,excludeLevels=NULL,full=TRUE,
+covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanitize=TRUE,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,pvalue=TRUE,show.tests=FALSE,dropLevels=TRUE,excludeLevels=NULL,full=TRUE,
                    digits.cat = 0,testcont = c('rank-sum test','ANOVA'),testcat = c('Chi-squared','Fisher'),include_missing=FALSE,percentage=c('column','row'))
 {
   if (missing(data)) stop('data is a required argument')
@@ -304,6 +306,7 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
   if( digits.cat<0 ) stop("parameter 'digits.cat' cannot be negative!")
   if(!sanitize) sanitizestr<-identity
   if(!nicenames) nicename<-identity
+  if (dropLevels) data <- droplevels(data)
   if(!is.null(maincov)){
 
     ##JW Removes missing of maincov
@@ -1972,6 +1975,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   be included in statistical tests
 #' @param percentage choice of how percentages are presented, one of
 #'   \emph{column} (default) or \emph{row}
+#' @param dropLevels logical, indicating if empty factor levels be dropped from
+#'   the output, default is TRUE.
 #' @param excludeLevels a named list of covariate levels to exclude from
 #'   statistical tests in the form list(varname =c('level1','level2')). These
 #'   levels will be excluded from association tests, but not the table. This can
@@ -1980,9 +1985,6 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' @param numobs named list overriding the number of people you expect to have
 #'   the covariate
 #' @param chunk_label only used if output is to Word to allow cross-referencing
-#' @param markup boolean indicating if you want latex markup
-#' @param sanitize boolean indicating if you want to sanitize all strings to not
-#'   break LaTeX
 #' @keywords dataframe
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
 #'   which case a data frame is returned
@@ -2010,8 +2012,8 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
                       digits=1,digits.cat = 0,nicenames=TRUE,IQR = FALSE,all.stats=FALSE,
                       pvalue=TRUE,unformattedp=FALSE,show.tests=FALSE,
                       testcont = c('rank-sum test','ANOVA'),testcat = c('Chi-squared','Fisher'),
-                      full=TRUE,include_missing=FALSE,percentage=c('column','row'),
-                      excludeLevels=NULL,numobs=NULL,markup=TRUE, sanitize= TRUE,chunk_label){
+                      full=TRUE,include_missing=FALSE,percentage=c('column','row'), dropLevels=TRUE,
+                      excludeLevels=NULL,numobs=NULL,chunk_label){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
 
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
@@ -2021,7 +2023,8 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
   tab <- do.call(covsum,covsumArgs)
   if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
   # first occurrence of each variable in the first column
-  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+  # vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+  vI <- unlist(sapply(output_var_names, function (x) which(x==tab[[1]])[1]))
   to_indent <- setdiff(1:nrow(tab),vI)
   to_bold_name <- vI
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
@@ -2030,7 +2033,8 @@ rm_covsum <- function(data,covs,maincov=NULL,caption=NULL,tableOnly=FALSE,covTit
 
   if ('p-value' %in% names(tab)) {
     # format p-values nicely
-    to_bold_p <- which(tab[["p-value"]]<.05 & !tab[["p-value"]]=="")
+#    to_bold_p <- which(tab[["p-value"]]<.05 & !tab[["p-value"]]=="")
+    to_bold_p <- which(as.numeric(tab[["p-value"]])<.05)
     p_vals <- tab[['p-value']]
     new_p <- sapply(p_vals,formatp)
     tab[['p-value']] <- new_p
@@ -2217,7 +2221,8 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   if (p.adjust!='none') cap_warn <- paste0(cap_warn,'. Global p-values were adjusted according to the ',p.adjust,' method.')
 
   if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
-  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+#  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+  vI <- unlist(sapply(output_var_names, function (x) which(x==tab[[1]])[1]))
   to_indent <- setdiff(1:nrow(tab),vI)
   to_bold_name <- vI
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
@@ -2244,7 +2249,9 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   }
   if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
 
-  to_bold_p <- which(tab[["p-value"]]<.05 & !tab[["p-value"]]=="")
+#  to_bold_p <- which(tab[["p-value"]]<.05 & !tab[["p-value"]]=="")
+  to_bold_p <- which(as.numeric(tab[["p-value"]])<.05)
+
   if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
                                                matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
@@ -2369,9 +2376,11 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
   }
   if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
 
-  to_bold_p <- which(tab[["p-value"]]<.05 &
-                       !tab[["p-value"]]=="" &
-                       !is.na(tab[["p-value"]]))
+  # to_bold_p <- which(tab[["p-value"]]<.05 &
+  #                      !tab[["p-value"]]=="" &
+  #                      !is.na(tab[["p-value"]]))
+  to_bold_p <- which(as.numeric(tab[["p-value"]])<.05)
+
   if (length(to_bold_p)>0)  bold_cells <- rbind(bold_cells,
                                                 matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
