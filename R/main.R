@@ -1912,7 +1912,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
     if (sum(is.na(data[[head_col]]))==nrow(data)) break
   }
   header_rows <- which(data[[to_col]] %in% new_headers)
-  to_indent <- which(!(data[[to_col]] %in% new_headers) )
+  to_indent <- which(!(data[[to_col]] %in% new_headers))
+  if (!indent) to_indent <- numeric(0)
 
   data[[to_col]][header_rows] <- paste0(hdr_prefix,data[[to_col]][header_rows],hdr_suffix)
 
