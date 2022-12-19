@@ -1064,6 +1064,8 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
   else if (type == "coxph" | type == "crr") {
     beta <- "HR"
     expnt = TRUE
+    # betanames <- attributes(model$terms)$term.labels
+    # if (is.null(betanames))    betanames <- attributes(summary(model)$coef)$dimnames[[1]]
     betanames <- attributes(summary(model)$coef)$dimnames[[1]]
     ss_data <- try(stats::model.frame(model$call$formula, eval(parse(text = paste("data=",
                                                                                   deparse(model$call$data))))), silent = TRUE)
@@ -1160,14 +1162,22 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
     } else if (type=='coxph') {
       m_data <- data
       names(m_data)[1] <- 'y'
-      if (ncol(m_data)>2){
-        # run models without robust variances
-        m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
-        m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
-        globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_full)[,"Pr(>|Chi|)"])),silent = T)
-      } else {
-        globalpvalue <- try(as.vector(stats::na.omit(anova(model)[,"Pr(>|Chi|)"])),silent = T)
-      }
+      # R 4.2.2 breaks this
+      # if (ncol(m_data)>2){
+      #   # run models without robust variances
+      #   m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
+      #   m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
+      #   globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_full)[,"Pr(>|Chi|)"])),silent = T)
+      # } else {
+      #   globalpvalue <- try(as.vector(stats::na.omit(anova(model)[,"Pr(>|Chi|)"])),silent = T)
+      # }
+      # New code 19 Dec 2022
+      # run models without robust variances
+      m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
+      m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
+      gp_aov <- try(anova(m_small,m_full),silent = T)
+      if (inherits(gp_aov,'try-error')) globalpvalue <- gp_aov else globalpvalue <- as.vector(stats::na.omit(gp_aov[,4]))
+
     } else {
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = T)
