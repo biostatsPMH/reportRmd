@@ -1092,7 +1092,6 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
   if (length(setdiff(ucall,names(data)))>0) stop('Currently this function is only implemented to work with standard variable names.\n Try converting the data to a standard data.frame with data.frame(data) and re-running the model to use rm_mvsum.')
   indx = try(matchcovariate(betanames, ucall),silent = T)
   if (is.error(indx)) stop('This function not yet implemented for complex function calls. Try re-specifying the model.')
-  #data = data.frame(data)
   for (v in ucall) {
     if (inherits(data[[v]], "character"))
       data[[v]] <- factor(data[[v]])
@@ -1122,8 +1121,6 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
     })
     levelnames <- unlist(lapply(levelnameslist, function(x) paste(x,
                                                                   collapse = ":")))
-    # levelnames <- addspace(sanitizestr(nicename(levelnames)))
-    # covariatename <- lbld(sanitizestr(nicename(oldcovname)))
     covariatename <- oldcovname
     reference = NULL
     title = NULL
@@ -1167,7 +1164,7 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
         # run models without robust variances
         m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
         m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
-        globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_full)[,"P(>|Chi|)"])),silent = T)
+        globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_full)[,"Pr(>|Chi|)"])),silent = T)
       } else {
         globalpvalue <- try(as.vector(stats::na.omit(anova(model)[,"Pr(>|Chi|)"])),silent = T)
       }
@@ -1282,20 +1279,8 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
                                      }, oldcovname, level)
                                      return(min(N))
                                    }))
-        # ss_N = c("", unlist(lapply(levelnameslist,
-        #                            function(level) {
-        #                              N <- mapply(function(cn, lvl) {
-        #                                if (cn == lvl) {
-        #                                  nrow(data)
-        #                                } else {
-        #                                  sum(data[[cn]] == lvl)
-        #                                }
-        #                              }, oldcovname, level)
-        #                              return(min(N))
-        #                            })))
       }
       else {
-        # ss_N = c("", table(data[[oldcovname]]))
         ss_N = as.vector(table(data[[oldcovname]]))
       }
       ss_N <- c(nrow(data),ss_N) # Add in the total for the variable
