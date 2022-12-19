@@ -17,8 +17,6 @@ rm_mvsum(
   p.adjust = "none",
   unformattedp = FALSE,
   chunk_label,
-  markup = TRUE,
-  sanitize = TRUE,
   nicenames = TRUE
 )
 }
@@ -54,11 +52,6 @@ returned unformated (ie not rounded or prefixed with '<'). Should be used
 in conjuction with the digits argument.}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
-
-\item{markup}{boolean indicating if you want latex markup}
-
-\item{sanitize}{boolean indicating if you want to sanitize all strings to not
-break LaTeX}
 
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}

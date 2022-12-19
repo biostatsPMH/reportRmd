@@ -308,13 +308,19 @@ covsum <- function(data,covs,maincov=NULL,digits=1,numobs=NULL,markup=TRUE,sanit
   if(!nicenames) nicename<-identity
   if (dropLevels) data <- droplevels(data)
   if(!is.null(maincov)){
-
     ##JW Removes missing of maincov
     if(include_missing==FALSE)  data <- data[!is.na(data[[maincov]]),]
 
     #JW May 2021 keeps the NAs (all instances of useNA = 'ifany' have been added)
     levels <- names(table(data[[maincov]],useNA = 'ifany'))
     levels<-c(list(levels),as.list(levels))
+
+    if (length(na.omit(unique(data[[maincov]])))==1) {
+      warning(paste('Only one value of the main covariate exists, show data for maincov =',na.omit(unique(data[[maincov]]))))
+      maincov <- NULL
+      full = TRUE # don't allow users to specify full = FALSE when there is no main covariate
+      levels<-"NOMAINCOVNULLNA"
+    }
   }else{
     full = TRUE # don't allow users to specify full = FALSE when there is no main covariate
     levels<-"NOMAINCOVNULLNA"
@@ -2229,17 +2235,21 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
+  if ("Global p-value" %in% names(tab)){
+    tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
+  }
+
   # perform p-value adjustment across all p-values
   if ("Global p-value" %in% names(tab)){
-    raw_p <- ifelse(tab[["Global p-value"]]=='',tab[["p-value"]],tab[["Global p-value"]])
+    raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
+    to_bold_p <- which(p_sig<0.05)
     p_sig <- sapply(p_sig,formatp)
-    gp_vals <- which(tab[["Global p-value"]]!='' & !is.na(tab[["Global p-value"]]))
+    gp_vals <- which(!is.na(tab[["Global p-value"]]))
     tab[["Global p-value"]][gp_vals]  <- p_sig[gp_vals]
     p_vals <- which(tab[["p-value"]]!='' & !is.na(tab[["p-value"]]))
     tab[["p-value"]][p_vals]  <- p_sig[p_vals]
 
-    to_bold_p <- which(tab[["Global p-value"]]<.05 & !tab[["Global p-value"]]=="")
     if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
                                                  matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
 
@@ -2250,8 +2260,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   }
   if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
 
-#  to_bold_p <- which(tab[["p-value"]]<.05 & !tab[["p-value"]]=="")
-  to_bold_p <- which(as.numeric(tab[["p-value"]])<.05)
+  to_bold_p <- which(p_sig<.05)
 
   if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
                                                matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
@@ -2315,9 +2324,6 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #'   returned unformated (ie not rounded or prefixed with '<'). Should be used
 #'   in conjuction with the digits argument.
 #' @param chunk_label only used if output is to Word to allow cross-referencing
-#' @param markup boolean indicating if you want latex markup
-#' @param sanitize boolean indicating if you want to sanitize all strings to not
-#'   break LaTeX
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
@@ -2342,7 +2348,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
 rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95, vif=TRUE,
-                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, markup = TRUE,sanitize = TRUE,nicenames = TRUE){
+                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, nicenames = TRUE){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
@@ -2352,21 +2358,21 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
                        sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
                               USE.NAMES = FALSE))
 
-  if ("Global p-value" %in% names(tab))
-    to_indent <- setdiff(to_indent,which(tab[["Global p-value"]]!=''))
+  if ("Global p-value" %in% names(tab)){
+    tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
+    to_indent <- setdiff(to_indent,which(!is.na(tab[["Global p-value"]])))
+  }
   to_bold_name <- setdiff(1:nrow(tab),to_indent)
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
   # perform p-value adjustment across all p-values
   if ("Global p-value" %in% names(tab)){
-    raw_p <- ifelse(tab[["Global p-value"]]=='',tab[["p-value"]],tab[["Global p-value"]])
+    raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
     p_sig <- sapply(p_sig,formatp)
-    tab[["Global p-value"]][tab[["Global p-value"]]!='']  <- p_sig[tab[["Global p-value"]]!='']
-    tab[["p-value"]][tab[["Global p-value"]]=='']  <- p_sig[tab[["Global p-value"]]=='']
-    to_bold_p <- which(tab[["Global p-value"]]<.05 &
-                         !tab[["Global p-value"]]=="" &
-                         !is.na(tab[["Global p-value"]]))
+    tab[["Global p-value"]][!is.na(tab[["Global p-value"]])]  <- p_sig[!is.na(tab[["Global p-value"]])]
+    tab[["p-value"]][is.na(tab[["Global p-value"]])]  <- p_sig[is.na(tab[["Global p-value"]])]
+    to_bold_p <- which(p_sig<0.05)
     if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
                                                  matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
 
@@ -2377,10 +2383,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
   }
   if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
 
-  # to_bold_p <- which(tab[["p-value"]]<.05 &
-  #                      !tab[["p-value"]]=="" &
-  #                      !is.na(tab[["p-value"]]))
-  to_bold_p <- which(as.numeric(tab[["p-value"]])<.05)
+  to_bold_p <- which(p_sig<.05)
 
   if (length(to_bold_p)>0)  bold_cells <- rbind(bold_cells,
                                                 matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
