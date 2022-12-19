@@ -1353,10 +1353,10 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
 
 #' Create a forest plot using ggplot2
 #'
-#' This function will accept a log or logistic regression fit from glm, and
+#' This function will accept a log or logistic regression fit from glm or geeglm, and
 #' display the OR or RR for each variable on the appropriate log scale.
 #'
-#' @param model an object output from the glm function, must be from a logistic
+#' @param model an object output from the glm or geeglm function, must be from a logistic
 #'   regression
 #' @param conf.level controls the width of the confidence interval
 #' @param orderByRisk logical, should the plot be ordered by risk
