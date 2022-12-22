@@ -1739,7 +1739,8 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
           p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]),colour=.data[[x_var]]) +
             geom_dotplot(binaxis = "y",stackdir = "center" ,dotsize = .8) +
             stat_summary(fun = median, fun.min = median, fun.max = median,
-                         geom = "crossbar", width = 0.5)
+                         geom = "crossbar", width = 0.5)+
+            scale_x_discrete(labels= function(x) wrp_lbl(x))
         } else{
           if (any(table(pdata[[x_var]])<bp_min)){
             message(paste('Boxplots not shown for categories with fewer than', bp_min ,'observations.'))
