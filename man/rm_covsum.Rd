@@ -17,6 +17,7 @@ rm_covsum(
   IQR = FALSE,
   all.stats = FALSE,
   pvalue = TRUE,
+  effSize = TRUE,
   unformattedp = FALSE,
   show.tests = FALSE,
   testcont = c("rank-sum test", "ANOVA"),
@@ -61,6 +62,9 @@ with a space}
 min,max on a separate line) should be displayed. Overrides IQR.}
 
 \item{pvalue}{boolean indicating if you want p-values included in the table}
+
+\item{effSize}{boolean indicating if you want effect sizes included in the
+table. Can only be obtained if pvalue is also requested.}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformated (ie not rounded or prefixed with '<'). Best used with
@@ -112,6 +116,8 @@ unsuccessful then a second attempt will be made computing p-values using MC
 simulation. If testcont='ANOVA' then the t-test with unequal variance will be
 used for two groups and an ANOVA will be used for three or more. The
 statistical test used can be displayed by specifying show.tests=TRUE.
+
+Effect size can be obtained when p-value is requested.
 
 Further formatting options are available using tableOnly=TRUE and outputting
 the table with a call to outTable.

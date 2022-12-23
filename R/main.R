@@ -1625,6 +1625,11 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #'   call, defaults to 2
 #' @param p_margins sets the TRBL margins of the individual plots, defaults to
 #'   c(0,0.2,1,.2)
+#' @param bpThreshold Default is 20, if there are fewer than 20 observations in
+#'   a category then dotplots, as opposed to boxplots are shown.
+#' @param mixed should a mix of dotplots and boxplots be shown based on sample
+#'   size? If false then all categories will be shown as either dotplots, or
+#'   boxplots according the bpThreshold and the smallest category size
 #' @keywords plot
 #' @returns a list containing plots for each variable in covs
 #' @importFrom ggplot2 ggplot aes_string geom_boxplot geom_point geom_text
@@ -1642,8 +1647,8 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' covs=c('age','sex','l_size','baseline_ctdna'),showN=TRUE)
 #' @seealso \code{\link{ggplot}} and \code{\link{ggarrange}}
 plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
-                   response_title=NULL,return_plotlist=FALSE,ncol=2,p_margins=c(0,0.2,1,.2)){
-  bp_min <-20
+                   response_title=NULL,return_plotlist=FALSE,ncol=2,p_margins=c(0,0.2,1,.2),
+                   bpThreshold=20,mixed=TRUE){
   for (v in c(response,covs)){
     if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
     if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
@@ -1654,14 +1659,23 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
   plist <- NULL
   if (inherits(data[[response]],c('factor','ordered'))){
     use_common_legend = TRUE
-    levels(data[[response]]) = niceStr(levels(data[[response]]))
+    # ensure that all levels have the same colours for all plots
+    lvls <- NULL
+    for (x_var in covs){
+      t <-table(data[[response]][!is.na(data[[x_var]])])
+      lvls <- unique(c(lvls,names(t)[which(t>0)]))
+    }
+    levels(data[[response]]) <- c(levels(data[[response]])[which(levels(data[[response]])%in% lvls)],rep(NA,length(levels(data[[response]]))-length(lvls)))
+    niceStr(levels(data[[response]]))
+    lvlCol <- reportRx_pal()(length(levels(data[[response]])))
+    names(lvlCol) = levels(data[[response]])
     for (x_var in covs){
       flip=FALSE
       # remove missing data, if requested
       if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
 
       if (inherits(pdata[[x_var]],'numeric')){
-        if (all(table(pdata[[response]])<bp_min)){
+        if (all(table(pdata[[response]])<bpThreshold) | (any(table(pdata[[response]])<bpThreshold) & !mixed)){
           p<-ggplot(data=pdata, aes(x=.data[[response]],y=.data[[x_var]],fill=.data[[response]]),colour=.data[[response]]) +
             geom_dotplot(binaxis = "y",stackdir = "center",dotsize = .8  ) +
             stat_summary(fun = median, fun.min = median, fun.max = median,
@@ -1669,15 +1683,15 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
             coord_flip()
           flip = TRUE
         } else{
-          if (any(table(pdata[[response]])<bp_min)){
-            message(paste('Boxplots not shown for categories with fewer than', bp_min ,'observations.'))
+          if (any(table(pdata[[response]])<bpThreshold)){
+            message(paste('Boxplots not shown for categories with fewer than', bpThreshold ,'observations.'))
           }
-          pdata$alpha <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bp_min],'light','regular'),
+          pdata$alpha <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],'light','regular'),
                                 levels=c('light','regular'))
-          pdata$lty <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bp_min],'0','1'),
+          pdata$lty <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],'0','1'),
                               levels = c('0','1'))
-          black_points <- pdata[!pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bp_min],]
-          coloured_points <- pdata[pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bp_min],]
+          black_points <- pdata[!pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
+          coloured_points <- pdata[pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
           p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]],fill=.data[[response]])) +
             geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)  +
             scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
@@ -1714,7 +1728,9 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
           plot.title = element_text(size=10),
           plot.margin = unit(p_margins, "lines")) +
         guides(alpha='none',linetype='none',colour='none')+
-        scale_colour_reportRx()
+        scale_colour_manual(values=lvlCol)+
+        scale_fill_manual(values=lvlCol)
+
       if (flip){
         plist[[x_var]] <- p +
           labs(y=niceStr(x_var),x='',fill=response_title)
@@ -1735,22 +1751,22 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
         p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]])) +
           geom_point()
       } else{
-        if (all(table(pdata[[x_var]])<bp_min)){
+        if (all(table(pdata[[x_var]])<bpThreshold)){
           p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]),colour=.data[[x_var]]) +
             geom_dotplot(binaxis = "y",stackdir = "center" ,dotsize = .8) +
             stat_summary(fun = median, fun.min = median, fun.max = median,
                          geom = "crossbar", width = 0.5)+
             scale_x_discrete(labels= function(x) wrp_lbl(x))
         } else{
-          if (any(table(pdata[[x_var]])<bp_min)){
-            message(paste('Boxplots not shown for categories with fewer than', bp_min ,'observations.'))
+          if (any(table(pdata[[x_var]])<bpThreshold)){
+            message(paste('Boxplots not shown for categories with fewer than', bpThreshold ,'observations.'))
           }
-          pdata$alpha <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bp_min],'light','regular'),
+          pdata$alpha <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],'light','regular'),
                                 c('light','regular'))
-          pdata$lty <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bp_min],'0','1'),
+          pdata$lty <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],'0','1'),
                               levels=c('0','1'))
-          black_points <- pdata[!pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bp_min],]
-          coloured_points <- pdata[pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bp_min],]
+          black_points <- pdata[!pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
+          coloured_points <- pdata[pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
           p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]])) +
             geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)  +
             scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
@@ -1775,20 +1791,21 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
           plot.title = element_text(size=9),
           plot.margin = unit(p_margins, "lines")) +
         labs(x=niceStr(x_var),y=niceStr(response_title)) +
-        scale_colour_reportRx() +
         guides(colour='none',linetype='none',alpha='none')
 
     }
   }
-
+  # if the first plot doesn't have all the levels, take the legend from a plot that does
+  lvls_miss<-sapply(covs,function(x) length(setdiff(lvls,unique(data[[response]][!is.na(data[[x]])]))))
+  if (lvls_miss[1]>0) legend.grob <- ggpubr::get_legend(plist[[which(lvls_miss==0)[1]]]) else legend.grob <- NULL
   if (return_plotlist){
     return(plist)
   } else{   suppressMessages(ggpubr::ggarrange(plotlist=plist,
                                                common.legend = use_common_legend,
                                                ncol=ncol,
-                                               nrow=ceiling(length(plist)/ncol)))
+                                               nrow=ceiling(length(plist)/ncol),
+                                               legend.grob = legend.grob))
   }}
-
 
 # Rmarkdown Reporting --------------------------------------------------------------
 
@@ -2162,7 +2179,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' outTable(tab,digits=5, applyAttributes=FALSE) # remove bold/indent
 rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = FALSE,
                        covTitle = "", digits = 1, digits.cat = 0, nicenames = TRUE,
-                       IQR = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = TRUE, unformattedp = FALSE,
+                       IQR = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, unformattedp = FALSE,
                        show.tests = FALSE, testcont = c("rank-sum test", "ANOVA"),
                        testcat = c("Chi-squared", "Fisher"), full = TRUE, include_missing = FALSE,
                        percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
