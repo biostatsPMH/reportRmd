@@ -1791,13 +1791,16 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
           plot.title = element_text(size=9),
           plot.margin = unit(p_margins, "lines")) +
         labs(x=niceStr(x_var),y=niceStr(response_title)) +
-        guides(colour='none',linetype='none',alpha='none')
+        guides(colour='none',linetype='none',alpha='none')+
+        scale_colour_reportRx()
 
     }
   }
   # if the first plot doesn't have all the levels, take the legend from a plot that does
-  lvls_miss<-sapply(covs,function(x) length(setdiff(lvls,unique(data[[response]][!is.na(data[[x]])]))))
-  if (lvls_miss[1]>0) legend.grob <- ggpubr::get_legend(plist[[which(lvls_miss==0)[1]]]) else legend.grob <- NULL
+  if (inherits(data[[response]],c('factor','ordered'))){
+    lvls_miss<-sapply(covs,function(x) length(setdiff(names(lvlCol),unique(data[[response]][!is.na(data[[x]])]))))
+    if (lvls_miss[1]>0) legend.grob <- ggpubr::get_legend(plist[[which(lvls_miss==0)[1]]]) else legend.grob <- NULL
+  } else legend.grob <- NULL
   if (return_plotlist){
     return(plist)
   } else{   suppressMessages(ggpubr::ggarrange(plotlist=plist,
