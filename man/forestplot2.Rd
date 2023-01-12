@@ -16,7 +16,7 @@ forestplot2(
 )
 }
 \arguments{
-\item{model}{an object output from the glm function, must be from a logistic
+\item{model}{an object output from the glm or geeglm function, must be from a logistic
 regression}
 
 \item{conf.level}{controls the width of the confidence interval}
@@ -41,7 +41,7 @@ produce}
 a plot object
 }
 \description{
-This function will accept a log or logistic regression fit from glm, and
+This function will accept a log or logistic regression fit from glm or geeglm, and
 display the OR or RR for each variable on the appropriate log scale.
 }
 \examples{
