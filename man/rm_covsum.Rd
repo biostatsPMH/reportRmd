@@ -17,7 +17,7 @@ rm_covsum(
   IQR = FALSE,
   all.stats = FALSE,
   pvalue = TRUE,
-  effSize = TRUE,
+  effSize = FALSE,
   unformattedp = FALSE,
   show.tests = FALSE,
   testcont = c("rank-sum test", "ANOVA"),

@@ -16,7 +16,7 @@ covsum(
   IQR = FALSE,
   all.stats = FALSE,
   pvalue = TRUE,
-  effSize = TRUE,
+  effSize = FALSE,
   show.tests = FALSE,
   dropLevels = TRUE,
   excludeLevels = NULL,
