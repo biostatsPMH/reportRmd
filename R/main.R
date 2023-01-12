@@ -272,6 +272,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                                                                     "ANOVA"), testcat = c("Chi-squared", "Fisher"), include_missing = FALSE,
                     percentage = c("column", "row"))
 {
+  print("HEllo")
   if (missing(data))
     stop("data is a required argument")
   if (missing(covs))
