@@ -262,6 +262,7 @@ crrRx<-function(f,data){
 #'   \emph{column} (default) or \emph{row}
 #' @keywords dataframe
 #' @importFrom stats lm sd
+#' @importFrom rstatix cramer_v eta_squared
 #' @seealso \code{\link{fisher.test}},\code{\link{chisq.test}},
 #'   \code{\link{wilcox.test}},\code{\link{kruskal.test}},and
 #'   \code{\link{anova}}
