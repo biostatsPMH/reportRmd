@@ -267,7 +267,7 @@ crrRx<-function(f,data){
 #'   \code{\link{anova}}
 covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                     markup = TRUE, sanitize = TRUE, nicenames = TRUE, IQR = FALSE,
-                    all.stats = FALSE, pvalue = TRUE, effSize = TRUE, show.tests = FALSE, dropLevels = TRUE,
+                    all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, dropLevels = TRUE,
                     excludeLevels = NULL, full = TRUE, digits.cat = 0, testcont = c("rank-sum test",
                                                                                     "ANOVA"), testcat = c("Chi-squared", "Fisher"), include_missing = FALSE,
                     percentage = c("column", "row"))
