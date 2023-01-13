@@ -1,4 +1,4 @@
-## New Changes
+## New Changes 0.0.2
 
 - Added functionality to include effect sizes in summary tables
 - forestplot2 now works with geeglm objects

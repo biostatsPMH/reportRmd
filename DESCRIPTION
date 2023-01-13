@@ -1,6 +1,6 @@
 Package: reportRmd
 Title: Tidy Presentation of Clinical Reporting
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
     person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut")),
     person(given="Ryan",family="Del Bel",email = "rdelbel@gmail.com",role="aut"),
