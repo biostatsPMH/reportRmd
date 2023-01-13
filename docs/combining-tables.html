@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>7 Combining tables | reportRmd Package</title>
   <meta name="description" content="7 Combining tables | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.27 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
 
   <meta property="og:title" content="7 Combining tables | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -141,8 +141,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="summaries-by-group.html"><a href="summaries-by-group.html"><i class="fa fa-check"></i><b>2.1</b> Summaries By Group</a></li>
 <li class="chapter" data-level="2.2" data-path="showing-statistical-tests.html"><a href="showing-statistical-tests.html"><i class="fa fa-check"></i><b>2.2</b> Showing Statistical Tests</a></li>
-<li class="chapter" data-level="2.3" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.3</b> Parametric vs Non-parametric Comparisons</a></li>
-<li class="chapter" data-level="2.4" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.4</b> Row vs Column Summaries</a></li>
+<li class="chapter" data-level="2.3" data-path="including-effect-sizes.html"><a href="including-effect-sizes.html"><i class="fa fa-check"></i><b>2.3</b> Including Effect Sizes</a></li>
+<li class="chapter" data-level="2.4" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.4</b> Parametric vs Non-parametric Comparisons</a></li>
+<li class="chapter" data-level="2.5" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.5</b> Row vs Column Summaries</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>3</b> Univariate regression</a>
 <ul>
@@ -197,17 +198,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="combining-tables" class="section level1 hasAnchor" number="7">
 <h1><span class="header-section-number">7</span> Combining tables<a href="combining-tables.html#combining-tables" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Tables can be nested with the <code>nestTable()</code> function</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="combining-tables.html#cb24-1" aria-hidden="true" tabindex="-1"></a>cohortA <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;A&#39;</span>), </span>
-<span id="cb24-2"><a href="combining-tables.html#cb24-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
-<span id="cb24-3"><a href="combining-tables.html#cb24-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
-<span id="cb24-4"><a href="combining-tables.html#cb24-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
-<span id="cb24-5"><a href="combining-tables.html#cb24-5" aria-hidden="true" tabindex="-1"></a>cohortA<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort A&#39;</span></span>
-<span id="cb24-6"><a href="combining-tables.html#cb24-6" aria-hidden="true" tabindex="-1"></a>cohortE <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;E&#39;</span>), </span>
-<span id="cb24-7"><a href="combining-tables.html#cb24-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
-<span id="cb24-8"><a href="combining-tables.html#cb24-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
-<span id="cb24-9"><a href="combining-tables.html#cb24-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
-<span id="cb24-10"><a href="combining-tables.html#cb24-10" aria-hidden="true" tabindex="-1"></a>cohortE<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort E&#39;</span></span>
-<span id="cb24-11"><a href="combining-tables.html#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="fu">nestTable</span>(<span class="fu">rbind</span>(cohortA,cohortE),<span class="at">head_col =</span> <span class="st">&#39;Cohort&#39;</span>,<span class="at">to_col =</span> <span class="st">&#39;Covariate&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="combining-tables.html#cb25-1" aria-hidden="true" tabindex="-1"></a>cohortA <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;A&#39;</span>), </span>
+<span id="cb25-2"><a href="combining-tables.html#cb25-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
+<span id="cb25-3"><a href="combining-tables.html#cb25-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
+<span id="cb25-4"><a href="combining-tables.html#cb25-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
+<span id="cb25-5"><a href="combining-tables.html#cb25-5" aria-hidden="true" tabindex="-1"></a>cohortA<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort A&#39;</span></span>
+<span id="cb25-6"><a href="combining-tables.html#cb25-6" aria-hidden="true" tabindex="-1"></a>cohortE <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;E&#39;</span>), </span>
+<span id="cb25-7"><a href="combining-tables.html#cb25-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
+<span id="cb25-8"><a href="combining-tables.html#cb25-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
+<span id="cb25-9"><a href="combining-tables.html#cb25-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
+<span id="cb25-10"><a href="combining-tables.html#cb25-10" aria-hidden="true" tabindex="-1"></a>cohortE<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort E&#39;</span></span>
+<span id="cb25-11"><a href="combining-tables.html#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="fu">nestTable</span>(<span class="fu">rbind</span>(cohortA,cohortE),<span class="at">head_col =</span> <span class="st">&#39;Cohort&#39;</span>,<span class="at">to_col =</span> <span class="st">&#39;Covariate&#39;</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -417,6 +418,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

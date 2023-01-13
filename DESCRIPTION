@@ -35,6 +35,7 @@ Imports:
     pander,
     plyr,
     rlang,
+    rstatix,
     scales,
     survival
 Collate: 'helper.R' 'main.R' 'globals.R' 'data.R'

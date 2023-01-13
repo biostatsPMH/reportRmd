@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>2.3 Parametric vs Non-parametric Comparisons | reportRmd Package</title>
-  <meta name="description" content="2.3 Parametric vs Non-parametric Comparisons | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.27 and GitBook 2.6.7" />
+  <title>2.4 Parametric vs Non-parametric Comparisons | reportRmd Package</title>
+  <meta name="description" content="2.4 Parametric vs Non-parametric Comparisons | reportRmd Package" />
+  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="2.3 Parametric vs Non-parametric Comparisons | reportRmd Package" />
+  <meta property="og:title" content="2.4 Parametric vs Non-parametric Comparisons | reportRmd Package" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="2.3 Parametric vs Non-parametric Comparisons | reportRmd Package" />
+  <meta name="twitter:title" content="2.4 Parametric vs Non-parametric Comparisons | reportRmd Package" />
   
   
   
@@ -28,7 +28,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="showing-statistical-tests.html"/>
+<link rel="prev" href="including-effect-sizes.html"/>
 <link rel="next" href="row-vs-column-summaries.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -141,8 +141,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="summaries-by-group.html"><a href="summaries-by-group.html"><i class="fa fa-check"></i><b>2.1</b> Summaries By Group</a></li>
 <li class="chapter" data-level="2.2" data-path="showing-statistical-tests.html"><a href="showing-statistical-tests.html"><i class="fa fa-check"></i><b>2.2</b> Showing Statistical Tests</a></li>
-<li class="chapter" data-level="2.3" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.3</b> Parametric vs Non-parametric Comparisons</a></li>
-<li class="chapter" data-level="2.4" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.4</b> Row vs Column Summaries</a></li>
+<li class="chapter" data-level="2.3" data-path="including-effect-sizes.html"><a href="including-effect-sizes.html"><i class="fa fa-check"></i><b>2.3</b> Including Effect Sizes</a></li>
+<li class="chapter" data-level="2.4" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.4</b> Parametric vs Non-parametric Comparisons</a></li>
+<li class="chapter" data-level="2.5" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.5</b> Row vs Column Summaries</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>3</b> Univariate regression</a>
 <ul>
@@ -194,13 +195,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parametric-vs-non-parametric-comparisons" class="section level2 hasAnchor" number="2.3">
-<h2><span class="header-section-number">2.3</span> Parametric vs Non-parametric Comparisons<a href="parametric-vs-non-parametric-comparisons.html#parametric-vs-non-parametric-comparisons" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="parametric-vs-non-parametric-comparisons" class="section level2 hasAnchor" number="2.4">
+<h2><span class="header-section-number">2.4</span> Parametric vs Non-parametric Comparisons<a href="parametric-vs-non-parametric-comparisons.html#parametric-vs-non-parametric-comparisons" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Group comparisons are non-parametric by default, specify <code>testcont='ANOVA'</code> for t-tests/ANOVA</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="parametric-vs-non-parametric-comparisons.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">maincov =</span> <span class="st">&#39;sex&#39;</span>,</span>
-<span id="cb6-2"><a href="parametric-vs-non-parametric-comparisons.html#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>),</span>
-<span id="cb6-3"><a href="parametric-vs-non-parametric-comparisons.html#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">testcont=</span><span class="st">&#39;ANOVA&#39;</span>,</span>
-<span id="cb6-4"><a href="parametric-vs-non-parametric-comparisons.html#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">show.tests=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="parametric-vs-non-parametric-comparisons.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">maincov =</span> <span class="st">&#39;sex&#39;</span>,</span>
+<span id="cb7-2"><a href="parametric-vs-non-parametric-comparisons.html#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>),</span>
+<span id="cb7-3"><a href="parametric-vs-non-parametric-comparisons.html#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="at">testcont=</span><span class="st">&#39;ANOVA&#39;</span>,</span>
+<span id="cb7-4"><a href="parametric-vs-non-parametric-comparisons.html#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">show.tests=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -356,7 +357,7 @@ Missing
           </div>
         </div>
       </div>
-<a href="showing-statistical-tests.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="including-effect-sizes.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="row-vs-column-summaries.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
@@ -411,6 +412,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

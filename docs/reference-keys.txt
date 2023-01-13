@@ -29,3 +29,4 @@ gee-models
 returning-model-objects
 adjusting-p-values
 survival-times-with-covariate-adjustments
+including-effect-sizes

@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>3.7 Returning Model Objects | reportRmd Package</title>
   <meta name="description" content="3.7 Returning Model Objects | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.27 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
 
   <meta property="og:title" content="3.7 Returning Model Objects | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -141,8 +141,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="summaries-by-group.html"><a href="summaries-by-group.html"><i class="fa fa-check"></i><b>2.1</b> Summaries By Group</a></li>
 <li class="chapter" data-level="2.2" data-path="showing-statistical-tests.html"><a href="showing-statistical-tests.html"><i class="fa fa-check"></i><b>2.2</b> Showing Statistical Tests</a></li>
-<li class="chapter" data-level="2.3" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.3</b> Parametric vs Non-parametric Comparisons</a></li>
-<li class="chapter" data-level="2.4" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.4</b> Row vs Column Summaries</a></li>
+<li class="chapter" data-level="2.3" data-path="including-effect-sizes.html"><a href="including-effect-sizes.html"><i class="fa fa-check"></i><b>2.3</b> Including Effect Sizes</a></li>
+<li class="chapter" data-level="2.4" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.4</b> Parametric vs Non-parametric Comparisons</a></li>
+<li class="chapter" data-level="2.5" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.5</b> Row vs Column Summaries</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>3</b> Univariate regression</a>
 <ul>
@@ -197,9 +198,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="returning-model-objects" class="section level2 hasAnchor" number="3.7">
 <h2><span class="header-section-number">3.7</span> Returning Model Objects<a href="returning-model-objects.html#returning-model-objects" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>If you want to check the underlying models, set <code>returnModels = TRUE</code></p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="returning-model-objects.html#cb16-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb16-2"><a href="returning-model-objects.html#cb16-2" aria-hidden="true" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
-<span id="cb16-3"><a href="returning-model-objects.html#cb16-3" aria-hidden="true" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="returning-model-objects.html#cb17-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb17-2"><a href="returning-model-objects.html#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
+<span id="cb17-3"><a href="returning-model-objects.html#cb17-3" aria-hidden="true" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <pre><code>## $age
 ## 
 ## Call:  glm(formula = orr ~ age, family = binomial, data = data)
@@ -212,10 +213,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## Null Deviance:       85.77 
 ## Residual Deviance: 82.53     AIC: 86.53</code></pre>
 <p>The data analysed can be examined by interrogating the data object appended to each model</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="returning-model-objects.html#cb18-1" aria-hidden="true" tabindex="-1"></a>mList <span class="ot">&lt;-</span>  <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb18-2"><a href="returning-model-objects.html#cb18-2" aria-hidden="true" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
-<span id="cb18-3"><a href="returning-model-objects.html#cb18-3" aria-hidden="true" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb18-4"><a href="returning-model-objects.html#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mList<span class="sc">$</span>age<span class="sc">$</span>data)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="returning-model-objects.html#cb19-1" aria-hidden="true" tabindex="-1"></a>mList <span class="ot">&lt;-</span>  <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb19-2"><a href="returning-model-objects.html#cb19-2" aria-hidden="true" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
+<span id="cb19-3"><a href="returning-model-objects.html#cb19-3" aria-hidden="true" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb19-4"><a href="returning-model-objects.html#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(mList<span class="sc">$</span>age<span class="sc">$</span>data)</span></code></pre></div>
 <pre><code>## # A tibble: 6 × 2
 ##   orr     age
 ##   &lt;fct&gt; &lt;dbl&gt;
@@ -286,6 +287,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

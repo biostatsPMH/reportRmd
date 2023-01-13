@@ -98,6 +98,16 @@ show.tests=TRUE)
 
 ```
 
+## Including Effect Sizes
+Cramer V is shown for categorical covariates and $\eta^2$ for continuous covariates.
+
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','change_ctdna_group'),
+effSize=TRUE)
+
+```
+
 ## Parametric vs Non-parametric Comparisons
 
 Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for t-tests/ANOVA
