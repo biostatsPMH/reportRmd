@@ -45,7 +45,7 @@ descriptions (useful for displaying years with data provided in months)}
 \item{CIwidth}{width of the survival probabilities, default is 95\%}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
-returned unformated (ie not rounded or prefixed with '<'). Should be used
+returned unformatted (ie not rounded or prefixed with '<'). Should be used
 in conjunction with the digits argument.}
 
 \item{conf.type}{type of confidence interval see \code{\link{survfit}} for

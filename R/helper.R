@@ -114,7 +114,7 @@ betaindx<-function(x){
 
 #' Capitalize a string
 #'
-#' Calitalize a string
+#' Capitalize a string
 #'
 #' @param x string
 #' @keywords helper

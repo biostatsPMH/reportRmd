@@ -69,7 +69,7 @@ calculated with the rstatix package using Cramer V for categorical and Eta
 Squared for continuous covariates.}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
-returned unformated (ie not rounded or prefixed with '<'). Best used with
+returned unformatted (ie not rounded or prefixed with '<'). Best used with
 tableOnly = T and outTable function. See examples.}
 
 \item{show.tests}{boolean indicating if the type of statistical used should

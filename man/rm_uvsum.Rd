@@ -54,7 +54,7 @@ from the table}
 \item{p.adjust}{p-adjustments to be performed (Global p-values only)}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
-returned unformated (ie not rounded or prefixed with '<'). Should be used
+returned unformatted (ie not rounded or prefixed with '<'). Should be used
 in conjunction with the digits argument.}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
