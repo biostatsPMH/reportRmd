@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>3.5 Competing Risk | reportRmd Package</title>
   <meta name="description" content="3.5 Competing Risk | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.27 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
 
   <meta property="og:title" content="3.5 Competing Risk | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -141,8 +141,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="summaries-by-group.html"><a href="summaries-by-group.html"><i class="fa fa-check"></i><b>2.1</b> Summaries By Group</a></li>
 <li class="chapter" data-level="2.2" data-path="showing-statistical-tests.html"><a href="showing-statistical-tests.html"><i class="fa fa-check"></i><b>2.2</b> Showing Statistical Tests</a></li>
-<li class="chapter" data-level="2.3" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.3</b> Parametric vs Non-parametric Comparisons</a></li>
-<li class="chapter" data-level="2.4" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.4</b> Row vs Column Summaries</a></li>
+<li class="chapter" data-level="2.3" data-path="including-effect-sizes.html"><a href="including-effect-sizes.html"><i class="fa fa-check"></i><b>2.3</b> Including Effect Sizes</a></li>
+<li class="chapter" data-level="2.4" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.4</b> Parametric vs Non-parametric Comparisons</a></li>
+<li class="chapter" data-level="2.5" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.5</b> Row vs Column Summaries</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>3</b> Univariate regression</a>
 <ul>
@@ -197,9 +198,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="competing-risk" class="section level2 hasAnchor" number="3.5">
 <h2><span class="header-section-number">3.5</span> Competing Risk<a href="competing-risk.html#competing-risk" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Competing risk models need to be explicitly specified using <code>type='crr'</code>.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="competing-risk.html#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="fu">c</span>(<span class="st">&#39;os_time&#39;</span>,<span class="st">&#39;os_status&#39;</span>),</span>
-<span id="cb14-2"><a href="competing-risk.html#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),</span>
-<span id="cb14-3"><a href="competing-risk.html#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="at">type=</span><span class="st">&#39;crr&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="competing-risk.html#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="fu">c</span>(<span class="st">&#39;os_time&#39;</span>,<span class="st">&#39;os_status&#39;</span>),</span>
+<span id="cb15-2"><a href="competing-risk.html#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),</span>
+<span id="cb15-3"><a href="competing-risk.html#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="at">type=</span><span class="st">&#39;crr&#39;</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -347,6 +348,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

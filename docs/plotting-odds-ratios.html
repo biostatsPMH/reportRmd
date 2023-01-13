@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>11.2 Plotting odds ratios | reportRmd Package</title>
   <meta name="description" content="11.2 Plotting odds ratios | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.27 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
 
   <meta property="og:title" content="11.2 Plotting odds ratios | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -141,8 +141,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="summaries-by-group.html"><a href="summaries-by-group.html"><i class="fa fa-check"></i><b>2.1</b> Summaries By Group</a></li>
 <li class="chapter" data-level="2.2" data-path="showing-statistical-tests.html"><a href="showing-statistical-tests.html"><i class="fa fa-check"></i><b>2.2</b> Showing Statistical Tests</a></li>
-<li class="chapter" data-level="2.3" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.3</b> Parametric vs Non-parametric Comparisons</a></li>
-<li class="chapter" data-level="2.4" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.4</b> Row vs Column Summaries</a></li>
+<li class="chapter" data-level="2.3" data-path="including-effect-sizes.html"><a href="including-effect-sizes.html"><i class="fa fa-check"></i><b>2.3</b> Including Effect Sizes</a></li>
+<li class="chapter" data-level="2.4" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.4</b> Parametric vs Non-parametric Comparisons</a></li>
+<li class="chapter" data-level="2.5" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.5</b> Row vs Column Summaries</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>3</b> Univariate regression</a>
 <ul>
@@ -197,11 +198,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="plotting-odds-ratios" class="section level2 hasAnchor" number="11.2">
 <h2><span class="header-section-number">11.2</span> Plotting odds ratios<a href="plotting-odds-ratios.html#plotting-odds-ratios" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>This will default to a log scale, but can be set to linear using <code>logscale=FALSE</code></p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="plotting-odds-ratios.html#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(ggplot2)</span>
-<span id="cb30-2"><a href="plotting-odds-ratios.html#cb30-2" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>age<span class="sc">+</span>sex<span class="sc">+</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
-<span id="cb30-3"><a href="plotting-odds-ratios.html#cb30-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
-<span id="cb30-4"><a href="plotting-odds-ratios.html#cb30-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
-<span id="cb30-5"><a href="plotting-odds-ratios.html#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forestplot2</span>(glm_fit)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="plotting-odds-ratios.html#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(ggplot2)</span>
+<span id="cb31-2"><a href="plotting-odds-ratios.html#cb31-2" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>age<span class="sc">+</span>sex<span class="sc">+</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
+<span id="cb31-3"><a href="plotting-odds-ratios.html#cb31-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb31-4"><a href="plotting-odds-ratios.html#cb31-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb31-5"><a href="plotting-odds-ratios.html#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">forestplot2</span>(glm_fit)</span></code></pre></div>
 <p><img src="images/forestplot.png" />
 </p>
 </div>
@@ -265,6 +266,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

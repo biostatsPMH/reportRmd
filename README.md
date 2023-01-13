@@ -14,7 +14,6 @@ Stable](https://img.shields.io/badge/lifecycle-stable-green.svg)](https://lifecy
 status](https://www.r-pkg.org/badges/version/reportRmd)](https://CRAN.R-project.org/package=reportRmd)
 [![metacran
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/reportRmd)](https://cran.r-project.org/package=reportRmd)
-
 <!-- badges: end -->
 
 The goal of reportRmd is to automate the reporting of clinical data in
@@ -74,6 +73,9 @@ Male (n=36)
 p-value
 </th>
 <th style="text-align:right;">
+Effect Size
+</th>
+<th style="text-align:right;">
 StatTest
 </th>
 </tr>
@@ -93,7 +95,10 @@ StatTest
 0.30
 </td>
 <td style="text-align:right;">
-Wilcoxon Rank Sum
+0.008
+</td>
+<td style="text-align:right;">
+Wilcoxon Rank Sum, Eta sq
 </td>
 </tr>
 <tr>
@@ -108,6 +113,8 @@ Mean (sd)
 </td>
 <td style="text-align:right;">
 59.3 (13.1)
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -131,6 +138,8 @@ Median (Min,Max)
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -146,7 +155,10 @@ Median (Min,Max)
 0.76
 </td>
 <td style="text-align:right;">
-Wilcoxon Rank Sum
+0.002
+</td>
+<td style="text-align:right;">
+Wilcoxon Rank Sum, Eta sq
 </td>
 </tr>
 <tr>
@@ -161,6 +173,8 @@ Mean (sd)
 </td>
 <td style="text-align:right;">
 12.1 (27.3)
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -184,6 +198,8 @@ Median (Min,Max)
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -197,6 +213,8 @@ Missing
 </td>
 <td style="text-align:right;">
 1
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -217,7 +235,10 @@ Missing
 0.81
 </td>
 <td style="text-align:right;">
-Fisher Exact
+0.02
+</td>
+<td style="text-align:right;">
+Fisher Exact, Cramer
 </td>
 </tr>
 <tr>
@@ -232,6 +253,8 @@ Decrease from baseline
 </td>
 <td style="text-align:right;">
 14 (42)
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -255,6 +278,8 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 </td>
+<td style="text-align:right;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -268,6 +293,8 @@ Missing
 </td>
 <td style="text-align:right;">
 3
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -484,6 +511,7 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+<span style="font-weight: bold;"></span>
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>
@@ -942,9 +970,10 @@ data=pembrolizumab)
 ``` r
 require(ggplot2)
 #> Loading required package: ggplot2
+#> Warning: package 'ggplot2' was built under R version 4.2.2
 forestplot2(glm_fit)
 #> Warning: Vectorized input to `element_text()` is not officially supported.
-#> Results may be unexpected or may change in future versions of ggplot2.
+#> ℹ Results may be unexpected or may change in future versions of ggplot2.
 ```
 
 <img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />

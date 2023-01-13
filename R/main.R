@@ -238,7 +238,9 @@ crrRx<-function(f,data){
 #'   min,max on a separate line) should be displayed. Overrides IQR.
 #' @param pvalue boolean indicating if you want p-values included in the table
 #' @param effSize boolean indicating if you want effect sizes included in the
-#'   table. Can only be obtained if pvalue is also requested.
+#'   table. Can only be obtained if pvalue is also requested. Effect sizes are
+#'   calculated with the rstatix package using Cramer V for categorical and Eta
+#'   Squared for continuous covariates.
 #' @param show.tests boolean indicating if the type of statistical used should
 #'   be shown in a column beside the pvalues. Ignored if pvalue=FALSE.
 #' @param dropLevels logical, indicating if empty factor levels be dropped from
@@ -2132,7 +2134,9 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   min,max on a separate line) should be displayed. Overrides IQR.
 #' @param pvalue boolean indicating if you want p-values included in the table
 #' @param effSize boolean indicating if you want effect sizes included in the
-#'   table. Can only be obtained if pvalue is also requested.
+#'   table. Can only be obtained if pvalue is also requested. Effect sizes are
+#'   calculated with the rstatix package using Cramer V for categorical and Eta
+#'   Squared for continuous covariates.
 #' @param unformattedp boolean indicating if you would like the p-value to be
 #'   returned unformated (ie not rounded or prefixed with '<'). Best used with
 #'   tableOnly = T and outTable function. See examples.
@@ -2164,11 +2168,17 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' @export
 #' @seealso \code{\link{covsum}},\code{\link{fisher.test}},
 #'   \code{\link{chisq.test}}, \code{\link{wilcox.test}},
-#'   \code{\link{kruskal.test}}, \code{\link{anova}}, and \code{\link{outTable}}
+#'   \code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link{cramer_v}},
+#'   \code{\link{eta_squared}}, and \code{\link{outTable}}
 #' @examples
 #' rm_covsum(data=pembrolizumab, maincov = 'orr',
 #' covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
 #' show.tests=TRUE)
+#'
+#' # To Show Effect Sizes
+#' rm_covsum(data=pembrolizumab, maincov = 'orr',
+#' covs=c('age','sex'),
+#' effSize=TRUE)
 #'
 #' # To make custom changes or change the fontsize in PDF/HTML
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',

@@ -58,7 +58,13 @@ min,max on a separate line) should be displayed. Overrides IQR.}
 \item{pvalue}{boolean indicating if you want p-values included in the table}
 
 \item{effSize}{boolean indicating if you want effect sizes included in the
+<<<<<<< HEAD
 table. Can only be obtained if pvalue is also requested.}
+=======
+table. Can only be obtained if pvalue is also requested. Effect sizes are
+calculated with the rstatix package using Cramer V for categorical and Eta
+Squared for continuous covariates.}
+>>>>>>> master
 
 \item{show.tests}{boolean indicating if the type of statistical used should
 be shown in a column beside the pvalues. Ignored if pvalue=FALSE.}
