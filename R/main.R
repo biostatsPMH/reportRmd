@@ -2138,7 +2138,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   calculated with the rstatix package using Cramer V for categorical and Eta
 #'   Squared for continuous covariates.
 #' @param unformattedp boolean indicating if you would like the p-value to be
-#'   returned unformated (ie not rounded or prefixed with '<'). Best used with
+#'   returned unformatted (ie not rounded or prefixed with '<'). Best used with
 #'   tableOnly = T and outTable function. See examples.
 #' @param show.tests boolean indicating if the type of statistical used should
 #'   be shown in a column beside the pvalues. Ignored if pvalue=FALSE.
@@ -2279,7 +2279,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #'   from the table
 #' @param p.adjust p-adjustments to be performed (Global p-values only)
 #' @param unformattedp boolean indicating if you would like the p-value to be
-#'   returned unformated (ie not rounded or prefixed with '<'). Should be used
+#'   returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'   in conjunction with the digits argument.
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param  gee boolean indicating if gee models should be fit to account for
@@ -2504,7 +2504,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param p.adjust p-adjustments to be performed (Global p-values only)
 #' @param unformattedp boolean indicating if you would like the p-value to be
-#'   returned unformated (ie not rounded or prefixed with '<'). Should be used
+#'   returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'   in conjuction with the digits argument.
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
@@ -3750,7 +3750,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #'   descriptions (useful for displaying years with data provided in months)
 #' @param CIwidth width of the survival probabilities, default is 95%
 #' @param unformattedp boolean indicating if you would like the p-value to be
-#'   returned unformated (ie not rounded or prefixed with '<'). Should be used
+#'   returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'   in conjunction with the digits argument.
 #' @param conf.type type of confidence interval see \code{\link{survfit}} for
 #'   details. Default is 'log'.

@@ -10,6 +10,6 @@ cap(x)
 \item{x}{string}
 }
 \description{
-Calitalize a string
+Capitalize a string
 }
 \keyword{helper}

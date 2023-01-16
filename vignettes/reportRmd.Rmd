@@ -82,6 +82,17 @@ show.tests=TRUE)
 
 \newpage
 
+Effect sizes (Cramer V and $\eta^2$) can be added with effSize=TRUE
+
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1','change_ctdna_group'),
+effSize=TRUE,show.tests=TRUE)
+
+```
+
+\newpage
+
 Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for t-tests/ANOVA
 
 ```{r}
