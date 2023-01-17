@@ -16,7 +16,8 @@ nestTable(
   hdr_prefix = "",
   hdr_suffix = "",
   digits = 2,
-  tableOnly = FALSE
+  tableOnly = FALSE,
+  fontsize
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ number or a vector corresponding to the number of numeric columns}
 
 \item{tableOnly}{boolean indicating if the table should be formatted for
 printing or returned as a data frame}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

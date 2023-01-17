@@ -11,7 +11,8 @@ rm_uv_mv(
   vif = FALSE,
   caption = NULL,
   tableOnly = FALSE,
-  chunk_label
+  chunk_label,
+  fontsize
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ shown if present in the mvsumTable. Default is FALSE.}
 \item{tableOnly}{boolean indicating if unformatted table should be returned}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

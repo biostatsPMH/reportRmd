@@ -26,7 +26,8 @@ rm_uvsum(
   showN = TRUE,
   CIwidth = 0.95,
   reflevel = NULL,
-  returnModels = FALSE
+  returnModels = FALSE,
+  fontsize
 )
 }
 \arguments{
@@ -97,6 +98,8 @@ returned. If this is TRUE then the models will be returned, but the output
 will be suppressed. In addition to the model elements a data element will
 be appended to each model so that the fitted data can be examined, if
 necessary. See Details}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

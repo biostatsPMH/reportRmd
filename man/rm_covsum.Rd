@@ -28,6 +28,7 @@ rm_covsum(
   dropLevels = TRUE,
   excludeLevels = NULL,
   numobs = NULL,
+  fontsize,
   chunk_label
 )
 }
@@ -64,13 +65,9 @@ min,max on a separate line) should be displayed. Overrides IQR.}
 \item{pvalue}{boolean indicating if you want p-values included in the table}
 
 \item{effSize}{boolean indicating if you want effect sizes included in the
-<<<<<<< HEAD
-table. Can only be obtained if pvalue is also requested.}
-=======
 table. Can only be obtained if pvalue is also requested. Effect sizes are
 calculated with the rstatix package using Cramer V for categorical and Eta
 Squared for continuous covariates.}
->>>>>>> master
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformatted (ie not rounded or prefixed with '<'). Best used with
@@ -105,6 +102,8 @@ presented). Ignored if pvalue=FALSE.}
 
 \item{numobs}{named list overriding the number of people you expect to have
 the covariate}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 }

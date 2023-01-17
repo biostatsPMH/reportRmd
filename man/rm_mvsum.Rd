@@ -16,8 +16,9 @@ rm_mvsum(
   tableOnly = FALSE,
   p.adjust = "none",
   unformattedp = FALSE,
+  nicenames = TRUE,
   chunk_label,
-  nicenames = TRUE
+  fontsize
 )
 }
 \arguments{
@@ -51,10 +52,12 @@ included. See details}
 returned unformatted (ie not rounded or prefixed with '<'). Should be used
 in conjuction with the digits argument.}
 
-\item{chunk_label}{only used if output is to Word to allow cross-referencing}
-
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}
+
+\item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

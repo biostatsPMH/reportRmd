@@ -2018,6 +2018,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 #'   number or a vector corresponding to the number of numeric columns
 #' @param tableOnly boolean indicating if the table should be formatted for
 #'   printing or returned as a data frame
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
 #'   which case a data frame is returned
 #' @export
@@ -2032,7 +2033,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 #' m2$Response = 'Tumour Size'
 #' rbind(m1,m2)
 #' nestTable(rbind(m1,m2),head_col='Response',to_col='Covariate')
-nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRUE,boldheaders=TRUE,hdr_prefix='',hdr_suffix='',digits=2,tableOnly=FALSE){
+nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRUE,boldheaders=TRUE,hdr_prefix='',hdr_suffix='',digits=2,tableOnly=FALSE,fontsize){
 
   # strip any grouped data or tibble properties
   if (inherits(data,'data.frame')){
@@ -2094,7 +2095,9 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
     return(data)
   }
   if (boldheaders) rows_bold = header_rows else rows_bold=numeric(0)
-  outTable(tab=data,to_indent=to_indent,rows_bold=rows_bold,caption=caption)
+  argL <- list(tab=data,to_indent=to_indent,rows_bold=rows_bold,caption=caption)
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 }
 
 
@@ -2161,6 +2164,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   presented). Ignored if pvalue=FALSE.
 #' @param numobs named list overriding the number of people you expect to have
 #'   the covariate
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @keywords dataframe
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
@@ -2197,7 +2201,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                        show.tests = FALSE, testcont = c("rank-sum test", "ANOVA"),
                        testcat = c("Chi-squared", "Fisher"), full = TRUE, include_missing = FALSE,
                        percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
-                       numobs = NULL, chunk_label)
+                       numobs = NULL, fontsize,chunk_label)
 {
   if (unformattedp)
     formatp <- function(x) {
@@ -2242,9 +2246,11 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
     attr(tab, "dimchk") <- dim(tab)
     return(tab)
   }
-  outTable(tab = tab, to_indent = to_indent, bold_cells = bold_cells,
+  argL <- list(tab = tab, to_indent = to_indent, bold_cells = bold_cells,
            caption = caption, chunk_label = ifelse(missing(chunk_label),
                                                    "NOLABELTOADD", chunk_label))
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 }
 
 #' Output several univariate models nicely in a single table
@@ -2310,6 +2316,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #'   will be suppressed. In addition to the model elements a data element will
 #'   be appended to each model so that the fitted data can be examined, if
 #'   necessary. See Details
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @seealso
 #' \code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
 #' \code{\link{coxph}},
@@ -2353,7 +2360,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
                      strata = 1,
                      nicenames = TRUE,showN = TRUE,CIwidth = 0.95,
-                     reflevel=NULL,returnModels=FALSE){
+                     reflevel=NULL,returnModels=FALSE,fontsize){
 
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument')
@@ -2459,10 +2466,12 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
     return(tab)
   }
   if (returnModels) return (rtn$models)
-  outTable(tab=tab, digits = digits,
+  argL <- list(tab=tab, digits = digits,
            to_indent=to_indent,bold_cells=bold_cells,
            caption=caption,
            chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 
 }
 
@@ -2506,9 +2515,10 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' @param unformattedp boolean indicating if you would like the p-value to be
 #'   returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'   in conjuction with the digits argument.
-#' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
+#' @param chunk_label only used if output is to Word to allow cross-referencing
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
 #'   which case a data frame is returned
 #' @export
@@ -2531,7 +2541,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
 rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95, vif=TRUE,
-                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,chunk_label, nicenames = TRUE){
+                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,chunk_label, fontsize){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
@@ -2583,10 +2593,11 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
   }
 
 
-  outTable(tab=tab,to_indent=to_indent,bold_cells = bold_cells,
+  argL <- list(tab=tab,to_indent=to_indent,bold_cells = bold_cells,
            caption=caption, digits = digits,
            chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
-
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 }
 
 #' Combine univariate and multivariable regression tables
@@ -2610,6 +2621,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
 #' @param caption table caption
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param chunk_label only used if output is to Word to allow cross-referencing
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @seealso
 #'   \code{\link{rm_uvsum}},\code{\link{rm_mvsum}}
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
@@ -2640,7 +2652,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95,
 #' logis_fit<-glm(os_status~age+sex+l_size+pdl1+tmb,data = pembrolizumab,family = 'binomial')
 #' mvtab<-rm_mvsum(logis_fit,tableOnly = TRUE)
 #' rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
-rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,tableOnly=FALSE,chunk_label){
+rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,tableOnly=FALSE,chunk_label,fontsize){
   # Check that tables are data frames and not kable objects
   if (!inherits(uvsumTable,'data.frame')) stop('uvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
   if (!inherits(mvsumTable,'data.frame')) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
@@ -2710,8 +2722,10 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,ta
   if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
                                                matrix(cbind(to_bold_p, which(names(out)=='p (adj)')),ncol=2))
 
-  outTable(tab=out,to_indent=to_indent,bold_cells = bold_cells,
+  argL <- list(tab=out,to_indent=to_indent,bold_cells = bold_cells,
            caption=caption)
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 }
 
 
@@ -3633,6 +3647,7 @@ ggkmcif_paste <- function(list_gg){
 #'   details. Default is 'log'.
 #' @param caption table caption
 #' @param tableOnly should a dataframe or a formatted object be returned
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @importFrom  survival survdiff Surv strata
 #' @seealso \code{\link{survdiff}}
 #' @examples
@@ -3652,7 +3667,7 @@ ggkmcif_paste <- function(list_gg){
 #' @export
 rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
                         digits=1,showCols=c('N','Observed','Expected'),CIwidth=0.95,
-                        conf.type='log',caption=NULL,tableOnly=FALSE){
+                        conf.type='log',caption=NULL,tableOnly=FALSE,fontsize){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(status)) stop('status is a required argument')
@@ -3721,7 +3736,10 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
   lr_data <- lr_data[,setdiff(names(lr_data),setdiff(c('N','Observed','Expected'),showCols))]
   if (tableOnly) return(lr_data)
   to_indent <- setdiff(1:nrow(lr_data),c(1,nrow(lr_data),nrow(lr_data)-1))
-  outTable(lr_data,to_indent=to_indent,caption=caption,align=c('lrrrr'))
+  argL <- list(lr_data,to_indent=to_indent,caption=caption,align=c('lrrrr'))
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
+
 
 }
 
@@ -3761,6 +3779,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #' @param digits the number of digits in the survival rate, default is 2.
 #' @param caption table caption for markdown output
 #' @param tableOnly should a dataframe or a formatted object be returned
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @importFrom  survival survfit Surv
 #' @seealso \code{\link{survfit}}
 #' @return A character vector of the survival table source code, unless tableOnly=TRUE in
@@ -3790,7 +3809,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
                        survtimeunit,survtimesLbls=NULL,CIwidth=0.95,unformattedp=FALSE,
                        conf.type='log',
-                       na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE){
+                       na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE,fontsize){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(survtimeunit)) if (!is.null(survtimes)) stop('survtimeunit must be specified if survtimes are set. Example survtimeunit="year"')
@@ -3867,8 +3886,10 @@ rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
   if (tableOnly){
     return(tab)
   }
-  outTable(tab,caption=caption,
+  argL <- list(tab,caption=caption,
            align = paste0('l',paste0(rep('r',ncol(tab)-1),collapse = '')))
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 
 }
 
@@ -3911,6 +3932,7 @@ rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
 #' @param digits the number of digits in the survival rate, default is 2.
 #' @param caption table caption for markdown output
 #' @param tableOnly should a dataframe or a formatted object be returned
+#' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @importFrom  survival survfit Surv
 #' @seealso \code{\link{survfit}}
 #' @return A character vector of the survival table source code, unless tableOnly=TRUE in
@@ -3934,7 +3956,7 @@ rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
 rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtimes,
                         survtimeunit,strata.prefix=NULL,survtimesLbls=NULL,
                         showCols=c('At Risk','Events','Censored'),CIwidth=0.95,conf.type='log',
-                        na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE){
+                        na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE,fontsize){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(status)) stop('status is a required argument')
@@ -4043,8 +4065,10 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
     return(tab)
   }
   to_indent  <- which(tab[[timelbl]] %in% survtimes)
-  outTable(tab,to_indent=to_indent,caption=caption,
+  argL <- list(tab,to_indent=to_indent,caption=caption,
            align = ifelse(showCounts,'lrrrr','lr'))
+  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  do.call(outTable, argL)
 
 }
 

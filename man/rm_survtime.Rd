@@ -22,7 +22,8 @@ rm_survtime(
   showCounts = TRUE,
   digits = 2,
   caption = NULL,
-  tableOnly = FALSE
+  tableOnly = FALSE,
+  fontsize
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ columns should be output, default is TRUE}
 \item{caption}{table caption for markdown output}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the survival table source code, unless tableOnly=TRUE in
