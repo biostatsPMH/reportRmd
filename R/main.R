@@ -1619,7 +1619,7 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
-#' @import ggplot2
+#' @import ggplot2 data.table
 #' @importFrom scales log_breaks
 #' @keywords plot
 #' @return a plot object
@@ -1751,7 +1751,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL, model =
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
-#' @import ggplot2
+#' @import ggplot2 data.table
 #' @importFrom scales log_breaks
 #' @keywords plot
 #' @return a plot object
@@ -1885,7 +1885,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE, colours =
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
-#' @import ggplot2
+#' @import ggplot2 data.table
 #' @importFrom scales log_breaks
 #' @keywords plot
 #' @return a plot object
