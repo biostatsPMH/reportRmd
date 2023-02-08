@@ -1621,15 +1621,17 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param showN Show number of observations per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom(data.table, .N, .I, ':=')
+#' @importFrom data.table ":="
 #' @keywords plot
 #' @return a plot object
 #' @export
 #' @examples
-#' forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"), data=pembrolizumab, family='binomial')
-forestplotUV = function (response, covs, data, id = NULL, corstr = NULL, model = "glm",
-                          family = NULL, digits = 2, conf.level = 0.95, orderByRisk = TRUE, colours = "default",
-                          showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5, showN = TRUE)
+#' forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
+#' data=pembrolizumab, family='binomial')
+forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
+        model = "glm", family = NULL, digits = 2, conf.level = 0.95,
+        orderByRisk = TRUE, colours = "default", showEst = TRUE, rmRef = FALSE,
+        logScale = FALSE, nxTicks = 5, showN = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1646,9 +1648,9 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL, model =
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
   tab = uvsum(response, covs, data, digits = 2, id = NULL, corstr = NULL,
-                          family = NULL, type = NULL, gee = FALSE, strata = 1, markup = F,
-                          sanitize = F, nicenames = F, showN = TRUE, CIwidth = conf.level,
-                          reflevel = NULL, returnModels = FALSE)
+          family = NULL, type = NULL, gee = FALSE, strata = 1, markup = F,
+          sanitize = F, nicenames = F, showN = TRUE, CIwidth = conf.level,
+          reflevel = NULL, returnModels = FALSE)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
   tab$estimate <- as.numeric(gsub(" .*", "", tab[,2]));
@@ -1754,7 +1756,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL, model =
 #' @param showN Show number of observations per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom(data.table, .N, .I, ':=')
+#' @importFrom data.table ":="
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1762,8 +1764,9 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL, model =
 #' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' forestplotMV(glm_fit)
-forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE, colours = "default",
-                          showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5, showN = TRUE)
+forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
+            colours = "default", showEst = TRUE, rmRef = FALSE,
+            logScale = FALSE, nxTicks = 5, showN = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1779,8 +1782,8 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE, colours =
   }
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
-  tab = mvsum(model, data, digits = 2,
-                          markup = F, sanitize = F, nicenames = F, showN = TRUE, CIwidth = conf.level)
+  tab = mvsum(model, data, digits = 2, markup = F, sanitize = F,
+              nicenames = F, showN = TRUE, CIwidth = conf.level)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
   tab$estimate <- as.numeric(gsub(" .*", "", tab[,2]));
@@ -1889,7 +1892,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE, colours =
 #' @param showN Show number of observations per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom(data.table, .N, .I, ':=')
+#' @importFrom data.table ":="
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1900,8 +1903,8 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE, colours =
 #' data=pembrolizumab,family = 'binomial'))
 #' forestplotUVMV(UVp, MVp)
 forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
-                            family = NULL, digits = 2, orderByRisk = TRUE, colours = "default",
-                            showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5, showN = TRUE)
+        family = NULL, digits = 2, orderByRisk = TRUE, colours = "default",
+        showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5, showN = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
