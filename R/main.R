@@ -1949,13 +1949,13 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
                               "(Reference)", tab$estimate.label)
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
-                                                        paste(tab$variable, ": ", tab$estimate.label, sep=""),
-                                                        paste(tab$level.name, ": ", tab$estimate.label, sep="")))
+                                                        paste(tab$variable, tab$estimate.label),
+                                                        paste(tab$level.name, tab$estimate.label)))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
                                                         tab$variable, ifelse(tab$estimate.label == "(Reference)",
-                                                                             paste(tab$level.name, ": ", tab$estimate.label, sep=""), tab$level.name)))
+                                                                             paste(tab$level.name, tab$estimate.label), tab$level.name)))
   }
   yLabels$labels <- gsub("_", " ", yLabels$labels)
   yLabels <- yLabels[!is.na(yLabels$y.pos), ]
