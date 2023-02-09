@@ -1621,7 +1621,7 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param showN Show number of observations per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom data.table .N .I ':='
+#' @importFrom data.table .N .I ':=' data.table
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1756,7 +1756,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' @param showN Show number of observations per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom data.table .N .I ':='
+#' @importFrom data.table .N .I ':=' data.table
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1892,7 +1892,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
 #' @param showN Show number of observations per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom data.table .N .I ':='
+#' @importFrom data.table .N .I ':=' data.table
 #' @keywords plot
 #' @return a plot object
 #' @export
