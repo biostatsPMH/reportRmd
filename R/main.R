@@ -1619,9 +1619,8 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
-#' @import ggplot2
+#' @import ggplot2 data.table
 #' @importFrom scales log_breaks
-#' @importFrom data.table ":="
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1686,13 +1685,13 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
                               "(Reference)", tab$estimate.label)
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
-                                                        paste(tab$variable, tab$estimate.label), paste(tab$level.name,
-                                                                                                       tab$estimate.label)))
+          paste(tab$variable, ": ", tab$estimate.label, sep=""),
+          paste(tab$level.name, ":", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
-                                                        tab$variable, ifelse(tab$estimate.label == "(Reference)",
-                                                                             paste(tab$level.name, tab$estimate.label), tab$level.name)))
+          tab$variable, ifelse(tab$estimate.label == "(Reference)",
+          paste(tab$level.name, ": ", tab$estimate.label, sep=""), tab$level.name)))
   }
   yLabels$labels <- gsub("_", " ", yLabels$labels)
   yLabels <- yLabels[!is.na(yLabels$y.pos), ]
@@ -1754,9 +1753,8 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
-#' @import ggplot2
+#' @import ggplot2 data.table
 #' @importFrom scales log_breaks
-#' @importFrom data.table ":="
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1820,13 +1818,13 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
                               "(Reference)", tab$estimate.label)
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
-                                                        paste(tab$variable, tab$estimate.label), paste(tab$level.name,
-                                                                                                       tab$estimate.label)))
+                                                        paste(tab$variable, ": ", tab$estimate.label, sep=""),
+                                                        paste(tab$level.name, ":", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
                                                         tab$variable, ifelse(tab$estimate.label == "(Reference)",
-                                                                             paste(tab$level.name, tab$estimate.label), tab$level.name)))
+                                                                             paste(tab$level.name, ": ", tab$estimate.label, sep=""), tab$level.name)))
   }
   yLabels$labels <- gsub("_", " ", yLabels$labels)
   yLabels <- yLabels[!is.na(yLabels$y.pos), ]
@@ -1890,9 +1888,8 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
-#' @import ggplot2
+#' @import ggplot2 data.table
 #' @importFrom scales log_breaks
-#' @importFrom data.table ":="
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1952,13 +1949,13 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
                               "(Reference)", tab$estimate.label)
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
-                                                        paste(tab$variable, tab$estimate.label), paste(tab$level.name,
-                                                                                                       tab$estimate.label)))
+                                                        paste(tab$variable, ": ", tab$estimate.label, sep=""),
+                                                        paste(tab$level.name, ":", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
                                                         tab$variable, ifelse(tab$estimate.label == "(Reference)",
-                                                                             paste(tab$level.name, tab$estimate.label), tab$level.name)))
+                                                                             paste(tab$level.name, ": ", tab$estimate.label, sep=""), tab$level.name)))
   }
   yLabels$labels <- gsub("_", " ", yLabels$labels)
   yLabels <- yLabels[!is.na(yLabels$y.pos), ]
