@@ -1686,7 +1686,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
           paste(tab$variable, ": ", tab$estimate.label, sep=""),
-          paste(tab$level.name, ":", tab$estimate.label, sep="")))
+          paste(tab$level.name, ": ", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
@@ -1819,7 +1819,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
                                                         paste(tab$variable, ": ", tab$estimate.label, sep=""),
-                                                        paste(tab$level.name, ":", tab$estimate.label, sep="")))
+                                                        paste(tab$level.name, ": ", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
@@ -1950,7 +1950,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
                                                         paste(tab$variable, ": ", tab$estimate.label, sep=""),
-                                                        paste(tab$level.name, ":", tab$estimate.label, sep="")))
+                                                        paste(tab$level.name, ": ", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
