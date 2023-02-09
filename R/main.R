@@ -1920,7 +1920,9 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   UVmodel$data$type <- "Unadjusted";
   MVmodel$data$type <- "Adjusted";
   tab <- rbind(UVmodel$data, MVmodel$data);
-  tab <- tab[!duplicated(tab[ , c("var.name", "variable")]),];
+  tab$IsVarName <- paste(tab$estimate.label, tab$type, sep="");
+  tab[which(tab$estimate.label != "(Reference)" & is.na(tab$estimate)), ]$IsVarName <- "Y";
+  tab <- tab[!duplicated(tab[ , c("var.name", "variable", "IsVarName")]),];
   tab$Reference <- paste(tab$estimate.label, tab$type, sep="");
   tab[which(tab$estimate.label == "(Reference)"), ]$Reference <- "Y";
   tab <- tab[!duplicated(tab[, c("var.name", "estimate.label", "Reference")]),];
@@ -1949,13 +1951,13 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
                               "(Reference)", tab$estimate.label)
   if (showEst) {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
-                                                        paste(tab$variable, tab$estimate.label),
-                                                        paste(tab$level.name, tab$estimate.label)))
+                                                        paste(tab$variable, ": ", tab$estimate.label, sep=""),
+                                                        paste(tab$level.name, ": ", tab$estimate.label, sep="")))
   }
   else {
     yLabels = data.frame(y.pos = yvals, labels = ifelse(is.na(tab$level.name),
                                                         tab$variable, ifelse(tab$estimate.label == "(Reference)",
-                                                                             paste(tab$level.name, tab$estimate.label), tab$level.name)))
+                                                                             paste(tab$level.name, ": ", tab$estimate.label, sep=""), tab$level.name)))
   }
   yLabels$labels <- gsub("_", " ", yLabels$labels)
   yLabels <- yLabels[!is.na(yLabels$y.pos), ]
