@@ -767,6 +767,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
 #' @param showN boolean indicating if you want to show sample sizes
+#' @param showEvent boolean indicating if you want to show number of events.
+#'   Only available for logistic.
 #' @param CIwidth width of confidence interval, default is 0.95
 #' @param reflevel manual specification of the reference level. Only used for
 #'   ordinal. This may allow you to debug if the function throws an error.
@@ -783,7 +785,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint
 uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, family = NULL,
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
-                   showN = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
+                   showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
 {
 
   if (!markup) {
@@ -1065,6 +1067,13 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       }
       out <- cbind(out, n_by_level)
     }
+    if (showEvent & type == "logistic") {
+      event_by_level = nrow(data[which(data[,1]==1),])
+      if (is.factor(data[which(data[,1]==1),][[x_var]])) {
+        event_by_level = c(event_by_level, as.vector(table(data[which(data[,1]==1),][[x_var]])))
+      }
+      out <- cbind(out, event_by_level)
+    }
     if (returnModels) {
       m2$data <- data
       modelList[[x_var]] <<- m2
@@ -1082,6 +1091,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   colName <- c("Covariate", sanitizestr(beta),
                "p-value", "Global p-value")
   if (showN) colName <- c(colName,"N")
+  if (showEvent & type == "logistic") colName <- c(colName,"Event")
   colnames(table) <- colName
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
@@ -1113,6 +1123,8 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' @param digits number of digits to round to
 #' @param showN boolean indicating sample sizes should be shown for each
 #'   comparison, can be useful for interactions
+#' @param showEvent boolean indicating if number of events should be shown. Only
+#'   available for logistic.
 #' @param markup boolean indicating if you want latex markup
 #' @param sanitize boolean indicating if you want to sanitize all strings to not
 #'   break LaTeX
@@ -1129,7 +1141,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
 #'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
-mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
+mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    CIwidth = 0.95, vif=TRUE)
 {
   if (!markup) {
@@ -1447,6 +1459,31 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
       ss_N = nrow(data)
     }
     out <- cbind(out, ss_N)
+    if (model$family$link %in% c("log", "logit")){
+      if (out[1, 2] == "") {
+        if (length(grep(":", title[1])) > 0) {
+          ss_Event = unlist(lapply(levelnameslist,
+                                   function(level) {
+                                     Event <- mapply(function(cn, lvl) {
+                                       if (cn == lvl) {
+                                         nrow(ss_data[which(ss_data[,1]==1),])
+                                       } else {
+                                         sum(ss_data[which(ss_data[,1]==1),][[cn]] == lvl)
+                                       }
+                                     }, oldcovname, level)
+                                     return(min(Event))
+                                   }))
+        }
+        else {
+          ss_Event = as.vector(table(ss_data[which(ss_data[,1]==1),][[oldcovname]]))
+        }
+        ss_Event <- c(nrow(ss_data[which(ss_data[,1]==1),]),ss_Event) # Add in the total for the variable
+      }
+      else {
+        ss_Event = nrow(ss_data[which(ss_data[,1]==1),])
+      }
+      out <- cbind(out, ss_Event)
+    }
     rownames(out) <- NULL
     colnames(out) <- NULL
     return(list(out, nrow(out)))
@@ -1466,11 +1503,12 @@ mvsum <- function (model, data, digits=2, showN = FALSE, markup = TRUE, sanitize
   table <- do.call("rbind", lapply(table, data.frame,
                                    stringsAsFactors = FALSE))
   colName = c("Covariate", sanitizestr(beta), "p-value",
-              "Global p-value","N")
+              "Global p-value","N","Event")
   colnames(table) <- colName
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
   if (!showN) table <- table[, -which(colnames(table)=="N")]
+  if (!showEvent & model$family$link %in% c("log", "logit")) table <- table[, -which(colnames(table)=="Event")]
   if (vif) {
     if (type=='geeglm'|type=='lme'){
         message('VIF not yet implemented for mixed effects/GEE models.')
@@ -1619,6 +1657,7 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
+#' @param showEvent Show number of events per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
 #' @importFrom data.table .N .I ':=' data.table
@@ -1631,7 +1670,7 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
         model = "glm", family = NULL, digits = 2, conf.level = 0.95,
         orderByRisk = TRUE, colours = "default", showEst = TRUE, rmRef = FALSE,
-        logScale = FALSE, nxTicks = 5, showN = TRUE)
+        logScale = FALSE, nxTicks = 5, showN = TRUE, showEvent = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1649,8 +1688,8 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   ###################################
   tab = uvsum(response, covs, data, digits = 2, id = NULL, corstr = NULL,
           family = NULL, type = NULL, gee = FALSE, strata = 1, markup = F,
-          sanitize = F, nicenames = F, showN = TRUE, CIwidth = conf.level,
-          reflevel = NULL, returnModels = FALSE)
+          sanitize = F, nicenames = F, showN = TRUE, showEvent = TRUE,
+          CIwidth = conf.level, reflevel = NULL, returnModels = FALSE)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
   tab$estimate <- as.numeric(gsub(" .*", "", tab[,2]));
@@ -1673,7 +1712,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   tab$p.value <- tab$"p-value";
   tab$p.label <- paste(format(round(as.numeric(tab$p.value), 3), nsmall=3), sep="");
   tab$variable <- tab$Covariate;
-  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N")];
+  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "Event")];
   tab <- as.data.frame(tab);
   ###################################
   if (rmRef)
@@ -1712,6 +1751,11 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
   }
+  if (showEvent) {
+    Axis = scale_y_continuous(breaks = yLabels$y.pos,
+                              labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
+                                                                           labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
+  }
   else {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
@@ -1727,7 +1771,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
                                                                     tab$var.name | is.na(tab$var.name), "bold", "plain"),
                                                     hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
                          axis.ticks = element_blank(),
-                         axis.title.y.right = element_text(angle = 0, hjust = 0.5, vjust = 0.5) )
+                         axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5) )
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
@@ -1754,6 +1798,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
+#' @param showEvent Show number of events per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
 #' @importFrom data.table .N .I ':=' data.table
@@ -1766,7 +1811,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' forestplotMV(glm_fit)
 forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
             colours = "default", showEst = TRUE, rmRef = FALSE,
-            logScale = FALSE, nxTicks = 5, showN = TRUE)
+            logScale = FALSE, nxTicks = 5, showN = TRUE, showEvent = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1783,7 +1828,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
   tab = mvsum(model, data, digits = 2, markup = F, sanitize = F,
-              nicenames = F, showN = TRUE, CIwidth = conf.level)
+              nicenames = F, showN = TRUE, showEvent = TRUE, CIwidth = conf.level)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
   tab$estimate <- as.numeric(gsub(" .*", "", tab[,2]));
@@ -1807,7 +1852,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
   tab$p.value <- tab$"p-value";
   tab$p.label <- paste(format(round(as.numeric(tab$p.value), 3), nsmall=3), sep="");
   tab$variable <- tab$Covariate;
-  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N")];
+  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "Event")];
   tab <- as.data.frame(tab);
   ###################################
   if (rmRef)
@@ -1846,6 +1891,11 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
   }
+  if (showEvent) {
+    Axis = scale_y_continuous(breaks = yLabels$y.pos,
+                              labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
+                                                                           labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
+  }
   else {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
@@ -1861,7 +1911,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
                                                                     tab$var.name | is.na(tab$var.name), "bold", "plain"),
                                                     hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
                          axis.ticks = element_blank(),
-                         axis.title.y.right = element_text(angle = 0, hjust = 0.5, vjust = 0.5) )
+                         axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5) )
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
@@ -1890,6 +1940,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @param showN Show number of observations per variable and category
+#' @param showEvent Show number of events per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
 #' @importFrom data.table .N .I ':=' data.table
@@ -1904,7 +1955,8 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
 #' forestplotUVMV(UVp, MVp)
 forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
         family = NULL, digits = 2, orderByRisk = TRUE, colours = "default",
-        showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5, showN = TRUE)
+        showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5,
+        showN = TRUE, showEvent = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1941,7 +1993,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   tab <- tab[, -which(colnames(tab) %in% c("var.order"))];
   tab <- merge(tab, dt, by = "var.name", all = T);
   tab <- tab[order(tab$var.order, tab$level.order, tab$type, decreasing = c(F, F, T), method="radix"), ];
-  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "type")];
+  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "Event", "type")];
   tab <- as.data.frame(tab);
   ###################################
   if (rmRef)
@@ -1981,6 +2033,12 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
                                                                            labels = tab$N, name = "N"))
     warning(paste("Total N and reference-level N is taken from unadjusted model."))
   }
+  if (showEvent) {
+    Axis = scale_y_continuous(breaks = yLabels$y.pos,
+                              labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
+                                                                           labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
+    warning(paste("Total N and reference-level N is taken from unadjusted model."))
+  }
   else {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
@@ -1998,7 +2056,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
       theme(legend.title=element_blank(), legend.margin = margin(-8, 0, 0, 0),
             legend.spacing.x = unit(2, "mm"), legend.spacing.y = unit(0, "mm"),
             legend.position = "bottom", axis.ticks = element_blank(),
-            axis.title.y.right = element_text(angle = 0, hjust = 0.5, vjust = 0.5) )
+            axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5) )
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
@@ -2714,6 +2772,8 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
 #'   with a space
 #' @param showN boolean indicating if you want to show sample sizes
+#' @param showEvent boolean indicating if you want to show number of events. Only
+#'   available for logistic.
 #' @param CIwidth width of confidence interval, default is 0.95
 #' @param reflevel manual specification of the reference level. Only used for
 #'   ordinal regression This will allow you to see which model is not fitting if
@@ -2766,7 +2826,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                      chunk_label,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
                      strata = 1,
-                     nicenames = TRUE,showN = TRUE,CIwidth = 0.95,
+                     nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
                      reflevel=NULL,returnModels=FALSE,fontsize){
 
   if (missing(data)) stop('data is a required argument')
@@ -2913,6 +2973,8 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #'   use the column name 'Covariate'.
 #' @param showN boolean indicating sample sizes should be shown for each
 #'   comparison, can be useful for interactions
+#' @param showEvent boolean indicating if number of events should be shown. Only
+#'   available for logistic.
 #' @param CIwidth width for confidence intervals, defaults to 0.95
 #' @param vif boolean indicating if the variance inflation factor should be
 #'   included. See details
@@ -2947,7 +3009,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' require(survival)
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
-rm_mvsum <- function(model, data, digits=2,covTitle='',showN=FALSE,CIwidth=0.95, vif=TRUE,
+rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
                      caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,chunk_label, fontsize){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
