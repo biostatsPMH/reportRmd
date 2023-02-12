@@ -16,7 +16,8 @@ forestplotUVMV(
   rmRef = FALSE,
   logScale = FALSE,
   nxTicks = 5,
-  showN = TRUE
+  showN = TRUE,
+  showEvent = TRUE
 )
 }
 \arguments{
@@ -41,6 +42,8 @@ linear scale.}
 produce}
 
 \item{showN}{Show number of observations per variable and category}
+
+\item{showEvent}{Show number of events per variable and category}
 }
 \value{
 a plot object

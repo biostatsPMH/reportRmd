@@ -1660,7 +1660,6 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param showEvent Show number of events per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom data.table .N .I ':=' data.table
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1698,13 +1697,14 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   tab$level.name <- tab[,1];
   tab$var.name <- NA;
   tab$var.name[which(tab$Covariate %in% covs)] <- tab$level.name[which(tab$Covariate %in% covs)];
-  dt <- data.table(y = tab$var.name )
-  dt[, y_forward_fill := y[1], .(cumsum(!is.na(y)))]
-  tab <- cbind(tab, dt)
+  y <- tab$var.name;
+  y_forward_fill <- fillNAs(y);
+  tab <- cbind(tab, y, y_forward_fill);
   tab$var.name <- tab$y_forward_fill;
   tab$level.order <- sequence(rle(tab$var.name)$lengths)
   tab <- tab[order(rank(tab$estimate), tab$var.name), ];
-  dt <- data.table(var.name = unique(tab$var.name));
+  dt <- as.data.frame(unique(tab$var.name));
+  colnames(dt) <- "var.name";
   dt$var.order <- 1:nrow(dt);
   dt$var.order <- dt$var.order + 1;
   tab <- merge(tab, dt, by = "var.name", all = T);
@@ -1801,7 +1801,6 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' @param showEvent Show number of events per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom data.table .N .I ':=' data.table
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1838,13 +1837,14 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
   tab$var.name <- NA;
   covs <- colnames(model$model);
   tab$var.name[which(tab$Covariate %in% covs)] <- tab$level.name[which(tab$Covariate %in% covs)];
-  dt <- data.table(y = tab$var.name )
-  dt[, y_forward_fill := y[1], .(cumsum(!is.na(y)))]
-  tab <- cbind(tab, dt)
+  y <- tab$var.name;
+  y_forward_fill <- fillNAs(y);
+  tab <- cbind(tab, y, y_forward_fill);
   tab$var.name <- tab$y_forward_fill;
   tab$level.order <- sequence(rle(tab$var.name)$lengths)
   tab <- tab[order(rank(tab$estimate), tab$var.name), ];
-  dt <- data.table(var.name = unique(tab$var.name));
+  dt <- as.data.frame(unique(tab$var.name));
+  colnames(dt) <- "var.name";
   dt$var.order <- 1:nrow(dt);
   dt$var.order <- dt$var.order + 1;
   tab <- merge(tab, dt, by = "var.name", all = T);
@@ -1943,7 +1943,6 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
 #' @param showEvent Show number of events per variable and category
 #' @import ggplot2
 #' @importFrom scales log_breaks
-#' @importFrom data.table .N .I ':=' data.table
 #' @keywords plot
 #' @return a plot object
 #' @export
@@ -1981,13 +1980,14 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   tab$Reference <- paste(tab$estimate.label, tab$type, sep="");
   tab[which(tab$estimate.label == "(Reference)"), ]$Reference <- "Y";
   tab <- tab[!duplicated(tab[, c("var.name", "estimate.label", "Reference")]),];
-  dt <- data.table(y = tab$var.name )
-  dt[, y_forward_fill := y[1], .(cumsum(!is.na(y)))]
-  tab <- cbind(tab, dt)
+  y <- tab$var.name;
+  y_forward_fill <- fillNAs(y);
+  tab <- cbind(tab, y, y_forward_fill);
   tab$var.name <- tab$y_forward_fill;
   tab$level.order <- sequence(rle(tab$var.name)$lengths)
   tab <- tab[order(rank(tab$estimate), tab$var.name), ];
-  dt <- data.table(var.name = unique(tab$var.name));
+  dt <- as.data.frame(unique(tab$var.name));
+  colnames(dt) <- "var.name";
   dt$var.order <- 1:nrow(dt);
   dt$var.order <- dt$var.order + 1;
   tab <- tab[, -which(colnames(tab) %in% c("var.order"))];

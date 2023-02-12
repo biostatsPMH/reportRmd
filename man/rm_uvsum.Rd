@@ -24,6 +24,7 @@ rm_uvsum(
   strata = 1,
   nicenames = TRUE,
   showN = TRUE,
+  showEvent = TRUE,
   CIwidth = 0.95,
   reflevel = NULL,
   returnModels = FALSE,
@@ -86,6 +87,9 @@ coxph and crr}
 with a space}
 
 \item{showN}{boolean indicating if you want to show sample sizes}
+
+\item{showEvent}{boolean indicating if you want to show number of events. Only
+available for logistic.}
 
 \item{CIwidth}{width of confidence interval, default is 0.95}
 

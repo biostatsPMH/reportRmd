@@ -9,7 +9,8 @@ rm_mvsum(
   data,
   digits = 2,
   covTitle = "",
-  showN = FALSE,
+  showN = TRUE,
+  showEvent = TRUE,
   CIwidth = 0.95,
   vif = TRUE,
   caption = NULL,
@@ -36,6 +37,9 @@ use the column name 'Covariate'.}
 
 \item{showN}{boolean indicating sample sizes should be shown for each
 comparison, can be useful for interactions}
+
+\item{showEvent}{boolean indicating if number of events should be shown. Only
+available for logistic.}
 
 \item{CIwidth}{width for confidence intervals, defaults to 0.95}
 

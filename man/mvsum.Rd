@@ -8,7 +8,8 @@ mvsum(
   model,
   data,
   digits = 2,
-  showN = FALSE,
+  showN = TRUE,
+  showEvent = TRUE,
   markup = TRUE,
   sanitize = TRUE,
   nicenames = TRUE,
@@ -25,6 +26,9 @@ mvsum(
 
 \item{showN}{boolean indicating sample sizes should be shown for each
 comparison, can be useful for interactions}
+
+\item{showEvent}{boolean indicating if number of events should be shown. Only
+available for logistic.}
 
 \item{markup}{boolean indicating if you want latex markup}
 
