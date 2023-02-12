@@ -1750,11 +1750,13 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
+    themeSecAxis = theme(axis.title.y.right = element_text(angle = 0, hjust = 0.5, vjust = 0.5))
   }
   if (showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
+    themeSecAxis = theme(axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5))
   }
   if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
@@ -1770,8 +1772,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
       theme_bw() + theme(axis.text.y = element_text(face = ifelse(tab$variable ==
                                                                     tab$var.name | is.na(tab$var.name), "bold", "plain"),
                                                     hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
-                         axis.ticks = element_blank(),
-                         axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5) )
+                         axis.ticks = element_blank()) + themeSecAxis
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
@@ -1890,11 +1891,13 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
+    themeSecAxis = theme(axis.title.y.right = element_text(angle = 0, hjust = 0.5, vjust = 0.5))
   }
   if (showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
+    themeSecAxis = theme(axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5))
   }
   if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
@@ -1910,8 +1913,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
       theme_bw() + theme(axis.text.y = element_text(face = ifelse(tab$variable ==
                                                                     tab$var.name | is.na(tab$var.name), "bold", "plain"),
                                                     hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
-                         axis.ticks = element_blank(),
-                         axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5) )
+                         axis.ticks = element_blank()) + themeSecAxis
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
@@ -2031,12 +2033,14 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
+    themeSecAxis = theme(axis.title.y.right = element_text(angle = 0, hjust = 0.5, vjust = 0.5))
     warning(paste("Total N and reference-level N is taken from unadjusted model."))
   }
   if (showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
+    themeSecAxis = theme(axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5))
     warning(paste("Total N and reference-level N is taken from unadjusted model."))
   }
   if (!showN & !showEvent) {
@@ -2055,8 +2059,8 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
                                                     hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank()) +
       theme(legend.title=element_blank(), legend.margin = margin(-8, 0, 0, 0),
             legend.spacing.x = unit(2, "mm"), legend.spacing.y = unit(0, "mm"),
-            legend.position = "bottom", axis.ticks = element_blank(),
-            axis.title.y.right = element_text(angle = 270, hjust = 0.5, vjust = 0.5) )
+            legend.position = "bottom", axis.ticks = element_blank()) +
+      themeSecAxis
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
