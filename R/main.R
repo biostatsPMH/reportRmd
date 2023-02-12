@@ -2870,7 +2870,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   rtn <- uvsum(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
                gee=gee,id = id,
                corstr = corstr,family = family,type = type,strata = strata,
-               nicenames = nicenames,showN = showN,
+               nicenames = nicenames,showN = showN,showEvent = showEvent,
                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels)
   if (returnModels) tab <- rtn[[1]] else tab <- rtn
   cap_warn <- character(0)
@@ -3018,7 +3018,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
-               sanitize = FALSE, nicenames = FALSE,showN=showN,CIwidth = CIwidth,vif=vif)
+               sanitize = FALSE, nicenames = FALSE,showN=showN,showEvent=showEvent,CIwidth = CIwidth,vif=vif)
 
   to_indent <- setdiff(1:nrow(tab),
                        sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
