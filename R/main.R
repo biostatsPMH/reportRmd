@@ -1607,8 +1607,8 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
   # set colours
   tab$colour <- ifelse(tab$x.val<1,'a',ifelse(tab$x.val==1,'b','c'))
 
-  if (colours=='default'){
-    colours = c(a='red',b='black',c='darkgreen')
+  if (length(colours) == 1){
+    colours = c(a = "#006B3C", b = "black", c = "#FF0800")
   }  else {
     names(colours) = c('a','b','c')
   }
@@ -1740,8 +1740,8 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   tab$y.val = yLabels$y.pos
   tab$colour <- ifelse(tab$x.val < 1, "a", ifelse(tab$x.val ==
                                                     1, "b", "c"))
-  if (colours == "default") {
-    colours = c(a = "red", b = "black", c = "darkgreen")
+  if (length(colours) == 1) {
+    colours = c(a = "#006B3C", b = "black", c = "#FF0800")
   }
   else {
     names(colours) = c("a", "b", "c")
@@ -1880,8 +1880,8 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
   tab$y.val = yLabels$y.pos
   tab$colour <- ifelse(tab$x.val < 1, "a", ifelse(tab$x.val ==
                                                     1, "b", "c"))
-  if (colours == "default") {
-    colours = c(a = "red", b = "black", c = "darkgreen")
+  if (length(colours) == 1) {
+    colours = c(a = "#006B3C", b = "black", c = "#FF0800")
   }
   else {
     names(colours) = c("a", "b", "c")
@@ -2021,8 +2021,8 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   tab$y.val = yLabels$y.pos
   tab$colour <- ifelse(tab$x.val < 1, "a", ifelse(tab$x.val ==
                                                     1, "b", "c"))
-  if (colours == "default") {
-    colours = c(a = "red", b = "black", c = "darkgreen")
+  if (length(colours) == 1) {
+    colours = c(a = "#006B3C", b = "black", c = "#FF0800")
   }
   else {
     names(colours) = c("a", "b", "c")
