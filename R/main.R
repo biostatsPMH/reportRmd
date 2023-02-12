@@ -1746,7 +1746,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   else {
     names(colours) = c("a", "b", "c")
   }
-  if (showN) {
+  if (showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
@@ -1756,7 +1756,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
   }
-  else {
+  if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
   }
@@ -1886,7 +1886,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
   else {
     names(colours) = c("a", "b", "c")
   }
-  if (showN) {
+  if (showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
@@ -1896,7 +1896,7 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
   }
-  else {
+  if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
   }
@@ -2027,7 +2027,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   else {
     names(colours) = c("a", "b", "c")
   }
-  if (showN) {
+  if (showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels, sec.axis = dup_axis(breaks = yLabels$y.pos,
                                                                            labels = tab$N, name = "N"))
@@ -2039,7 +2039,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
                                                                            labels = paste(tab$N, tab$Event, sep=" : "), name = "N : Event"))
     warning(paste("Total N and reference-level N is taken from unadjusted model."))
   }
-  else {
+  if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
   }
