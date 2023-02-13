@@ -1068,9 +1068,9 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       out <- cbind(out, n_by_level)
     }
     if (showEvent & type == "logistic") {
-      event_by_level = nrow(data[which(data[,1]==1 | data[,1]==levels(data[,1])[2]),])
-      if (is.factor(data[which(data[,1]==1 | data[,1]==levels(data[,1])[2]),][[x_var]])) {
-        event_by_level = c(event_by_level, as.vector(table(data[which(data[,1]==1 | data[,1]==levels(data[,1])[2]),][[x_var]])))
+      event_by_level = nrow(data[which(data[,1] %in% c(1, levels(data[,1])[2])),])
+      if (is.factor(data[which(data[,1] %in% c(1, levels(data[,1])[2])),][[x_var]])) {
+        event_by_level = c(event_by_level, as.vector(table(data[which(data[,1] %in% c(1, levels(data[,1])[2])),][[x_var]])))
       }
       out <- cbind(out, event_by_level)
     }
@@ -1466,21 +1466,21 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
                                    function(level) {
                                      Event <- mapply(function(cn, lvl) {
                                        if (cn == lvl) {
-                                         nrow(ss_data[which(ss_data[,1]==1 | ss_data[,1]==levels(ss_data[,1])[2]),])
+                                         nrow(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),])
                                        } else {
-                                         sum(ss_data[which(ss_data[,1]==1 | ss_data[,1]==levels(ss_data[,1])[2]),][[cn]] == lvl)
+                                         sum(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),][[cn]] == lvl)
                                        }
                                      }, oldcovname, level)
                                      return(min(Event))
                                    }))
         }
         else {
-          ss_Event = as.vector(table(ss_data[which(ss_data[,1]==1 | ss_data[,1]==levels(ss_data[,1])[2]),][[oldcovname]]))
+          ss_Event = as.vector(table(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),][[oldcovname]]))
         }
-        ss_Event <- c(nrow(ss_data[which(ss_data[,1]==1 | ss_data[,1]==levels(ss_data[,1])[2]),]),ss_Event) # Add in the total for the variable
+        ss_Event <- c(nrow(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),]),ss_Event) # Add in the total for the variable
       }
       else {
-        ss_Event = nrow(ss_data[which(ss_data[,1]==1 | ss_data[,1]==levels(ss_data[,1])[2]),])
+        ss_Event = nrow(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),])
       }
       out <- cbind(out, ss_Event)
     }
