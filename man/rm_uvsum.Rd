@@ -28,7 +28,8 @@ rm_uvsum(
   CIwidth = 0.95,
   reflevel = NULL,
   returnModels = FALSE,
-  fontsize
+  fontsize,
+  forceWald
 )
 }
 \arguments{
@@ -104,6 +105,11 @@ be appended to each model so that the fitted data can be examined, if
 necessary. See Details}
 
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
+
+\item{forceWald}{boolean indicating if Wald confidence intervals should be
+used instead of profile likelihood. This is not recommended, but can speed
+up computations. To use throughout a document use
+options(reportRmd.forceWald=TRUE)}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

@@ -774,6 +774,10 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #'   ordinal. This may allow you to debug if the function throws an error.
 #' @param returnModels boolean indicating if a list of fitted models should be
 #'   returned.
+#'@param forceWald boolean indicating if Wald confidence intervals should be
+#'  used instead of profile likelihood. This is not recommended, but can speed
+#'  up computations. To use throughout a document use
+#'  options(reportRmd.forceWald=TRUE)
 #' @seealso
 #' \code{\link{lm}},\code{\link{glm}},\code{\link{crr}},\code{\link{coxph}},
 #' \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
@@ -785,7 +789,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint
 uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, family = NULL,
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
-                   showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE)
+                   showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald)
 {
 
   if (!markup) {
@@ -793,6 +797,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     addspace <- identity
     lpvalue <- identity
   }
+  if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   if (!sanitize)  sanitizestr <- identity
   if (!nicenames) nicename <- identity
   if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
@@ -885,6 +890,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       family='gaussian'
     }
   }
+  if (forceWald) confint <- confint.default
   beta = betaWithCI(beta, CIwidth)
   if (strata != "" & type != "coxph") {
     stop("strata can only be used with coxph")
@@ -2788,6 +2794,10 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #'   be appended to each model so that the fitted data can be examined, if
 #'   necessary. See Details
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
+#' @param forceWald boolean indicating if Wald confidence intervals should be
+#'  used instead of profile likelihood. This is not recommended, but can speed
+#'  up computations. To use throughout a document use
+#'  options(reportRmd.forceWald=TRUE)
 #' @seealso
 #' \code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
 #' \code{\link{coxph}},
@@ -2831,7 +2841,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
                      strata = 1,
                      nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
-                     reflevel=NULL,returnModels=FALSE,fontsize){
+                     reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
 
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument')
@@ -2844,6 +2854,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                                            paste0(missing_vars,collapse=csep())))
   if (strata==1) nm <- c(response,covs) else nm <- c(strata,response,covs)
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
+  if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
   for (v in covs) {
     if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)

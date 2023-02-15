@@ -22,7 +22,8 @@ uvsum(
   showEvent = TRUE,
   CIwidth = 0.95,
   reflevel = NULL,
-  returnModels = FALSE
+  returnModels = FALSE,
+  forceWald
 )
 }
 \arguments{
@@ -84,6 +85,11 @@ ordinal. This may allow you to debug if the function throws an error.}
 
 \item{returnModels}{boolean indicating if a list of fitted models should be
 returned.}
+
+\item{forceWald}{boolean indicating if Wald confidence intervals should be
+used instead of profile likelihood. This is not recommended, but can speed
+up computations. To use throughout a document use
+options(reportRmd.forceWald=TRUE)}
 }
 \description{
 Returns a dataframe corresponding to a univariate regression table
