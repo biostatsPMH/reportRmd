@@ -857,7 +857,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     if (length(response) == 2) {
       # Check that responses are numeric
       for (i in 1:2) if (!is.numeric(data[[response[i]]])) stop('Both response variables must be numeric')
-      if (length(unique(data[[response[2]]])) < 3) {
+      if (length(unique(na.omit(data[[response[2]]]))) < 3) {
         type <- "coxph"
       }
       else {
@@ -865,7 +865,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       }
       beta <- "HR"
     }
-    else if (length(na.omit(unique(data[[response]]))) == 2) {
+    else if (length(unique(na.omit(data[[response]]))) == 2) {
       type <- "logistic"
       beta <- "OR"
       family="binomial"
