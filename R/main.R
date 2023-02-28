@@ -393,8 +393,10 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
             p <- try(stats::fisher.test(pdata[[maincov]],
                                         pdata[[cov]])$p.value, silent = TRUE)
             if (effSize) {
-              e_type <- "Cramer"
-              e <- try(rstatix::cramer_v(table(pdata[[cov]], pdata[[maincov]])), silent = TRUE)
+              e_type <- "Cramer's V"
+              e <- try(sqrt((stats::chisq.test(pdata[[maincov]],
+                                               pdata[[cov]])$statistic/N)/
+                              (min(length(unique(pdata[[maincov]]))-1,length(unique(pdata[[cov]]))-1))), silent = TRUE)
             }
             if (is.error(p)) {
               message("Using MC sim. Use set.seed() prior to function for reproducible results.")
@@ -403,8 +405,10 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                        silent = TRUE)
               p_type <- "MC sim"
               if (effSize) {
-                e_type <- "Cramer"
-                e <- try(rstatix::cramer_v(table(pdata[[cov]], pdata[[maincov]])), silent = TRUE)
+                e_type <- "Cramer's V"
+                e <- try(sqrt((stats::chisq.test(pdata[[maincov]],
+                                                 pdata[[cov]])$statistic/N)/
+                                (min(length(unique(pdata[[maincov]]))-1,length(unique(pdata[[cov]]))-1))), silent = TRUE)
               }
             }
           }
@@ -413,8 +417,10 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
             p = try(stats::chisq.test(pdata[[maincov]],
                                       pdata[[cov]])$p.value, silent = TRUE)
             if (effSize) {
-              e_type <- "Cramer"
-              e <- try(rstatix::cramer_v(table(pdata[[cov]], pdata[[maincov]])), silent = TRUE)
+              e_type <- "Cramer's V"
+              e <- try(sqrt((stats::chisq.test(pdata[[maincov]],
+                                               pdata[[cov]])$statistic/N)/
+                              (min(length(unique(pdata[[maincov]]))-1,length(unique(pdata[[cov]]))-1))), silent = TRUE)
             }
           }
           if (is.error(p))
@@ -542,8 +548,11 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
               p <- try(stats::wilcox.test(data[[cov]] ~
                                             data[[maincov]])$p.value, silent = T)
               if (effSize) {
-                e_type <- "Eta sq"
-                e <- try(rstatix::eta_squared(stats::aov(data[[cov]]~data[[maincov]], data=data)), silent = TRUE)
+                e_type <- "Wilcoxon r"
+                e <- try(ifelse(is.finite(qnorm(stats::wilcox.test(data[[cov]]~data[[maincov]], data=data)$p.value/2)),
+                                abs(qnorm(stats::wilcox.test(data[[cov]]~data[[maincov]], data=data)$p.value/2))/sqrt(N),
+                                abs(qnorm(0.0001/2))/sqrt(N)),
+                         silent = TRUE)
               }
             }
             else {
@@ -552,7 +561,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                              data[[maincov]])$p.value, silent = T)
               if (effSize) {
                 e_type <- "Eta sq"
-                e <- try(rstatix::eta_squared(stats::aov(data[[cov]]~data[[maincov]], data=data)), silent = TRUE)
+                e <- try(summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
+                           (summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
               }
             }
           }
@@ -562,8 +572,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
               p <- try(stats::t.test(data[[cov]] ~ data[[maincov]])$p.value,
                        silent = TRUE)
               if (effSize) {
-                e_type <- "Eta sq"
-                e <- try(rstatix::eta_squared(stats::aov(data[[cov]]~data[[maincov]], data=data)), silent = TRUE)
+                e_type <- "Cohen's d"
+                e <- try(abs(2*stats::t.test(data[[cov]] ~ data[[maincov]])$statistic/sqrt(N)), silent = TRUE)
               }
             }
             else {
@@ -572,7 +582,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                                 data[[maincov]]))[5][[1]][1], silent = TRUE)
               if (effSize) {
                 e_type <- "Eta sq"
-                e <- try(rstatix::eta_squared(stats::aov(data[[cov]]~data[[maincov]], data=data)), silent = TRUE)
+                e <- try(summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
+                           (summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
               }
             }
           }
