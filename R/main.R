@@ -269,6 +269,12 @@ crrRx<-function(f,data){
 #' @seealso \code{\link{fisher.test}},\code{\link{chisq.test}},
 #'   \code{\link{wilcox.test}},\code{\link{kruskal.test}},and
 #'   \code{\link{anova}}
+#' @references Ellis, P.D. (2010) The essential guide to effect sizes:
+#' statistical power, meta-analysis, and the interpretation of research
+#' results. Cambridge: Cambridge University Press.\doi{10.1017/CBO9780511761676}
+#' @references Lakens, D. (2013)  Calculating and reporting effect sizes to
+#' facilitate cumulative science: a practical primer for t-tests and ANOVAs.
+#' Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
 covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                     markup = TRUE, sanitize = TRUE, nicenames = TRUE, IQR = FALSE,
                     all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, dropLevels = TRUE,
@@ -2667,6 +2673,9 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   \code{\link{chisq.test}}, \code{\link{wilcox.test}},
 #'   \code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link{cramer_v}},
 #'   \code{\link{eta_squared}}, and \code{\link{outTable}}
+#' @references Ellis, P.D. (2010) The essential guide to effect sizes:
+#' statistical power, meta-analysis, and the interpretation of research
+#' results. Cambridge: Cambridge University Press.\doi{10.1017/CBO9780511761676}
 #' @references Lakens, D. (2013)  Calculating and reporting effect sizes to
 #' facilitate cumulative science: a practical primer for t-tests and ANOVAs.
 #' Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
