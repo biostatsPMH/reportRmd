@@ -238,11 +238,12 @@ crrRx<-function(f,data){
 #'   min,max on a separate line) should be displayed. Overrides IQR.
 #' @param pvalue boolean indicating if you want p-values included in the table
 #' @param effSize boolean indicating if you want effect sizes included in the
-#'   table. Can only be obtained if pvalue is also requested. Effect sizes are
-#'   calculated with the rstatix package using Cramer V for categorical and Eta
-#'   Squared for continuous covariates.
-#' @param show.tests boolean indicating if the type of statistical used should
-#'   be shown in a column beside the pvalues. Ignored if pvalue=FALSE.
+#'   table. Can only be obtained if pvalue is also requested. Effect sizes
+#'   calculated include Cramer's V for categorical variables, Cohen's d,
+#'   Wilcoxon r, or Eta-squared for numeric/continuous variables.
+#' @param show.tests boolean indicating if the type of statistical test and
+#'   effect size used should be shown in a column beside the pvalues.
+#'   Ignored if pvalue=FALSE.
 #' @param dropLevels logical, indicating if empty factor levels be dropped from
 #'   the output, default is TRUE.
 #' @param excludeLevels a named list of covariate levels to exclude from
@@ -2628,14 +2629,15 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   min,max on a separate line) should be displayed. Overrides IQR.
 #' @param pvalue boolean indicating if you want p-values included in the table
 #' @param effSize boolean indicating if you want effect sizes included in the
-#'   table. Can only be obtained if pvalue is also requested. Effect sizes are
-#'   calculated with the rstatix package using Cramer V for categorical and Eta
-#'   Squared for continuous covariates.
+#'   table. Can only be obtained if pvalue is also requested. Effect sizes
+#'   calculated include Cramer's V for categorical variables, Cohen's d,
+#'   Wilcoxon r, or Eta-squared for numeric/continuous variables.
 #' @param unformattedp boolean indicating if you would like the p-value to be
 #'   returned unformatted (ie not rounded or prefixed with '<'). Best used with
 #'   tableOnly = T and outTable function. See examples.
-#' @param show.tests boolean indicating if the type of statistical used should
-#'   be shown in a column beside the pvalues. Ignored if pvalue=FALSE.
+#' @param show.tests boolean indicating if the type of statistical test and
+#'   effect size used should be shown in a column beside the pvalues.
+#'   Ignored if pvalue=FALSE.
 #' @param testcont test of choice for continuous variables,one of
 #'   \emph{rank-sum} (default) or \emph{ANOVA}
 #' @param testcat test of choice for categorical variables,one of
