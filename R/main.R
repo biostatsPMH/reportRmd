@@ -1192,6 +1192,9 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   })) == T)]
   call <- gsub("\\s", "", call)
   type <- class(model)[1]
+  if (!isTRUE(model$family$link) && !isTRUE(model$family$link %in% c("log", "logit"))){
+    showEvent = FALSE
+  }
   if (type == "lm") {
     betanames <- attributes(summary(model)$coef)$dimnames[[1]][-1]
     beta <- "Estimate"
@@ -1476,7 +1479,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
       ss_N = nrow(data)
     }
     out <- cbind(out, ss_N)
-    if (model$family$link %in% c("log", "logit")){
+    if (showEvent){
       if (out[1, 2] == "") {
         if (length(grep(":", title[1])) > 0) {
           ss_Event = unlist(lapply(levelnameslist,
@@ -1525,7 +1528,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
   if (!showN) table <- table[, -which(colnames(table)=="N")]
-  if (!showEvent & model$family$link %in% c("log", "logit")) table <- table[, -which(colnames(table)=="Event")]
+  if (!showEvent) table <- table[, -which(colnames(table)=="Event")]
   if (vif) {
     if (type=='geeglm'|type=='lme'){
         message('VIF not yet implemented for mixed effects/GEE models.')
