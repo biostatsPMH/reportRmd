@@ -797,7 +797,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' @importFrom survival coxph Surv
 #' @importFrom aod wald.test
 #' @importFrom geepack geeglm
-#' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint
+#' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint confint.default
 uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, family = NULL,
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald)
@@ -1522,13 +1522,15 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   }))
   table <- do.call("rbind", lapply(table, data.frame,
                                    stringsAsFactors = FALSE))
-  colName = c("Covariate", sanitizestr(beta), "p-value",
-              "Global p-value","N","Event")
-  colnames(table) <- colName
+  if(length(names(table))==5){
+    colnames(table) <- c("Covariate", sanitizestr(beta), "p-value",
+              "Global p-value","N")
+  } else  colnames(table) <- c("Covariate", sanitizestr(beta), "p-value",
+                               "Global p-value","N","Event")
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
-  if (!showN) table <- table[, -which(colnames(table)=="N")]
-  if (!showEvent) table <- table[, -which(colnames(table)=="Event")]
+  if (!showN) table <- table[, setdiff(colnames(table),"N")]
+  if (!showEvent) table <- table[, setdiff(colnames(table),"Event")]
   if (vif) {
     if (type=='geeglm'|type=='lme'){
         message('VIF not yet implemented for mixed effects/GEE models.')
