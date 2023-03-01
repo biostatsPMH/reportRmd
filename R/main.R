@@ -2636,8 +2636,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   returned unformatted (ie not rounded or prefixed with '<'). Best used with
 #'   tableOnly = T and outTable function. See examples.
 #' @param show.tests boolean indicating if the type of statistical test and
-#'   effect size used should be shown in a column beside the pvalues.
-#'   Ignored if pvalue=FALSE.
+#'   effect size used should be shown in a column beside the pvalues. Ignored if
+#'   pvalue=FALSE.
 #' @param testcont test of choice for continuous variables,one of
 #'   \emph{rank-sum} (default) or \emph{ANOVA}
 #' @param testcat test of choice for categorical variables,one of
@@ -2667,6 +2667,9 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   \code{\link{chisq.test}}, \code{\link{wilcox.test}},
 #'   \code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link{cramer_v}},
 #'   \code{\link{eta_squared}}, and \code{\link{outTable}}
+#' @references Lakens, D. (2013)  Calculating and reporting effect sizes to
+#' facilitate cumulative science: a practical primer for t-tests and ANOVAs.
+#' Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
 #' @examples
 #' rm_covsum(data=pembrolizumab, maincov = 'orr',
 #' covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
