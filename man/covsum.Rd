@@ -109,6 +109,15 @@ digits, but this will not change the display of p-values. If more significant
 digits are required for p-values then use tableOnly=TRUE and format as
 desired.
 }
+\references{
+Ellis, P.D. (2010) The essential guide to effect sizes:
+statistical power, meta-analysis, and the interpretation of research
+results. Cambridge: Cambridge University Press.\doi{10.1017/CBO9780511761676}
+
+Lakens, D. (2013)  Calculating and reporting effect sizes to
+facilitate cumulative science: a practical primer for t-tests and ANOVAs.
+Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
+}
 \seealso{
 \code{\link{fisher.test}},\code{\link{chisq.test}},
 \code{\link{wilcox.test}},\code{\link{kruskal.test}},and
