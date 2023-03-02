@@ -1674,6 +1674,14 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param response character vector with names of columns to use for response
 #' @param covs character vector with names of columns to use for covariates
 #' @param data dataframe containing your data
+#' @param model fitted model object
+#' @param id character vector which identifies clusters. Only used for geeglm
+#' @param corstr character string specifying the correlation structure. Only
+#'   used for geeglm. The following are permitted: '"independence"',
+#'   '"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'
+#' @param family description of the error distribution and link function to be
+#'   used in the model. Only used for geeglm
+#' @param digits number of digits to round to
 #' @param conf.level controls the width of the confidence interval
 #' @param orderByRisk logical, should the plot be ordered by risk
 #' @param colours can specify colours for risks less than, 1 and greater than
@@ -1816,6 +1824,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #'
 #' @param model an object output from the glm or geeglm function, must be from a logistic
 #'   regression
+#' @param data dataframe containing your data
 #' @param conf.level controls the width of the confidence interval
 #' @param orderByRisk logical, should the plot be ordered by risk
 #' @param colours can specify colours for risks less than, 1 and greater than
@@ -1960,6 +1969,10 @@ forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
 #'
 #' @param UVmodel an UV model object output from the forestplotUV function
 #' @param MVmodel a MV model object output from the forestplotMV function
+#' @param model fitted model object
+#' @param family description of the error distribution and link function to be
+#'   used in the model. Only used for geeglm
+#' @param digits number of digits to round to
 #' @param orderByRisk logical, should the plot be ordered by risk
 #' @param colours can specify colours for risks less than, 1 and greater than
 #'   1.0. Default is red, black, green
