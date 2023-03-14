@@ -6,6 +6,7 @@
 \usage{
 forestplotMV(
   model,
+  data,
   conf.level = 0.95,
   orderByRisk = TRUE,
   colours = "default",
@@ -20,6 +21,8 @@ forestplotMV(
 \arguments{
 \item{model}{an object output from the glm or geeglm function, must be from a logistic
 regression}
+
+\item{data}{dataframe containing your data}
 
 \item{conf.level}{controls the width of the confidence interval}
 
@@ -42,8 +45,6 @@ produce}
 \item{showN}{Show number of observations per variable and category}
 
 \item{showEvent}{Show number of events per variable and category}
-
-\item{data}{dataframe containing your data}
 }
 \value{
 a plot object

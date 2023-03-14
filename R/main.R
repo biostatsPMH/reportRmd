@@ -264,7 +264,7 @@ crrRx<-function(f,data){
 #' @param percentage choice of how percentages are presented ,one of
 #'   \emph{column} (default) or \emph{row}
 #' @keywords dataframe
-#' @importFrom stats lm sd
+#' @importFrom stats lm sd setNames aov
 #' @importFrom rstatix cramer_v eta_squared
 #' @seealso \code{\link{fisher.test}},\code{\link{chisq.test}},
 #'   \code{\link{wilcox.test}},\code{\link{kruskal.test}},and
@@ -568,8 +568,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                              data[[maincov]])$p.value, silent = T)
               if (effSize) {
                 e_type <- "Eta sq"
-                e <- try(summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
-                           (summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
+                e <- try(summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
+                           (summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
               }
             }
           }
@@ -589,8 +589,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                                 data[[maincov]]))[5][[1]][1], silent = TRUE)
               if (effSize) {
                 e_type <- "Eta sq"
-                e <- try(summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
-                           (summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
+                e <- try(summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
+                           (summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
               }
             }
           }
@@ -708,6 +708,9 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
     colnames(onetbl) <- NULL
     return(onetbl)
   })
+  varID <- do.call("c",lapply(out,function(x){
+    return(stats::setNames(c(TRUE,rep(FALSE,nrow(x)-1)),x[,1]))
+  }))
   table <- do.call("rbind", lapply(out, data.frame, stringsAsFactors = FALSE))
   table <- data.frame(apply(table, 2, unlist), stringsAsFactors = FALSE)
   rownames(table) <- NULL
@@ -731,6 +734,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
   colnames(table) <- sanitizestr(colnames(table))
   if (!full)
     table <- table[, -2]
+  attr(table,"varID") <- varID
   return(table)
 }
 
@@ -801,6 +805,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
 #' @keywords dataframe
 #' @importFrom MASS polr
+#' @importFrom stats setNames
 #' @importFrom survival coxph Surv
 #' @importFrom aod wald.test
 #' @importFrom geepack geeglm
@@ -1106,10 +1111,12 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
     colnames(out) <- NULL
     return(list(out, nrow(out)))
   })
-
   table <- lapply(out, function(x) {
     return(x[[1]])
   })
+  varID <- do.call("c",lapply(table,function(x){
+    return(stats::setNames(c(TRUE,rep(FALSE,nrow(x)-1)),x[,1]))
+  }))
   table <- do.call("rbind", lapply(table, data.frame,
                                    stringsAsFactors = FALSE))
   colName <- c("Covariate", sanitizestr(beta),
@@ -1120,6 +1127,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
   colnames(table) <- sapply(colnames(table), lbld)
+  attr(table,"varID") <- varID
   if (returnModels) return(list(table,models=modelList)) else return(table)
 }
 
@@ -1158,7 +1166,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' @param vif boolean indicating if the variance inflation factor should be
 #'   included. See details
 #' @keywords dataframe
-#' @importFrom stats na.omit formula model.frame anova qnorm vcov
+#' @importFrom stats na.omit formula model.frame anova qnorm vcov setNames
 #' @references John Fox & Georges Monette (1992) Generalized Collinearity
 #'   Diagnostics, Journal of the American Statistical Association, 87:417,
 #'   178-183, DOI: 10.1080/01621459.1992.10475190
@@ -1518,12 +1526,9 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   table <- lapply(out, function(x) {
     return(x[[1]])
   })
-  index <- unlist(lapply(out, function(x) {
-    return(x[[2]])
+  varID <- do.call("c",lapply(table,function(x){
+    return(stats::setNames(c(TRUE,rep(FALSE,nrow(x)-1)),x[,1]))
   }))
-  table <- lapply(out, function(x) {
-    return(x[[1]])
-  })
   index <- unlist(lapply(out, function(x) {
     return(x[[2]])
   }))
@@ -1560,6 +1565,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   if (nicenames) table[,1] <- nicename(table[,1])
   colnames(table) <- sapply(colnames(table), lbld)
   attr(table,'covs') <- ucall
+  attr(table,"varID") <- varID
   return(table)
 }
 
@@ -1847,7 +1853,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' forestplotMV(glm_fit)
-forestplotMV = function (model, conf.level = 0.95, orderByRisk = TRUE,
+forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
             colours = "default", showEst = TRUE, rmRef = FALSE,
             logScale = FALSE, nxTicks = 5, showN = TRUE, showEvent = TRUE)
 {
@@ -2731,17 +2737,22 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   covsumArgs[["markup"]] <- FALSE
   covsumArgs[["sanitize"]] <- FALSE
   tab <- do.call(covsum, covsumArgs)
-  if (nicenames)
-    output_var_names <- gsub("[_.]", " ", covs)
-  else output_var_names <- covs
-  vI <- unlist(sapply(output_var_names, function(x) which(x ==
-                                                            tab[[1]])[1]))
-  to_indent <- setdiff(1:nrow(tab), vI)
-  to_bold_name <- vI
-  if (nicenames)
-    tab$Covariate <- gsub("[_.]", " ", tab$Covariate)
-  names(tab)[1] <- covTitle
+
+  to_indent <- which(!attr(tab,"varID"))
+  to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
+  if (nicenames) tab$Covariate <- nicename(tab$Covariate)
+  # if (nicenames)
+  #   output_var_names <- gsub("[_.]", " ", covs)
+  # else output_var_names <- covs
+  # vI <- unlist(sapply(output_var_names, function(x) which(x ==
+  #                                                           tab[[1]])[1]))
+  # to_indent <- setdiff(1:nrow(tab), vI)
+  # to_bold_name <- vI
+  # if (nicenames)
+  #   tab$Covariate <- gsub("[_.]", " ", tab$Covariate)
+  # names(tab)[1] <- covTitle
+  # bold_cells <- arrayInd(to_bold_name, dim(tab))
   if ("p-value" %in% names(tab)) {
     to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
     p_vals <- tab[["p-value"]]
@@ -2942,13 +2953,18 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
   # if an adjustment was made, add this to the cap_warn text
   if (p.adjust!='none') cap_warn <- paste0(cap_warn,'. Global p-values were adjusted according to the ',p.adjust,' method.')
 
-  if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
-#  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
-  vI <- unlist(sapply(output_var_names, function (x) which(x==tab[[1]])[1]))
-  to_indent <- setdiff(1:nrow(tab),vI)
-  to_bold_name <- vI
-  if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
+#   if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
+# #  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
+#   vI <- unlist(sapply(output_var_names, function (x) which(x==tab[[1]])[1]))
+#   to_indent <- setdiff(1:nrow(tab),vI)
+#   to_bold_name <- vI
+#  if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
+
+  to_indent <- which(!attr(tab,"varID"))
+  to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
+
+  if (nicenames) tab$Covariate <- nicename(tab$Covariate)
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
