@@ -42,6 +42,8 @@ produce}
 \item{showN}{Show number of observations per variable and category}
 
 \item{showEvent}{Show number of events per variable and category}
+
+\item{data}{dataframe containing your data}
 }
 \value{
 a plot object

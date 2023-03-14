@@ -25,6 +25,13 @@ forestplotUVMV(
 
 \item{MVmodel}{a MV model object output from the forestplotMV function}
 
+\item{model}{fitted model object}
+
+\item{family}{description of the error distribution and link function to be
+used in the model. Only used for geeglm}
+
+\item{digits}{number of digits to round to}
+
 \item{orderByRisk}{logical, should the plot be ordered by risk}
 
 \item{colours}{can specify colours for risks less than, 1 and greater than

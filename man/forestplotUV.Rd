@@ -31,6 +31,19 @@ forestplotUV(
 
 \item{data}{dataframe containing your data}
 
+\item{id}{character vector which identifies clusters. Only used for geeglm}
+
+\item{corstr}{character string specifying the correlation structure. Only
+used for geeglm. The following are permitted: '"independence"',
+'"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'}
+
+\item{model}{fitted model object}
+
+\item{family}{description of the error distribution and link function to be
+used in the model. Only used for geeglm}
+
+\item{digits}{number of digits to round to}
+
 \item{conf.level}{controls the width of the confidence interval}
 
 \item{orderByRisk}{logical, should the plot be ordered by risk}
