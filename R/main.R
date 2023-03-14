@@ -3029,10 +3029,10 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' @export
 #' @references John Fox & Georges Monette (1992) Generalized Collinearity
 #'   Diagnostics, Journal of the American Statistical Association, 87:417,
-#'   178-183, DOI: 10.1080/01621459.1992.10475190
+#'   178-183, \doi{10.1080/01621459.1992.10475190}
 #' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
-#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
-#'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
+#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. \url{
+#'   https://socialsciences.mcmaster.ca/jfox/Books/Companion}
 #' @examples
 #' glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
 #' data=pembrolizumab,family = 'binomial')
