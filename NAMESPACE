@@ -2,6 +2,7 @@
 
 export(crrRx)
 export(excelCol)
+export(excelColLetters)
 export(forestplot2)
 export(forestplotMV)
 export(forestplotUV)

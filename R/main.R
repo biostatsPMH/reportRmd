@@ -25,6 +25,38 @@ excelCol<- function(...){
   names(rtn) <- toupper(names(rtn))
   return(rtn)
 }
+
+#' Retrieve spreadsheet column letter-names from columns indices
+#'
+#' Creates a vector of spreadsheet-style letter-names corresponding to column numbers
+#'
+#' This is the inverse function of excelCol
+#'
+#' @param columnIndices vector of integer column indices
+#' @returns a character vector corresponding to the spreadsheet column headings
+#' @export
+#' @examples
+#' ## Find the column numbers for excel columns AB, CE and BB
+#' colIndices <- excelCol(AB,CE,bb)
+#' ## Go back to the column names
+#' excelColLetters(colIndices)
+excelColLetters<- function(columnIndices){
+  if (!is.integer(columnIndices)) stop('columnIndices must be a vector of numeric column indices')
+  out <- sapply(columnIndices,function(x){
+    rmd <- x%%26
+    quo <- x%/% 26
+    if (rmd==0){
+      rmd <-26
+      quo <- quo-1
+    }
+    fl <- ifelse(quo>0,LETTERS[quo],"")
+    sl <- ifelse(rmd>0,LETTERS[rmd],"")
+    return(paste0(fl,sl))
+  })
+  names(out) <- columnIndices
+  return(out)
+}
+
 #' fit box cox transformed linear model
 #'
 #' Wrapper function to fit fine and gray competing risk model using function crr
@@ -2473,9 +2505,6 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
       if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
       for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
     }
-    #    names(tab) <- sanitize(names(tab))
-    # This may not work as expected if a small table is split over pages
-    # better to also repeat table headers
     if (nrow(tab)>30){
       kout <- knitr::kable(tab, format = out_fmt,
                            escape = FALSE,
@@ -2499,8 +2528,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
       kout <- kableExtra::kable_styling(kout,font_size = fontsize)
     }
     if (out_fmt=='html'){
-      kout <- kableExtra::kable_styling(kout,full_width = T)
-
+      kout <- kableExtra::kable_styling(kout,full_width = TRUE)
     }
     kout
   }
