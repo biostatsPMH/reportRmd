@@ -1089,6 +1089,9 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
                     ncol = 4)
 
     }
+    if (!isTRUE(m2$family$link) && !isTRUE(m2$family$link %in% c("log", "logit"))){
+      showEvent = FALSE
+    }
     if (showN) {
       n_by_level = nrow(data)
       if (is.factor(data[[x_var]])) {
@@ -1096,7 +1099,8 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
       }
       out <- cbind(out, n_by_level)
     }
-    if (showEvent & type == "logistic") {
+    if (showEvent) {
+      data <- as.data.frame(data);
       event_by_level = nrow(data[which(data[,1] %in% c(1, levels(data[,1])[2])),])
       if (is.factor(data[which(data[,1] %in% c(1, levels(data[,1])[2])),][[x_var]])) {
         event_by_level = c(event_by_level, as.vector(table(data[which(data[,1] %in% c(1, levels(data[,1])[2])),][[x_var]])))
@@ -1122,7 +1126,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
   colName <- c("Covariate", sanitizestr(beta),
                "p-value", "Global p-value")
   if (showN) colName <- c(colName,"N")
-  if (showEvent & type == "logistic") colName <- c(colName,"Event")
+  if (showEvent) colName <- c(colName,"Event")
   colnames(table) <- colName
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
   if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
