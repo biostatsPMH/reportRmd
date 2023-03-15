@@ -41,7 +41,7 @@ excelCol<- function(...){
 #' ## Go back to the column names
 #' excelColLetters(colIndices)
 excelColLetters<- function(columnIndices){
-  if (!is.integer(columnIndices)) stop('columnIndices must be a vector of numeric column indices')
+  if (!is.integer(as.integer(columnIndices))) stop('columnIndices must be a vector of numeric column indices')
   out <- sapply(columnIndices,function(x){
     rmd <- x%%26
     quo <- x%/% 26
