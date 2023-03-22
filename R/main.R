@@ -2130,11 +2130,12 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   }
   colours <- colours[sort(unique(tab$colour))]
   suppressWarnings({tryCatch({
-    p = ggplot(tab, aes_(x = ~x.val, y = ~y.val, colour = ~colour, linetype = ~type)) +
+    p = ggplot(tab, aes_(x = ~x.val, y = ~y.val, colour = ~colour, linetype = ~type, shape = ~type)) +
       geom_point(na.rm = TRUE, size = 2) + geom_errorbarh(aes_(xmin = ~conf.low,
                                                                xmax = ~conf.high), height = 0, size = 0.9, na.rm = TRUE) +
       geom_vline(xintercept = 1) + labs(y = "", x = x_lab) +
       guides(colour = "none") + Axis + scale_colour_manual(values = colours) +
+      scale_shape_manual(values = c(15, 16)) +
       theme_bw() + theme(axis.text.y = element_text(face = ifelse(tab$variable ==
                                                                     tab$var.name | is.na(tab$var.name), "bold", "plain"),
                                                     hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank()) +
