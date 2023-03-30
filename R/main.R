@@ -1837,6 +1837,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
+    themeSecAxis = NULL;
   }
   colours <- colours[sort(unique(tab$colour))]
   suppressWarnings({tryCatch({
@@ -1979,6 +1980,7 @@ forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
   if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
+    themeSecAxis = NULL;
   }
   colours <- colours[sort(unique(tab$colour))]
   suppressWarnings({tryCatch({
@@ -2127,6 +2129,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
   if (!showN & !showEvent) {
     Axis = scale_y_continuous(breaks = yLabels$y.pos,
                               labels = yLabels$labels)
+    themeSecAxis = NULL;
   }
   colours <- colours[sort(unique(tab$colour))]
   suppressWarnings({tryCatch({
