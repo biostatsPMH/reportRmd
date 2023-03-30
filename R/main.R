@@ -405,7 +405,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
     if (!is.null(excludeLevels[[cov]])) {
       excludeLevel = excludeLevels[[cov]]
     }
-    else excludeLevel = ""
+    else excludeLevel = NA
     factornames <- NULL
     if (is.null(numobs[[cov]]))
       numobs[[cov]] <- nmaincov
