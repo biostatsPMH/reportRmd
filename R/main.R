@@ -3194,6 +3194,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
 #'   use the column name 'Covariate'.
 #' @param vif boolean indicating if the variance inflation factor should be
 #'   shown if present in the mvsumTable. Default is FALSE.
+#' @param showN boolean indicating if sample sizes should be displayed. This can work to suppress sample size, but not to sprovide them if
 #' @param caption table caption
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param chunk_label only used if output is to Word to allow cross-referencing
@@ -3228,7 +3229,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
 #' logis_fit<-glm(os_status~age+sex+l_size+pdl1+tmb,data = pembrolizumab,family = 'binomial')
 #' mvtab<-rm_mvsum(logis_fit,tableOnly = TRUE)
 #' rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
-rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,tableOnly=FALSE,chunk_label,fontsize){
+rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,showN=FALSE,caption=NULL,tableOnly=FALSE,chunk_label,fontsize){
   # Check that tables are data frames and not kable objects
   if (!inherits(uvsumTable,'data.frame')) stop('uvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
   if (!inherits(mvsumTable,'data.frame')) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
@@ -3268,7 +3269,17 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,ta
     t$var_level <- paste(vname,t[,1],sep='_')
     return(t[,setdiff(1:ncol(t),p_cols)])
   })
+  if (showN){
+    nc <- unlist(lapply(x, function(z){ length(which(names(z)=="N"))}))
+    if (any(nc==0))    warning('To show sample size run rm_uvsum, rm_mvsum with showN=T')
+  }
   x[[1]]$varOrder = 1:nrow(x[[1]])
+  if (!showN){
+    x <-lapply(x, function(z){
+      nc <- which(names(z)=="N")
+      if (length(nc>0)) z <- z[,-nc]
+    })
+  }
   names(x[[1]])[2] <- paste('Unadjusted',names(x[[1]])[2])
   names(x[[2]])[2] <- paste('Adjusted',names(x[[2]])[2])
   vifind <- which(names(x[[2]])=='VIF')
@@ -3299,7 +3310,7 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,caption=NULL,ta
                                                matrix(cbind(to_bold_p, which(names(out)=='p (adj)')),ncol=2))
 
   argL <- list(tab=out,to_indent=to_indent,bold_cells = bold_cells,
-           caption=caption)
+               caption=caption)
   if (!missing(fontsize)) argL[['fontsize']] <- fontsize
   do.call(outTable, argL)
 }
