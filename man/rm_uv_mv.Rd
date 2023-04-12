@@ -9,6 +9,7 @@ rm_uv_mv(
   mvsumTable,
   covTitle = "",
   vif = FALSE,
+  showN = FALSE,
   caption = NULL,
   tableOnly = FALSE,
   chunk_label,
@@ -26,6 +27,8 @@ use the column name 'Covariate'.}
 
 \item{vif}{boolean indicating if the variance inflation factor should be
 shown if present in the mvsumTable. Default is FALSE.}
+
+\item{showN}{boolean indicating if sample sizes should be displayed. This can work to suppress sample size, but not to sprovide them if}
 
 \item{caption}{table caption}
 

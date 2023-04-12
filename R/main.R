@@ -2971,6 +2971,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                nicenames = nicenames,showN = showN,showEvent = showEvent,
                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels)
   if (returnModels) tab <- rtn[[1]] else tab <- rtn
+  att_tab <- attributes(tab)
   cap_warn <- character(0)
   if (removeInf){
     # Do not display unstable estimates
@@ -2984,14 +2985,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
     }
   }
   # if an adjustment was made, add this to the cap_warn text
-  if (p.adjust!='none') cap_warn <- paste0(cap_warn,'. Global p-values were adjusted according to the ',p.adjust,' method.')
-
-#   if (nicenames) output_var_names <- gsub('[_.]',' ',covs) else output_var_names <- covs
-# #  vI <- unlist(sapply(output_var_names, function (x) grep(x,tab[[1]])[1]))
-#   vI <- unlist(sapply(output_var_names, function (x) which(x==tab[[1]])[1]))
-#   to_indent <- setdiff(1:nrow(tab),vI)
-#   to_bold_name <- vI
-#  if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
+  if (p.adjust!='none') cap_warn <- paste0(cap_warn,'. Global p-values were adjusted according to the ',p.adjust,' method. Factor level p-values have been removed.')
 
   to_indent <- which(!attr(tab,"varID"))
   to_bold_name <- which(attr(tab,"varID"))
@@ -3003,20 +2997,18 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
   }
 
-  # perform p-value adjustment across all p-values
+  # perform p-value adjustment across variable-level p-values. Remove factor level p-values
+  # perform p-value adjustment across variable-level p-values. Remove factor level p-values
   if ("Global p-value" %in% names(tab)){
     raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
+    raw_p[!attr(tab,"varID")] <- NA
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
     to_bold_p <- which(p_sig<0.05)
     p_sig <- sapply(p_sig,formatp)
-    gp_vals <- which(!is.na(tab[["Global p-value"]]))
-    tab[["Global p-value"]][gp_vals]  <- p_sig[gp_vals]
-    p_vals <- which(tab[["p-value"]]!='' & !is.na(tab[["p-value"]]))
-    tab[["p-value"]][p_vals]  <- p_sig[p_vals]
-
+    tab[["p-value"]]  <- p_sig
     if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
-                                                 matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
-
+                                                 matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
+    tab <- tab[,grep("Global p-value",names(tab),invert = T)]
   } else {
     raw_p <- tab[["p-value"]]
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
@@ -3030,7 +3022,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                                                matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
   names(tab)[1] <-covTitle
-
+  for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
     if (length(cap_warn)>0) message(cap_warn)
@@ -3122,7 +3114,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
   # get the table
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
                sanitize = FALSE, nicenames = FALSE,showN=showN,showEvent=showEvent,CIwidth = CIwidth,vif=vif)
-
+  att_tab <- attributes(tab)
   to_indent <- setdiff(1:nrow(tab),
                        sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
                               USE.NAMES = FALSE))
@@ -3134,24 +3126,26 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
   to_bold_name <- setdiff(1:nrow(tab),to_indent)
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  # perform p-value adjustment across all p-values
+  # perform p-value adjustment across variable-level p-values remove factor p-valeus
   if ("Global p-value" %in% names(tab)){
     raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
+    raw_p[!attr(tab,"varID")] <- NA
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-    p_sig <- sapply(p_sig,formatp)
-    tab[["Global p-value"]][!is.na(tab[["Global p-value"]])]  <- p_sig[!is.na(tab[["Global p-value"]])]
-    tab[["p-value"]][is.na(tab[["Global p-value"]])]  <- p_sig[is.na(tab[["Global p-value"]])]
     to_bold_p <- which(p_sig<0.05)
+    p_sig <- sapply(p_sig,formatp)
+    tab[["p-value"]]  <- p_sig
     if (length(to_bold_p)>0) bold_cells <- rbind(bold_cells,
-                                                 matrix(cbind(to_bold_p, which(names(tab)=='Global p-value')),ncol=2))
-
+                                                 matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
+    tab <- tab[,grep("Global p-value",names(tab),invert = T)]
   } else {
     raw_p <- tab[["p-value"]]
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
     tab[["p-value"]] <- sapply(p_sig,formatp)
   }
-  if(p.adjust!='none') tab[["raw p-value"]]<-formatp(raw_p)
-
+  if(p.adjust!='none') {
+    message('Global p-values were adjusted according to the ',p.adjust,' method. Factor level p-values have been removed.')
+    tab[["raw p-value"]]<-formatp(raw_p)
+  }
   to_bold_p <- which(p_sig<.05)
 
   if (length(to_bold_p)>0)  bold_cells <- rbind(bold_cells,
@@ -3160,6 +3154,7 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
 
   if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
   names(tab)[1] <-covTitle
+  for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
     attr(tab, 'to_indent') <- to_indent
