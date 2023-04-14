@@ -2775,6 +2775,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
   if (nicenames) tab$Covariate <- nicename(tab$Covariate)
+  names(tab)[1] <- covTitle
   # if (nicenames)
   #   output_var_names <- gsub("[_.]", " ", covs)
   # else output_var_names <- covs
@@ -2784,7 +2785,6 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   # to_bold_name <- vI
   # if (nicenames)
   #   tab$Covariate <- gsub("[_.]", " ", tab$Covariate)
-  # names(tab)[1] <- covTitle
   # bold_cells <- arrayInd(to_bold_name, dim(tab))
   if ("p-value" %in% names(tab)) {
     to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
