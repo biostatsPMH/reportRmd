@@ -2402,6 +2402,8 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #'   properly if the dimensions of the table output from rm_covsum, rm_uvsum etc
 #'   haven't changed.
 #' @param keep.rownames should the row names be included in the output
+#' @param nicenames boolean indicating if you want to replace . and _ in strings
+#'   with a space
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @param chunk_label only used knitting to Word docs to allow cross-referencing
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
@@ -2422,7 +2424,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #'  outTable(tab,bold_cells= bold_cells)
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
                      rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,
-                     applyAttributes=TRUE,keep.rownames=FALSE,fontsize,chunk_label){
+                     applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label){
 
   # strip tibble aspects
   tab=as.data.frame(tab)
@@ -2471,7 +2473,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
   }
   if (is.null(to_indent)) to_indent = numeric(0)
   to_indent = as.vector(to_indent)
-
+  if (nicenames) names(tab) <- nicename(names(tab))
   if (length(rows_bold)>0){
     arrInd <- as.matrix(expand.grid(rows_bold,1:ncol(tab)))
     bold_cells <- rbind(bold_cells,arrInd)
@@ -2638,7 +2640,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 
   data[[to_col]][header_rows] <- paste0(hdr_prefix,data[[to_col]][header_rows],hdr_suffix)
 
-  data <- data[,setdiff(names(data),head_col)]
+  data <- data[,setdiff(names(data),head_col),drop=FALSE]
   names(data) <- c(colHeader,setdiff(colNames,c(to_col,head_col)))
   if (tableOnly){
     if (names(data)[1]=='')  names(data)[1] <- 'Col1'

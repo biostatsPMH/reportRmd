@@ -16,6 +16,7 @@ outTable(
   align,
   applyAttributes = TRUE,
   keep.rownames = FALSE,
+  nicenames = TRUE,
   fontsize,
   chunk_label
 )
@@ -55,6 +56,9 @@ properly if the dimensions of the table output from rm_covsum, rm_uvsum etc
 haven't changed.}
 
 \item{keep.rownames}{should the row names be included in the output}
+
+\item{nicenames}{boolean indicating if you want to replace . and _ in strings
+with a space}
 
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 
