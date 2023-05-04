@@ -1,3 +1,16 @@
+#' Helper to excelCol
+xcn <- function(v){
+  sapply(v, function(x){
+    colHead <- toupper(x)
+    if (nchar(colHead)>1){
+      l1 = substr(colHead,1,1)
+      l2 = substr(colHead,2,2)
+      rtn <- 26*which(LETTERS==l1)+which(LETTERS==l2)
+    } else {
+      rtn <- which(LETTERS==colHead)
+    }
+  })}
+
 is.error <- function(x) inherits(x, "try-error")
 csep<-function(){return(", ")}
 

@@ -6,25 +6,34 @@
 #' @examples
 #' ## Find the column numbers for excel columns AB, CE and BB
 #' excelCol(AB,CE,bb)
+#' ## Get the columns between A and K and Z
+#' excelCol(A-K,Z)
 excelCol<- function(...){
   args <- as.list(match.call())[-1]
-  args <-unname(unlist(lapply(args,function(x) {rlang::as_string(x)})))
-  if (sum(unlist(lapply(args, function(x) grepl("[^A-Za-z]",x))))>0) {
-    stop('Only valid Excel column names can be supplied, separated by commas.')
-  }
-  rtn<-sapply(args, function(x){
-    colHead <- toupper(x)
-    if (nchar(colHead)>1){
-      l1 = substr(colHead,1,1)
-      l2 = substr(colHead,2,2)
-      rtn <- 26*which(LETTERS==l1)+which(LETTERS==l2)
-    } else {
-      rtn <- which(LETTERS==colHead)
+  len <- lapply(args,nchar)
+  if (any(unlist(len)>2)) stop('Columns names must be between A and ZZ. \nVariable names can not be used in this function.')
+  if (any(grepl('-',args))) {
+    rtn<-unname(unlist(lapply(args,function(x) {
+      x1 <- gsub("-",",",x)
+      x1 <- x1[which(x1!=",")]
+      if (sum(grepl("[^A-Za-z]",x1))>0)
+        stop('Only valid Excel column names can be supplied, separated by commas or hyphens.')
+      x2 <- sapply(x1, xcn)
+      if (length(x2)>1) x2 <- seq(x2[1],x2[2],1)
+      return(x2)
+    })))
+  } else{
+    args <-unname(unlist(lapply(args,function(x) {rlang::as_string(x)})))
+    if (sum(unlist(lapply(args, function(x) grepl("[^A-Za-z]",x))))>0) {
+      stop('Only valid Excel column names can be supplied, separated by commas or hyphens.')
     }
-  })
-  names(rtn) <- toupper(names(rtn))
+    rtn <- xcn(args)
+    names(rtn) <- toupper(names(rtn))
+  }
   return(rtn)
 }
+
+
 
 #' Retrieve spreadsheet column letter-names from columns indices
 #'
