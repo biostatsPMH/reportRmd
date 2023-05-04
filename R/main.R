@@ -1216,8 +1216,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
 mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
-                   CIwidth = 0.95, vif=TRUE)
-{
+                   CIwidth = 0.95, vif=TRUE){
   if (!markup) {
     lbld <- identity
     addspace <- identity
@@ -1284,6 +1283,12 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     betanames <- names(model$coef)[-1]
     ss_data <- model$model
   }
+  else if (type == "negbin") {
+    betanames <- attributes(summary(model)$coef)$dimnames[[1]][-1]
+    beta <- "RR"
+    expnt = TRUE
+    ss_data <- model$model
+  }
   else if (type == "geeglm") {
     if (model$family$link == "logit") {
       beta <- "OR"
@@ -1301,18 +1306,21 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   else if (type == "coxph" | type == "crr") {
     beta <- "HR"
     expnt = TRUE
-    # betanames <- attributes(model$terms)$term.labels
-    # if (is.null(betanames))    betanames <- attributes(summary(model)$coef)$dimnames[[1]]
     betanames <- attributes(summary(model)$coef)$dimnames[[1]]
     ss_data <- try(stats::model.frame(model$call$formula, eval(parse(text = paste("data=",
                                                                                   deparse(model$call$data))))), silent = TRUE)
   }
   else {
-    stop("type must be either polr, coxph, glm, lm, geeglm, crr, lme (or NULL)")
+    stop("type must be either polr, coxph, glm, lm, geeglm, crr, lme, negbin (or NULL)")
   }
   if (inherits(ss_data,"data.frame")) {
     if ('(weights)' %in% names(ss_data))
       names(ss_data)<- gsub('[(]weights[)]',as.character(model$call[['weights']]),names(ss_data))
+    if (any(grepl('offset[(]',names(ss_data)))){
+      ot <- which(grepl('offset[(]',names(ss_data)))
+      vn <- gsub('[)]','',gsub('offset[(]',"",names(ss_data)[ot]))
+      ss_data[[vn]] <- ss_data[,9]
+    }
     data <- ss_data
   } else if (type=='crr'){
     if (missing(data)){
@@ -1338,7 +1346,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   if (min(indx) == -1)
     stop("Factor name + level name is the same as another factor name. Please change. Will fix this issue later")
   y <- betaindx(indx)
-  if (type %in% c("lm", "glm", "geeglm", "lme")) {
+  if (type %in% c("lm", "glm", "negbin","geeglm", "lme")) {
     y <- lapply(y, function(x) {
       x + 1
     })
@@ -1379,7 +1387,10 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
                                            Sigma = vcov(model)[covariateindex, covariateindex],
                                            Terms = seq_along(covariateindex))$result$chi2[3],silent = T)
       }
-    } else if (type=='glm'){
+    } else if (type  =='negbin'){
+      m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = T)
+      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(Chi)"])),silent = T)
+    } else if (type  =='glm'){
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = T)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model,test='LRT')[,"Pr(>Chi)"])),silent = T)
     } else if (type == "polr") {
@@ -1399,17 +1410,6 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     } else if (type=='coxph') {
       m_data <- data
       names(m_data)[1] <- 'y'
-      # R 4.2.2 breaks this
-      # if (ncol(m_data)>2){
-      #   # run models without robust variances
-      #   m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
-      #   m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
-      #   globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_full)[,"Pr(>|Chi|)"])),silent = T)
-      # } else {
-      #   globalpvalue <- try(as.vector(stats::na.omit(anova(model)[,"Pr(>|Chi|)"])),silent = T)
-      # }
-      # New code 19 Dec 2022
-      # run models without robust variances
       m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
       m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
       gp_aov <- try(anova(m_small,m_full),silent = T)
@@ -1427,7 +1427,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
       pvalues <- c(sapply(summary(model)$coef[covariateindex,
                                               5], lpvalue))
     }
-    else if (type == "glm" & expnt) {
+    else if (type %in% c('glm','negbin') & expnt) {
       m <- summary(model, conf.int = CIwidth)$coefficients
       Z_mult = qnorm(1 - (1 - CIwidth)/2)
       hazardratio <- apply(cbind(exp(m[covariateindex, 1]),
@@ -1516,16 +1516,16 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     if (out[1, 2] == "") {
       if (length(grep(":", title[1])) > 0) {
         ss_N = unlist(lapply(levelnameslist,
-                                   function(level) {
-                                     N <- mapply(function(cn, lvl) {
-                                       if (cn == lvl) {
-                                         nrow(data)
-                                       } else {
-                                         sum(data[[cn]] == lvl)
-                                       }
-                                     }, oldcovname, level)
-                                     return(min(N))
-                                   }))
+                             function(level) {
+                               N <- mapply(function(cn, lvl) {
+                                 if (cn == lvl) {
+                                   nrow(data)
+                                 } else {
+                                   sum(data[[cn]] == lvl)
+                                 }
+                               }, oldcovname, level)
+                               return(min(N))
+                             }))
       }
       else {
         ss_N = as.vector(table(data[[oldcovname]]))
@@ -1578,7 +1578,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
                                    stringsAsFactors = FALSE))
   if(length(names(table))==5){
     colnames(table) <- c("Covariate", sanitizestr(beta), "p-value",
-              "Global p-value","N")
+                         "Global p-value","N")
   } else  colnames(table) <- c("Covariate", sanitizestr(beta), "p-value",
                                "Global p-value","N","Event")
   table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
@@ -1586,8 +1586,8 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   if (!showN) table <- table[, setdiff(colnames(table),"N")]
   if (!showEvent) table <- table[, setdiff(colnames(table),"Event")]
   if (vif) {
-    if (type=='geeglm'|type=='lme'){
-        message('VIF not yet implemented for mixed effects/GEE models.')
+    if (type %in% c('geeglm','lme','negbin')){
+      message('VIF not yet implemented for negative binomial, mixed effects or GEE models.')
     } else {
       if (type=='crr'){
         xnm <- intersect(names(data),names(model$coef))
@@ -1597,12 +1597,12 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
       } else VIF <- try(GVIF(model),silent = TRUE)
       if (!inherits(VIF,'try-error')) {
         if (nrow(VIF)>1){
-        vifcol <- character(nrow(table))
-        ind <- match(VIF$Covariate,table$Covariate)
-        for (x in 1:length(ind)) vifcol[ind[x]] <- niceNum(VIF$VIF[x],digits = digits)
-        table <- cbind(table,VIF=vifcol)
-      }
-        } else warning('VIF could not be computed for the model.')
+          vifcol <- character(nrow(table))
+          ind <- match(VIF$Covariate,table$Covariate)
+          for (x in 1:length(ind)) vifcol[ind[x]] <- niceNum(VIF$VIF[x],digits = digits)
+          table <- cbind(table,VIF=vifcol)
+        }
+      } else warning('VIF could not be computed for the model.')
     }}
   if (nicenames) table[,1] <- nicename(table[,1])
   colnames(table) <- sapply(colnames(table), lbld)
@@ -1610,7 +1610,6 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
   attr(table,"varID") <- varID
   return(table)
 }
-
 
 
 
@@ -3064,7 +3063,8 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' LRT is used to obtain a global p-value. For coxph models the model is re-run
 #' without robust variances with and without each variable and a LRT is
 #' presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
-#' Wald global p-values are returned.
+#' Wald global p-values are returned. For negative binomial models a deviance
+#' test is used.
 #'
 #' If the variance inflation factor is requested (VIF=T) then a generalised VIF
 #' will be calculated in the same manner as the car package.

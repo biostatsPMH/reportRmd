@@ -78,7 +78,8 @@ lme models an attempt is made to re-fit the model using ML and if,successful
 LRT is used to obtain a global p-value. For coxph models the model is re-run
 without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
-Wald global p-values are returned.
+Wald global p-values are returned. For negative binomial models a deviance
+test is used.
 
 If the variance inflation factor is requested (VIF=T) then a generalised VIF
 will be calculated in the same manner as the car package.

@@ -1,4 +1,3 @@
-#' Helper to excelCol
 xcn <- function(v){
   sapply(v, function(x){
     colHead <- toupper(x)
