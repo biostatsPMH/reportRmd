@@ -317,7 +317,7 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 ## Plotting univariable odds ratios
 
-This will default to linear scale, but can be set to log scale using `logscale=TRUE`
+This will default to linear scale, but can be set to log scale using `logScale=TRUE`
 ```{r, , fig.width=7, fig.height=2}
 forestplotUV(data=pembrolizumab, response='orr',
 covs=c('age','sex','pdl1','change_ctdna_group'))
