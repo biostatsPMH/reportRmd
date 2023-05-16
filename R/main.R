@@ -1319,7 +1319,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     if (any(grepl('offset[(]',names(ss_data)))){
       ot <- which(grepl('offset[(]',names(ss_data)))
       vn <- gsub('[)]','',gsub('offset[(]',"",names(ss_data)[ot]))
-      ss_data[[vn]] <- ss_data[,9]
+      ss_data[[vn]] <- ss_data[,ot]
     }
     data <- ss_data
   } else if (type=='crr'){
