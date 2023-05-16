@@ -315,16 +315,63 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 \newpage
 
-## Plotting odds ratios
+## Plotting univariable odds ratios
 
-This will default to a log scale, but can be set to linear using `logscale=FALSE`
+This will default to linear scale, but can be set to log scale using `logscale=TRUE`
+```{r, , fig.width=7, fig.height=2}
+forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+```
+
+\newpage
+
+## Plotting multivariable odds ratios
+
 ```{r, , fig.width=7, fig.height=2}
 require(ggplot2)
-glm_fit <- glm(orr~age+sex+change_ctdna_group+pdl1,
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
                family='binomial',
                data = pembrolizumab)
-forestplot2(glm_fit)
+forestplotMV(glm_fit)
 ```
+
+\newpage
+
+# Plotting combined univariable and multivariable model odd ratios
+
+To display odds ratios from univariate and multivariable models in a single forest plot, run the forestplotUV and forestplotMV functions and combine.
+
+```{r}
+uvFP <- forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvFP <- forestplotMV(glm_fit)
+
+forestplotUVMV(uvFP,mvFP,showN=T,showEvent=T)
+```
+
+\newpage
+
+This can also be done with log scale odds ratios (default is linear scale). Number of subjects and/or number of events can also be turned off, as well as different colours used.
+
+```{r}
+uvFP <- forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvFP <- forestplotMV(glm_fit)
+
+forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),logScale=T)
+```
+
+
+
+
 
 \newpage
 
