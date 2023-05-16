@@ -82,13 +82,12 @@ show.tests=TRUE)
 
 \newpage
 
-Effect sizes (Cramer V and $\eta^2$) can be added with effSize=TRUE
+Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer's V for categorical variables.  
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
-effSize=TRUE,show.tests=TRUE)
-
+show.tests=TRUE, effSize=TRUE)
 ```
 
 \newpage
@@ -99,8 +98,7 @@ Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for 
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1'),
 testcont='ANOVA',
-show.tests=TRUE)
-
+show.tests=TRUE, effSize=TRUE)
 ```
 
 \newpage
