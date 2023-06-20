@@ -851,7 +851,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' @importFrom aod wald.test
 #' @importFrom geepack geeglm
 #' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint confint.default
-uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, family = NULL,
+uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
                    type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald)
 {
@@ -1215,7 +1215,7 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
 #'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
-mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
+mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    CIwidth = 0.95, vif=TRUE){
   if (!markup) {
     lbld <- identity
@@ -1615,11 +1615,12 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
 
 #' Create a forest plot using ggplot2
 #'
-#' This function will accept a log or logistic regression fit from glm or geeglm, and
-#' display the OR or RR for each variable on the appropriate log scale.
+#' This function will accept a log or logistic regression fit from glm or
+#' geeglm, and display the OR or RR for each variable on the appropriate log
+#' scale.
 #'
-#' @param model an object output from the glm or geeglm function, must be from a logistic
-#'   regression
+#' @param model an object output from the glm or geeglm function, must be from a
+#'   logistic regression
 #' @param conf.level controls the width of the confidence interval
 #' @param orderByRisk logical, should the plot be ordered by risk
 #' @param colours can specify colours for risks less than, 1 and greater than
@@ -1627,8 +1628,8 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
 #' @param showEst logical, should the risks be displayed on the plot in text
 #' @param rmRef logical, should the reference levels be removed for the plot?
 #' @param logScale logical, should OR/RR be shown on log scale, defaults to
-#'   TRUE. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
-#'   linear scale.
+#'   TRUE, or reportRmd.logScale if set. See https://doi.org/10.1093/aje/kwr156
+#'   for why you may prefer a linear scale.
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
 #' @importFrom lifecycle deprecate_warn
@@ -1641,7 +1642,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
 #' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' forestplot2(glm_fit)
-forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',showEst=TRUE,rmRef=FALSE,logScale=TRUE,nxTicks=5){
+forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',showEst=TRUE,rmRef=FALSE,logScale=getOption("reportRmd.logScale",TRUE),nxTicks=5){
 
   deprecate_warn("0.0.3","forestplot2()","forestplotUV()")
 
@@ -1739,7 +1740,7 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @param showEst logical, should the risks be displayed on the plot in text
 #' @param rmRef logical, should the reference levels be removed for the plot?
 #' @param logScale logical, should OR/RR be shown on log scale, defaults to
-#'   TRUE. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
+#'   TRUE, or reportRmd.logScale if set. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
 #'   linear scale.
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
@@ -1754,9 +1755,9 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 #' data=pembrolizumab, family='binomial')
 forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
-        model = "glm", family = NULL, digits = 2, conf.level = 0.95,
+        model = "glm", family = NULL, digits = getOption("reportRmd.digits",2), conf.level = 0.95,
         orderByRisk = TRUE, colours = "default", showEst = TRUE, rmRef = FALSE,
-        logScale = FALSE, nxTicks = 5, showN = TRUE, showEvent = TRUE)
+        logScale=getOption("reportRmd.logScale",TRUE), nxTicks = 5, showN = TRUE, showEvent = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1772,7 +1773,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   }
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
-  tab = uvsum(response, covs, data, digits = 2, id = NULL, corstr = NULL,
+  tab = uvsum(response, covs, data, digits = digits, id = NULL, corstr = NULL,
           family = NULL, type = NULL, gee = FALSE, strata = 1, markup = F,
           sanitize = F, nicenames = F, showN = TRUE, showEvent = TRUE,
           CIwidth = conf.level, reflevel = NULL, returnModels = FALSE)
@@ -1882,8 +1883,9 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #'   1.0. Default is red, black, green
 #' @param showEst logical, should the risks be displayed on the plot in text
 #' @param rmRef logical, should the reference levels be removed for the plot?
+#' @param digits number of digits to use displaying estimates
 #' @param logScale logical, should OR/RR be shown on log scale, defaults to
-#'   TRUE. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
+#'   TRUE, or reportRmd.logScale if set. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
 #'   linear scale.
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
@@ -1900,7 +1902,8 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' forestplotMV(glm_fit)
 forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
             colours = "default", showEst = TRUE, rmRef = FALSE,
-            logScale = FALSE, nxTicks = 5, showN = TRUE, showEvent = TRUE)
+            digits=getOption("reportRmd.digits",2),
+            logScale=getOption("reportRmd.logScale",TRUE), nxTicks = 5, showN = TRUE, showEvent = TRUE)
 {
   if (inherits(model, "glm")) {
     if (model$family$link == "log") {
@@ -1916,7 +1919,7 @@ forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
   }
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
-  tab = mvsum(model, data, digits = 2, markup = F, sanitize = F,
+  tab = mvsum(model, data, digits = digits, markup = F, sanitize = F,
               nicenames = F, showN = TRUE, showEvent = TRUE, CIwidth = conf.level)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
@@ -2049,7 +2052,7 @@ forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
 #' data=pembrolizumab,family = 'binomial'))
 #' forestplotUVMV(UVp, MVp)
 forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
-        family = NULL, digits = 2, orderByRisk = TRUE, colours = "default",
+        family = NULL, digits=getOption("reportRmd.digits",2), orderByRisk = TRUE, colours = "default",
         showEst = TRUE, rmRef = FALSE, logScale = FALSE, nxTicks = 5,
         showN = TRUE, showEvent = TRUE)
 {
@@ -2434,7 +2437,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #'  bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
 #'  outTable(tab,bold_cells= bold_cells)
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
-                     rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits,align,
+                     rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits=getOption("reportRmd.digits",2),align,
                      applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label){
 
   # strip tibble aspects
@@ -2596,7 +2599,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 #' m2$Response = 'Tumour Size'
 #' rbind(m1,m2)
 #' nestTable(rbind(m1,m2),head_col='Response',to_col='Covariate')
-nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRUE,boldheaders=TRUE,hdr_prefix='',hdr_suffix='',digits=2,tableOnly=FALSE,fontsize){
+nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRUE,boldheaders=TRUE,hdr_prefix='',hdr_suffix='',digits=getOption("reportRmd.digits",2),tableOnly=FALSE,fontsize){
 
   # strip any grouped data or tibble properties
   if (inherits(data,'data.frame')){
@@ -2935,7 +2938,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #' id='id', corstr="exchangeable",
 #' family=gaussian("identity"),
 #' data=ctDNA,showN=TRUE)
-rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
+rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits",2), covTitle='',caption=NULL,
                      tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
                      chunk_label,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
@@ -3122,7 +3125,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
 #' require(survival)
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
-rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
+rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
                      caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,chunk_label, fontsize){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   # get the table
@@ -4404,7 +4407,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
                        survtimeunit,survtimesLbls=NULL,CIwidth=0.95,unformattedp=FALSE,
                        conf.type='log',
-                       na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE,fontsize){
+                       na.action='na.omit',showCounts=TRUE,digits=getOption("reportRmd.digits",2),caption=NULL,tableOnly=FALSE,fontsize){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(survtimeunit)) if (!is.null(survtimes)) stop('survtimeunit must be specified if survtimes are set. Example survtimeunit="year"')
@@ -4551,7 +4554,7 @@ rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
 rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtimes,
                         survtimeunit,strata.prefix=NULL,survtimesLbls=NULL,
                         showCols=c('At Risk','Events','Censored'),CIwidth=0.95,conf.type='log',
-                        na.action='na.omit',showCounts=TRUE,digits=2,caption=NULL,tableOnly=FALSE,fontsize){
+                        na.action='na.omit',showCounts=TRUE,digits=getOption("reportRmd.digits",2),caption=NULL,tableOnly=FALSE,fontsize){
   if (missing(data)) stop('data is a required argument')
   if (missing(time)) stop('time is a required argument')
   if (missing(status)) stop('status is a required argument')

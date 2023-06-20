@@ -386,6 +386,31 @@ data=pembrolizumab)
 
 \newpage
 
+# Options
+
+The following options can be set:
+
+- reportRmd.digits, detault is 2. Sets the default number of digits in output functions. Does not affect p-values.
+- reportRmd.forceWald, default is FALSE. If set to TRUE then Wald CI, as opposed to likelihood profile CI will be used in the rm_uvsum function.
+- reportRmd.logScale, default is TRUE. The scale of the forest plots will default to log unless otherwise specified.
+
+Example:
+
+```{r}
+ rm_uvsum(response = 'baseline_ctdna',
+ covs=c('age','sex','l_size','pdl1','tmb'),
+ data=pembrolizumab)
+ 
+ options('reportRmd.digits'=1) 
+ 
+rm_uvsum(response = 'baseline_ctdna',
+ covs=c('age','sex','l_size','pdl1','tmb'),
+ data=pembrolizumab)
+
+```
+
+\newpage
+
 # PDF Output
 
 For pdf to be correctly generate when using survival curves it is recommended that the cairo format be used. This can be specified with the following command in the setup code chunk:

@@ -15,7 +15,7 @@ nestTable(
   boldheaders = TRUE,
   hdr_prefix = "",
   hdr_suffix = "",
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   tableOnly = FALSE,
   fontsize
 )

@@ -7,7 +7,7 @@
 mvsum(
   model,
   data,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   showN = TRUE,
   showEvent = TRUE,
   markup = TRUE,

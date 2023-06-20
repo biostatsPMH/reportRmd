@@ -12,13 +12,13 @@ forestplotUV(
   corstr = NULL,
   model = "glm",
   family = NULL,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   conf.level = 0.95,
   orderByRisk = TRUE,
   colours = "default",
   showEst = TRUE,
   rmRef = FALSE,
-  logScale = FALSE,
+  logScale = getOption("reportRmd.logScale", TRUE),
   nxTicks = 5,
   showN = TRUE,
   showEvent = TRUE
@@ -56,7 +56,7 @@ used in the model. Only used for geeglm}
 \item{rmRef}{logical, should the reference levels be removed for the plot?}
 
 \item{logScale}{logical, should OR/RR be shown on log scale, defaults to
-TRUE. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
+TRUE, or reportRmd.logScale if set. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
 linear scale.}
 
 \item{nxTicks}{Number of tick marks supplied to the log_breaks function to

@@ -9,7 +9,7 @@ forestplotUVMV(
   MVmodel,
   model = "glm",
   family = NULL,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   orderByRisk = TRUE,
   colours = "default",
   showEst = TRUE,

@@ -8,7 +8,7 @@ rm_uvsum(
   response,
   covs,
   data,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   covTitle = "",
   caption = NULL,
   tableOnly = FALSE,

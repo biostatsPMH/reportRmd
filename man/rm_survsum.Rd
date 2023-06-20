@@ -17,7 +17,7 @@ rm_survsum(
   conf.type = "log",
   na.action = "na.omit",
   showCounts = TRUE,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   caption = NULL,
   tableOnly = FALSE,
   fontsize

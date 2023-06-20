@@ -7,7 +7,7 @@
 rm_mvsum(
   model,
   data,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   covTitle = "",
   showN = TRUE,
   showEvent = TRUE,

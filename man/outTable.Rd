@@ -12,7 +12,7 @@ outTable(
   rows_bold = numeric(0),
   bold_cells = NULL,
   caption = NULL,
-  digits,
+  digits = getOption("reportRmd.digits", 2),
   align,
   applyAttributes = TRUE,
   keep.rownames = FALSE,
