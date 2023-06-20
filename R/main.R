@@ -1631,6 +1631,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
 #'   linear scale.
 #' @param nxTicks Number of tick marks supplied to the log_breaks function to
 #'   produce
+#' @importFrom lifecycle deprecate_warn
 #' @import ggplot2
 #' @importFrom scales log_breaks
 #' @keywords plot
@@ -1641,6 +1642,8 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
 #' data=pembrolizumab,family = 'binomial')
 #' forestplot2(glm_fit)
 forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',showEst=TRUE,rmRef=FALSE,logScale=TRUE,nxTicks=5){
+
+  deprecate_warn("0.0.3","forestplot2()","forestplotUV()")
 
   if (inherits(model,'glm')){
     if(model$family$link=='log'){
@@ -2941,7 +2944,7 @@ rm_uvsum <- function(response, covs , data , digits=2, covTitle='',caption=NULL,
                      reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
 
   if (missing(data)) stop('data is a required argument')
-  if (missing(covs)) stop('covs is a required argument')
+  if (missing(covs)) stop('covs is a required argument') else covs <- unique(covs)
   if (missing(response)) stop('response is a required argument')
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
   if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
@@ -4180,8 +4183,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
 }
 
 modify_ggkmcif <- function(list_gg){
-  .Deprecated("ggkmcif_paste")
-  ggkmcif_paste(list_gg)
+  deprecate_warn("0.0.3","modify_ggkmcif()","ggkmcif_paste()")
 }
 
 #' Plot KM and CIF curves with ggplot
