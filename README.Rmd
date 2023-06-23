@@ -43,6 +43,10 @@ You can install the development version of reportRmd from [GitHub](https://githu
 devtools::install_github("biostatsPMH/reportRmd")
 ```
 
+## New Features
+
+Use variable labels with reportRmd
+
 ## Documentation
 
 [Online Documentation](https://biostatsPMH.github.io/reportRmd/)

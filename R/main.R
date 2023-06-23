@@ -4670,3 +4670,20 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
 
 }
 
+#' Set variable labels for data frames
+#'
+#' To output use-friendly labels instead of variable names in the various
+#' reportRmd functions you can supply data frames containing variable labels and names. A default
+#' table can be supplied for all data within a report, or separate tables
+#' can be provided for specific data frames.
+#'
+#' @param default A data frame containing the default labels for any variables
+#'   not specified in other tables
+#' @param ... a sequence of named characters where the name specifies a data
+#'   frame containing data to analyse and the value is data frame containing
+#'   variable and label lookups.
+#'   @export
+setDataNames <- function(.default,...){
+
+}
+
