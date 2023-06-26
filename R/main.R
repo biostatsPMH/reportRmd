@@ -1217,6 +1217,9 @@ uvsum <- function (response, covs, data, digits=2,id = NULL, corstr = NULL, fami
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
 mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    CIwidth = 0.95, vif=TRUE){
+  if (any(is.na(model$coefficients))) stop(paste0('The following model coefficients could not be estimated:\n',
+                                                  paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
+                                                  "\nPlease re-fit a valid model prior to reporting."))
   if (!markup) {
     lbld <- identity
     addspace <- identity
@@ -1280,6 +1283,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
       beta <- "Estimate"
       expnt = FALSE
     }
+    if ( model$family$family=="poisson") showEvent <- FALSE
     betanames <- names(model$coef)[-1]
     ss_data <- model$model
   }
@@ -1288,6 +1292,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     beta <- "RR"
     expnt = TRUE
     ss_data <- model$model
+    showEvent <- FALSE
   }
   else if (type == "geeglm") {
     if (model$family$link == "logit") {
@@ -1301,6 +1306,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
       expnt = FALSE
     }
     betanames <- attributes(summary(model)$coef)$row.names[-1]
+    if ( model$family$family=="poisson") showEvent <- FALSE
     ss_data <- model$model
   }
   else if (type == "coxph" | type == "crr") {
@@ -1344,7 +1350,7 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
       data[[v]] <- factor(data[[v]])
   }
   if (min(indx) == -1)
-    stop("Factor name + level name is the same as another factor name. Please change. Will fix this issue later")
+    stop("Factor name + level name is the same as another factor name. Please change. Will fix this issue in future.")
   y <- betaindx(indx)
   if (type %in% c("lm", "glm", "negbin","geeglm", "lme")) {
     y <- lapply(y, function(x) {
@@ -1422,9 +1428,9 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     } else {
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = T)
-      if (length(globalpvalue)==0) globalpvalue <- NA
     }
     if (is.error(globalpvalue)) globalpvalue <- "NA"
+    if (length(globalpvalue)==0) globalpvalue <- "NA"
     if (!identical(lpvalue,identity)) globalpvalue <- lpvalue(globalpvalue,digits)
     if (type == "coxph" | type == "crr") {
       hazardratio <- c(apply(matrix(summary(model, conf.int = CIwidth)$conf.int[covariateindex,
@@ -1526,9 +1532,9 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
                                  if (cn == lvl) {
                                    nrow(data)
                                  } else {
-                                   sum(data[[cn]] == lvl)
+                                   sum(data[[cn]] == sub(cn,"",lvl))
                                  }
-                               }, oldcovname, level)
+                               }, unlist(strsplit(oldcovname,":")), level)
                                return(min(N))
                              }))
       }
@@ -1550,9 +1556,9 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
                                        if (cn == lvl) {
                                          nrow(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),])
                                        } else {
-                                         sum(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),][[cn]] == lvl)
+                                         sum(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),][[cn]] == sub(cn,"",lvl))
                                        }
-                                     }, oldcovname, level)
+                                     }, unlist(strsplit(oldcovname,":")), level)
                                      return(min(Event))
                                    }))
         }
@@ -3134,9 +3140,10 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
                sanitize = FALSE, nicenames = FALSE,showN=showN,showEvent=showEvent,CIwidth = CIwidth,vif=vif)
   att_tab <- attributes(tab)
-  to_indent <- setdiff(1:nrow(tab),
-                       sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
-                              USE.NAMES = FALSE))
+  to_indent <- attr(tab,'row.names')[which(!attr(tab,'varID'))]
+  # to_indent <- setdiff(1:nrow(tab),
+  #                      sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
+  #                             USE.NAMES = FALSE))
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
@@ -3181,8 +3188,6 @@ rm_mvsum <- function(model, data, digits=2,covTitle='',showN=TRUE,showEvent=TRUE
     attr(tab,'dimchk') <- dim(tab)
     return(tab)
   }
-
-
   argL <- list(tab=tab,to_indent=to_indent,bold_cells = bold_cells,
            caption=caption, digits = digits,
            chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
