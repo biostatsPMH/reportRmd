@@ -1410,14 +1410,19 @@ mvsum <- function (model, data, digits=2, showN = TRUE, showEvent = TRUE, markup
     } else if (type=='coxph') {
       m_data <- data
       names(m_data)[1] <- 'y'
-      m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
-      m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
+      # m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
+      # m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
+      # gp_aov <- try(anova(m_small,m_full),silent = T)
+      m_full <- try(stats::update(model,as.formula('y ~ . '),data=m_data),silent=TRUE)
+      m_small <- try(stats::update(model,paste0('y ~ . -',oldcovname),data=m_data),silent=TRUE)
       gp_aov <- try(anova(m_small,m_full),silent = T)
+
       if (inherits(gp_aov,'try-error')) globalpvalue <- gp_aov else globalpvalue <- as.vector(stats::na.omit(gp_aov[,4]))
 
     } else {
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = T)
+      if (length(globalpvalue)==0) globalpvalue <- NA
     }
     if (is.error(globalpvalue)) globalpvalue <- "NA"
     if (!identical(lpvalue,identity)) globalpvalue <- lpvalue(globalpvalue,digits)
