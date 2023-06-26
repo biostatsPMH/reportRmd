@@ -1217,6 +1217,9 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
 mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    CIwidth = 0.95, vif=TRUE){
+  if (any(is.na(model$coefficients))) stop(paste0('The following model coefficients could not be estimated:\n',
+                                                  paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
+                                                  "\nPlease re-fit a valid model prior to reporting."))
   if (!markup) {
     lbld <- identity
     addspace <- identity
@@ -1280,6 +1283,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
       beta <- "Estimate"
       expnt = FALSE
     }
+    if ( model$family$family=="poisson") showEvent <- FALSE
     betanames <- names(model$coef)[-1]
     ss_data <- model$model
   }
@@ -1288,6 +1292,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     beta <- "RR"
     expnt = TRUE
     ss_data <- model$model
+    showEvent <- FALSE
   }
   else if (type == "geeglm") {
     if (model$family$link == "logit") {
@@ -1301,6 +1306,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
       expnt = FALSE
     }
     betanames <- attributes(summary(model)$coef)$row.names[-1]
+    if ( model$family$family=="poisson") showEvent <- FALSE
     ss_data <- model$model
   }
   else if (type == "coxph" | type == "crr") {
@@ -1344,7 +1350,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
       data[[v]] <- factor(data[[v]])
   }
   if (min(indx) == -1)
-    stop("Factor name + level name is the same as another factor name. Please change. Will fix this issue later")
+    stop("Factor name + level name is the same as another factor name. Please change. Will fix this issue in future.")
   y <- betaindx(indx)
   if (type %in% c("lm", "glm", "negbin","geeglm", "lme")) {
     y <- lapply(y, function(x) {
@@ -1410,9 +1416,13 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     } else if (type=='coxph') {
       m_data <- data
       names(m_data)[1] <- 'y'
-      m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
-      m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
+      # m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
+      # m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
+      # gp_aov <- try(anova(m_small,m_full),silent = T)
+      m_full <- try(stats::update(model,as.formula('y ~ . '),data=m_data),silent=TRUE)
+      m_small <- try(stats::update(model,paste0('y ~ . -',oldcovname),data=m_data),silent=TRUE)
       gp_aov <- try(anova(m_small,m_full),silent = T)
+
       if (inherits(gp_aov,'try-error')) globalpvalue <- gp_aov else globalpvalue <- as.vector(stats::na.omit(gp_aov[,4]))
 
     } else {
@@ -1420,6 +1430,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = T)
     }
     if (is.error(globalpvalue)) globalpvalue <- "NA"
+    if (length(globalpvalue)==0) globalpvalue <- "NA"
     if (!identical(lpvalue,identity)) globalpvalue <- lpvalue(globalpvalue,digits)
     if (type == "coxph" | type == "crr") {
       hazardratio <- c(apply(matrix(summary(model, conf.int = CIwidth)$conf.int[covariateindex,
@@ -1521,9 +1532,9 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
                                  if (cn == lvl) {
                                    nrow(data)
                                  } else {
-                                   sum(data[[cn]] == lvl)
+                                   sum(data[[cn]] == sub(cn,"",lvl))
                                  }
-                               }, oldcovname, level)
+                               }, unlist(strsplit(oldcovname,":")), level)
                                return(min(N))
                              }))
       }
@@ -1545,9 +1556,9 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
                                        if (cn == lvl) {
                                          nrow(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),])
                                        } else {
-                                         sum(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),][[cn]] == lvl)
+                                         sum(ss_data[which(ss_data[,1] %in% c(1, levels(ss_data[,1])[2])),][[cn]] == sub(cn,"",lvl))
                                        }
-                                     }, oldcovname, level)
+                                     }, unlist(strsplit(oldcovname,":")), level)
                                      return(min(Event))
                                    }))
         }
@@ -3132,9 +3143,10 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
                sanitize = FALSE, nicenames = FALSE,showN=showN,showEvent=showEvent,CIwidth = CIwidth,vif=vif)
   att_tab <- attributes(tab)
-  to_indent <- setdiff(1:nrow(tab),
-                       sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
-                              USE.NAMES = FALSE))
+  to_indent <- attr(tab,'row.names')[which(!attr(tab,'varID'))]
+  # to_indent <- setdiff(1:nrow(tab),
+  #                      sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
+  #                             USE.NAMES = FALSE))
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
@@ -3179,8 +3191,6 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     attr(tab,'dimchk') <- dim(tab)
     return(tab)
   }
-
-
   argL <- list(tab=tab,to_indent=to_indent,bold_cells = bold_cells,
            caption=caption, digits = digits,
            chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
