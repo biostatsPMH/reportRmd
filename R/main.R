@@ -234,11 +234,13 @@ geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 
 #' rm_mvsum(m1,data=df,showN = TRUE,vif=TRUE)
 #' @export
 crrRx<-function(f,data){
+  argList <- as.list(match.call()[-1])
   k<-as.character(f)[3]
   covs<-removedollar(k)
   ff<-modelmatrix(f,data)
   m1<-cmprsk::crr(ff[[1]][,1],ff[[1]][,2],ff[[2]])
-  m1$call<-paste("~",covs)
+  m1$call<-as.call(list(f,data=argList$data))
+  m1$data <- data
   return(m1)
 }
 
@@ -1315,6 +1317,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     betanames <- attributes(summary(model)$coef)$dimnames[[1]]
     ss_data <- try(stats::model.frame(model$call$formula, eval(parse(text = paste("data=",
                                                                                   deparse(model$call$data))))), silent = TRUE)
+    if (inherits(ss_data,'try-error') & type == "crr") ss_data <- try(model$data)
   }
   else {
     stop("type must be either polr, coxph, glm, lm, geeglm, crr, lme, negbin (or NULL)")
@@ -1490,7 +1493,6 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     }
     if (length(betaname[[1]]) == 1) {
       if (!is.factor(data[, oldcovname])) {
-        # title <- c(nicename(covariatename), hazardratio,pvalues, globalpvalue)
         title <- c(covariatename, hazardratio,pvalues, globalpvalue)
       }     else if (length(levelnames) == 1) {
         title <- c(covariatename, "", pvalues,globalpvalue)
@@ -1619,6 +1621,13 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
   colnames(table) <- sapply(colnames(table), lbld)
   attr(table,'covs') <- ucall
   attr(table,"varID") <- varID
+  mc <- paste(capture.output(model$call),collapse="")
+  dn <- sub(pattern=".*data = (\\w+).*",replacement = "\\1",x=mc)
+  if (!exists(dn)){
+    warning('Model data not found. No variable labels will be assigned to variables.')
+  } else if(inherits(get0(dn),'data.frame')){   attr(table,"data") <- dn
+
+  }
   return(table)
 }
 
@@ -2796,23 +2805,13 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   covsumArgs <- argList[names(argList) %in% argsToPass]
   covsumArgs[["markup"]] <- FALSE
   covsumArgs[["sanitize"]] <- FALSE
+  covsumArgs[["nicenames"]] <- FALSE
   tab <- do.call(covsum, covsumArgs)
-
   to_indent <- which(!attr(tab,"varID"))
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
-  if (nicenames) tab$Covariate <- nicename(tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(as.character(argList$data), tab$Covariate)
   names(tab)[1] <- covTitle
-  # if (nicenames)
-  #   output_var_names <- gsub("[_.]", " ", covs)
-  # else output_var_names <- covs
-  # vI <- unlist(sapply(output_var_names, function(x) which(x ==
-  #                                                           tab[[1]])[1]))
-  # to_indent <- setdiff(1:nrow(tab), vI)
-  # to_bold_name <- vI
-  # if (nicenames)
-  #   tab$Covariate <- gsub("[_.]", " ", tab$Covariate)
-  # bold_cells <- arrayInd(to_bold_name, dim(tab))
   if ("p-value" %in% names(tab)) {
     to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
     p_vals <- tab[["p-value"]]
@@ -2969,6 +2968,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (strata==1) nm <- c(response,covs) else nm <- c(strata,response,covs)
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
+  argList <- as.list(match.call()[-1])
 
   for (v in covs) {
     if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
@@ -3018,13 +3018,12 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  if (nicenames) tab$Covariate <- nicename(tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(as.character(argList$data), tab$Covariate)
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
   }
 
-  # perform p-value adjustment across variable-level p-values. Remove factor level p-values
   # perform p-value adjustment across variable-level p-values. Remove factor level p-values
   if ("Global p-value" %in% names(tab)){
     raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
@@ -3144,10 +3143,6 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
                sanitize = FALSE, nicenames = FALSE,showN=showN,showEvent=showEvent,CIwidth = CIwidth,vif=vif)
   att_tab <- attributes(tab)
   to_indent <- attr(tab,'row.names')[which(!attr(tab,'varID'))]
-  # to_indent <- setdiff(1:nrow(tab),
-  #                      sapply(attr(tab,'covs'),function(x) grep(x,tab$Covariate)[1],
-  #                             USE.NAMES = FALSE))
-
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
     to_indent <- setdiff(to_indent,which(!is.na(tab[["Global p-value"]])))
@@ -3155,8 +3150,9 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   to_bold_name <- setdiff(1:nrow(tab),to_indent)
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  # perform p-value adjustment across variable-level p-values remove factor p-valeus
+  # perform p-value adjustment across variable-level p-values remove factor p-values
   if ("Global p-value" %in% names(tab)){
+    ## START HERE - need to show p-value for levels when p.adust = 'none'
     raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
     raw_p[!attr(tab,"varID")] <- NA
     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
@@ -3181,7 +3177,7 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
                                                 matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
 
-  if (nicenames) tab$Covariate <- gsub('[_.]',' ',tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(att_tab$data, tab$Covariate)
   names(tab)[1] <-covTitle
   for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){

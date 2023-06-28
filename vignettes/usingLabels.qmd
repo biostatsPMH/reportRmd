@@ -1,0 +1,137 @@
+---
+title: "testLabels"
+format: html
+editor: visual
+---
+
+```{r}
+library(devtools)
+load_all()
+
+
+varNames <- data.frame(var=names(pembrolizumab),
+                       label=c('Patient ID','Age at study entry','Patient Sex','Study Cohort','Target lesion size at baseline','PD L1 percent','log of tumour size','Baseline ctDNA','Did ctDNA increase or decrease from baseline to cycle 3','Objective Response','Clinical Beneficial Response','Overall survival status', 'Overall survival time in months','Progression free survival status','Progression free survival time in months'))
+
+
+ctDNA_names <- data.frame(var=names(ctDNA),
+                          label=c('Patient ID',
+                                  'Study Cohort',
+                                  'Change in ctDNA since baseline',
+                                  'Number of weeks on treatment',
+                                  'Percentage change in tumour measurement'))
+
+
+```
+
+
+Set the variable labels for the report
+
+```{r}
+setVariableLabels(varNames,ctDNA=ctDNA_names)
+```
+
+
+Show how the labels are set
+```{r}
+getVariableLabels()
+```
+
+Use the expss package to add labels to mtcars
+
+```{r}
+library(expss)
+data(mtcars)
+data = apply_labels(mtcars,
+                      mpg = "Miles/(US) gallon",
+                      cyl = "Number of cylinders",
+                      disp = "Displacement (cu.in.)",
+                      hp = "Gross horsepower",
+                      drat = "Rear axle ratio",
+                      wt = "Weight (1000 lbs)",
+                      qsec = "1/4 mile time",
+                      vs = "Engine",
+                      vs = c("V-engine" = 0,
+                             "Straight engine" = 1),
+                      am = "Transmission",
+                      am = c("Automatic" = 0,
+                             "Manual"=1),
+                      gear = "Number of forward gears",
+                      carb = "Number of carburetors"
+)
+extractLabels(mtcars)
+```
+
+Check that these have been added to the list of variable labels
+```{r}
+getVariableLabels()
+```
+
+
+Use haven to load data and add the labels
+
+```{r}
+library(haven)
+df <- read_sav("C:/Users/lavery/OneDrive - UHN/Jones/CancerRelatedFatigue/ARCC breast_FINAL.sav")
+extractLabels(df)
+```
+
+Check that these have been added to the list of variable labels
+```{r}
+getVariableLabels()
+```
+
+
+Clear all variable labels
+
+```{r}
+clearVariableLabels()
+```
+
+Check 
+```{r}
+getVariableLabels()
+```
+
+Load in data using the sjlabelled package
+
+```{r}
+library(sjlabelled)
+data(efc)
+extractLabels(efc)
+```
+
+Load variable names the reportRmd package (again)
+
+```{r}
+setVariableLabels(varNames,ctDNA=ctDNA_names)
+
+```
+
+rm_covsum with labels
+```{r}
+rm_covsum(data=pembrolizumab, maincov = 'orr',
+covs=c('age','sex'),
+effSize=TRUE)
+```
+
+rm_uvsum with labels
+
+```{r}
+ rm_uvsum(response = 'size_change',
+ covs=c('time','ctdna_status'),
+ gee=TRUE,
+ id='id', corstr="exchangeable",
+ family=gaussian("identity"),
+ data=ctDNA,showN=TRUE)
+
+```
+
+rm_mvsum with labels
+
+```{r}
+ glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
+ data=pembrolizumab,family = 'binomial')
+ rm_mvsum(glm_fit)
+
+```
+

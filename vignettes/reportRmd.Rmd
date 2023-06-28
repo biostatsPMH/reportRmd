@@ -182,6 +182,8 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
 rm_mvsum(glm_fit)
+
+
 ```
 
 

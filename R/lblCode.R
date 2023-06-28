@@ -1,19 +1,3 @@
-devtools::load_all()
-
-
-varNames <- data.frame(var=names(pembrolizumab),
-                       label=c('Patient ID','Age at study entry','Patient Sex','Study Cohort','Target lesion size at baseline','PD L1 percent','log of tumour size','Baseline ctDNA','Did ctDNA increase or decrease from baseline to cycle 3','Objective Response','Clinical Beneficial Response','Overall survival status', 'Overall survival time in months','Progression free survival status','Progression free survival time in months'))
-
-
-ctDNA_names <- data.frame(var=names(ctDNA),
-                          label=c('Patient ID',
-                                  'Study Cohort',
-                                  'Change in ctDNA since baseline',
-                                  'Number of weeks on treatment',
-                                  'Percentage change in tumour measurement'))
-
-
-getOption("reportRmd.variable_info")
 
 clearVariableLabels <- function(){
   options(reportRmd.v_info = NULL)
@@ -43,48 +27,48 @@ setVariableLabels <- function(default,...){
 
 }
 
-pars <- setVariableLabels(varNames,ctDNA=ctDNA_names)
 
 getVariableLabels <-function(){
   vl <- getOption("reportRmd.v_info")
   vL <- data.frame(data.frame = names(vl),
                    variable.names = as.character(vl))
-
+  return(vL)
 }
+
 test_fun <- function(data){
 #  return(match.call())
-  getVL(match.call())
+  pars <- as.list(match.call()[-1])
+  dn <- as.character(pars$data)
+  getVL(dn)
 }
 
-getVL <- function(call){
-   pars <- as.list(call[-1])
-   dn <- as.character(pars$data)
+# retrieve labels for a data frame
+getVL <- function(data_name){
+  dn <- data_name
    var_info <- getOption("reportRmd.v_info",NULL)
    vl <- NULL
    if (!is.null(var_info)){
      if ('default' %in% names(var_info)) vl <- var_info[['default']]
      if (dn %in% names(var_info)) vl <- var_info[[dn]]
    }
-    vL <- data.frame(var=names(get0(dn)))
    if (!is.null(vl)){
-     vl1 <- eval(vl)
-     names(vl1) <- c('var','lbl')
-    vL <- merge(vL,vl1,all.x = T)
-    } else vL$lbl <- NA
-    vL$lbl <- ifelse(is.na(vL$lbl),vL$var,vL$lbl)
-  return(vL)
+     vL <- eval(vl)
+     names(vL) <- c('var','lbl')
+      return(vL)
+    } else return(NULL)
 }
+
 
 extractLabels <- function(data){
   if (!inherits(data,'data.frame')) stop('data must be a data frame with labelled variables to extract.')
   lblv <- lapply(data, function(x){
     typ <- grep('label',class(x),value=TRUE)
-    if (length(typ)==0) return(NA)
-    if (typ=="haven_labelled") lbl <- attr(x,"label")
-    if (typ=="labelled") lbl <- attr(x,"label")
-    return(lbl)
+    if (length(typ)==0) {
+      lbl <- attr(x,"label")
+    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label")
+    return(ifelse(is.null(lbl),NA,lbl))
   })
-  if (all(is.na(unlist(lblv)))) stop('No labelled variables detected in data.\nCurrently this function can extract labels from the haven')
+  if (all(is.na(unlist(lblv)))) stop('No labelled variables detected in data.\nCurrently this function can extract labels created by the haven, expss')
   lbldf <- data.frame(var=names(unlist(lblv)),lbl=unlist(lblv))
   rownames(lbldf) <- NULL
   lbldf$lbl <- ifelse(is.na(lbldf$lbl),lbldf$var,lbldf$lbl)
@@ -95,76 +79,17 @@ extractLabels <- function(data){
   eval(parse(text = cl))
   return(get0(dn))
 }
-extractLabels(mtcars)
 
-dn<-'mtcars_names'
-get0(dn)
-mtcars_names
-setVariableLabels(varNames)
-test_fun(ctDNA)
-
-setVariableLabels(varNames,ctDNA=ctDNA_names)
- test_fun(ctDNA)
-
-setVariableLabels(ctDNA=ctDNA_names)
-test_fun(pembrolizumab)
-getOption("reportRmd.v_info")
-
-call <- test_fun(pembrolizumab)
-
-
-clearVariableLabels()
-setVariableLabels(varNames)
-getOption("reportRmd.v_info")
-setVariableLabels(ctDNA=ctDNA_names)
-getOption("reportRmd.v_info")
-
-
-setVariableLabels(ctDNA=ctDNA_names)
-test_fun(pembrolizumab)
-getOption("reportRmd.v_info")
-
-library(haven)
-df <- read_sav("C:/Users/lavery/OneDrive - UHN/Jones/CancerRelatedFatigue/ARCC breast_FINAL.sav")
-
-class(df)
-class(df[[1]])
-df2 <- df[1:5,]
-is_labelled(df2)
-class(df2$MaritalStatus)
-
-data=df2
-getLabels <- function(data){
-  if (!inherits(data,'data.frame')) stop('data must be a data frame with labelled variables to extract.')
-  lblv <- lapply(data, function(x){
-    typ <- grep('label',class(x),value=TRUE)
-    if (length(typ)==0) return(NA)
-    if (typ=="haven_labelled") lbl <- attr(x,"label")
-
-  })
-  lbldf <- data.frame(var=names(unlist(lblv)),lbl=unlist(lblv))
-  rownames(lbldf) <- NULL
-  lbldf$lbl <- ifelse(is.na(lbldf$lbl),lbldf$var,lbldf$lbl)
-
+replaceLbl <- function(dn,cv){
+  lbl <- getVL(dn)
+  vl <- data.frame(var=cv,ord=1:length(cv))
+  if (!is.null(lbl)){
+    cvnew <- merge(vl,lbl,all.x=T)
+    cvnew <- cvnew[order(cvnew$ord),]
+  } else {
+    cvnew <- vl
+    cvnew$lbl <- NA
+  }
+  cvnew$lbl <- ifelse(is.na(cvnew$lbl),nicename(cvnew$var),cvnew$lbl)
+  return(cvnew$lbl)
 }
-
-library(expss)
-data(mtcars)
-mtcars = apply_labels(mtcars,
-                      mpg = "Miles/(US) gallon",
-                      cyl = "Number of cylinders",
-                      disp = "Displacement (cu.in.)",
-                      hp = "Gross horsepower",
-                      drat = "Rear axle ratio",
-                      wt = "Weight (1000 lbs)",
-                      qsec = "1/4 mile time",
-                      vs = "Engine",
-                      vs = c("V-engine" = 0,
-                             "Straight engine" = 1),
-                      am = "Transmission",
-                      am = c("Automatic" = 0,
-                             "Manual"=1),
-                      gear = "Number of forward gears",
-                      carb = "Number of carburetors"
-)
-

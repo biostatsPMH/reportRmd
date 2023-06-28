@@ -39,7 +39,7 @@ Imports:
     rstatix,
     scales,
     survival
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R'
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R'
 Depends: 
     R (>= 2.10)
 LazyData: true
