@@ -5,7 +5,7 @@ clearVariableLabels <- function(){
 
 setVariableLabels <- function(default,...){
   pars <- as.list(match.call()[-1])
-#  return(pars)
+  if (length(pars)==0) stop('No variable labels specified.')
   old_pars <- getOption("reportRmd.v_info")
   for (x in names(pars)){
     if (x %in% names(old_pars))   message(paste(x,'variable names will be updated.' ))
@@ -17,6 +17,7 @@ setVariableLabels <- function(default,...){
     if (!inherits(eval(df),'data.frame')) stop(paste(df,'is not a data frame. Variable labels must be specified in a data frame with two columns: variable names and variable labels.'))
     if (ncol(eval(df))!=2) stop(paste(df,'must be a data frame with two columns: variable names and variable labels.'))
   }
+  rm(df)
   for (nm in setdiff(names(pars),'default')){
     if (!exists(as.character(nm))) stop(paste(nm,' does not exist. Please specify a valid data frame. \nSee examples.'))
     if (!inherits(get0(nm),'data.frame')) stop(paste(nm,'is not a data frame. Please specify the variable labels in the format data=labels.\nSee examples.'))

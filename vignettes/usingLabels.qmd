@@ -23,15 +23,14 @@ ctDNA_names <- data.frame(var=names(ctDNA),
 
 ```
 
-
 Set the variable labels for the report
 
 ```{r}
 setVariableLabels(varNames,ctDNA=ctDNA_names)
 ```
 
-
 Show how the labels are set
+
 ```{r}
 getVariableLabels()
 ```
@@ -41,7 +40,7 @@ Use the expss package to add labels to mtcars
 ```{r}
 library(expss)
 data(mtcars)
-data = apply_labels(mtcars,
+mtcars = apply_labels(mtcars,
                       mpg = "Miles/(US) gallon",
                       cyl = "Number of cylinders",
                       disp = "Displacement (cu.in.)",
@@ -62,10 +61,10 @@ extractLabels(mtcars)
 ```
 
 Check that these have been added to the list of variable labels
+
 ```{r}
 getVariableLabels()
 ```
-
 
 Use haven to load data and add the labels
 
@@ -76,10 +75,10 @@ extractLabels(df)
 ```
 
 Check that these have been added to the list of variable labels
+
 ```{r}
 getVariableLabels()
 ```
-
 
 Clear all variable labels
 
@@ -87,7 +86,8 @@ Clear all variable labels
 clearVariableLabels()
 ```
 
-Check 
+Check
+
 ```{r}
 getVariableLabels()
 ```
@@ -108,6 +108,7 @@ setVariableLabels(varNames,ctDNA=ctDNA_names)
 ```
 
 rm_covsum with labels
+
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'orr',
 covs=c('age','sex'),
@@ -134,4 +135,3 @@ rm_mvsum with labels
  rm_mvsum(glm_fit)
 
 ```
-
