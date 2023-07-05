@@ -130,7 +130,8 @@ Combining multiple univariate regression analyses into a single table
 
 ```{r }
 rm_uvsum(data=pembrolizumab, response='orr',
-covs=c('age','pdl1','change_ctdna_group'))
+covs=c('age','pdl1','change_ctdna_group'),p.adjust = 'holm')
+
 
 ```
 
@@ -181,7 +182,8 @@ To create a nice display for multivariable models the model needs to first be fi
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit)
+rm_mvsum(glm_fit,p.adjust = 'holm')
+
 ```
 
 

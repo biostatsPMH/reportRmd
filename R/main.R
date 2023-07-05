@@ -3030,7 +3030,8 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
     if(p.adjust!='none') {
-      raw_p <- tab[["Global p-value"]]
+      raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
+      raw_p[!att_tab$varID] <- NA
       p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
       message('Global p-values were adjusted according to the ',p.adjust,' method. Factor level p-values have been removed.')
       tab[["raw p-value"]]<-formatp(raw_p)
@@ -3154,7 +3155,8 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   # perform p-value adjustment across variable-level p-values remove factor p-values
   if ("Global p-value" %in% names(tab)){
     if(p.adjust!='none') {
-      raw_p <- tab[["Global p-value"]]
+      raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
+      raw_p[!att_tab$varID] <- NA
       p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
       message('Global p-values were adjusted according to the ',p.adjust,' method. Factor level p-values have been removed.')
       tab[["raw p-value"]]<-formatp(raw_p)
