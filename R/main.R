@@ -2728,6 +2728,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   table. Can only be obtained if pvalue is also requested. Effect sizes
 #'   calculated include Cramer's V for categorical variables, Cohen's d,
 #'   Wilcoxon r, or Eta-squared for numeric/continuous variables.
+#' @param p.adjust p-adjustments to be performed
 #' @param unformattedp boolean indicating if you would like the p-value to be
 #'   returned unformatted (ie not rounded or prefixed with '<'). Best used with
 #'   tableOnly = T and outTable function. See examples.
@@ -2792,13 +2793,14 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' outTable(tab,digits=5, applyAttributes=FALSE) # remove bold/indent
 rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = FALSE,
                        covTitle = "", digits = 1, digits.cat = 0, nicenames = TRUE,
-                       IQR = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, unformattedp = FALSE,
+                       IQR = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE,
+                       p.adjust='none', unformattedp = FALSE,
                        show.tests = FALSE, testcont = c("rank-sum test", "ANOVA"),
                        testcat = c("Chi-squared", "Fisher"), full = TRUE, include_missing = FALSE,
                        percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
                        numobs = NULL, fontsize,chunk_label)
 {
-  if (unformattedp)
+  if (unformattedp |p.adjust !='none')
     formatp <- function(x) {
       as.numeric(x)
     }
@@ -2815,6 +2817,10 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   if (nicenames) tab$Covariate <- replaceLbl(as.character(argList$data), tab$Covariate)
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
+    if (p.adjust!='none'){
+      tab[["p (unadjusted)"]] <- tab[["p-value"]]
+      tab[["p-value"]] <- sapply(tab[["p-value"]],function(x) p.adjust(x,method=p.adjust))
+    }
     to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
     p_vals <- tab[["p-value"]]
     new_p <- sapply(p_vals, formatp)
@@ -2971,7 +2977,6 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   argList <- as.list(match.call()[-1])
-
   for (v in covs) {
     if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
     if (inherits(data[[v]],c('Date','POSIXt'))) {
@@ -3024,9 +3029,6 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
-  }
-
-  if ("Global p-value" %in% names(tab)){
     if(p.adjust!='none') {
       raw_p <- tab[["Global p-value"]]
       p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
@@ -4671,20 +4673,4 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
 
 }
 
-#' Set variable labels for data frames
-#'
-#' To output use-friendly labels instead of variable names in the various
-#' reportRmd functions you can supply data frames containing variable labels and names. A default
-#' table can be supplied for all data within a report, or separate tables
-#' can be provided for specific data frames.
-#'
-#' @param default A data frame containing the default labels for any variables
-#'   not specified in other tables
-#' @param ... a sequence of named characters where the name specifies a data
-#'   frame containing data to analyse and the value is data frame containing
-#'   variable and label lookups.
-#'   @export
-setDataNames <- function(.default,...){
-
-}
 

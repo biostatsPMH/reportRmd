@@ -18,6 +18,7 @@ rm_covsum(
   all.stats = FALSE,
   pvalue = TRUE,
   effSize = FALSE,
+  p.adjust = "none",
   unformattedp = FALSE,
   show.tests = FALSE,
   testcont = c("rank-sum test", "ANOVA"),
@@ -68,6 +69,8 @@ min,max on a separate line) should be displayed. Overrides IQR.}
 table. Can only be obtained if pvalue is also requested. Effect sizes
 calculated include Cramer's V for categorical variables, Cohen's d,
 Wilcoxon r, or Eta-squared for numeric/continuous variables.}
+
+\item{p.adjust}{p-adjustments to be performed}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformatted (ie not rounded or prefixed with '<'). Best used with

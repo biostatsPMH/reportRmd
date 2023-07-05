@@ -98,6 +98,7 @@ Load in data using the sjlabelled package
 library(sjlabelled)
 data(efc)
 extractLabels(efc)
+extractLabels(efc,default = T)
 ```
 
 Load variable names the reportRmd package (again)
