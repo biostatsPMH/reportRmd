@@ -726,7 +726,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                         rep("", length(levels[[1]]) + 1)), onetbl)
       }
       else {
-      onetbl <- rbind(c(lbld(sanitizestr(nicename(label(subdata[[cov]])))),
+      onetbl <- rbind(c(lbld(sanitizestr(nicename(label(data[[cov]])))),
                         rep("", length(levels[[1]]) + 1)), onetbl)
       }
       if (pvalue) {
@@ -754,7 +754,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                         ""), onetbl)
       }
       else {
-        onetbl <- rbind(c(lbld(sanitizestr(nicename(label(subdata[[cov]])))),
+        onetbl <- rbind(c(lbld(sanitizestr(nicename(label(data[[cov]])))),
                         ""), onetbl)
       }
     }
