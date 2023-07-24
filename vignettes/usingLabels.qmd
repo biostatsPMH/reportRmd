@@ -1,18 +1,189 @@
 ---
-title: "testLabels"
-format: html
+title: "Testing reportRmd Labels"
+format: 
+  docx:
+    fig-height: 2
+    number-sections: false
+    reference-doc: '../../../wordTemplate.docx'
 editor: visual
 ---
 
+Install the new version - this is on a separate branch, so that if you want to revert you the development or CRAN versions you can simply delete the reportRmd package folder and re-install.
+
+```{r, echo=F,include=FALSE}
+library(tidyverse)
+
+```
+
 ```{r}
-library(devtools)
-load_all()
+# if you don't have devtools installed:
+#install("devtools")
+
+# otherwise the variable label version is here:
+devtools::install_github("biostatsPMH/reportRmd", ref="varLabs")
+
+# For the most recent stable version
+# devtools::install_github("biostatsPMH/reportRmd", ref="development")
+library(reportRmd)
+```
+
+# Basic Idea
+
+I've tried not to alter the basic workings of the package.
+
+The labelling system works by:
+
+1.  creating a data frame that contains variable/label pairs
+2.  specifying that this is a variable label data frame using the `setVariableLabels` function
+3.  running the rm_covsum, rm_uvsum or rm_mvsum as usual
+
+Imagine these are the three data sets your report uses:
+
+```{r, echo=F}
+library(DiagrammeR)
+tmp <- grViz("digraph{
+  graph[rankdir = TB,overlap=TRUE,width=1]
+  
+  node[fontcolor=black,margin=.15,style='',shape='box',fontname=arial,fontsize=12,penwidth=1.5,color=steelblue]  
+  A[label='childData1
+  Variables:
+  id 
+  age
+  sx
+  yob
+  trt
+  ']
+  B[label='childData2
+  Variables:
+  id 
+  dt
+  gmfm
+']
+  C[label='parentData
+  Variables:
+  p_id
+  p_sx
+  p_inc
+  p_lv']
+  
+}")
+#tmp
+tmp = DiagrammeRsvg::export_svg(tmp)
+tmp = charToRaw(tmp)
+rsvg::rsvg_png(tmp, 'i1.png')
 
 
-varNames <- data.frame(var=names(pembrolizumab),
-                       label=c('Patient ID','Age at study entry','Patient Sex','Study Cohort','Target lesion size at baseline','PD L1 percent','log of tumour size','Baseline ctDNA','Did ctDNA increase or decrease from baseline to cycle 3','Objective Response','Clinical Beneficial Response','Overall survival status', 'Overall survival time in months','Progression free survival status','Progression free survival time in months'))
+```
+
+![](i1.png)
+
+![](i1.pmg)
+
+You can create a default table of variable/label pairs for the child data, and a separate table specific to the parent data.
+
+We'll create two: one for the child data, which will be the default and one for the parent data. Each data frame has two columns, one for variable names, the other for labels. The columns names can be whatever you want, here they are simply var1 and var2.
+
+```{r, echo=F}
+library(DiagrammeR)
+tmp <- grViz("digraph{
+  graph[rankdir = TB,overlap=TRUE,width=1]
+  
+  node[fontcolor=black,margin=.15,style='',shape='box',fontname=arial,fontsize=12,penwidth=1.5,color=steelblue]  
+
+  E [ label = <
+    <table border='1'>
+       <tr><td colspan='2' >childData_labels</td></tr>
+       <tr><td >var1</td><td >var2</td></tr>
+       <tr><td >age</td><td >Age at baseline</td></tr>
+       <tr><td >sx</td><td>Child Sex</td></tr>
+       <tr><td >yob</td><td >Year of Birth</td></tr>
+       <tr><td >trt</td><td >Treatment Group</td></tr>
+       <tr><td >dt</td><td >Assessment Date</td></tr>
+       <tr><td >gmfm</td><td >Gross Motor Function Score</td></tr>
+    </table>
+  > ]
+
+  F [ label = <
+    <table border='1'>
+       <tr><td colspan='2' >parentData_labels</td></tr>
+       <tr><td >var1</td><td >var2</td></tr>
+       <tr><td >psx</td><td >Parent Sex</td></tr>
+       <tr><td >pinc</td><td >Parent Income</td></tr>
+       <tr><td >plv</td><td >Parent Living Arrangment</td></tr>
+    </table>
+  > ]
+  
+}")
+#tmp
+tmp = DiagrammeRsvg::export_svg(tmp)
+tmp = charToRaw(tmp)
+rsvg::rsvg_png(tmp, 'i2.png')
 
 
+```
+
+![](i2.png)
+
+![](i2.pmg)
+
+Now we use the setVariablLabels command to tell reportRmd to use the parentData_labels data frame as labels for the parentData data and the childData_labels data frame as the default variable labels, for all other data frames.
+
+```{r,eval=F}
+setVariablLabels(childData_labels,parentData=parentData_labels)
+```
+
+Once we've set that, reportRmd will use the variable labels in `rm_covsum,``rm_uvsum` and `rm_mvsum` unless the argument `nicenames` is set to `FALSE`.
+
+```{r,include=F}
+childData_labels <- tribble(~var1,~var2,
+       'age','Age at baseline',
+       'sx','Child Sex',
+       'yob','Year of Birth',
+       'trt','Treatment Group',
+       'dt','Assessment Date',
+       'gmfm','Gross Motor Function Score')
+
+N<-100
+childData1 <- data.frame(
+  age=rnorm(N,mean=6,sd=1.2),
+  sx=factor(rbinom(N,1,.3),labels = c('Male','Female')),
+  yob=factor(rpois(N,lambda=1)+2008),
+  trt=factor(rbinom(N,1,.5),labels = c('control','intervention'))
+)
+clearVariableLabels()
+setVariableLabels(childData_labels)
+```
+
+```{r}
+rm_covsum(data=childData1,
+          maincov = 'trt',
+          covs = c('age','sx','yob'))
+```
+
+\newpage
+
+# Worked Example
+
+Get some descriptive stats for the ctDNA data that comes with the package. The `nicenames` argument is TRUE by default so underscores are replaced by spaces
+
+```{r}
+data(ctDNA)
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+```
+
+otherwise, we can keep the exact variable names
+
+```{r}
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'),
+          nicenames = F)
+
+```
+
+We can define a table with variable labels
+
+```{r}
 ctDNA_names <- data.frame(var=names(ctDNA),
                           label=c('Patient ID',
                                   'Study Cohort',
@@ -20,22 +191,94 @@ ctDNA_names <- data.frame(var=names(ctDNA),
                                   'Number of weeks on treatment',
                                   'Percentage change in tumour measurement'))
 
-
 ```
 
-Set the variable labels for the report
+Then we set the variable labels that correspond to the ctDNA data like this (no quotes!):
 
 ```{r}
-setVariableLabels(varNames,ctDNA=ctDNA_names)
+setVariableLabels(ctDNA=ctDNA_names)
 ```
 
-Show how the labels are set
+That gave a message that we haven't set a table of default variable names, just a table of names specific to the ctDNA data
+
+We can look to see which data frames have variable labels and if there is a default set
 
 ```{r}
 getVariableLabels()
 ```
 
-Use the expss package to add labels to mtcars
+Now if we re-run our stats, the variable names are replaced by the labels
+
+```{r}
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'),
+          nicenames = T)
+
+```
+
+..unless we want to keep the variable names, and they we just use `nicenames=F`:
+
+```{r}
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'),
+          nicenames = F)
+
+```
+
+We can define variable labels for the pembrolizumab data and add these as the default variable labels to use for all data frames without a specific table
+
+```{r}
+varNames <- data.frame(var=names(pembrolizumab),
+                       label=c('Patient ID','Age at study entry','Patient Sex','Study Cohort','Target lesion size at baseline','PD L1 percent','log of tumour size','Baseline ctDNA','Did ctDNA increase or decrease from baseline to cycle 3','Objective Response','Clinical Beneficial Response','Overall survival status', 'Overall survival time in months','Progression free survival status','Progression free survival time in months'))
+
+setVariableLabels(varNames) # equivalent to  setVariableLabels(default=varNames)
+
+```
+
+Now when we check we can see that there is a default variable table as well
+
+```{r}
+getVariableLabels()
+
+```
+
+If we subset the pembrolizumab data and run some stats they are output with variable labels - because we have set default labels, we don't need to set separate labels for the `cohort_A` data.
+
+```{r}
+cohort_A <- pembrolizumab %>%
+  filter(cohort=="A")
+
+rm_uvsum(data=cohort_A, response='orr',
+covs=c('age','pdl1','change_ctdna_group'))
+
+```
+
+You don't need to specify labels for all variables. Variables without labels will just be displayed as usual (using `nicenames`).
+
+If we change the labels:
+
+```{r}
+varNames <- data.frame(var=c('l_size','pdl1','tmb'),
+                       label=c('Target lesion size at baseline','PD L1 percent','log of tumour size'))
+
+setVariableLabels(varNames) # equivalent to  setVariableLabels(default=varNames)
+
+```
+
+And get some new stats we see labels if we set them and nice variable names otherwise
+
+```{r}
+
+rm_covsum(data=cohort_A, 
+          covs=c('change_ctdna_group','pdl1','l_size','tmb'))
+
+```
+
+# Working With Labelled Packages
+
+## expss
+
+Can can also use the expss package to add labels:
 
 ```{r}
 library(expss)
@@ -57,7 +300,7 @@ mtcars = apply_labels(mtcars,
                       gear = "Number of forward gears",
                       carb = "Number of carburetors"
 )
-extractLabels(mtcars)
+extractLabels(mtcars) # this extracts the labels to a data frame called mtcars_names and adds it to the list of variable label tables
 ```
 
 Check that these have been added to the list of variable labels
@@ -66,21 +309,38 @@ Check that these have been added to the list of variable labels
 getVariableLabels()
 ```
 
-Use haven to load data and add the labels
+## Haven
+
+If you use haven to load SPSS data with labels you can just pull out the labels and add them as well
 
 ```{r}
 library(haven)
-df <- read_sav("C:/Users/lavery/OneDrive - UHN/Jones/CancerRelatedFatigue/ARCC breast_FINAL.sav")
-extractLabels(df)
+# this is just to show the command to read spss data
+#df <- read_sav("some_data.sav")
+#save(df,file='some_SPSS_data.rda')
+load('some_SPSS_data.rda')
+head(df)
+extractLabels(df,default = T) # this uses the labels from df as the default labels
 ```
-
-Check that these have been added to the list of variable labels
 
 ```{r}
-getVariableLabels()
+rm_covsum(data=df,
+          covs=c('Age','Gender','Children'))
 ```
 
-Clear all variable labels
+## sjlabelled
+
+Load in data using the sjlabelled package, extract the names and do some stats:
+
+```{r}
+library(sjlabelled)
+data(efc)
+extractLabels(efc)
+rm_covsum(data=efc,
+          covs=c('e17age','e16sex','nur_pst'))
+```
+
+To clear all variable labels:
 
 ```{r}
 clearVariableLabels()
@@ -90,49 +350,4 @@ Check
 
 ```{r}
 getVariableLabels()
-```
-
-Load in data using the sjlabelled package
-
-```{r}
-library(sjlabelled)
-data(efc)
-extractLabels(efc)
-extractLabels(efc,default = T)
-```
-
-Load variable names the reportRmd package (again)
-
-```{r}
-setVariableLabels(varNames,ctDNA=ctDNA_names)
-
-```
-
-rm_covsum with labels
-
-```{r}
-rm_covsum(data=pembrolizumab, maincov = 'orr',
-covs=c('age','sex'),
-effSize=TRUE)
-```
-
-rm_uvsum with labels
-
-```{r}
- rm_uvsum(response = 'size_change',
- covs=c('time','ctdna_status'),
- gee=TRUE,
- id='id', corstr="exchangeable",
- family=gaussian("identity"),
- data=ctDNA,showN=TRUE)
-
-```
-
-rm_mvsum with labels
-
-```{r}
- glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
- data=pembrolizumab,family = 'binomial')
- rm_mvsum(glm_fit)
-
 ```
