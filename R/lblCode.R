@@ -139,6 +139,7 @@ extractLabels <- function(data,default=FALSE,silent=FALSE){
   return(get0(dn))
 }
 
+
 getVL <- function(data_name){
   if (!exists(data_name)) stop(paste(data_name),'does not exist.')
   var_info <- rRmd.env$varInfo
@@ -195,7 +196,7 @@ getDFN <- function(dn){
 
 # return variable labels associated with variables
 replaceLbl <- function(data_arg,cv){
-  if (!inherits(data_arg,"character")) data_str <- deparse(data_arg) else data_str <- data_arg
+  if (!inherits(data_arg,"character")) data_str <- paste(deparse(data_arg),collapse="") else data_str <- data_arg
   dn <- getDFN(data_str)
   if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
   if (!inherits(cv,'character')) stop('variable name must be specified as a character string.')

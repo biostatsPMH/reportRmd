@@ -20,7 +20,7 @@ library(tidyverse)
 #install("devtools")
 
 # otherwise the variable label version is here:
-devtools::install_github("biostatsPMH/reportRmd", ref="varLabs")
+#devtools::install_github("biostatsPMH/reportRmd", ref="varLabs")
 
 # For the most recent stable version
 # devtools::install_github("biostatsPMH/reportRmd", ref="development")
@@ -36,6 +36,10 @@ The labelling system works by:
 1.  creating a data frame that contains variable/label pairs
 2.  specifying that this is a variable label data frame using the `setVariableLabels` function
 3.  running the rm_covsum, rm_uvsum or rm_mvsum as usual
+
+- OR -
+
+If you use a data frame with labelled variables (from `expss`, `haven` or `sjlabelled`) it should just work automatically.
 
 Imagine these are the three data sets your report uses:
 
@@ -126,13 +130,13 @@ rsvg::rsvg_png(tmp, 'i2.png')
 
 ![](i2.pmg)
 
-Now we use the setVariablLabels command to tell reportRmd to use the parentData_labels data frame as labels for the parentData data and the childData_labels data frame as the default variable labels, for all other data frames.
+Now we use the `setVariableLabels` command to tell `reportRmd` to use the `parentData_labels` data frame as labels for the `parentData` data and the `childData_labels` data frame as the default variable labels, for all other data frames.
 
 ```{r,eval=F}
 setVariablLabels(childData_labels,parentData=parentData_labels)
 ```
 
-Once we've set that, reportRmd will use the variable labels in `rm_covsum,``rm_uvsum` and `rm_mvsum` unless the argument `nicenames` is set to `FALSE`.
+Once we've set the label tables, `reportRmd` will use the variable labels in `rm_covsum,``rm_uvsum` and `rm_mvsum` unless the argument `nicenames` is set to `FALSE`.
 
 ```{r,include=F}
 childData_labels <- tribble(~var1,~var2,
@@ -162,7 +166,7 @@ rm_covsum(data=childData1,
 
 \newpage
 
-# Worked Example
+# Worked Example 
 
 Get some descriptive stats for the ctDNA data that comes with the package. The `nicenames` argument is TRUE by default so underscores are replaced by spaces
 
@@ -232,6 +236,12 @@ It will also work with data subsets (both tidyselect and the subset function)
 rm_covsum(data=subset( ctDNA%>%filter(cohort!='A'),size_change>0),
           covs=c('cohort','ctdna_status','size_change'))
 
+
+rm_covsum(data=ctDNA %>%
+            filter(cohort!='A') ,
+          maincov='cohort',
+          covs=c('ctdna_status','size_change'))
+
 ```
 
 We can define variable labels for the pembrolizumab data and add these as the default variable labels to use for all data frames without a specific table
@@ -283,80 +293,45 @@ rm_covsum(data=cohort_A,
 
 ```
 
-# Working With Labelled Packages
+# Working With Labelled Data
 
-## expss
+If variable labels are detected (currently works for `haven`, `expss` and `sjlabelled` packages), then they will automatically be used.
 
-Can can also use the expss package to add labels:
+The expss package can be used to add labels:
 
 ```{r}
 library(expss)
-data(mtcars)
-mtcars = apply_labels(mtcars,
-                      mpg = "Miles/(US) gallon",
-                      cyl = "Number of cylinders",
-                      disp = "Displacement (cu.in.)",
-                      hp = "Gross horsepower",
-                      drat = "Rear axle ratio",
-                      wt = "Weight (1000 lbs)",
-                      qsec = "1/4 mile time",
-                      vs = "Engine",
-                      vs = c("V-engine" = 0,
-                             "Straight engine" = 1),
-                      am = "Transmission",
-                      am = c("Automatic" = 0,
-                             "Manual"=1),
-                      gear = "Number of forward gears",
-                      carb = "Number of carburetors"
-)
-extractLabels(mtcars) # this extracts the labels to a data frame called mtcars_names and adds it to the list of variable label tables
+ctDNA <- apply_labels(ctDNA,
+                      cohort="The sample cohort",
+                      ctdna_status = "Change in ctDNA since baseline",
+                      size_change = "Percentage change in tumour measurement")
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
 ```
+
+or to change labels
 
 ```{r}
+ctDNA <- apply_labels(ctDNA,
+                      cohort="A different cohort label")
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
 
-rm_covsum(data=mtcars,
-          covs = c('cyl','disp','hp'))
-tab <- covsum(data=mtcars,
-          covs = c('cyl','disp','hp'),
-          sanitize = F,markup = F)
 ```
 
+\newpage
 
-Check that these have been added to the list of variable labels
+If you want to inspect the variable labels associated with a labelled data set use `extractLabels`
+
+```{r}
+extractLabels(ctDNA)
+```
+
+If you want to check which variable label tables are associated with data frames use  `getVariableLabels`
 
 ```{r}
 getVariableLabels()
-```
-
-## Haven
-
-If you use haven to load SPSS data with labels you can just pull out the labels and add them as well
-
-```{r}
-library(haven)
-# this is just to show the command to read spss data
-#df <- read_sav("some_data.sav")
-#save(df,file='some_SPSS_data.rda')
-load('some_SPSS_data.rda')
-head(df)
-extractLabels(df,default = T) # this uses the labels from df as the default labels
-```
-
-```{r}
-rm_covsum(data=df,
-          covs=c('Age','Gender','Children'))
-```
-
-## sjlabelled
-
-Load in data using the sjlabelled package, extract the names and do some stats:
-
-```{r}
-library(sjlabelled)
-data(efc)
-extractLabels(efc)
-rm_covsum(data=efc,
-          covs=c('e17age','e16sex','nur_pst'))
 ```
 
 To clear all variable labels:
@@ -365,8 +340,3 @@ To clear all variable labels:
 clearVariableLabels()
 ```
 
-Check
-
-```{r}
-getVariableLabels()
-```
