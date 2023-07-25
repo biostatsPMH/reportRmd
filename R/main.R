@@ -2863,7 +2863,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   to_indent <- which(!attr(tab,"varID"))
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
-  if (nicenames) tab$Covariate <- replaceLbl(as.character(argList$data), tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(argList$data, tab$Covariate)
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
     if (p.adjust!='none'){
@@ -3077,7 +3077,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  if (nicenames) tab$Covariate <- replaceLbl(as.character(argList$data), tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(argList$data, tab$Covariate)
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA

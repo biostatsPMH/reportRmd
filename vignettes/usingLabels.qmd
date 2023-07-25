@@ -170,6 +170,7 @@ Get some descriptive stats for the ctDNA data that comes with the package. The `
 data(ctDNA)
 rm_covsum(data=ctDNA,
           covs=c('cohort','ctdna_status','size_change'))
+
 ```
 
 otherwise, we can keep the exact variable names
@@ -222,6 +223,14 @@ rm_covsum(data=ctDNA,
 rm_covsum(data=ctDNA,
           covs=c('cohort','ctdna_status','size_change'),
           nicenames = F)
+
+```
+
+It will also work with data subsets (both tidyselect and the subset function)
+
+```{r}
+rm_covsum(data=subset( ctDNA%>%filter(cohort!='A'),size_change>0),
+          covs=c('cohort','ctdna_status','size_change'))
 
 ```
 

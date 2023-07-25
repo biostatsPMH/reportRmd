@@ -186,10 +186,17 @@ vldTbl <- function(vL, dn){
   return(TRUE)
 }
 
-# return variable labels associated with variables
-replaceLbl <- function(dn,cv){
-  if(length(dn)>1) dn <- dn[2]
+getDFN <- function(dn){
+  if (grepl('subset[(]',dn)) dn <- sub("subset[(]","",dn)
+  dn <- sub(" .*","",trimws(dn))
+  dn <- sub("[^a-zA-Z1-9._].*","",dn)
+  return(dn)
+}
 
+# return variable labels associated with variables
+replaceLbl <- function(data_arg,cv){
+  if (!inherits(data_arg,"character")) data_str <- deparse(data_arg) else data_str <- data_arg
+  dn <- getDFN(data_str)
   if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
   if (!inherits(cv,'character')) stop('variable name must be specified as a character string.')
    if (isLbl(get0(dn))){
