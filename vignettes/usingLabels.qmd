@@ -303,6 +303,16 @@ mtcars = apply_labels(mtcars,
 extractLabels(mtcars) # this extracts the labels to a data frame called mtcars_names and adds it to the list of variable label tables
 ```
 
+```{r}
+
+rm_covsum(data=mtcars,
+          covs = c('cyl','disp','hp'))
+tab <- covsum(data=mtcars,
+          covs = c('cyl','disp','hp'),
+          sanitize = F,markup = F)
+```
+
+
 Check that these have been added to the list of variable labels
 
 ```{r}

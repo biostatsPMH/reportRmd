@@ -21,6 +21,7 @@ rm_uvsum(
   corstr = NULL,
   family = NULL,
   type = NULL,
+  offset,
   strata = 1,
   nicenames = TRUE,
   showN = TRUE,
@@ -80,6 +81,9 @@ function will try and guess what type you want based on your response. If
 you want to override this you can manually specify the type. Options
 include "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal",
 "geeglm"}
+
+\item{offset}{string specifying the offset term to be used for Poisson or
+negative binomial regression. Example: offset="log(follow_up)"}
 
 \item{strata}{character vector of covariates to stratify by. Only used for
 coxph and crr}

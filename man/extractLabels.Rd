@@ -4,13 +4,15 @@
 \alias{extractLabels}
 \title{Extract variable labels from labelled data and set}
 \usage{
-extractLabels(data, default = FALSE)
+extractLabels(data, default = FALSE, silent = FALSE)
 }
 \arguments{
 \item{data}{data frame with labelled variables to be extracted.}
 
 \item{default}{logical, should the variable labels be used as the default
 labels for all data frames, default is FALSE.}
+
+\item{silent}{logical, should messages be suppressed}
 }
 \description{
 Retrieve labels set using the haven, expss or sjlabelled and set the variable

@@ -782,80 +782,82 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
   return(table)
 }
 
-#' Get univariate summary dataframe
+#'Get univariate summary dataframe
 #'
-#' Returns a dataframe corresponding to a univariate regression table
+#'Returns a dataframe corresponding to a univariate regression table
 #'
-#' Univariate summaries for a number of covariates, the type of model can be
-#' specified. If unspecified the function will guess the appropriate model based
-#' on the response variable.
+#'Univariate summaries for a number of covariates, the type of model can be
+#'specified. If unspecified the function will guess the appropriate model based
+#'on the response variable.
 #'
-#' Confidence intervals are extracted using confint where possible. Otherwise
-#' Student t distribution is used for linear models and the Normal distribution
-#' is used for proportions.
+#'Confidence intervals are extracted using confint where possible. Otherwise
+#'Student t distribution is used for linear models and the Normal distribution
+#'is used for proportions.
 #'
-#' returnModels can be used to return a list of the univariate models, which
-#' will be the same length as covs. The data used to run each model will include
-#' all cases with observations on the response and covariate. For gee models the
-#' data are re-ordered so that the ids appear sequentially and proper estimates
-#' are given.
-#' @param response string vector with name of response
-#' @param covs character vector with the names of columns to fit univariate
-#'   models to
-#' @param data dataframe containing data
-#' @param digits number of digits to round to
-#' @param id character vector which identifies clusters. Used for GEE and coxph
-#'   models.
-#' @param corstr character string specifying the correlation structure. Only
-#'   used for geeglm. The following are permitted: '"independence"',
-#'   '"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'
-#' @param family specify details of the model used. This argument does not need
-#'   to be specified and should be used with caution. By default, gaussian
-#'   errors are used for linear models, the binomial family with logit link is
-#'   used for logistic regression and poisson with log link is used for poisson
-#'   regression. This can be specified with the type argument, or will be
-#'   inferred from the data type. See \code{\link{family}}. Ignored for ordinal
-#'   and survival regression and if the type argument is not explicitly
-#'   specified.
-#' @param type string indicating he type of univariate model to fit. The
-#'   function will try and guess what type you want based on your response. If
-#'   you want to override this you can manually specify the type. Options
-#'   include "linear", "logistic", "poisson", coxph", "crr", "boxcox" and
-#'   "ordinal"
-#' @param  gee boolean indicating if gee models should be fit to account for
-#'   correlated observations. If TRUE then the id argument must specify the
-#'   column in the data which indicates the correlated clusters.
-#' @param strata character vector of covariates to stratify by. Only used for
-#'   coxph and crr
-#' @param markup boolean indicating if you want latex markup
-#' @param sanitize boolean indicating if you want to sanitize all strings to not
-#'   break LaTeX
-#' @param nicenames boolean indicating if you want to replace . and _ in strings
-#'   with a space
-#' @param showN boolean indicating if you want to show sample sizes
-#' @param showEvent boolean indicating if you want to show number of events.
-#'   Only available for logistic.
-#' @param CIwidth width of confidence interval, default is 0.95
-#' @param reflevel manual specification of the reference level. Only used for
-#'   ordinal. This may allow you to debug if the function throws an error.
-#' @param returnModels boolean indicating if a list of fitted models should be
-#'   returned.
+#'returnModels can be used to return a list of the univariate models, which will
+#'be the same length as covs. The data used to run each model will include all
+#'cases with observations on the response and covariate. For gee models the data
+#'are re-ordered so that the ids appear sequentially and proper estimates are
+#'given.
+#'@param response string vector with name of response
+#'@param covs character vector with the names of columns to fit univariate
+#'  models to
+#'@param data dataframe containing data
+#'@param digits number of digits to round to
+#'@param id character vector which identifies clusters. Used for GEE and coxph
+#'  models.
+#'@param corstr character string specifying the correlation structure. Only used
+#'  for geeglm. The following are permitted: '"independence"', '"exchangeable"',
+#'  '"ar1"', '"unstructured"' and '"userdefined"'
+#'@param family specify details of the model used. This argument does not need
+#'  to be specified and should be used with caution. By default, gaussian errors
+#'  are used for linear models, the binomial family with logit link is used for
+#'  logistic regression and poisson with log link is used for poisson
+#'  regression. This can be specified with the type argument, or will be
+#'  inferred from the data type. See \code{\link{family}}. Ignored for ordinal
+#'  and survival regression and if the type argument is not explicitly
+#'  specified.
+#'@param type string indicating he type of univariate model to fit. The function
+#'  will try and guess what type you want based on your response. If you want to
+#'  override this you can manually specify the type. Options include "linear",
+#'  "logistic", "poisson", coxph", "crr", "boxcox", "ordinal" and "negbin"
+#'@param offset string specifying the offset term to be used for Poisson or
+#' negative binomial regression. Example: offset="log(follow_up)"
+#'@param  gee boolean indicating if gee models should be fit to account for
+#'  correlated observations. If TRUE then the id argument must specify the
+#'  column in the data which indicates the correlated clusters.
+#'@param strata character vector of covariates to stratify by. Only used for
+#'  coxph and crr
+#'@param markup boolean indicating if you want latex markup
+#'@param sanitize boolean indicating if you want to sanitize all strings to not
+#'  break LaTeX
+#'@param nicenames boolean indicating if you want to replace . and _ in strings
+#'  with a space
+#'@param showN boolean indicating if you want to show sample sizes
+#'@param showEvent boolean indicating if you want to show number of events. Only
+#'  available for logistic.
+#'@param CIwidth width of confidence interval, default is 0.95
+#'@param reflevel manual specification of the reference level. Only used for
+#'  ordinal. This may allow you to debug if the function throws an error.
+#'@param returnModels boolean indicating if a list of fitted models should be
+#'  returned.
 #'@param forceWald boolean indicating if Wald confidence intervals should be
 #'  used instead of profile likelihood. This is not recommended, but can speed
 #'  up computations. To use throughout a document use
 #'  options(reportRmd.forceWald=TRUE)
-#' @seealso
-#' \code{\link{lm}},\code{\link{glm}},\code{\link{crr}},\code{\link{coxph}},
-#' \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
-#' @keywords dataframe
-#' @importFrom MASS polr
-#' @importFrom stats setNames
-#' @importFrom survival coxph Surv
-#' @importFrom aod wald.test
-#' @importFrom geepack geeglm
-#' @importFrom stats na.omit as.formula anova glm lm qnorm qt confint confint.default
+#'@seealso
+#'\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},\code{\link{coxph}},
+#'\code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}},\code{\link{glm.nb}}
+#'@keywords dataframe
+#'@importFrom MASS polr glm.nb
+#'@importFrom stats setNames
+#'@importFrom survival coxph Surv
+#'@importFrom aod wald.test
+#'@importFrom geepack geeglm
+#'@importFrom stats na.omit as.formula anova glm lm qnorm qt confint
+#'  confint.default
 uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
-                   type = NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
+                   type = NULL, offset=NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald)
 {
 
@@ -897,6 +899,16 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
       beta <- "RR"
       if (is.null(family)) family='poisson'
     }
+    else if (type == "negbin") {
+      if (all(data[[response]]==as.integer(data[[response]]))){
+        data[[response]]=as.integer(data[[response]])
+      }
+      else {
+        stop('Negative binomial regression requires an integer response.')
+      }
+      beta <- "RR"
+      if (!is.null(family)) message('For negative binomial regression currently only the log link is implemented.')
+    }
     else if (type == "linear" | type == "boxcox") {
       beta <- "Estimate"
       if (is.null(family)) family='gaussian'
@@ -917,7 +929,7 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
       beta <- "OR"
     }
     else {
-      stop("type must be either coxph, logistic, linear, poisson, boxcox, crr, ordinal (or NULL)")
+      stop("type must be either coxph, logistic, linear, poisson, negbin, boxcox, crr, ordinal (or NULL)")
     }
   }
   else {
@@ -931,26 +943,22 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
         type <- "crr"
       }
       beta <- "HR"
-    }
-    else if (length(unique(na.omit(data[[response]]))) == 2) {
+    } else if (length(unique(na.omit(data[[response]]))) == 2) {
       type <- "logistic"
       beta <- "OR"
       family="binomial"
-    }
-    else if (inherits(data[[response[1]]],"ordered")) {
+    } else if (inherits(data[[response[1]]],"ordered")) {
       type <- "ordinal"
       beta <- "OR"
       if (!is.null(reflevel)) {
         data[[response]] <- stats::relevel(data[[response]],
                                            ref = reflevel)
       }
-    }
-    else if (inherits(data[[response[1]]],"integer")) {
+    } else if (inherits(data[[response[1]]],"integer")) {
       type <- "poisson"
       beta <- "RR"
       family="poisson"
-    }
-    else {
+    } else {
       if (!inherits(data[[response[1]]],"numeric")) stop('Response variable must be numeric')
       type <- "linear"
       beta <- "Estimate"
@@ -967,19 +975,29 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
       warning('id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.')
     }
   }
+  if (!is.null(offset) & !(type %in% c('poisson','negbin'))) {
+    warning('Offset terms only used for Poisson and negative binomial regression.\nOffset term will be ignored.')
+  }
   if (!is.null(corstr)){
     if (! (gee | type =='coxph')) {
       warning('id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.')
     }
   }
+  if (!is.null(offset)){
+    ovars <- unlist(strsplit(offset,"[^a-zA-Z_]"))
+    if(length(intersect(names(data),ovars))==0){
+      stop(paste('Variable names in the offset term contains special characters. \nPlease remove special characters, except "_" from the variable name and re-fit.\n',
+                 'offset =',offset))
+    } else ovars <- intersect(names(data),ovars)
+  } else ovars <- NULL
   if (gee){
-    if (!type %in% c('linear','logistic')) stop('GEE models currently only implemented for logistic or linear regression.')
+    if (!type %in% c('linear','logistic','poisson')) stop('GEE models currently only implemented for Poisson, logistic or linear regression.')
     if (is.null(id)) stop('The id argument must be set for gee models to indicate clusters.')
     if (is.null(corstr)) stop ('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
   }
   if (returnModels) modelList <- NULL
   out <- lapply(covs, function(x_var) {
-    data <- data[,intersect(c(response, x_var, strataVar,id),names(data))]
+    data <- data[,intersect(c(response, x_var, strataVar,id,ovars),names(data))]
     data <- stats::na.omit(data)
     m2 <- NULL
     if (gee){
@@ -1031,9 +1049,11 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
       if (gee){
         eval(parse(text = paste0("m2 <- geepack::geeglm(",paste(response, "~",x_var, sep = ""),
                                  ",family = ",family,",",
+                                 ifelse(is.null(offset),"",paste("offset=",offset,",")),
                                  "data = data, id = idf, corstr = '",corstr,"')")))
         globalpvalue <- try(aod::wald.test(b = m2$coefficients[-1],
-                                           Sigma = (m2$geese$vbeta)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3])
+                                           Sigma = (m2$geese$vbeta)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3],
+                            silent = T)
         m <- summary(m2)$coefficients
         Zmult = stats::qnorm(1 - (1 - CIwidth)/2)
         hr <- cbind(exp(m[,1]),exp(m[, 1] - Zmult * m[, 2]),
@@ -1043,14 +1063,43 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
       else{
         eval(parse(text = paste("m2 <- glm(",paste(response, "~",x_var, sep = ""),
                                 ",family = ",family,",",
+                                ifelse(is.null(offset),"",paste("offset=",offset,",")),
                                 "data = data)")))
-        m2_null <- stats::update(m2,formula=as.formula(paste0(response,'~1')),data=m2$model)
-        globalpvalue <- try(as.vector(stats::na.omit(anova(m2_null,m2,test="LRT")[,"Pr(>Chi)"]))) # LRT
+        if (!is.null(offset)){
+          m2data <- m2$model
+          names(m2data)[grep('offset',names(m2data))] <- "offset"
+          m2_null <- stats::update(m2,formula=as.formula(paste0(response,'~1')),
+                                   offset=offset,
+                                   data=m2data)
+        } else {
+          m2_null <- stats::update(m2,formula=as.formula(paste0(response,'~1')),
+                                   data=m2$model)
+
+        }
+        globalpvalue <- try(as.vector(stats::na.omit(anova(m2_null,m2,test="LRT")[,"Pr(>Chi)"])),silent = T) # LRT
         m <- summary(m2)$coefficients
         hr <- cbind(exp(m[,1]),exp(confint(m2,level=CIwidth)[,]))
         pvals <- m[-1,"Pr(>|z|)"]
 
       }
+      hr <- hr[-1,]
+    }
+    else if (type =='negbin'){
+      f <- paste(response, "~",x_var,
+                 ifelse(is.null(offset),"",paste0("+offset(",offset,")")),
+                 sep = "")
+      eval(parse(text = paste("m2 <- MASS::glm.nb(",f,
+                              ",link = log",",",
+                              "data = data)")))
+      m2data <- m2$model
+      names(m2data)[grep('offset',names(m2data))] <- 'offset'
+      m2_null <- stats::update(m2,formula=paste(response,"~1",
+                                                ifelse(is.null(offset),"","+offset(offset)")),
+                               data=m2data)
+      globalpvalue <- try(suppressWarnings(as.vector(stats::na.omit(anova(m2_null,m2,test="LRT")[,"Pr(Chi)"]))),silent = T) # LRT
+      m <- summary(m2)$coefficients
+      hr <- cbind(exp(m[,1]),exp(confint(m2,level=CIwidth)[,]))
+      pvals <- m[-1,"Pr(>|z|)"]
       hr <- hr[-1,]
     }
     else if (type %in% c("linear", "boxcox")) {
@@ -2898,6 +2947,8 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #'   you want to override this you can manually specify the type. Options
 #'   include "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal",
 #'   "geeglm"
+#'@param offset string specifying the offset term to be used for Poisson or
+#' negative binomial regression. Example: offset="log(follow_up)"
 #' @param strata character vector of covariates to stratify by. Only used for
 #'   coxph and crr
 #' @param nicenames boolean indicating if you want to replace . and _ in strings
@@ -2960,6 +3011,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                      tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
                      chunk_label,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
+                     offset,
                      strata = 1,
                      nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
                      reflevel=NULL,returnModels=FALSE,fontsize,forceWald){

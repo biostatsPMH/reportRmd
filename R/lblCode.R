@@ -65,8 +65,7 @@ setVariableLabels <- function(default,...){
     if (!exists(as.character(nm))) stop(paste(nm,' does not exist. Please specify a valid data frame. \nSee examples.'))
     if (!inherits(get0(nm),'data.frame')) stop(paste(nm,'is not a data frame. Please specify the variable labels in the format data=labels.\nSee examples.'))
   }
-  if (names(pars)[1]!='default' & !('default' %in% names(old_pars))) message('There is no default variable label table specified. \nVariable labels will only be matched to the specified table(s).')
-
+#  if (names(pars)[1]!='default' & !('default' %in% names(old_pars))) message('There is no default variable label table specified. \nVariable labels will only be matched to the specified table(s).')
   new_pars <- c(old_pars[setdiff(names(old_pars),names(pars))], pars)
   rRmd.env$varInfo <- new_pars
 }
@@ -109,14 +108,16 @@ getVariableLabels <-function(){
 #' @param data data frame with labelled variables to be extracted.
 #' @param default logical, should the variable labels be used as the default
 #'   labels for all data frames, default is FALSE.
+#' @param silent logical, should messages be suppressed
 #' @export
 #' @examples
 #' # example code (not run)
 #' # library(sjlabelled)
 #' # data(efc)
 #' # extractLabels(efc)
-extractLabels <- function(data,default=FALSE){
+extractLabels <- function(data,default=FALSE,silent=FALSE){
   argList <- match.call()[-1]
+  if (inherits(data,"character")) data <- get0(data)
   if (!inherits(data,'data.frame')) stop('data must be a data frame with labelled variables to extract.')
   lblv <- lapply(data, function(x){
     typ <- grep('label',class(x),value=TRUE)
@@ -132,9 +133,9 @@ extractLabels <- function(data,default=FALSE){
   dn <- paste0(as.character(argList$data),  "_names")
   cl <- paste(dn,"<<-lbldf")
   eval(parse(text = cl))
-  cl <- paste("setVariableLabels(",ifelse(default,"default",as.character(match.call()[-1])),"=",dn,")")
+  cl <- paste("setVariableLabels(",ifelse(default,"default",as.character(argList)),"=",dn,")")
   eval(parse(text = cl))
-  message(paste(dn,'created and added to list of variable tables'))
+  if (!silent) message(paste(dn,'created and added to list of variable tables'))
   return(get0(dn))
 }
 
@@ -191,6 +192,9 @@ replaceLbl <- function(dn,cv){
 
   if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
   if (!inherits(cv,'character')) stop('variable name must be specified as a character string.')
+   if (isLbl(get0(dn))){
+     eval(parse(text=paste('extractLabels(data=',dn,',silent=TRUE)')))
+   }
   lbl <- getVL(dn)
   vl <- data.frame(var=cv,ord=1:length(cv))
   if (!is.null(lbl)){
@@ -202,4 +206,15 @@ replaceLbl <- function(dn,cv){
   }
   cvnew$lbl <- ifelse(is.na(cvnew$lbl),nicename(cvnew$var),cvnew$lbl)
   return(cvnew$lbl)
+}
+
+isLbl <- function(data){
+  lblv <- lapply(data, function(x){
+    typ <- grep('label',class(x),value=TRUE)
+    if (length(typ)==0) {
+      lbl <- attr(x,"label")
+    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label")
+    return(ifelse(is.null(lbl),NA,lbl))
+  })
+  return(ifelse(length(na.omit(unlist(lblv)))==0,FALSE,TRUE))
 }

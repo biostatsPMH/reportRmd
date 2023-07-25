@@ -13,6 +13,7 @@ uvsum(
   corstr = NULL,
   family = NULL,
   type = NULL,
+  offset = NULL,
   gee = FALSE,
   strata = 1,
   markup = TRUE,
@@ -39,24 +40,26 @@ models to}
 \item{id}{character vector which identifies clusters. Used for GEE and coxph
 models.}
 
-\item{corstr}{character string specifying the correlation structure. Only
-used for geeglm. The following are permitted: '"independence"',
-'"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'}
+\item{corstr}{character string specifying the correlation structure. Only used
+for geeglm. The following are permitted: '"independence"', '"exchangeable"',
+'"ar1"', '"unstructured"' and '"userdefined"'}
 
 \item{family}{specify details of the model used. This argument does not need
-to be specified and should be used with caution. By default, gaussian
-errors are used for linear models, the binomial family with logit link is
-used for logistic regression and poisson with log link is used for poisson
+to be specified and should be used with caution. By default, gaussian errors
+are used for linear models, the binomial family with logit link is used for
+logistic regression and poisson with log link is used for poisson
 regression. This can be specified with the type argument, or will be
 inferred from the data type. See \code{\link{family}}. Ignored for ordinal
 and survival regression and if the type argument is not explicitly
 specified.}
 
-\item{type}{string indicating he type of univariate model to fit. The
-function will try and guess what type you want based on your response. If
-you want to override this you can manually specify the type. Options
-include "linear", "logistic", "poisson", coxph", "crr", "boxcox" and
-"ordinal"}
+\item{type}{string indicating he type of univariate model to fit. The function
+will try and guess what type you want based on your response. If you want to
+override this you can manually specify the type. Options include "linear",
+"logistic", "poisson", coxph", "crr", "boxcox", "ordinal" and "negbin"}
+
+\item{offset}{string specifying the offset term to be used for Poisson or
+negative binomial regression. Example: offset="log(follow_up)"}
 
 \item{gee}{boolean indicating if gee models should be fit to account for
 correlated observations. If TRUE then the id argument must specify the
@@ -75,8 +78,8 @@ with a space}
 
 \item{showN}{boolean indicating if you want to show sample sizes}
 
-\item{showEvent}{boolean indicating if you want to show number of events.
-Only available for logistic.}
+\item{showEvent}{boolean indicating if you want to show number of events. Only
+available for logistic.}
 
 \item{CIwidth}{width of confidence interval, default is 0.95}
 
@@ -103,14 +106,14 @@ Confidence intervals are extracted using confint where possible. Otherwise
 Student t distribution is used for linear models and the Normal distribution
 is used for proportions.
 
-returnModels can be used to return a list of the univariate models, which
-will be the same length as covs. The data used to run each model will include
-all cases with observations on the response and covariate. For gee models the
-data are re-ordered so that the ids appear sequentially and proper estimates
-are given.
+returnModels can be used to return a list of the univariate models, which will
+be the same length as covs. The data used to run each model will include all
+cases with observations on the response and covariate. For gee models the data
+are re-ordered so that the ids appear sequentially and proper estimates are
+given.
 }
 \seealso{
 \code{\link{lm}},\code{\link{glm}},\code{\link{crr}},\code{\link{coxph}},
-\code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
+\code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}},\code{\link{glm.nb}}
 }
 \keyword{dataframe}
