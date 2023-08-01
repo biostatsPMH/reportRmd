@@ -188,7 +188,7 @@ formatp<- function(pvalues){
   p_out <- sapply(pvalues, function(x){
     xsig <-suppressWarnings(as.numeric(x))
     fmtX <- ifelse(xsig<0.001,"<0.001",
-                   ifelse(xsig<0.01,format(round(xsig,3),nsmall=3),
+                   ifelse(xsig<0.1,format(round(xsig,3),nsmall=3),
                           format(round(xsig,2),nsmall=2)))
     x <- ifelse(x=='excl','excl',fmtX)
   })

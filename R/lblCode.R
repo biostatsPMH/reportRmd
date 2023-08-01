@@ -122,8 +122,8 @@ extractLabels <- function(data,default=FALSE,silent=FALSE){
   lblv <- lapply(data, function(x){
     typ <- grep('label',class(x),value=TRUE)
     if (length(typ)==0) {
-      lbl <- attr(x,"label")
-    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label")
+      lbl <- attr(x,"label",exact = T)
+    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label",exact = T)
     return(ifelse(is.null(lbl),NA,lbl))
   })
   if (all(is.na(unlist(lblv)))) stop('No labelled variables detected in data.\nCurrently this function can extract labels created by the haven, expss and sjlabelled')
@@ -220,8 +220,8 @@ isLbl <- function(data){
   lblv <- lapply(data, function(x){
     typ <- grep('label',class(x),value=TRUE)
     if (length(typ)==0) {
-      lbl <- attr(x,"label")
-    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label")
+      lbl <- attr(x,"label",exact = TRUE)
+    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label",exact = TRUE)
     return(ifelse(is.null(lbl),NA,lbl))
   })
   return(ifelse(length(na.omit(unlist(lblv)))==0,FALSE,TRUE))
