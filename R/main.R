@@ -1988,10 +1988,9 @@ forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
   else {
     x_lab = "Adjusted Odds Ratio"
   }
-  #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
   tab = mvsum(model, data, digits = digits, markup = F, sanitize = F,
-              nicenames = F, showN = TRUE, showEvent = TRUE, CIwidth = conf.level)
+              nicenames = F, showN = TRUE, showEvent = showEvent, CIwidth = conf.level)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
   tab$estimate <- as.numeric(gsub(" .*", "", tab[,2]));
@@ -2016,7 +2015,12 @@ forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
   tab$p.value <- tab$"p-value";
   tab$p.label <- paste(format(round(as.numeric(tab$p.value), 3), nsmall=3), sep="");
   tab$variable <- tab$Covariate;
-  tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "Event")];
+  vars <- c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "Event")
+  if (!('Event' %in% names(tab))) {
+    showEvent <- FALSE
+    vars <- setdiff(vars,"Event")
+  }
+  tab <- tab[, vars];
   tab <- as.data.frame(tab);
   ###################################
   if (rmRef)
