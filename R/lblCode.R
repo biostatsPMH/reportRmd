@@ -47,6 +47,7 @@ clearVariableLabels <- function(){
 #' # Check that both the default and ctDNA label tables are set
 #' getVariableLabels()
 setVariableLabels <- function(default,...){
+
   pars <- as.list(match.call()[-1])
   if (length(pars)==0) stop('No variable labels specified.')
   old_pars <- rRmd.env$varInfo
@@ -59,6 +60,9 @@ setVariableLabels <- function(default,...){
     if (!exists(as.character(df))) stop(paste(df,'does not exist. Please specify a valid data frame for labels. \nSee examples.'))
     if (!inherits(eval(df),'data.frame')) stop(paste(df,'is not a data frame. Variable labels must be specified in a data frame with two columns: variable names and variable labels.'))
     if (ncol(eval(df))!=2) stop(paste(df,'must be a data frame with two columns: variable names and variable labels.'))
+    dt <- eval(df)
+    ndupl <- sum(table(dt[,1])>1)
+    if (ndupl>0) warning(paste(df),'contains duplicate variable names. The first provided label will be used for each variable.')
   }
   rm(df)
   for (nm in setdiff(names(pars),'default')){
@@ -153,9 +157,11 @@ getVL <- function(data_name){
     vL <- eval(vl)
     if (ncol(vL)!=2)    message(paste(as.character(vl),'has been altered. The first two columns are assumed to be variable names and labels.'))
     names(vL)[1:2] <- c('var','lbl')
+    vL <- vL[!duplicated(vL[,1]),]
     return(vL)
   } else return(NULL)
 }
+
 
 
 vldTbl <- function(vL, dn){
@@ -208,6 +214,7 @@ replaceLbl <- function(data_arg,cv){
   if (!is.null(lbl)){
     cvnew <- merge(vl,lbl,all.x=T)
     cvnew <- cvnew[order(cvnew$ord),]
+    cvnew <- cvnew[!duplicated(cvnew),]
   } else {
     cvnew <- vl
     cvnew$lbl <- NA

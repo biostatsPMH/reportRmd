@@ -340,3 +340,35 @@ To clear all variable labels:
 clearVariableLabels()
 ```
 
+```{r Demo, echo=F, message=FALSE, warning=FALSE, results='asis',eval=F}
+#devtools::install_github("biostatsPMH/reportRmd", ref="varLabs");
+library("devtools");load_all()
+library("readxl");
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+pullDate <- "2023_04_28";
+filedir <- paste("H:\\REDCap_Studies\\STUDYID_CANCOV\\Data\\sasfiles\\", pullDate, sep="")
+med <- read_excel(paste(filedir, "\\CANCOV_Arm_4_participants_data_pull_", pullDate, "_all.xlsx", sep=""), sheet="medications__covid19_related", col_names=TRUE, col_types=NULL, na="", skip=0);
+var_labs_key <- read_excel(paste("H:\\REDCap_Studies\\STUDYID_CANCOV\\Data\\sasfiles\\", pullDate, "\\key_CANCOV_variable_names_labels_", pullDate, ".xlsx", sep=""), sheet="key", col_names=TRUE, col_types=NULL, na="", skip=0);
+
+pars <- setVariableLabels(default=var_labs_key);
+tab <- reportRmd:::covsum(data = med, 
+          covs = colnames(med)[-which(colnames(med) %in% c("study_id", "redcap_repeat_instance"))], 
+          maincov = "redcap_repeat_instance", testcat = "Fisher", percentage = c("col"), show.tests = F, pvalue = T, effSize = T, full = F, IQR = T, nicenames = F,markup=F,sanitize = F)
+
+
+data_arg <- "med"
+cv <- tab$Covariate
+replaceLbl(data_arg,cv)
+
+rm_covsum(data = med, 
+          covs = colnames(med)[-which(colnames(med) %in% c("study_id", "redcap_repeat_instance"))], 
+          maincov = "redcap_repeat_instance", testcat = "Fisher", percentage = c("col"), show.tests = F, pvalue = T, effSize = T, full = F, IQR = T, nicenames = T)
+
+
+rm_covsum(data = med, 
+          covs = colnames(med)[-which(colnames(med) %in% c("study_id", "redcap_repeat_instance"))], 
+          maincov = "redcap_repeat_instance", testcat = "Fisher", percentage = c("col"), 
+          show.tests = F, pvalue = T, effSize = T, full = F, IQR = T, nicenames = T)
+
+```

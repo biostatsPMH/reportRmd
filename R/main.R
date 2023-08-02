@@ -2860,9 +2860,11 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   covsumArgs[["sanitize"]] <- FALSE
   covsumArgs[["nicenames"]] <- FALSE
   tab <- do.call(covsum, covsumArgs)
+  Sys.sleep(1)
   to_indent <- which(!attr(tab,"varID"))
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
+
   if (nicenames) tab$Covariate <- replaceLbl(argList$data, tab$Covariate)
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
@@ -3055,7 +3057,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                gee=gee,id = id,
                corstr = corstr,family = family,type = type,strata = strata,
                nicenames = nicenames,showN = showN,showEvent = showEvent,
-               CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels)
+               CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
   if (returnModels) tab <- rtn[[1]] else tab <- rtn
   att_tab <- attributes(tab)
   cap_warn <- character(0)
