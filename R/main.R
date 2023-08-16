@@ -351,9 +351,9 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
       data[[v]] <- factor(data[[v]])
     if (inherits(data[[v]], "character"))
       data[[v]] <- factor(data[[v]])
-    if (inherits(data[[v]], c("Date", "POSIXt"))) {
+    if (inherits(data[[v]], c("POSIXt"))) {
       covs <- setdiff(covs, v)
-      message(paste("Dates can not be summarised in this version of reportRmd.\n The variable",
+      message(paste("POSIXt can not be summarised in this version of reportRmd.\n The variable",
                     v, "does not appear in the table."))
     }
   }
@@ -667,6 +667,50 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
           mmm <- ""
           if (all.stats)
             mmm = c("", "")
+        }
+        else if (class(subdata[[cov]]) == "Date") {
+          meansd <- paste(as.Date(floor(as.numeric(niceNum(sumCov["Mean"], digits)))),
+                          " (", niceNum(sd(subdata[[cov]], na.rm = T),
+                                        digits), " days)", sep = "")
+          mmm <- if (IQR | all.stats) {
+            if (all(as.Date(c(sumCov["Median"], sumCov["1st Qu."],
+                      sumCov["3rd Qu."])) == as.Date(floor(c(sumCov["Median"],
+                                                    sumCov["1st Qu."], sumCov["3rd Qu."]))))) {
+              paste(as.Date(as.numeric(sumCov["Median"])), " (", as.Date(as.numeric(sumCov["1st Qu."])),
+                    csep(), as.Date(as.numeric(sumCov["3rd Qu."])), ")", sep = "")
+            }
+            else {
+              paste(as.Date(floor(as.numeric(niceNum(sumCov["Median"], digits)))),
+                    " (", as.Date(floor(as.numeric(niceNum(sumCov["1st Qu."], digits)))),
+                    csep(), as.Date(floor(as.numeric(niceNum(sumCov["3rd Qu."], digits)))),
+                    ")", sep = "")
+            }
+          }
+          else {
+            if (all(as.Date(c(sumCov["Median"], sumCov["Min."],
+                      sumCov["Max."])) == as.Date(floor(c(sumCov["Median"],
+                                                 sumCov["Min."], sumCov["Max."]))))) {
+              paste(as.Date(as.numeric(sumCov["Median"])), " (", as.Date(as.numeric(sumCov["Min."])),
+                    csep(), as.Date(as.numeric(sumCov["Max."])), ")", sep = "")
+            }
+            else {
+              paste(as.Date(as.numeric(niceNum(sumCov["Median"], digits))),
+                    " (", as.Date(as.numeric(niceNum(sumCov["Min."], digits))),
+                    csep(), as.Date(as.numeric(niceNum(sumCov["Max."], digits))),
+                    ")", sep = "")
+            }
+          }
+          if (all.stats) {
+            mmm <- c(mmm, if (all(as.Date(c(sumCov["Min."], sumCov["Max."])) ==
+                                  as.Date(as.numeric(floor(c(sumCov["Min."], sumCov["Max."])))))) {
+              paste("(", as.Date(as.numeric(sumCov["Min."])), csep(), as.Date(as.numeric(sumCov["Max."])),
+                    ")", sep = "")
+            } else {
+              paste("(", as.Date(as.numeric(niceNum(sumCov["Min."], digits))),
+                    csep(), as.Date(as.numeric(niceNum(sumCov["Max."], digits))),
+                    ")", sep = "")
+            })
+          }
         }
         else {
           meansd <- paste(niceNum(sumCov["Mean"], digits),
