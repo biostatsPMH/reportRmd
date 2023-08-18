@@ -52,22 +52,22 @@ setVariableLabels <- function(default,...){
   if (length(pars)==0) stop('No variable labels specified.')
   old_pars <- rRmd.env$varInfo
   for (x in names(pars)){
-    if (x %in% names(old_pars))   message(paste(x,'variable names will be updated.' ))
+    if (x %in% names(old_pars))   message(paste(x,' variable names will be updated.' ))
   }
   #check that all labels exist as data frames and that if more than one table is supplied it is named
   if (any(names(pars)=="")) stop("Only the default table may be unnamed. \nTo supply data frame specific labels please provide in the format data=labels.\nSee examples.")
   for (df in pars){
-    if (!exists(as.character(df))) stop(paste(df,'does not exist. Please specify a valid data frame for labels. \nSee examples.'))
-    if (!inherits(eval(df),'data.frame')) stop(paste(df,'is not a data frame. Variable labels must be specified in a data frame with two columns: variable names and variable labels.'))
-    if (ncol(eval(df))!=2) stop(paste(df,'must be a data frame with two columns: variable names and variable labels.'))
+    if (!exists(as.character(df))) stop(paste(df,' does not exist. Please specify a valid data frame for labels. \nSee examples.'))
+    if (!inherits(eval(df),'data.frame')) stop(paste(df,' is not a data frame. Variable labels must be specified in a data frame with two columns: variable names and variable labels.'))
+    if (ncol(eval(df))!=2) stop(paste(df,' must be a data frame with two columns: variable names and variable labels.'))
     dt <- eval(df)
     ndupl <- sum(table(dt[,1])>1)
-    if (ndupl>0) warning(paste(df),'contains duplicate variable names. The first provided label will be used for each variable.')
+    if (ndupl>0) warning(paste(df),' contains duplicate variable names. The first provided label will be used for each variable.')
   }
   rm(df)
   for (nm in setdiff(names(pars),'default')){
     if (!exists(as.character(nm))) stop(paste(nm,' does not exist. Please specify a valid data frame. \nSee examples.'))
-    if (!inherits(get0(nm),'data.frame')) stop(paste(nm,'is not a data frame. Please specify the variable labels in the format data=labels.\nSee examples.'))
+    if (!inherits(get0(nm),'data.frame')) stop(paste(nm,' is not a data frame. Please specify the variable labels in the format data=labels.\nSee examples.'))
   }
 #  if (names(pars)[1]!='default' & !('default' %in% names(old_pars))) message('There is no default variable label table specified. \nVariable labels will only be matched to the specified table(s).')
   new_pars <- c(old_pars[setdiff(names(old_pars),names(pars))], pars)
@@ -139,13 +139,13 @@ extractLabels <- function(data,default=FALSE,silent=FALSE){
   eval(parse(text = cl))
   cl <- paste("setVariableLabels(",ifelse(default,"default",as.character(argList)),"=",dn,")")
   eval(parse(text = cl))
-  if (!silent) message(paste(dn,'created and added to list of variable tables'))
+  if (!silent) message(paste(dn,' created and added to list of variable tables'))
   return(get0(dn))
 }
 
 
 getVL <- function(data_name){
-  if (!exists(data_name)) stop(paste(data_name),'does not exist.')
+  if (!exists(data_name)) stop(paste(data_name),' does not exist.')
   var_info <- rRmd.env$varInfo
   vl <- NULL
   if (!is.null(var_info)){
@@ -155,7 +155,7 @@ getVL <- function(data_name){
   if (!is.null(vl)){
     if (!vldTbl(vl,data_name)) return(NULL)
     vL <- eval(vl)
-    if (ncol(vL)!=2)    message(paste(as.character(vl),'has been altered. The first two columns are assumed to be variable names and labels.'))
+    if (ncol(vL)!=2)    message(paste(as.character(vl),' has been altered. The first two columns are assumed to be variable names and labels.'))
     names(vL)[1:2] <- c('var','lbl')
     vL <- vL[!duplicated(vL[,1]),]
     return(vL)
@@ -183,11 +183,11 @@ vldTbl <- function(vL, dn){
   }
   df <- get0(dn)
   if (!inherits(df,'data.frame')) {
-    message(paste(dn,'is not a data frame'))
+    message(paste(dn,' is not a data frame'))
     return(FALSE)
   }
   if (!inherits(eval(vL),'data.frame')) {
-    message(paste(as.character(vL),'is not a data frame, assigning default variable labels'))
+    message(paste(as.character(vL),' is not a data frame, assigning default variable labels'))
     return(FALSE)
   }
   return(TRUE)
