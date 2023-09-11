@@ -17,10 +17,11 @@ rm_survsum(
   conf.type = "log",
   na.action = "na.omit",
   showCounts = TRUE,
+  showLogrank = TRUE,
+  eventProb = FALSE,
   digits = 2,
   caption = NULL,
-  tableOnly = FALSE,
-  fontsize
+  tableOnly = FALSE
 )
 }
 \arguments{
@@ -56,15 +57,19 @@ details. Default is 'log'.}
 and error using na.action='na.fail'}
 
 \item{showCounts}{boolean indicating if the at risk, events and censored
-columns should be output, default is TRUE}
+columns should be output; default is TRUE}
+
+\item{showLogrank}{boolean indicating if the log-rank test statistic and
+p-value should be output; default is TRUE}
+
+\item{eventProb}{boolean indicating if event probabilities, rather than
+survival probabilities, should be displayed; default is FALSE}
 
 \item{digits}{the number of digits in the survival rate, default is 2.}
 
 \item{caption}{table caption for markdown output}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
-
-\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the survival table source code, unless tableOnly=TRUE in
