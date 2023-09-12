@@ -669,45 +669,45 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
             mmm = c("", "")
         }
         else if (class(subdata[[cov]]) == "Date") {
-          meansd <- paste(as.Date(floor(as.numeric(niceNum(sumCov["Mean"], digits)))),
+          meansd <- paste(as.Date(floor(as.numeric(niceNum(sumCov["Mean"], digits))), origin="1970-01-01"),
                           " (", niceNum(sd(subdata[[cov]], na.rm = T),
                                         digits), " days)", sep = "")
           mmm <- if (IQR | all.stats) {
             if (all(as.Date(c(sumCov["Median"], sumCov["1st Qu."],
                       sumCov["3rd Qu."])) == as.Date(floor(c(sumCov["Median"],
-                                                    sumCov["1st Qu."], sumCov["3rd Qu."]))))) {
-              paste(as.Date(as.numeric(sumCov["Median"])), " (", as.Date(as.numeric(sumCov["1st Qu."])),
-                    csep(), as.Date(as.numeric(sumCov["3rd Qu."])), ")", sep = "")
+                                                    sumCov["1st Qu."], sumCov["3rd Qu."]))), origin="1970-01-01")) {
+              paste(as.Date(as.numeric(sumCov["Median"]), origin="1970-01-01"), " (", as.Date(as.numeric(sumCov["1st Qu."]), origin="1970-01-01"),
+                    csep(), as.Date(as.numeric(sumCov["3rd Qu."]), origin="1970-01-01"), ")", sep = "")
             }
             else {
-              paste(as.Date(floor(as.numeric(niceNum(sumCov["Median"], digits)))),
-                    " (", as.Date(floor(as.numeric(niceNum(sumCov["1st Qu."], digits)))),
-                    csep(), as.Date(floor(as.numeric(niceNum(sumCov["3rd Qu."], digits)))),
+              paste(as.Date(floor(as.numeric(niceNum(sumCov["Median"], digits))), origin="1970-01-01"),
+                    " (", as.Date(floor(as.numeric(niceNum(sumCov["1st Qu."], digits))), origin="1970-01-01"),
+                    csep(), as.Date(floor(as.numeric(niceNum(sumCov["3rd Qu."], digits))), origin="1970-01-01"),
                     ")", sep = "")
             }
           }
           else {
             if (all(as.Date(c(sumCov["Median"], sumCov["Min."],
-                      sumCov["Max."])) == as.Date(floor(c(sumCov["Median"],
-                                                 sumCov["Min."], sumCov["Max."]))))) {
-              paste(as.Date(as.numeric(sumCov["Median"])), " (", as.Date(as.numeric(sumCov["Min."])),
-                    csep(), as.Date(as.numeric(sumCov["Max."])), ")", sep = "")
+                      sumCov["Max."]), origin="1970-01-01") == as.Date(floor(c(sumCov["Median"],
+                                                 sumCov["Min."], sumCov["Max."])), origin="1970-01-01"))) {
+              paste(as.Date(as.numeric(sumCov["Median"]), origin="1970-01-01"), " (", as.Date(as.numeric(sumCov["Min."]), origin="1970-01-01"),
+                    csep(), as.Date(as.numeric(sumCov["Max."]), origin="1970-01-01"), ")", sep = "")
             }
             else {
-              paste(as.Date(as.numeric(niceNum(sumCov["Median"], digits))),
-                    " (", as.Date(as.numeric(niceNum(sumCov["Min."], digits))),
-                    csep(), as.Date(as.numeric(niceNum(sumCov["Max."], digits))),
+              paste(as.Date(as.numeric(niceNum(sumCov["Median"], digits)), origin="1970-01-01"),
+                    " (", as.Date(as.numeric(niceNum(sumCov["Min."], digits)), origin="1970-01-01"),
+                    csep(), as.Date(as.numeric(niceNum(sumCov["Max."], digits)), origin="1970-01-01"),
                     ")", sep = "")
             }
           }
           if (all.stats) {
-            mmm <- c(mmm, if (all(as.Date(c(sumCov["Min."], sumCov["Max."])) ==
-                                  as.Date(as.numeric(floor(c(sumCov["Min."], sumCov["Max."])))))) {
-              paste("(", as.Date(as.numeric(sumCov["Min."])), csep(), as.Date(as.numeric(sumCov["Max."])),
+            mmm <- c(mmm, if (all(as.Date(c(sumCov["Min."], sumCov["Max."]), origin="1970-01-01") ==
+                                  as.Date(as.numeric(floor(c(sumCov["Min."], sumCov["Max."]))), origin="1970-01-01"))) {
+              paste("(", as.Date(as.numeric(sumCov["Min."]), origin="1970-01-01"), csep(), as.Date(as.numeric(sumCov["Max."]), origin="1970-01-01"),
                     ")", sep = "")
             } else {
-              paste("(", as.Date(as.numeric(niceNum(sumCov["Min."], digits))),
-                    csep(), as.Date(as.numeric(niceNum(sumCov["Max."], digits))),
+              paste("(", as.Date(as.numeric(niceNum(sumCov["Min."], digits)), origin="1970-01-01"),
+                    csep(), as.Date(as.numeric(niceNum(sumCov["Max."], digits)), origin="1970-01-01"),
                     ")", sep = "")
             })
           }
