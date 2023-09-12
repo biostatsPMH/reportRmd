@@ -674,8 +674,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                         digits), " days)", sep = "")
           mmm <- if (IQR | all.stats) {
             if (all(as.Date(c(sumCov["Median"], sumCov["1st Qu."],
-                      sumCov["3rd Qu."])) == as.Date(floor(c(sumCov["Median"],
-                                                    sumCov["1st Qu."], sumCov["3rd Qu."]))), origin="1970-01-01")) {
+                      sumCov["3rd Qu."]), origin="1970-01-01") == as.Date(floor(c(sumCov["Median"],
+                                                    sumCov["1st Qu."], sumCov["3rd Qu."])), origin="1970-01-01"))) {
               paste(as.Date(as.numeric(sumCov["Median"]), origin="1970-01-01"), " (", as.Date(as.numeric(sumCov["1st Qu."]), origin="1970-01-01"),
                     csep(), as.Date(as.numeric(sumCov["3rd Qu."]), origin="1970-01-01"), ")", sep = "")
             }
