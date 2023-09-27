@@ -36,7 +36,7 @@ You can install the development version of reportRmd from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("biostatsPMH/reportRmd")
+ devtools::install_github("biostatsPMH/reportRmd",ref='development')
 ```
 
 ## Documentation
@@ -73,9 +73,6 @@ Male (n=36)
 p-value
 </th>
 <th style="text-align:right;">
-Effect Size
-</th>
-<th style="text-align:right;">
 StatTest
 </th>
 </tr>
@@ -95,10 +92,7 @@ StatTest
 0.30
 </td>
 <td style="text-align:right;">
-0.008
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum, Eta sq
+Wilcoxon Rank Sum
 </td>
 </tr>
 <tr>
@@ -113,8 +107,6 @@ Mean (sd)
 </td>
 <td style="text-align:right;">
 59.3 (13.1)
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -138,8 +130,6 @@ Median (Min,Max)
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -155,10 +145,7 @@ Median (Min,Max)
 0.76
 </td>
 <td style="text-align:right;">
-0.002
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum, Eta sq
+Wilcoxon Rank Sum
 </td>
 </tr>
 <tr>
@@ -173,8 +160,6 @@ Mean (sd)
 </td>
 <td style="text-align:right;">
 12.1 (27.3)
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -198,8 +183,6 @@ Median (Min,Max)
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -218,8 +201,6 @@ Missing
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -232,13 +213,10 @@ Missing
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-0.81
+0.84
 </td>
 <td style="text-align:right;">
-0.02
-</td>
-<td style="text-align:right;">
-Fisher Exact, Cramer
+Chi Sq
 </td>
 </tr>
 <tr>
@@ -253,8 +231,6 @@ Decrease from baseline
 </td>
 <td style="text-align:right;">
 14 (42)
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -278,8 +254,6 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -293,8 +267,6 @@ Missing
 </td>
 <td style="text-align:right;">
 3
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -328,6 +300,9 @@ p-value
 <th style="text-align:right;">
 N
 </th>
+<th style="text-align:right;">
+Event
+</th>
 </tr>
 </thead>
 <tbody>
@@ -344,6 +319,9 @@ N
 <td style="text-align:right;">
 94
 </td>
+<td style="text-align:right;">
+78
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -358,6 +336,9 @@ N
 <td style="text-align:right;">
 93
 </td>
+<td style="text-align:right;">
+77
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -370,6 +351,9 @@ N
 </td>
 <td style="text-align:right;">
 73
+</td>
+<td style="text-align:right;">
+58
 </td>
 </tr>
 <tr>
@@ -384,6 +368,9 @@ Reference
 <td style="text-align:right;">
 33
 </td>
+<td style="text-align:right;">
+19
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -396,6 +383,9 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 40
+</td>
+<td style="text-align:right;">
+39
 </td>
 </tr>
 </tbody>
@@ -422,10 +412,10 @@ OR(95%CI)
 p-value
 </th>
 <th style="text-align:right;">
-Global p-value
+N
 </th>
 <th style="text-align:right;">
-N
+Event
 </th>
 <th style="text-align:right;">
 VIF
@@ -443,9 +433,10 @@ VIF
 <span style="font-weight: bold;">0.009</span>
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
-73
+58
 </td>
 <td style="text-align:right;">
 1.00
@@ -461,9 +452,10 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+33
 </td>
 <td style="text-align:right;">
-33
+19
 </td>
 <td style="text-align:right;">
 </td>
@@ -478,9 +470,10 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+40
 </td>
 <td style="text-align:right;">
-40
+39
 </td>
 <td style="text-align:right;">
 </td>
@@ -496,9 +489,10 @@ Increase from baseline
 0.07
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
-73
+58
 </td>
 <td style="text-align:right;">
 1.18
@@ -511,13 +505,13 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;"></span>
-</td>
-<td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>
 </td>
 <td style="text-align:right;">
 73
+</td>
+<td style="text-align:right;">
+58
 </td>
 <td style="text-align:right;">
 1.04
@@ -533,9 +527,10 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+14
 </td>
 <td style="text-align:right;">
-14
+11
 </td>
 <td style="text-align:right;">
 </td>
@@ -548,9 +543,9 @@ B
 2.6e+07 (0e+00, Inf)
 </td>
 <td style="text-align:right;">
-1.00
 </td>
 <td style="text-align:right;">
+11
 </td>
 <td style="text-align:right;">
 11
@@ -566,9 +561,9 @@ C
 4.2e+07 (0e+00, Inf)
 </td>
 <td style="text-align:right;">
-1.00
 </td>
 <td style="text-align:right;">
+10
 </td>
 <td style="text-align:right;">
 10
@@ -584,12 +579,12 @@ D
 0.07 (4.2e-03, 1.09)
 </td>
 <td style="text-align:right;">
-0.06
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 10
+</td>
+<td style="text-align:right;">
+3
 </td>
 <td style="text-align:right;">
 </td>
@@ -602,12 +597,12 @@ E
 0.44 (0.04, 5.10)
 </td>
 <td style="text-align:right;">
-0.51
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 28
+</td>
+<td style="text-align:right;">
+23
 </td>
 <td style="text-align:right;">
 </td>
@@ -642,13 +637,16 @@ rm_uv_mv(uvsumTable,mvsumTable)
 Unadjusted OR(95%CI)
 </th>
 <th style="text-align:right;">
-N
+Event
 </th>
 <th style="text-align:right;">
 p
 </th>
 <th style="text-align:right;">
 Adjusted OR(95%CI)
+</th>
+<th style="text-align:right;">
+Event (adj)
 </th>
 <th style="text-align:right;">
 p (adj)
@@ -664,10 +662,12 @@ p (adj)
 0.96 (0.91, 1.00)
 </td>
 <td style="text-align:right;">
-94
+78
 </td>
 <td style="text-align:right;">
 0.09
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -681,10 +681,12 @@ p (adj)
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-94
+78
 </td>
 <td style="text-align:right;">
 0.11
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -699,7 +701,9 @@ Female
 Reference
 </td>
 <td style="text-align:right;">
-58
+51
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -716,7 +720,9 @@ Male
 0.41 (0.13, 1.22)
 </td>
 <td style="text-align:right;">
-36
+27
+</td>
+<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -733,13 +739,16 @@ Male
 0.97 (0.95, 0.98)
 </td>
 <td style="text-align:right;">
-93
+77
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">\<0.001</span>
 </td>
 <td style="text-align:right;">
 0.98 (0.96, 1.00)
+</td>
+<td style="text-align:right;">
+58
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.02</span>
@@ -752,12 +761,15 @@ Male
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-73
+58
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.002</span>
 </td>
 <td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+58
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>
@@ -771,12 +783,15 @@ Decrease from baseline
 Reference
 </td>
 <td style="text-align:right;">
-33
+19
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 Reference
+</td>
+<td style="text-align:right;">
+19
 </td>
 <td style="text-align:right;">
 </td>
@@ -789,12 +804,15 @@ Increase from baseline
 28.74 (5.20, 540.18)
 </td>
 <td style="text-align:right;">
-40
+39
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 24.71 (2.87, 212.70)
+</td>
+<td style="text-align:right;">
+39
 </td>
 <td style="text-align:right;">
 </td>
@@ -821,7 +839,7 @@ tests between groups
 <thead>
 <tr>
 <th style="text-align:left;">
-cohort
+Group
 </th>
 <th style="text-align:right;">
 Events/Total
@@ -970,8 +988,12 @@ data=pembrolizumab)
 ``` r
 require(ggplot2)
 #> Loading required package: ggplot2
-#> Warning: package 'ggplot2' was built under R version 4.2.2
 forestplot2(glm_fit)
+#> Warning: `forestplot2()` was deprecated in reportRmd 0.0.3.
+#> ℹ Please use `forestplotUV()` instead.
+#> This warning is displayed once every 8 hours.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
 #> Warning: Vectorized input to `element_text()` is not officially supported.
 #> ℹ Results may be unexpected or may change in future versions of ggplot2.
 ```
