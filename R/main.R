@@ -2539,6 +2539,8 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #'   with a space
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
 #' @param chunk_label only used knitting to Word docs to allow cross-referencing
+#' @param format if specified ('html','latex') will override the
+#'   global pandoc setting
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
 #'   which case a data frame is returned
 #' @export
@@ -2549,15 +2551,20 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #' outTable(tab, fontsize=7)
 #'
 #' # To bold columns with the variable names
-#'  rows_bold <- c(1,4,7,10,13)
-#'  outTable(tab,rows_bold = rows_bold)
+#' rows_bold <- c(1,4,7,10,13)
+#' outTable(tab,rows_bold = rows_bold)
 #'
-#'  # To bold the estimates for male/female
-#'  bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
-#'  outTable(tab,bold_cells= bold_cells)
+#' # To bold the estimates for male/female
+#' bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
+#' outTable(tab,bold_cells= bold_cells)
+#'
+#' # Output the above table to HTML or LaTeX
+#' cat(outTable(tab=tab)) #Knits to specified global setting
+#' cat(outTable(tab, format="html"), file = "tab.html") #HTML output
+#' cat(outTable(tab, format="latex"), file = "tab.tex") #LaTeX output
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
                      rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits=getOption("reportRmd.digits",2),align,
-                     applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label){
+                     applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label,format=NULL){
 
   # strip tibble aspects
   tab=as.data.frame(tab)
@@ -2593,6 +2600,10 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
   out_fmt = ifelse(is.null(knitr::pandoc_to()),'html',
                    ifelse(knitr::pandoc_to(c('doc','docx')),'doc',
                           ifelse(knitr::is_latex_output(),'latex','html')))
+
+  if (!is.null(format) && format %in% c('html','latex')){
+    out_fmt = format
+  }
 
   chunk_label = ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label)
 
