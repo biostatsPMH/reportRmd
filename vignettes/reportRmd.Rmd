@@ -305,10 +305,10 @@ Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the 
 
 `reportRmd` supports the addition, removal and export of labels using the following functions:
 
--   @sec-set_labels will set labels for a data frame from a lookup table
--   @sec-set_var_labels allows you to set individual variable labels to a data frame
--   @sec-clear_labels removes all labels from a data frame
--   @sec-export_labels extracts variable labels from a data frame and returns a data frame of variable names and variable labels
+-   `set_labels` will set labels for a data frame from a lookup table
+-   `set_var_labels` allows you to set individual variable labels to a data frame
+-   `clear_labels` removes all labels from a data frame
+-   `export_labels` extracts variable labels from a data frame and returns a data frame of variable names and variable labels
 
 ## Worked Example
 
@@ -352,7 +352,7 @@ rm_covsum(data=ctDNA,
 
 ```
 
-### extract_labels {#sec-set_var_labels}
+### extract_labels {#sec-extract_labels}
 
 Extract the variable labels to a data frame
 
@@ -361,7 +361,7 @@ var_labels <- extract_labels(ctDNA)
 var_labels
 ```
 
-### clear_labels {#sec-set_var_labels}
+### clear_labels {#sec-clear_labels}
 Or clear them all
 
 ```{r}
