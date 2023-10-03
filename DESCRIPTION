@@ -26,6 +26,7 @@ RoxygenNote: 7.2.3
 Imports: 
     aod,
     cmprsk,
+    cowplot,
     geepack,
     ggplot2,
     ggpubr,

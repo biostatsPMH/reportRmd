@@ -17,6 +17,8 @@ rm_survsum(
   conf.type = "log",
   na.action = "na.omit",
   showCounts = TRUE,
+  showLogrank = TRUE,
+  eventProb = FALSE,
   digits = getOption("reportRmd.digits", 2),
   caption = NULL,
   tableOnly = FALSE,
@@ -56,9 +58,16 @@ details. Default is 'log'.}
 and error using na.action='na.fail'}
 
 \item{showCounts}{boolean indicating if the at risk, events and censored
-columns should be output, default is TRUE}
+columns should be output; default is TRUE}
 
-\item{digits}{the number of digits in the survival rate, default is 2.}
+\item{showLogrank}{boolean indicating if the log-rank test statistic and
+p-value should be output; default is TRUE}
+
+\item{eventProb}{boolean indicating if event probabilities, rather than
+survival probabilities, should be displayed; default is FALSE}
+
+\item{digits}{the number of digits in the survival rate, default is 2, unless
+the reportRmd.digits option is set}
 
 \item{caption}{table caption for markdown output}
 
@@ -67,8 +76,8 @@ columns should be output, default is TRUE}
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
-A character vector of the survival table source code, unless tableOnly=TRUE in
-which case a data frame is returned
+A character vector of the survival table source code, unless
+tableOnly=TRUE in which case a data frame is returned
 }
 \description{
 Displays event counts, median survival time and survival rates at specified
