@@ -132,6 +132,7 @@ Further formatting options are available using tableOnly=TRUE and outputting
 the table with a call to outTable.
 }
 \examples{
+data("pembrolizumab")
 rm_covsum(data=pembrolizumab, maincov = 'orr',
 covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
 show.tests=TRUE)

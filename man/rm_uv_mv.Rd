@@ -53,7 +53,7 @@ must also appear in the uvsum table.
 }
 \examples{
 require(survival)
-
+data("pembrolizumab")
 uvTab <- rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 data=pembrolizumab,tableOnly=TRUE)

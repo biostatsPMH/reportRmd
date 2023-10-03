@@ -668,7 +668,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
           if (all.stats)
             mmm = c("", "")
         }
-        else if (class(subdata[[cov]]) == "Date") {
+        else if (inherits(subdata[[cov]],"Date")) {
           meansd <- paste(as.Date(floor(as.numeric(niceNum(sumCov["Mean"], digits))), origin="1970-01-01"),
                           " (", niceNum(sd(subdata[[cov]], na.rm = T),
                                         digits), " days)", sep = "")
@@ -1304,7 +1304,7 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
 #' @param vif boolean indicating if the variance inflation factor should be
 #'   included. See details
 #' @keywords dataframe
-#' @importFrom stats na.omit formula model.frame anova qnorm vcov setNames
+#' @importFrom stats na.omit formula model.frame anova qnorm vcov setNames getCall
 #' @importFrom utils capture.output
 #' @references John Fox & Georges Monette (1992) Generalized Collinearity
 #'   Diagnostics, Journal of the American Statistical Association, 87:417,
@@ -1716,12 +1716,16 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
   colnames(table) <- sapply(colnames(table), lbld)
   attr(table,'covs') <- ucall
   attr(table,"varID") <- varID
-  mc <- paste(utils::capture.output(model$call),collapse="")
-  dn <- sub(pattern=".*data = (\\w+).*",replacement = "\\1",x=mc)
-  if (!exists(dn)){
+  #mc <- paste(utils::capture.output(model$call),collapse="")
+  dataArg <- stats::getCall(model)$data
+  #dn <- sub(pattern=".*data = (\\w+).*",replacement = "\\1",x=mc)
+  dn <- matchdata(dataArg)
+  if (is.null(dn)){
     warning('Model data not found. No variable labels will be assigned to variables.')
-  } else if(inherits(get0(dn),'data.frame')){   attr(table,"data") <- dn
-
+  } else  {
+    attr(table,"data") <- dn
+    attr(table,"data call") <- dataArg
+    attr(table,"model call") <- nicecall(model$call)
   }
   return(table)
 }
@@ -1754,6 +1758,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
 #' @return a plot object
 #' @export
 #' @examples
+#' data("pembrolizumab")
 #' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' forestplot2(glm_fit)
@@ -1867,6 +1872,7 @@ forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',
 #' @return a plot object
 #' @export
 #' @examples
+#' data("pembrolizumab")
 #' forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 #' data=pembrolizumab, family='binomial')
 forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
@@ -2012,6 +2018,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
 #' @return a plot object
 #' @export
 #' @examples
+#' data("pembrolizumab")
 #' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' forestplotMV(glm_fit)
@@ -2165,6 +2172,7 @@ forestplotMV = function (model, data,conf.level = 0.95, orderByRisk = TRUE,
 #' @return a plot object
 #' @export
 #' @examples
+#' data("pembrolizumab")
 #' UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
 #' "l_size"), data=pembrolizumab, family='binomial')
 #' MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
@@ -2331,6 +2339,7 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
 #' @examples
 #' ## Run multiple univariate analyses on the pembrolizumab dataset to predict cbr and
 #' ## then visualise the relationships.
+#' data("pembrolizumab")
 #' rm_uvsum(data=pembrolizumab,
 #' response='cbr',covs=c('age','sex','l_size','baseline_ctdna'))
 #' plotuv(data=pembrolizumab,  response='cbr',
@@ -2546,6 +2555,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #' @export
 #' @examples
 #' # To make custom changes or change the fontsize in PDF/HTML
+#' data("pembrolizumab")
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 #' covs=c('age','sex','pdl1','tmb','l_size'),show.tests=TRUE,tableOnly = TRUE)
 #' outTable(tab, fontsize=7)
@@ -2721,13 +2731,13 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
 #' @examples
 #' ## Investigate models to predict baseline ctDNA and tumour size and display together
 #' ## (not clinically useful!)
+#' data(pembrolizumab)
 #' fit1 <- lm(baseline_ctdna~age+l_size+pdl1,data=pembrolizumab)
 #' m1 <- rm_mvsum(fit1,tableOnly=TRUE)
 #' m1$Response = 'ctDNA'
 #' fit2 <- lm(l_size~age+baseline_ctdna+pdl1,data=pembrolizumab)
 #' m2 <- rm_mvsum(fit2,tableOnly=TRUE)
 #' m2$Response = 'Tumour Size'
-#' rbind(m1,m2)
 #' nestTable(rbind(m1,m2),head_col='Response',to_col='Covariate')
 nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRUE,boldheaders=TRUE,hdr_prefix='',hdr_suffix='',digits=getOption("reportRmd.digits",2),tableOnly=FALSE,fontsize){
 
@@ -2879,6 +2889,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' facilitate cumulative science: a practical primer for t-tests and ANOVAs.
 #' Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
 #' @examples
+#' data("pembrolizumab")
 #' rm_covsum(data=pembrolizumab, maincov = 'orr',
 #' covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
 #' show.tests=TRUE)
@@ -2913,6 +2924,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
       as.numeric(x)
     }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
+  df_nm <- matchdata(argList$data)
   argsToPass <- intersect(names(formals(covsum)), names(argList))
   covsumArgs <- argList[names(argList) %in% argsToPass]
   covsumArgs[["markup"]] <- FALSE
@@ -2924,7 +2936,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  if (nicenames) tab$Covariate <- replaceLbl(argList$data, tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(df_nm, tab$Covariate)
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
     if (p.adjust!='none'){
@@ -2947,6 +2959,8 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   if (tableOnly) {
     if (names(tab)[1] == "")
       names(tab)[1] <- "Covariate"
+    attr(tab,"data") <- df_nm
+    attr(tab,"data call") <- deparse1(argList$data)
     attr(tab, "to_indent") <- to_indent
     attr(tab, "bold_cells") <- bold_cells
     attr(tab, "dimchk") <- dim(tab)
@@ -3041,6 +3055,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #' @examples
 #' # Examples are for demonstration and are not meaningful
 #' # Coxph model with 90% CI
+#' data("pembrolizumab")
 #' rm_uvsum(response = c('os_time','os_status'),
 #' covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 #' data=pembrolizumab,CIwidth=.9)
@@ -3059,9 +3074,9 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #' mList <- rm_uvsum(response = 'baseline_ctdna',
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab, returnModels=TRUE)
-#' # mList$sex$data # will expose the modelled data
-#'
+#' #'
 #' # GEE on correlated outcomes
+#' data("ctDNA")
 #' rm_uvsum(response = 'size_change',
 #' covs=c('time','ctdna_status'),
 #' gee=TRUE,
@@ -3090,6 +3105,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   argList <- as.list(match.call()[-1])
+  df_nm <- matchdata(argList$data)
   for (v in covs) {
     if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
     if (inherits(data[[v]],c('Date','POSIXt'))) {
@@ -3138,7 +3154,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  if (nicenames) tab$Covariate <- replaceLbl(argList$data, tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(df_nm, tab$Covariate)
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
@@ -3168,6 +3184,8 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
     if (length(cap_warn)>0) message(cap_warn)
+    attr(tab,"data") <- df_nm
+    attr(tab,"data call") <- deparse1(argList$data)
     attr(tab, 'to_indent') <- to_indent
     attr(tab,'bold_cells') <- bold_cells
     attr(tab,'dimchk') <- dim(tab)
@@ -3240,6 +3258,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 #'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. \url{
 #'   https://socialsciences.mcmaster.ca/jfox/Books/Companion}
 #' @examples
+#' data("pembrolizumab")
 #' glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
 #' data=pembrolizumab,family = 'binomial')
 #' rm_mvsum(glm_fit)
@@ -3336,7 +3355,7 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 #' @export
 #' @examples
 #' require(survival)
-#'
+#' data("pembrolizumab")
 #' uvTab <- rm_uvsum(response = c('os_time','os_status'),
 #' covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 #' data=pembrolizumab,tableOnly=TRUE)
@@ -3567,6 +3586,7 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,showN=FALSE,cap
 #' @importFrom ggplot2 ggplot
 #' @importFrom gridExtra grid.arrange
 #' @examples
+#' data("pembrolizumab")
 #' # Simple plot without confidence intervals
 #' ggkmcif(response = c('os_time','os_status'),
 #' cov='cohort',
@@ -3831,6 +3851,7 @@ ggkmcif <- function(response,cov=NULL,data,type=NULL,
                         }else factor("All"),
                         upper = 1, lower = 1)
     df <- plyr::rbind.fill(zeros, df) # Forcing the curves to start at 1
+    # try dplyr::bind_rows
 
     df$strata <- factor(df$strata,levels=stratalabs)
   }
@@ -4316,6 +4337,7 @@ modify_ggkmcif <- function(list_gg){
 #'   number at risk table
 #' @export
 #' @examples
+#' data("pembrolizumab")
 #' plot <- ggkmcif(response=c('pfs_time','pfs_status'),
 #' data=pembrolizumab,returns = TRUE)
 #'
@@ -4368,6 +4390,7 @@ ggkmcif_paste <- function(list_gg){
 #' @seealso \code{\link{survdiff}}
 #' @examples
 #' #' # Differences between sex
+#' data("pembrolizumab")
 #' rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 #' covs='sex',digits=1)
 #'
@@ -4503,6 +4526,7 @@ rm_survdiff <- function(data,time,status,covs,strata,includeVarNames=FALSE,
 #' @export
 #' @examples
 #' # Simple median survival table
+#' data("pembrolizumab")
 #' rm_survsum(data=pembrolizumab,time='os_time',status='os_status')
 #'
 #' # Survival table with yearly survival rates
@@ -4656,6 +4680,7 @@ rm_survsum <- function(data,time,status,group=NULL,survtimes=NULL,
 #' @export
 #' @examples
 #' # Kaplan-Mieir survival probabilities with time displayed in years
+#' data("pembrolizumab")
 #' rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 #' strata="cohort",type='KM',survtimes=seq(12,72,12),
 #' survtimesLbls=seq(1,6,1),

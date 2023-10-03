@@ -1,235 +1,147 @@
-rRmd.env <- new.env(parent = emptyenv())
-rRmd.env$varInfo <- NULL
 
-#' Clear all variable labels associated with data frames
+#' Clear variable labels from a data frame
 #'
+#' This function will remove all label attributes from variables in the data.
+#'
+#' To change or remove individual labels use set_labels or set_var_labels
+#' @param data the data frame to remove labels from
 #' @export
 #' @examples
+#' # Set a few variable labels for ctDNA
+#' ctDNA <- ctDNA |> set_var_labels(
+#'    ctdna_status="detectable ctDNA",
+#'   cohort="A cohort label")
 #' # Clear all variable data frames and check
-#' clearVariableLabels()
-#' getVariableLabels()
-clearVariableLabels <- function(){
- rRmd.env$varInfo <- NULL
+#' clear_labels(ctDNA)
+clear_labels <- function(data){
+  for (v in names(data)) {
+    v_att <- attributes(data[[v]])
+    v_lbl_att <- setdiff(unique(c("label",grep('label',names(v_att),value=TRUE))),"labels")
+    for (a in v_lbl_att) attr(data[[v]],a) <- NULL
+  }
+  return(data)
+}
+
+
+#' Extract variable labels from labelled data frame
+#'
+#' Extract variable labels from data and return a data frame with labels
+#'
+#' All variable names will be returned, even those with no labels.
+#' If the label attribute has length greater than one the values will be
+#' concatenated and returned as a single string separated by sep
+#' @param data the data frame to extract labels from
+#' @param sep character used to separate multiple labels, defaults to "_"
+#' @export
+#' @examples
+#' # Set a few variable labels for ctDNA
+#' ctDNA <- ctDNA |> set_var_labels(
+#'    ctdna_status="detectable ctDNA",
+#'   cohort="A cohort label")
+#' # Extract labels
+#' extract_labels(ctDNA)
+extract_labels <- function(data,sep="_"){
+  lbls <-sapply(names(data), function(v){
+    lbl = paste(attr(data[[v]],"label"),sep=sep)
+    ifelse(length(lbl)==0,NA,lbl)
+  })
+  rtn <- data.frame(variable=names(data),label=lbls)
+  rownames(rtn) <- NULL
+  return(rtn)
 }
 
 #' Set variable labels
 #'
-#' Assigns default or data frame specific tables containing variable labels
+#' Set variable labels for a data frame using name-label pairs.
 #'
-#' The variable labels need to be stored in two-column data frames. The first
-#' column must contain the variable name and the second column the variable
-#' label. The column names are not used.
-#'
-#' If a data frame specific table of labels is provided it will be used for that
-#' data frame only and labels contained in the default table will not be used.
-#' If no labels are supplied for a variable then the variable name will be used
-#' with '_' replaced by a space.
-#' @param default a data frame containing two columns, variable names and
-#'   variable labels to be used as default variable labels.
-#' @param ... pairs of data.frame, variable label pairs in the format
-#'   data=labels to provide variable labels specific to a data frame
+#' If no label is provided for a variable then the existing label will not be
+#' changed. To remove a label set the label to NA.
+#' @param data data frame containing variables to be labelled
+#' @param ... Name-label pairs the name gives the name of the column in the
+#'   output and the label is a character vector of length one.
 #' @export
 #' @examples
-#' # create a data frame contain variable labels and set as default
-#' varLabels <- data.frame(vars=c('Var1','Var2','Var3'),lbls=c('Age','Sex','Score'))
-#' setVariableLabels(varLabels)
-#'
-#' # add a separate table of data labels for the ctDNA data
-#' data(ctDNA)
-#' ctDNA_names <- data.frame(var=names(ctDNA),
-#' label=c('Patient ID',
-#'         'Study Cohort',
-#'         'Change in ctDNA since baseline',
-#'         'Number of weeks on treatment',
-#'         'Percentage change in tumour measurement'))
-#' setVariableLabels(ctDNA=ctDNA_names)
-#'
-#' # Check that both the default and ctDNA label tables are set
-#' getVariableLabels()
-setVariableLabels <- function(default,...){
-
-  pars <- as.list(match.call()[-1])
-  if (length(pars)==0) stop('No variable labels specified.')
-  old_pars <- rRmd.env$varInfo
-  for (x in names(pars)){
-    if (x %in% names(old_pars))   message(paste(x,' variable names will be updated.' ))
+#' # set labels using name-label pairs
+#' # and return labelled data frame
+#' ctDNA |> set_var_labels(
+#'    ctdna_status="detectable ctDNA",
+#'   cohort="A cohort label")
+set_var_labels = function (data, ...) {
+  args <- as.list(match.call())[-1]
+  dnm <- as.character(args[1])
+  varLbls <- args[-1]
+  for (i in seq_along(varLbls)){
+    v <- names(varLbls)[i]
+    l <- varLbls[i]
+    if (!v %in% names(data)) {
+      message(paste(v,'not a variable in',dnm,"\nLabel not added."))
+    } else {
+      if (length(l)>1) message(paste("Label for",v,'has more than one element.\n Only the first will be used.'))
+      attr(data[[v]], "label") <- as.character(l[1])
+    }
   }
-  #check that all labels exist as data frames and that if more than one table is supplied it is named
-  if (any(names(pars)=="")) stop("Only the default table may be unnamed. \nTo supply data frame specific labels please provide in the format data=labels.\nSee examples.")
-  for (df in pars){
-    if (!exists(as.character(df))) stop(paste(df,' does not exist. Please specify a valid data frame for labels. \nSee examples.'))
-    if (!inherits(eval(df),'data.frame')) stop(paste(df,' is not a data frame. Variable labels must be specified in a data frame with two columns: variable names and variable labels.'))
-    if (ncol(eval(df))!=2) stop(paste(df,' must be a data frame with two columns: variable names and variable labels.'))
-    dt <- eval(df)
-    ndupl <- sum(table(dt[,1])>1)
-    if (ndupl>0) warning(paste(df),' contains duplicate variable names. The first provided label will be used for each variable.')
-  }
-  rm(df)
-  for (nm in setdiff(names(pars),'default')){
-    if (!exists(as.character(nm))) stop(paste(nm,' does not exist. Please specify a valid data frame. \nSee examples.'))
-    if (!inherits(get0(nm),'data.frame')) stop(paste(nm,' is not a data frame. Please specify the variable labels in the format data=labels.\nSee examples.'))
-  }
-#  if (names(pars)[1]!='default' & !('default' %in% names(old_pars))) message('There is no default variable label table specified. \nVariable labels will only be matched to the specified table(s).')
-  new_pars <- c(old_pars[setdiff(names(old_pars),names(pars))], pars)
-  rRmd.env$varInfo <- new_pars
+  return(data)
 }
 
 
-#' Show all variable label data frames
+#' Set variable labels
 #'
+#' Assign variable labels to a data.frame from a lookup table.
+#'
+#' Useful if variable labels have been imported from a data dictionary. The
+#' first column in names_labels must contain the variable name and the second
+#' column the variable label. The column names are not used.
+#'
+#' If no label is provided then the existing label will not be changed. To
+#' remove a label set the label to NA.
+#'
+#' @param data data frame to be labelled
+#' @param names_labels data frame with column 1 containing variable names from
+#'   data and column 2 containing variable labels. Other columns will be
+#'   ignored.
 #' @export
 #' @examples
-#' # add a separate table of data labels for the ctDNA data
-#' data(ctDNA)
-#' ctDNA_names <- data.frame(var=names(ctDNA),
-#' label=c('Patient ID',
-#'         'Study Cohort',
-#'         'Change in ctDNA since baseline',
-#'         'Number of weeks on treatment',
-#'         'Percentage change in tumour measurement'))
-#' setVariableLabels(ctDNA=ctDNA_names)
-#'
-#' # Check that both the default and ctDNA label tables are set
-#' getVariableLabels()
-getVariableLabels <-function(){
-  vl <- rRmd.env$varInfo
-  vL <- data.frame(data.frame = names(vl),
-                   variable.names = as.character(vl))
-  return(vL)
-}
-
-
-#' Extract variable labels from labelled data and set
-#'
-#' Retrieve labels set using the haven, expss or sjlabelled and set the variable
-#' label table.
-#'
-#' By default the variable names will be associated with the data frame. To make
-#' the variable labels the default table specify default=TRUE.
-#'
-#' If no labels are supplied for a variable then the variable name will be used
-#' with '_' replaced by a space.
-#' @param data data frame with labelled variables to be extracted.
-#' @param default logical, should the variable labels be used as the default
-#'   labels for all data frames, default is FALSE.
-#' @param silent logical, should messages be suppressed
-#' @export
-#' @examples
-#' # example code (not run)
-#' # library(sjlabelled)
-#' # data(efc)
-#' # extractLabels(efc)
-extractLabels <- function(data,default=FALSE,silent=FALSE){
-  argList <- match.call()[-1]
-  if (inherits(data,"character")) data <- get0(data)
-  if (!inherits(data,'data.frame')) stop('data must be a data frame with labelled variables to extract.')
-  lblv <- lapply(data, function(x){
-    typ <- grep('label',class(x),value=TRUE)
-    if (length(typ)==0) {
-      lbl <- attr(x,"label",exact = T)
-    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label",exact = T)
-    return(ifelse(is.null(lbl),NA,lbl))
-  })
-  if (all(is.na(unlist(lblv)))) stop('No labelled variables detected in data.\nCurrently this function can extract labels created by the haven, expss and sjlabelled')
-  lbldf <- data.frame(var=names(unlist(lblv)),lbl=unlist(lblv))
-  rownames(lbldf) <- NULL
-  lbldf$lbl <- ifelse(is.na(lbldf$lbl),lbldf$var,lbldf$lbl)
-  dn <- paste0(as.character(argList$data),  "_names")
-  cl <- paste(dn,"<<-lbldf")
-  eval(parse(text = cl))
-  cl <- paste("setVariableLabels(",ifelse(default,"default",as.character(argList)),"=",dn,")")
-  eval(parse(text = cl))
-  if (!silent) message(paste(dn,' created and added to list of variable tables'))
-  return(get0(dn))
-}
-
-
-getVL <- function(data_name){
-  if (!exists(data_name)) stop(paste(data_name),' does not exist.')
-  var_info <- rRmd.env$varInfo
-  vl <- NULL
-  if (!is.null(var_info)){
-    if ('default' %in% names(var_info)) vl <- var_info[['default']]
-    if (data_name %in% names(var_info)) vl <- var_info[[data_name]]
+#' # create data frame with labels
+#' lbls <- data.frame(c1=c('cohort','size_change'),
+#' c2=c('Cancer cohort','Change in tumour size'))
+#' # set labels and return labelled data frame
+#' set_labels(ctDNA,lbls)
+set_labels <- function(data,names_labels){
+  if (!inherits(data,"data.frame")) {
+    stop("data must be a data frame")
   }
-  if (!is.null(vl)){
-    if (!vldTbl(vl,data_name)) return(NULL)
-    vL <- eval(vl)
-    if (ncol(vL)!=2)    message(paste(as.character(vl),' has been altered. The first two columns are assumed to be variable names and labels.'))
-    names(vL)[1:2] <- c('var','lbl')
-    vL <- vL[!duplicated(vL[,1]),]
-    return(vL)
-  } else return(NULL)
-}
+  if (!inherits(names_labels,"data.frame")) {
+    stop("names_labels must be a data frame")
+  }
+  if (ncol(names_labels)<2) stop("names_labels must be a data frame with at least two columns")
 
+  if (ncol(names_labels)>2) message("The names_labels data frame contains more than two columns.\nVariable names will be taken from the first column and variable labels from the second column.")
+  for (v in 1:ncol(names_labels)) names_labels[[v]] <- as.character(names_labels[[v]] )
 
+  varIndx <- which (names_labels[[1]] %in% names(data))
+  v_lbls <- names_labels[varIndx,]
 
-vldTbl <- function(vL, dn){
-  if (!exists(dn)) {
-    message(paste(dn," does not exist"))
-    return(FALSE)
-  }
-  if (!inherits(dn,'character')) {
-    message('data table must be specified as a character string.')
-    return(FALSE)
-  }
-  if (!inherits(vL,'name')) {
-    message('variable names must be specified as a data.frame.')
-    return(FALSE)
-  }
-  if (!exists(vL)){
-    message(paste(as.character(vL)," does not exist, assigning default variable labels"))
-    return(FALSE)
-  }
-  df <- get0(dn)
-  if (!inherits(df,'data.frame')) {
-    message(paste(dn,' is not a data frame'))
-    return(FALSE)
-  }
-  if (!inherits(eval(vL),'data.frame')) {
-    message(paste(as.character(vL),' is not a data frame, assigning default variable labels'))
-    return(FALSE)
-  }
-  return(TRUE)
-}
-
-getDFN <- function(dn){
-  if (grepl('subset[(]',dn)) dn <- sub("subset[(]","",dn)
-  dn <- sub(" .*","",trimws(dn))
-  dn <- sub("[^a-zA-Z1-9._].*","",dn)
-  return(dn)
+  for (i in 1:nrow(v_lbls)) attr(data[[v_lbls[[1]][i]]], "label") <- v_lbls[[2]][i]
+  return(data)
 }
 
 # return variable labels associated with variables
 replaceLbl <- function(data_arg,cv){
-  if (!inherits(data_arg,"character")) data_str <- paste(deparse(data_arg),collapse="") else data_str <- data_arg
-  dn <- getDFN(data_str)
+  if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
   if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
   if (!inherits(cv,'character')) stop('variable name must be specified as a character string.')
-   if (isLbl(get0(dn))){
-     eval(parse(text=paste('extractLabels(data=',dn,',silent=TRUE)')))
-   }
-  lbl <- getVL(dn)
-  vl <- data.frame(var=cv,ord=1:length(cv))
+  lbl <- extract_labels(get0(dn))
+  vl <- data.frame(variable=cv,ord=1:length(cv))
   if (!is.null(lbl)){
     cvnew <- merge(vl,lbl,all.x=T)
     cvnew <- cvnew[order(cvnew$ord),]
     cvnew <- cvnew[!duplicated(cvnew),]
   } else {
     cvnew <- vl
-    cvnew$lbl <- NA
+    cvnew$label <- NA
   }
-  cvnew$lbl <- ifelse(is.na(cvnew$lbl),nicename(cvnew$var),cvnew$lbl)
-  return(cvnew$lbl)
+  cvnew$label <- ifelse(is.na(cvnew$label),nicename(cvnew$variable),cvnew$label)
+  return(cvnew$label)
 }
 
-isLbl <- function(data){
-  lblv <- lapply(data, function(x){
-    typ <- grep('label',class(x),value=TRUE)
-    if (length(typ)==0) {
-      lbl <- attr(x,"label",exact = TRUE)
-    } else if (typ %in% c("labelled","haven_labelled")) lbl <- attr(x,"label",exact = TRUE)
-    return(ifelse(is.null(lbl),NA,lbl))
-  })
-  return(ifelse(length(na.omit(unlist(lblv)))==0,FALSE,TRUE))
-}
+

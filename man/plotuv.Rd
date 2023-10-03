@@ -74,6 +74,7 @@ variables are shown on the ordinate (y-axis) and covariates on the abscissa
 \examples{
 ## Run multiple univariate analyses on the pembrolizumab dataset to predict cbr and
 ## then visualise the relationships.
+data("pembrolizumab")
 rm_uvsum(data=pembrolizumab,
 response='cbr',covs=c('age','sex','l_size','baseline_ctdna'))
 plotuv(data=pembrolizumab,  response='cbr',

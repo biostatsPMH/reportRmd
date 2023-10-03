@@ -313,6 +313,31 @@ modelmatrix<-function(f,data=NULL){
     return(x)
   }}
 
+nicecall <- function(model_call) {
+  call_str <- deparse1(model_call)
+  call_str <- gsub("[\"]","'",call_str)
+  return(call_str)
+}
+matchdata <- function(dataArg){
+  df_str <- as.character(dataArg)
+  if (length(df_str)>1) df_str = df_str[2]
+  no_fnc <- gsub("[A-Za-z]+[(]","",df_str)
+  txt_bts <- unlist(strsplit(no_fnc,split = "[^A-Za-z0-9_.]"))
+  txt_bts <- txt_bts[txt_bts!=""]
+  obj <- intersect(txt_bts,ls(name=".GlobalEnv"))
+  if (length(obj)>0){
+    dfInd <-sapply(obj,function(x)inherits(get0(x),'data.frame'))
+    df <- obj[dfInd]
+    if (length(df)>1){
+      message("Multiple data objects found in function call")
+      return(NULL)
+    } else return(df)
+  } else {
+    message("Data object could not be extracted from function call")
+    return(NULL)
+  }
+}
+
 matchcovariate=function(betanames,ucall){
   out=as.vector(sapply(betanames,function(betaname){
     splitbetaname=unlist(strsplit(betaname,":",fixed=T))

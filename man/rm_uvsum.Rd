@@ -140,6 +140,7 @@ desired.
 \examples{
 # Examples are for demonstration and are not meaningful
 # Coxph model with 90\% CI
+data("pembrolizumab")
 rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 data=pembrolizumab,CIwidth=.9)
@@ -157,9 +158,9 @@ data=pembrolizumab,family = binomial)
 mList <- rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab, returnModels=TRUE)
-# mList$sex$data # will expose the modelled data
-
+#'
 # GEE on correlated outcomes
+data("ctDNA")
 rm_uvsum(response = 'size_change',
 covs=c('time','ctdna_status'),
 gee=TRUE,

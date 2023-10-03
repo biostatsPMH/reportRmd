@@ -237,6 +237,7 @@ needs to be included in the first chunk of the rmd
 knitr::opts_chunk$set(dev="cairo_pdf")
 }
 \examples{
+data("pembrolizumab")
 # Simple plot without confidence intervals
 ggkmcif(response = c('os_time','os_status'),
 cov='cohort',

@@ -16,3 +16,6 @@
 ^\.github$
 ^doc$
 ^_etSum.R$
+^_old.qmd
+^_old.R
+^_old.Rmd

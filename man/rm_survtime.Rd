@@ -93,6 +93,7 @@ estimates. Setting type = 'PH' will force a proportional hazards model.
 }
 \examples{
 # Kaplan-Mieir survival probabilities with time displayed in years
+data("pembrolizumab")
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 strata="cohort",type='KM',survtimes=seq(12,72,12),
 survtimesLbls=seq(1,6,1),

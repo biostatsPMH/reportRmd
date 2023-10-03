@@ -40,8 +40,8 @@ Imports:
     rstatix,
     scales,
     survival
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R'
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'lblCode_orig.R'
 Depends: 
-    R (>= 2.10)
+    R (>= 4.2)
 LazyData: true
 VignetteBuilder: knitr, rmarkdown

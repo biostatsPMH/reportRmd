@@ -230,7 +230,7 @@ data=pembrolizumab,
 median.text = TRUE,median.lines=TRUE,conf.curves=TRUE)
 ```
 
-## Miscellaneaous
+## Miscellaneous
 
 Get excel column numbers
 

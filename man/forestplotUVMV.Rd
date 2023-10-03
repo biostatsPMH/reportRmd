@@ -63,6 +63,7 @@ log scale. Please note that total N and reference-level N is taken from
 unadjusted model.
 }
 \examples{
+data("pembrolizumab")
 UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
 "l_size"), data=pembrolizumab, family='binomial')
 MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,

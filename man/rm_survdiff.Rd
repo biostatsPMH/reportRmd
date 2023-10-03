@@ -63,6 +63,7 @@ setting median=FALSE
 }
 \examples{
 #' # Differences between sex
+data("pembrolizumab")
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 covs='sex',digits=1)
 

@@ -83,6 +83,7 @@ summarise differences in survival rates controlling for covariates see
 }
 \examples{
 # Simple median survival table
+data("pembrolizumab")
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status')
 
 # Survival table with yearly survival rates

@@ -90,6 +90,7 @@ digits are required for p-values then use tableOnly=TRUE and format as
 desired.
 }
 \examples{
+data("pembrolizumab")
 glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
 data=pembrolizumab,family = 'binomial')
 rm_mvsum(glm_fit)

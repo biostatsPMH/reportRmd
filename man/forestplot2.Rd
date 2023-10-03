@@ -46,6 +46,7 @@ geeglm, and display the OR or RR for each variable on the appropriate log
 scale.
 }
 \examples{
+data("pembrolizumab")
 glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
 data=pembrolizumab,family = 'binomial')
 forestplot2(glm_fit)

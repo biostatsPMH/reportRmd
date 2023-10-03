@@ -69,12 +69,12 @@ function.
 \examples{
 ## Investigate models to predict baseline ctDNA and tumour size and display together
 ## (not clinically useful!)
+data(pembrolizumab)
 fit1 <- lm(baseline_ctdna~age+l_size+pdl1,data=pembrolizumab)
 m1 <- rm_mvsum(fit1,tableOnly=TRUE)
 m1$Response = 'ctDNA'
 fit2 <- lm(l_size~age+baseline_ctdna+pdl1,data=pembrolizumab)
 m2 <- rm_mvsum(fit2,tableOnly=TRUE)
 m2$Response = 'Tumour Size'
-rbind(m1,m2)
 nestTable(rbind(m1,m2),head_col='Response',to_col='Covariate')
 }
