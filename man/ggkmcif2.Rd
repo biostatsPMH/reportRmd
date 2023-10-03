@@ -236,6 +236,7 @@ knitr::opts_chunk$set(dev="cairo_pdf")
 }
 \examples{
 # Simple plot without confidence intervals
+data("pembrolizumab")
 ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab)

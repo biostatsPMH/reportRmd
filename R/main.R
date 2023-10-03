@@ -5057,8 +5057,6 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
 
 }
 
-
-
 # Survival Curves v2 --------------------------------------------------------------
 
 
@@ -5180,6 +5178,7 @@ rm_survtime <- function(data,time,status,covs=NULL,strata=NULL,type='KM',survtim
 #' @importFrom cowplot plot_grid
 #' @examples
 #' # Simple plot without confidence intervals
+#' data("pembrolizumab")
 #' ggkmcif2(response = c('os_time','os_status'),
 #' cov='cohort',
 #' data=pembrolizumab)
@@ -5250,7 +5249,8 @@ ggkmcif2 <- function (response, cov = NULL, data, type = NULL, pval = TRUE,
     out_fmt = ifelse(is.null(knitr::pandoc_to()), "html",
                      ifelse(knitr::pandoc_to(c("doc", "docx")), "doc",
                             ifelse(knitr::is_latex_output(), "latex", "html")))
-    le_code <- "≤"
+#    le_code <- "≤"
+    le_code <- "\u2264"
     if (is.null(stratalabs))
       stratalabs = c(paste0(le_code, round(cut, 2)), paste0(">",
                                                             round(cut, 2)))
