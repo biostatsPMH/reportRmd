@@ -2598,9 +2598,9 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
   }
   # round and format numeric columns if digits is specified
   if (!missing(digits)){
-    coltypes <- unlist(lapply(tab, class))
-    if (any(coltypes=='numeric')){
-      numCols <- names(coltypes)[coltypes=='numeric']
+    numCols <- unlist(lapply(tab,function(x) inherits(x,'numeric')))
+    if (any(numCols)){
+      numCols <- names(numCols)[numCols]
       colRound <- cbind(numCols,digits)
       colDigits <- as.numeric(colRound[,2])
       names(colDigits) <- colRound[,1]
