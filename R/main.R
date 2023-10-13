@@ -246,8 +246,6 @@ crrRx<-function(f,data){
 }
 
 
-
-
 #' Get covariate summary dataframe
 #'
 #' Returns a dataframe corresponding to a descriptive table.
@@ -3329,11 +3327,11 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 #'
 #' This function will combine rm_uvsum and rm_mvsum outputs into a single table.
 #' The tableOnly argument must be set to TRUE when tables to be combined are
-#' created. The resulting table will be in the same order as the uvsum table
-#' and will contain the same columns as the uvsum and mvsum tables, but the
-#' p-values will be combined into a single column. There must be a variable overlapping
-#' between the uvsum and mvsum tables and all variables in the mvsum table
-#' must also appear in the uvsum table.
+#' created. The resulting table will be in the same order as the uvsum table and
+#' will contain the same columns as the uvsum and mvsum tables, but the p-values
+#' will be combined into a single column. There must be a variable overlapping
+#' between the uvsum and mvsum tables and all variables in the mvsum table must
+#' also appear in the uvsum table.
 #'
 #'
 #' @param uvsumTable Output from rm_uvsum, with tableOnly=TRUE
@@ -3343,13 +3341,14 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 #'   use the column name 'Covariate'.
 #' @param vif boolean indicating if the variance inflation factor should be
 #'   shown if present in the mvsumTable. Default is FALSE.
-#' @param showN boolean indicating if sample sizes should be displayed. This can work to suppress sample size, but not to sprovide them if
+#' @param showN boolean indicating if sample sizes should be displayed.
+#' @param showEvent boolean indicating if number of events (dichotomous
+#'   outcomes) should be displayed.
 #' @param caption table caption
 #' @param tableOnly boolean indicating if unformatted table should be returned
 #' @param chunk_label only used if output is to Word to allow cross-referencing
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
-#' @seealso
-#'   \code{\link{rm_uvsum}},\code{\link{rm_mvsum}}
+#' @seealso \code{\link{rm_uvsum}},\code{\link{rm_mvsum}}
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
 #'   which case a data frame is returned
 #' @export
@@ -3378,7 +3377,7 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 #' logis_fit<-glm(os_status~age+sex+l_size+pdl1+tmb,data = pembrolizumab,family = 'binomial')
 #' mvtab<-rm_mvsum(logis_fit,tableOnly = TRUE)
 #' rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
-rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,showN=FALSE,caption=NULL,tableOnly=FALSE,chunk_label,fontsize){
+rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,showN=FALSE, showEvent=FALSE,caption=NULL,tableOnly=FALSE,chunk_label,fontsize){
   # Check that tables are data frames and not kable objects
   if (!inherits(uvsumTable,'data.frame')) stop('uvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
   if (!inherits(mvsumTable,'data.frame')) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
@@ -3427,6 +3426,14 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,showN=FALSE,cap
     x <-lapply(x, function(z){
       nc <- which(names(z)=="N")
       if (length(nc>0)) z <- z[,-nc]
+      return(z)
+    })
+  }
+  if (!showEvent){
+    x <-lapply(x, function(z){
+      nc <- which(names(z)=="Event")
+      if (length(nc>0)) z <- z[,-nc]
+      return(z)
     })
   }
   names(x[[1]])[2] <- paste('Unadjusted',names(x[[1]])[2])

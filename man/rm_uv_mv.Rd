@@ -10,6 +10,7 @@ rm_uv_mv(
   covTitle = "",
   vif = FALSE,
   showN = FALSE,
+  showEvent = FALSE,
   caption = NULL,
   tableOnly = FALSE,
   chunk_label,
@@ -28,7 +29,10 @@ use the column name 'Covariate'.}
 \item{vif}{boolean indicating if the variance inflation factor should be
 shown if present in the mvsumTable. Default is FALSE.}
 
-\item{showN}{boolean indicating if sample sizes should be displayed. This can work to suppress sample size, but not to sprovide them if}
+\item{showN}{boolean indicating if sample sizes should be displayed.}
+
+\item{showEvent}{boolean indicating if number of events (dichotomous
+outcomes) should be displayed.}
 
 \item{caption}{table caption}
 
@@ -45,11 +49,11 @@ which case a data frame is returned
 \description{
 This function will combine rm_uvsum and rm_mvsum outputs into a single table.
 The tableOnly argument must be set to TRUE when tables to be combined are
-created. The resulting table will be in the same order as the uvsum table
-and will contain the same columns as the uvsum and mvsum tables, but the
-p-values will be combined into a single column. There must be a variable overlapping
-between the uvsum and mvsum tables and all variables in the mvsum table
-must also appear in the uvsum table.
+created. The resulting table will be in the same order as the uvsum table and
+will contain the same columns as the uvsum and mvsum tables, but the p-values
+will be combined into a single column. There must be a variable overlapping
+between the uvsum and mvsum tables and all variables in the mvsum table must
+also appear in the uvsum table.
 }
 \examples{
 require(survival)
