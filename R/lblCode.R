@@ -116,11 +116,22 @@ set_labels <- function(data,names_labels){
   if (ncol(names_labels)<2) stop("names_labels must be a data frame with at least two columns")
 
   if (ncol(names_labels)>2) message("The names_labels data frame contains more than two columns.\nVariable names will be taken from the first column and variable labels from the second column.")
-  for (v in 1:ncol(names_labels)) names_labels[[v]] <- as.character(names_labels[[v]] )
-
-  varIndx <- which (names_labels[[1]] %in% names(data))
-  v_lbls <- names_labels[varIndx,]
-
+  for (v in 1:ncol(names_labels)) names_labels[[v]] <- as.character(names_labels[[v]])
+  tryCatch({
+    names_labels[which(is.na(names_labels[,2])), 2] <- names_labels[which(is.na(names_labels[,2])), 1]
+  }, error=function(e){})
+  varIndx <- which(names_labels[[1]] %in% names(data))
+  v_lbls <- names_labels[varIndx, ]
+  colnames(v_lbls) <- c("var", "label")
+  v_lbls$index <- varIndx
+  tryCatch({
+    varNIndx <- which(!names(data) %in% names_labels[[1]])
+    v_Nlbls <- cbind.data.frame(colnames(data)[varNIndx], colnames(data)[varNIndx])
+    colnames(v_Nlbls) <- c("var", "label")
+    v_Nlbls$index <- varNIndx
+    v_lbls <- rbind(v_lbls, v_Nlbls)
+    v_lbls <- v_lbls[order(v_lbls$index),]
+  }, error=function(e){})
   for (i in 1:nrow(v_lbls)) attr(data[[v_lbls[[1]][i]]], "label") <- v_lbls[[2]][i]
   return(data)
 }
