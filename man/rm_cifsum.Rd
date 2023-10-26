@@ -19,6 +19,7 @@ rm_cifsum(
   na.action = "na.omit",
   showCounts = TRUE,
   showGraystest = TRUE,
+  flip.CIF = FALSE,
   digits = 2,
   caption = NULL,
   tableOnly = FALSE
@@ -58,6 +59,8 @@ and error using na.action='na.fail'}
 columns should be output, default is TRUE}
 
 \item{showGraystest}{boolean indicating Gray's test should be included in the final table, default is TRUE}
+
+\item{flip.CIF}{boolean indicating whether 1 - CIF should be displayed; default if FALSE}
 
 \item{digits}{the number of digits to report in the event probabilities, default is 2.}
 
