@@ -8,221 +8,49 @@ ggkmcif2(
   response,
   cov = NULL,
   data,
-  type = NULL,
   pval = TRUE,
-  HR = FALSE,
-  HR.pval = FALSE,
   conf.curves = FALSE,
-  conf.type = "log",
   table = TRUE,
-  table.height = NULL,
-  times = NULL,
   xlab = "Time",
   ylab = NULL,
-  main = NULL,
-  stratalabs = NULL,
-  strataname = nicename(cov),
-  stratalabs.table = NULL,
-  strataname.table = strataname,
-  median.text = FALSE,
-  median.lines = FALSE,
-  median.CI = FALSE,
-  set.time.text = NULL,
-  set.time.line = FALSE,
-  set.time = 5,
-  set.time.CI = FALSE,
-  censor.marks = TRUE,
-  censor.size = 3,
-  censor.stroke = 1.5,
-  fsize = 11,
-  nsize = 3,
-  lsize = 1,
-  psize = 3.5,
-  median.size = 3,
-  median.pos = NULL,
-  median.lsize = 1,
-  set.size = 3,
-  set.pos = NULL,
-  set.lsize = 1,
-  ylim = c(0, 1),
   col = NULL,
-  linetype = NULL,
-  xlim = NULL,
-  legend.pos = NULL,
-  pval.pos = NULL,
-  show.test = T,
+  times = NULL,
+  type = NULL,
   plot.event = 1,
-  event = c("col", "linetype"),
-  flip.CIF = FALSE,
-  cut = NULL,
-  eventlabs = NULL,
-  event.name = NULL,
-  number.at.risk.text = "Number at risk",
-  HR.digits = 2,
-  HR.pval.digits = 3,
-  pval.digits = 3,
-  median.digits = 3,
-  set.time.digits = 3,
-  print.n.missing = TRUE
+  ...
 )
 }
 \arguments{
-\item{response}{Character vector with names of columns to use for response}
+\item{response}{character vector with names of columns to use for response}
 
 \item{cov}{String specifying the column name of stratification variable}
 
-\item{data}{Data frame containing your data}
+\item{data}{dataframe containing your data}
 
-\item{type}{String indicating he type of univariate model to fit. The
+\item{pval}{boolean to specify if you want p-values in the plot (Log Rank
+test for KM and Gray's test for CIF)}
+
+\item{conf.curves}{boolean to specify if you want confidence interval bands}
+
+\item{table}{Logical value. If TRUE, includes the number at risk table}
+
+\item{xlab}{String corresponding to xlabel. By default is "Time"}
+
+\item{ylab}{String corresponding to ylabel. When NULL uses "Survival}
+
+\item{col}{vector of colours}
+
+\item{times}{Numeric vector of times for the x-axis
+probability" for KM cuves, and "Probability of an event" for CIF}
+
+\item{type}{string indicating he type of univariate model to fit. The
 function will try and guess what type you want based on your response. If
 you want to override this you can manually specify the type. Options
 include "KM", and ,"CIF"}
 
-\item{pval}{Boolean to specify if you want p-values in the plot (Log Rank
-test for KM and Gray's test for CIF)}
-
-\item{HR}{Boolean to specify if you want hazard ratios included in the plot}
-
-\item{HR.pval}{Boolean to specify if you want HR p-values in the plot}
-
-\item{conf.curves}{Boolean to specify if you want confidence interval bands}
-
-\item{conf.type}{One of "none"(the default), "plain", "log" , "log-log" or
-"logit". Only enough of the string to uniquely identify it is necessary.
-The first option causes confidence intervals not to be generated. The
-second causes the standard intervals curve +- k *se(curve), where k is
-determined from conf.int. The log option calculates intervals based on the
-cumulative hazard or log(survival). The log-log option bases the intervals
-on the log hazard or log(-log(survival)), and the logit option on
-log(survival/(1-survival)).}
-
-\item{table}{Logical value. If TRUE, includes the number at risk table}
-
-\item{table.height}{Relative height of risk table (0-1)}
-
-\item{times}{Numeric vector of times for the x-axis}
-
-\item{xlab}{String corresponding to xlabel. By default is "Time"}
-
-\item{ylab}{String corresponding to ylabel. When NULL uses "Survival
-probability" for KM cuves, and "Probability of an event" for CIF}
-
-\item{main}{String corresponding to main title. When NULL uses Kaplan-Meier
-Plot s, and "Cumulative Incidence Plot for CIF"}
-
-\item{stratalabs}{String corresponding to the labels of the covariate, when
-NULL will use the levels of the covariate}
-
-\item{strataname}{String of the covariate name default is  nicename(cov)}
-
-\item{stratalabs.table}{String corresponding to the levels of the covariate
-for the number at risk table, when NULL will use the levels of the
-covariate. Can use a string of "-" when the labels are long}
-
-\item{strataname.table}{String of the covariate name for the number at risk
-table default is nicename(cov)}
-
-\item{median.text}{Boolean to specify if you want the median values added to
-the legend (or as added text if there are no covariates), for KM only}
-
-\item{median.lines}{Boolean to specify if you want the median values added as
-lines to the plot, for KM only}
-
-\item{median.CI}{Boolean to specify if you want the 95\\% confidence interval
-with the median text (Only for KM)}
-
-\item{set.time.text}{String for the text to add survival at a specified time
-(eg. year OS)}
-
-\item{set.time.line}{Boolean to specify if you want the survival added as
-lines to the plot at a specified point}
-
-\item{set.time}{Numeric values of the specific time of interest, default is 5
-(Multiple values can be entered)}
-
-\item{set.time.CI}{Boolean to specify if you want the 95\\% confidence
-interval with the set time text}
-
-\item{censor.marks}{Logical value. If TRUE, includes censor marks (only for
-KM curves)}
-
-\item{censor.size}{Size of censor marks, default is 3}
-
-\item{censor.stroke}{Stroke of censor marks, default is 1.5}
-
-\item{fsize}{Font size}
-
-\item{nsize}{Font size for numbers in the numbers at risk table}
-
-\item{lsize}{Line size}
-
-\item{psize}{Size of the pvalue}
-
-\item{median.size}{Size of the median text (Only when there are no
-covariates)}
-
-\item{median.pos}{Vector of length 2 corresponding to the median position
-(Only when there are no covariates)}
-
-\item{median.lsize}{Line size of the median lines}
-
-\item{set.size}{Size of the survival at a set time text (Only when there are
-no covariates)}
-
-\item{set.pos}{Vector of length 2 corresponding to the survival at a set
-point position (Only when there are no covariates)}
-
-\item{set.lsize}{Line size of the survival at set points}
-
-\item{ylim}{Vector of length 2 corresponding to limits of y-axis. Default to
-NULL}
-
-\item{col}{Vector of colours}
-
-\item{linetype}{Vector of line types; default is solid for all lines}
-
-\item{xlim}{Vector of length 2 corresponding to limits of x-axis. Default to
-NULL}
-
-\item{legend.pos}{Can be either a string corresponding to the legend position
-("left","top", "right", "bottom", "none") or a vector of length 2
-corresponding to the legend position (uses normalized units (ie the
-c(0.5,0.5) is the middle of the plot))}
-
-\item{pval.pos}{Vector of length 2 corresponding to the p-value position}
-
-\item{show.test}{Boolean indicating whether name of test should be displayed,
-default is TRUE}
-
 \item{plot.event}{Which event(s) to plot (1,2, or c(1,2))}
 
-\item{event}{String specifying if the event should be mapped to the colour,
-or linetype when plotting both events to colour = "col", line type}
-
-\item{flip.CIF}{Boolean to flip the CIF curve to start at 1}
-
-\item{cut}{Numeric value indicating where to divide a continuous covariate
-(default is the median)}
-
-\item{eventlabs}{String corresponding to the event type names}
-
-\item{event.name}{String corresponding to the label of the event types}
-
-\item{number.at.risk.text}{String for the label of the number at risk}
-
-\item{HR.digits}{Number of digits printed of the  hazard ratio}
-
-\item{HR.pval.digits}{Number of digits printed of the hazard ratio pvalue}
-
-\item{pval.digits}{Number of digits printed of the Gray's/log rank pvalue}
-
-\item{median.digits}{Number of digits printed of the median p-value}
-
-\item{set.time.digits}{Number of digits printed of the probability at a
-specified time}
-
-\item{print.n.missing}{Logical, should the number of missing be shown !Needs
-to be checked}
+\item{...}{additional plotting arguments see \code{\link{ggkmcif2Parameters}}}
 }
 \value{
 ggplot object; if table = F then only curves are output;
@@ -252,34 +80,14 @@ data=pembrolizumab,
 median.text = TRUE,median.lines=TRUE,conf.curves=TRUE)
 
 # Plot with specified survival times and log-log CI
-ggkmcif2(
-response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
 cov='sex',
 data=pembrolizumab,
-median.text = FALSE,
-set.time.text = 'mo OS',
-set.time = c(12,24),
-conf.type = 'log-log',
-conf.curves=TRUE)
+median.text = FALSE,set.time.text = 'mo OS',
+set.time = c(12,24),conf.type = 'log-log',conf.curves=TRUE)
 
 # KM plot with 95\% CI and censor marks
-ggkmcif2(
-response = c('os_time','os_status'),
-cov='sex',
-data = pembrolizumab,
-HR=TRUE,
-HR.pval = TRUE,
-conf.curves = TRUE,
-conf.type='log-log',
-set.time.CI = TRUE,
-censor.marks = TRUE)
-
-# Example with cumulative incidence function
-library(survival)
-data(pbc)
-ggkmcif2(
-response = c("time", "status"),
-cov = "trt",
-data = pbc)
-
+ggkmcif2(c('os_time','os_status'),'sex',data = pembrolizumab, type = 'KM',
+HR=TRUE, HR_pval = TRUE, conf.curves = TRUE,conf.type='log-log',
+set.time.CI = TRUE, censor.marks=TRUE)
 }

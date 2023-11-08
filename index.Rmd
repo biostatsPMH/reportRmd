@@ -141,6 +141,42 @@ percentage='row')
 
 ```
 
+\newpage
+# Using Labelled Variables
+New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
+
+```{r}
+
+ctDNA_names <- data.frame(var=names(ctDNA),
+                          label=c('Patient ID',
+                                  'Study Cohort',
+                                  'Change in ctDNA since baseline',
+                                  'Number of weeks on treatment',
+                                  'Percentage change in tumour measurement'))
+ctDNA <- set_labels(ctDNA,ctDNA_names)
+
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status'))
+```
+
+We can change individual labels with the set_var_labels command
+
+```{r}
+ctDNA <- set_var_labels(ctDNA,
+                        cohort="A new cohort label")
+rm_covsum(data=ctDNA,
+          covs=c('cohort'))
+
+```
+
+If variable labels need to be changed en masse, they can be extracted:
+```{r}
+var_labels <- extract_labels(ctDNA)
+var_labels
+```
+
+
+\newpage
 
 # Univariate regression
 
@@ -367,53 +403,97 @@ ggsave('images/plotuv.png',width = 5,height = 4,dpi = 300)
 
 ![](images/plotuv.png)
 
-## Plotting odds ratios
-
-This will default to a log scale, but can be set to linear using `logscale=FALSE`
-```{r, eval=F,echo=T}
-require(ggplot2)
-glm_fit <- glm(orr~age+sex+change_ctdna_group+pdl1,
-               family='binomial',
-               data = pembrolizumab)
-forestplot2(glm_fit)
-```
-
-```{r, eval=F,echo=F}
-require(ggplot2)
-glm_fit <- glm(orr~age+sex+change_ctdna_group+pdl1,
-               family='binomial',
-               data = pembrolizumab)
-ggsave('images/forestplot.png',height = 2,width = 5,dpi=300)
-forestplot2(glm_fit) + theme(axis.ticks.y =  element_blank(),
-                             axis.text.y = element_blank())
-ggsave('images/forestplot_sm.png',height = 1,width =3)
-```
-
-![](images/forestplot.png)
 \newpage
 
 ## Plotting survival curves
 
+Survival curves are now ggplot2-based, the older version, ggkmcif is deprecated from version 0.1.0
 ```{r, eval=F,echo=T}
-ggkmcif(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab)
 ```
 
 ```{r, eval=F,echo=FALSE}
-ggkmcif(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab)
-# # doesn't work - need to save manually
-# ggsave('images/ggkmcif.png',dpi=300,width = 5,height = 5)
-p <- ggkmcif(response = c('os_time','os_status'),
+ggsave('images/ggkmcif.png',dpi=300,width = 5,height = 5)
+p <- ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab,returns = T)
 plot(p[[1]])
 ggsave('images/ggkmcif_sm.png',width = 4,height = 2.5)
+
 ```
 
 ![](images/ggkmcif.png)
+\newpage
+
+## Forest Plots
+
+Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0
+
+This will default to a log scale, but can be set to linear using `logscale=FALSE`
+
+```{r, eval=F,echo=T}
+data("pembrolizumab")
+forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
+data=pembrolizumab, family='binomial')
+
+```
+
+```{r, eval=F,echo=FALSE}
+data("pembrolizumab")
+forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
+data=pembrolizumab, family='binomial')
+ggsave('images/forestuv.png',width = 5,height = 1.5)
+
+```
+
+![](images/forestuv.png)
+### Multivariable Model Forest Plot
+
+```{r, eval=F,echo=T}
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
+               family='binomial',
+               data = pembrolizumab)
+forestplotMV(glm_fit)
+```
+
+```{r, eval=F,echo=FALSE}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
+               family='binomial',
+               data = pembrolizumab)
+forestplotMV(glm_fit)
+ggsave('images/forestmv.png',width = 4,height = 1.5)
+
+```
+
+![](images/forestmv.png)
+
+### Combining UV & MV models into a single plot
+```{r, eval=F,echo=T}
+UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
+ "l_size"), data=pembrolizumab, family='binomial')
+ MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
+ data=pembrolizumab,family = 'binomial'))
+ forestplotUVMV(UVp, MVp)
+
+```
+
+```{r, eval=F,echo=F}
+UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
+ "l_size"), data=pembrolizumab, family='binomial')
+ MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
+ data=pembrolizumab,family = 'binomial'))
+ forestplotUVMV(UVp, MVp)
+ggsave('images/forestuvmv.png',width = 5,height = 2)
+
+```
+
+![](images/forestuvmv.png)
 
 \newpage
 
