@@ -1313,8 +1313,7 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
 #'   Diagnostics, Journal of the American Statistical Association, 87:417,
 #'   178-183, DOI: 10.1080/01621459.1992.10475190
 #' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
-#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
-#'   https://socialsciences.mcmaster.ca/jfox/Books/Companion
+#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage.
 mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = TRUE, showEvent = TRUE, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
                    CIwidth = 0.95, vif=TRUE){
   lifecycle::deprecate_soft("0.2.0","covsum(markup)")
@@ -3137,7 +3136,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   rtn <- uvsum(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
                gee=gee,id = id,
                corstr = corstr,family = family,type = type,strata = strata,
-               nicenames = nicenames,showN = showN,showEvent = showEvent,
+               nicenames = FALSE,showN = showN,showEvent = showEvent,
                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
   if (returnModels) tab <- rtn[[1]] else tab <- rtn
   att_tab <- attributes(tab)
@@ -3160,7 +3159,10 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  if (nicenames) tab$Covariate <- replaceLbl(df_nm, tab$Covariate)
+  if (nicenames){
+    attr(tab,"termnames") <- tab$Covariate
+    tab$Covariate <- replaceLbl(df_nm, tab$Covariate)
+  }
 
   if ("Global p-value" %in% names(tab)){
     tab[["Global p-value"]][which(tab[["Global p-value"]]==''|tab[["Global p-value"]]=='NA')] <-NA
@@ -3314,7 +3316,10 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
                                                 matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
 
 
-  if (nicenames) tab$Covariate <- replaceLbl(att_tab$data, tab$Covariate)
+  if (nicenames){
+    attr(tab,"termnames") <- tab$Covariate
+    tab$Covariate <- replaceLbl(att_tab$data, tab$Covariate)
+  }
   names(tab)[1] <-covTitle
   for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){
@@ -3391,6 +3396,8 @@ rm_uv_mv <- function(uvsumTable,mvsumTable,covTitle='',vif=FALSE,showN=FALSE, sh
   if (!inherits(mvsumTable,'data.frame')) stop('mvsumTable must be a data.frame. Did you forget to specify tableOnly=TRUE?')
   # Check that the first columns have the same name
   if (names(uvsumTable)[1] != names(mvsumTable)[1]) stop('The covariate columns must have the same name in both tables')
+  # check that variable label use is consistent
+  if (is.null(attr(uvsumTable,"termlabels")) != is.null(attr(mvsumTable,"termlabels"))) stop("Both tables must either use variable labels or variable names\nRe-run summaries with the same data set.")
   # Check that there is overlap between the variables
   if (length(intersect(uvsumTable[,1],mvsumTable[,1]))==0) stop('There are no overlaping variables between the models, tables couldn\'t be combined.')
   # Check that all the variables in the multivariate model are in the univariate model
@@ -4703,17 +4710,23 @@ rm_survsum <- function (data, time, status, group = NULL, survtimes = NULL,
 
 #' Summarize cumulative incidence by group
 #'
-#' Displays event counts and event rates at specified time points for the entire cohort and by group. Gray's test of differences in cumulative incidence is displayed.
+#' Displays event counts and event rates at specified time points for the entire
+#' cohort and by group. Gray's test of differences in cumulative incidence is
+#' displayed.
 #'
 #' @param data data frame containing survival data
 #' @param time string indicating survival time variable
-#' @param status string indicating event status variable; must have at least 3 levels, e.g. 0 = censor, 1 = event, 2 = competing risk
-#' @param group string or character vector indicating the variable to group observations by
+#' @param status string indicating event status variable; must have at least 3
+#'   levels, e.g. 0 = censor, 1 = event, 2 = competing risk
+#' @param group string or character vector indicating the variable to group
+#'   observations by
 #' @param eventcode numerical variable indicating event, default is 1
-#' @param cencode numerical variable indicating censored observation, default is 0
-#' @param eventtimes numeric vector specifying when event probabilities should be calculated
-#' @param eventtimeunit unit of time to suffix to the time column label if
-#'   event probabilities are requested, should be plural
+#' @param cencode numerical variable indicating censored observation, default is
+#'   0
+#' @param eventtimes numeric vector specifying when event probabilities should
+#'   be calculated
+#' @param eventtimeunit unit of time to suffix to the time column label if event
+#'   probabilities are requested, should be plural
 #' @param eventtimeLbls if supplied, a vector the same length as eventtimes with
 #'   descriptions (useful for displaying years with data provided in months)
 #' @param CIwidth width of the event probabilities, default is 95%
@@ -4724,13 +4737,15 @@ rm_survsum <- function (data, time, status, group = NULL, survtimes = NULL,
 #'   and error using na.action='na.fail'
 #' @param showCounts boolean indicating if the at risk, events and censored
 #'   columns should be output, default is TRUE
-#' @param showGraystest boolean indicating Gray's test should be included in the final table, default is TRUE
-#' @param digits the number of digits to report in the event probabilities, default is 2.
+#' @param showGraystest boolean indicating Gray's test should be included in the
+#'   final table, default is TRUE
+#' @param digits the number of digits to report in the event probabilities,
+#'   default is 2.
 #' @param caption table caption for markdown output
 #' @param tableOnly should a dataframe or a formatted object be returned
 #'
-#' @return A character vector of the event table source code, unless tableOnly=TRUE in
-#'   which case a data frame is returned
+#' @return A character vector of the event table source code, unless
+#'   tableOnly=TRUE in which case a data frame is returned
 #' @export
 #'
 #' @examples
@@ -4750,7 +4765,6 @@ rm_survsum <- function (data, time, status, group = NULL, survtimes = NULL,
 #' rm_cifsum(data=pbc,time='time',status='status',group=c('trt','sex'),
 #' eventtimes=c(1825,3650),eventtimeunit='day')
 #'
-
 rm_cifsum <- function (data, time, status, group = NULL, eventcode = 1, cencode = 0, eventtimes,
                        eventtimeunit, eventtimeLbls = NULL, CIwidth = 0.95, unformattedp = FALSE,
                        na.action = "na.omit", showCounts = TRUE, showGraystest = TRUE,

@@ -29,18 +29,22 @@ rm_cifsum(
 
 \item{time}{string indicating survival time variable}
 
-\item{status}{string indicating event status variable; must have at least 3 levels, e.g. 0 = censor, 1 = event, 2 = competing risk}
+\item{status}{string indicating event status variable; must have at least 3
+levels, e.g. 0 = censor, 1 = event, 2 = competing risk}
 
-\item{group}{string or character vector indicating the variable to group observations by}
+\item{group}{string or character vector indicating the variable to group
+observations by}
 
 \item{eventcode}{numerical variable indicating event, default is 1}
 
-\item{cencode}{numerical variable indicating censored observation, default is 0}
+\item{cencode}{numerical variable indicating censored observation, default is
+0}
 
-\item{eventtimes}{numeric vector specifying when event probabilities should be calculated}
+\item{eventtimes}{numeric vector specifying when event probabilities should
+be calculated}
 
-\item{eventtimeunit}{unit of time to suffix to the time column label if
-event probabilities are requested, should be plural}
+\item{eventtimeunit}{unit of time to suffix to the time column label if event
+probabilities are requested, should be plural}
 
 \item{eventtimeLbls}{if supplied, a vector the same length as eventtimes with
 descriptions (useful for displaying years with data provided in months)}
@@ -57,20 +61,24 @@ and error using na.action='na.fail'}
 \item{showCounts}{boolean indicating if the at risk, events and censored
 columns should be output, default is TRUE}
 
-\item{showGraystest}{boolean indicating Gray's test should be included in the final table, default is TRUE}
+\item{showGraystest}{boolean indicating Gray's test should be included in the
+final table, default is TRUE}
 
-\item{digits}{the number of digits to report in the event probabilities, default is 2.}
+\item{digits}{the number of digits to report in the event probabilities,
+default is 2.}
 
 \item{caption}{table caption for markdown output}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
 }
 \value{
-A character vector of the event table source code, unless tableOnly=TRUE in
-which case a data frame is returned
+A character vector of the event table source code, unless
+tableOnly=TRUE in which case a data frame is returned
 }
 \description{
-Displays event counts and event rates at specified time points for the entire cohort and by group. Gray's test of differences in cumulative incidence is displayed.
+Displays event counts and event rates at specified time points for the entire
+cohort and by group. Gray's test of differences in cumulative incidence is
+displayed.
 }
 \examples{
 library(survival)

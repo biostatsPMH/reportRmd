@@ -36,8 +36,13 @@ You can install the development version of reportRmd from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("biostatsPMH/reportRmd")
+devtools::install_github("biostatsPMH/reportRmd", ref="development")
 ```
+
+## New Features
+
+- Survival curves have been improved and now return ggplots
+- Variable labels will now be automatically output in tables
 
 ## Documentation
 
@@ -73,9 +78,6 @@ Male (n=36)
 p-value
 </th>
 <th style="text-align:right;">
-Effect Size
-</th>
-<th style="text-align:right;">
 StatTest
 </th>
 </tr>
@@ -95,10 +97,7 @@ StatTest
 0.30
 </td>
 <td style="text-align:right;">
-0.008
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum, Eta sq
+Wilcoxon Rank Sum
 </td>
 </tr>
 <tr>
@@ -113,8 +112,6 @@ Mean (sd)
 </td>
 <td style="text-align:right;">
 59.3 (13.1)
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -138,8 +135,6 @@ Median (Min,Max)
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -155,10 +150,7 @@ Median (Min,Max)
 0.76
 </td>
 <td style="text-align:right;">
-0.002
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum, Eta sq
+Wilcoxon Rank Sum
 </td>
 </tr>
 <tr>
@@ -173,8 +165,6 @@ Mean (sd)
 </td>
 <td style="text-align:right;">
 12.1 (27.3)
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -198,8 +188,6 @@ Median (Min,Max)
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -218,8 +206,6 @@ Missing
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -232,13 +218,10 @@ Missing
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-0.81
+0.84
 </td>
 <td style="text-align:right;">
-0.02
-</td>
-<td style="text-align:right;">
-Fisher Exact, Cramer
+Chi Sq
 </td>
 </tr>
 <tr>
@@ -253,8 +236,6 @@ Decrease from baseline
 </td>
 <td style="text-align:right;">
 14 (42)
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -278,8 +259,6 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -297,6 +276,212 @@ Missing
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+
+### Using Variable Labels
+
+``` r
+var_names <- data.frame(var=c("age","pdl1","change_ctdna_group"),
+                          label=c('Age at study entry',
+                                  'PD L1 percent',
+                                  'ctDNA change from baseline to cycle 3'))
+
+pembrolizumab <- set_labels(pembrolizumab,var_names)
+
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1','change_ctdna_group'))
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Full Sample (n=94)
+</th>
+<th style="text-align:right;">
+Female (n=58)
+</th>
+<th style="text-align:right;">
+Male (n=36)
+</th>
+<th style="text-align:right;">
+p-value
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Age at study entry</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+0.30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Mean (sd)
+</td>
+<td style="text-align:right;">
+57.9 (12.8)
+</td>
+<td style="text-align:right;">
+56.9 (12.6)
+</td>
+<td style="text-align:right;">
+59.3 (13.1)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Median (Min,Max)
+</td>
+<td style="text-align:right;">
+59.1 (21.1, 81.8)
+</td>
+<td style="text-align:right;">
+56.6 (34.1, 78.2)
+</td>
+<td style="text-align:right;">
+61.2 (21.1, 81.8)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">PD L1 percent</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+0.76
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Mean (sd)
+</td>
+<td style="text-align:right;">
+13.9 (29.2)
+</td>
+<td style="text-align:right;">
+15.0 (30.5)
+</td>
+<td style="text-align:right;">
+12.1 (27.3)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Median (Min,Max)
+</td>
+<td style="text-align:right;">
+0 (0, 100)
+</td>
+<td style="text-align:right;">
+0.5 (0.0, 100.0)
+</td>
+<td style="text-align:right;">
+0 (0, 100)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Missing
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">ctDNA change from baseline to cycle
+3</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Decrease from baseline
+</td>
+<td style="text-align:right;">
+33 (45)
+</td>
+<td style="text-align:right;">
+19 (48)
+</td>
+<td style="text-align:right;">
+14 (42)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Increase from baseline
+</td>
+<td style="text-align:right;">
+40 (55)
+</td>
+<td style="text-align:right;">
+21 (52)
+</td>
+<td style="text-align:right;">
+19 (58)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Missing
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+18
+</td>
+<td style="text-align:right;">
+3
 </td>
 <td style="text-align:right;">
 </td>
@@ -328,26 +513,32 @@ p-value
 <th style="text-align:right;">
 N
 </th>
+<th style="text-align:right;">
+Event
+</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">age</span>
+<span style="font-weight: bold;">Age at study entry</span>
 </td>
 <td style="text-align:right;">
 0.96 (0.91, 1.00)
 </td>
 <td style="text-align:right;">
-0.09
+0.089
 </td>
 <td style="text-align:right;">
 94
 </td>
+<td style="text-align:right;">
+78
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">pdl1</span>
+<span style="font-weight: bold;">PD L1 percent</span>
 </td>
 <td style="text-align:right;">
 0.97 (0.95, 0.98)
@@ -358,10 +549,14 @@ N
 <td style="text-align:right;">
 93
 </td>
+<td style="text-align:right;">
+77
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">change ctdna group</span>
+<span style="font-weight: bold;">ctDNA change from baseline to cycle
+3</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -370,6 +565,9 @@ N
 </td>
 <td style="text-align:right;">
 73
+</td>
+<td style="text-align:right;">
+58
 </td>
 </tr>
 <tr>
@@ -384,6 +582,9 @@ Reference
 <td style="text-align:right;">
 33
 </td>
+<td style="text-align:right;">
+19
+</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -396,6 +597,9 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 40
+</td>
+<td style="text-align:right;">
+39
 </td>
 </tr>
 </tbody>
@@ -422,10 +626,10 @@ OR(95%CI)
 p-value
 </th>
 <th style="text-align:right;">
-Global p-value
+N
 </th>
 <th style="text-align:right;">
-N
+Event
 </th>
 <th style="text-align:right;">
 VIF
@@ -435,7 +639,8 @@ VIF
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">change ctdna group</span>
+<span style="font-weight: bold;">ctDNA change from baseline to cycle
+3</span>
 </td>
 <td style="text-align:right;">
 </td>
@@ -443,9 +648,10 @@ VIF
 <span style="font-weight: bold;">0.009</span>
 </td>
 <td style="text-align:right;">
+73
 </td>
 <td style="text-align:right;">
-73
+58
 </td>
 <td style="text-align:right;">
 1.00
@@ -461,9 +667,10 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+33
 </td>
 <td style="text-align:right;">
-33
+19
 </td>
 <td style="text-align:right;">
 </td>
@@ -478,27 +685,29 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+40
 </td>
 <td style="text-align:right;">
-40
+39
 </td>
 <td style="text-align:right;">
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">pdl1</span>
+<span style="font-weight: bold;">PD L1 percent</span>
 </td>
 <td style="text-align:right;">
 0.97 (0.95, 1.00)
 </td>
 <td style="text-align:right;">
-0.07
-</td>
-<td style="text-align:right;">
+0.066
 </td>
 <td style="text-align:right;">
 73
+</td>
+<td style="text-align:right;">
+58
 </td>
 <td style="text-align:right;">
 1.18
@@ -511,13 +720,13 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;"></span>
-</td>
-<td style="text-align:right;">
 <span style="font-weight: bold;">0.004</span>
 </td>
 <td style="text-align:right;">
 73
+</td>
+<td style="text-align:right;">
+58
 </td>
 <td style="text-align:right;">
 1.04
@@ -533,9 +742,10 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+14
 </td>
 <td style="text-align:right;">
-14
+11
 </td>
 <td style="text-align:right;">
 </td>
@@ -551,6 +761,7 @@ B
 1.00
 </td>
 <td style="text-align:right;">
+11
 </td>
 <td style="text-align:right;">
 11
@@ -569,6 +780,7 @@ C
 1.00
 </td>
 <td style="text-align:right;">
+10
 </td>
 <td style="text-align:right;">
 10
@@ -584,12 +796,13 @@ D
 0.07 (4.2e-03, 1.09)
 </td>
 <td style="text-align:right;">
-0.06
-</td>
-<td style="text-align:right;">
+0.057
 </td>
 <td style="text-align:right;">
 10
+</td>
+<td style="text-align:right;">
+3
 </td>
 <td style="text-align:right;">
 </td>
@@ -605,9 +818,10 @@ E
 0.51
 </td>
 <td style="text-align:right;">
+28
 </td>
 <td style="text-align:right;">
-28
+23
 </td>
 <td style="text-align:right;">
 </td>
@@ -642,9 +856,6 @@ rm_uv_mv(uvsumTable,mvsumTable)
 Unadjusted OR(95%CI)
 </th>
 <th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
 p
 </th>
 <th style="text-align:right;">
@@ -658,16 +869,13 @@ p (adj)
 <tbody>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">age</span>
+<span style="font-weight: bold;">Age at study entry</span>
 </td>
 <td style="text-align:right;">
 0.96 (0.91, 1.00)
 </td>
 <td style="text-align:right;">
-94
-</td>
-<td style="text-align:right;">
-0.09
+0.089
 </td>
 <td style="text-align:right;">
 </td>
@@ -679,9 +887,6 @@ p (adj)
 <span style="font-weight: bold;">sex</span>
 </td>
 <td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-94
 </td>
 <td style="text-align:right;">
 0.11
@@ -699,9 +904,6 @@ Female
 Reference
 </td>
 <td style="text-align:right;">
-58
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -716,9 +918,6 @@ Male
 0.41 (0.13, 1.22)
 </td>
 <td style="text-align:right;">
-36
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -727,13 +926,10 @@ Male
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">pdl1</span>
+<span style="font-weight: bold;">PD L1 percent</span>
 </td>
 <td style="text-align:right;">
 0.97 (0.95, 0.98)
-</td>
-<td style="text-align:right;">
-93
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">\<0.001</span>
@@ -742,17 +938,15 @@ Male
 0.98 (0.96, 1.00)
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;">0.02</span>
+<span style="font-weight: bold;">0.024</span>
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">change ctdna group</span>
+<span style="font-weight: bold;">ctDNA change from baseline to cycle
+3</span>
 </td>
 <td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-73
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.002</span>
@@ -771,9 +965,6 @@ Decrease from baseline
 Reference
 </td>
 <td style="text-align:right;">
-33
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 Reference
@@ -787,9 +978,6 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 28.74 (5.20, 540.18)
-</td>
-<td style="text-align:right;">
-40
 </td>
 <td style="text-align:right;">
 </td>
@@ -821,7 +1009,7 @@ tests between groups
 <thead>
 <tr>
 <th style="text-align:left;">
-cohort
+Group
 </th>
 <th style="text-align:right;">
 Events/Total
@@ -949,7 +1137,119 @@ ChiSq
 p-value
 </td>
 <td style="text-align:right;">
-0.02
+0.023
+</td>
+</tr>
+</tbody>
+</table>
+
+### Summarise Cumulative incidence
+
+``` r
+library(survival)
+data(pbc)
+rm_cifsum(data=pbc,time='time',status='status',group=c('trt','sex'),
+eventtimes=c(1825,3650),eventtimeunit='day')
+#> 106 observations with missing data were removed.
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Strata
+</th>
+<th style="text-align:right;">
+Event/Total
+</th>
+<th style="text-align:right;">
+1825day (95% CI)
+</th>
+<th style="text-align:right;">
+3650day (95% CI)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+1, f
+</td>
+<td style="text-align:right;">
+7/137
+</td>
+<td style="text-align:right;">
+0.04 (0.01, 0.08)
+</td>
+<td style="text-align:right;">
+0.06 (0.03, 0.12)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+1, m
+</td>
+<td style="text-align:right;">
+3/21
+</td>
+<td style="text-align:right;">
+0.10 (0.02, 0.27)
+</td>
+<td style="text-align:right;">
+0.16 (0.03, 0.36)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2, f
+</td>
+<td style="text-align:right;">
+9/139
+</td>
+<td style="text-align:right;">
+0.05 (0.02, 0.09)
+</td>
+<td style="text-align:right;">
+0.09 (0.04, 0.17)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2, m
+</td>
+<td style="text-align:right;">
+0/15
+</td>
+<td style="text-align:right;">
+0e+00 (NA, NA)
+</td>
+<td style="text-align:right;">
+0e+00 (NA, NA)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+Gray’s Test
+</td>
+<td style="text-align:right;">
+ChiSq
+</td>
+<td style="text-align:right;">
+3.3 on 3 df
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+p-value
+</td>
+<td style="text-align:right;">
+0.35
 </td>
 </tr>
 </tbody>
@@ -958,25 +1258,29 @@ p-value
 ### Plotting survival curves
 
 ``` r
-ggkmcif(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab)
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
 ### Plotting odds ratios
 
 ``` r
 require(ggplot2)
 #> Loading required package: ggplot2
-#> Warning: package 'ggplot2' was built under R version 4.2.2
 forestplot2(glm_fit)
+#> Warning: `forestplot2()` was deprecated in reportRmd 0.1.0.
+#> ℹ Please use `forestplotUV()` instead.
+#> This warning is displayed once every 8 hours.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
 #> Warning: Vectorized input to `element_text()` is not officially supported.
 #> ℹ Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -991,4 +1295,4 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
