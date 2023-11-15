@@ -3263,8 +3263,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 #'   Diagnostics, Journal of the American Statistical Association, 87:417,
 #'   178-183, \doi{10.1080/01621459.1992.10475190}
 #' @references  John Fox and Sanford Weisberg (2019). An {R} Companion to
-#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage. \url{
-#'   https://socialsciences.mcmaster.ca/jfox/Books/Companion}
+#'   Applied Regression, Third Edition. Thousand Oaks CA: Sage.
 #' @examples
 #' data("pembrolizumab")
 #' glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
