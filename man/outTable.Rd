@@ -97,7 +97,7 @@ bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
 outTable(tab,bold_cells= bold_cells)
 
 # Output the above table to HTML or LaTeX
-cat(outTable(tab=tab)) #Knits to specified global setting
-cat(outTable(tab, format="html"), file = "tab.html") #HTML output
-cat(outTable(tab, format="latex"), file = "tab.tex") #LaTeX output
+#cat(outTable(tab=tab)) #Knits to specified global setting
+#cat(outTable(tab, format="html"), file = "tab.html") #HTML output
+#cat(outTable(tab, format="latex"), file = "tab.tex") #LaTeX output
 }

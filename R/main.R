@@ -2574,9 +2574,9 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #' outTable(tab,bold_cells= bold_cells)
 #'
 #' # Output the above table to HTML or LaTeX
-#' cat(outTable(tab=tab)) #Knits to specified global setting
-#' cat(outTable(tab, format="html"), file = "tab.html") #HTML output
-#' cat(outTable(tab, format="latex"), file = "tab.tex") #LaTeX output
+#' #cat(outTable(tab=tab)) #Knits to specified global setting
+#' #cat(outTable(tab, format="html"), file = "tab.html") #HTML output
+#' #cat(outTable(tab, format="latex"), file = "tab.tex") #LaTeX output
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
                      rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits=getOption("reportRmd.digits",2),align,
                      applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label,format=NULL){
