@@ -16,7 +16,8 @@ rm_survdiff(
   CIwidth = 0.95,
   conf.type = "log",
   caption = NULL,
-  tableOnly = FALSE
+  tableOnly = FALSE,
+  fontsize
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ details. Default is 'log'.}
 \item{caption}{table caption}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the survival table source code, unless tableOnly=TRUE in
@@ -60,6 +63,7 @@ setting median=FALSE
 }
 \examples{
 #' # Differences between sex
+data("pembrolizumab")
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 covs='sex',digits=1)
 

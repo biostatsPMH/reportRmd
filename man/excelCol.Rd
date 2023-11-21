@@ -18,4 +18,6 @@ Retrieve columns number from spreadsheet columns specified as unquoted letters
 \examples{
 ## Find the column numbers for excel columns AB, CE and BB
 excelCol(AB,CE,bb)
+## Get the columns between A and K and Z
+excelCol(A-K,Z)
 }

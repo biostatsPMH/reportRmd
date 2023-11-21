@@ -1,23 +1,19 @@
 ---
-title: "reportRmd"
-date: "`r Sys.Date()`"
-output: 
-  pdf_document:
-    toc: yes
+title: "reportRmd Package"
+output:  rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{reportRmd}
+  %\VignetteIndexEntry{reportRmd Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-\newpage
-
 # Overview
-reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models. 
 
-A word of caution: 
+reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models.
 
-The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit. 
+A word of caution:
+
+The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit.
 
 <!--
 ## Styles
@@ -34,12 +30,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
 ```
 
 \newpage
-# Summary statistics 
+
+# Summary statistics
 
 Basic summary statistics
 
-
 ```{r}
+data("pembrolizumab")
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'))
 
@@ -54,6 +51,7 @@ covs=c('age','sex'),IQR=TRUE)
 ```
 
 Or `all.stats=T` for both
+
 ```{r}
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'),all.stats = TRUE)
@@ -70,8 +68,7 @@ covs=c('age','pdl1','change_ctdna_group'))
 
 ```
 
-To indicate which statistical test was used  use `show.tests=TRUE`
-
+To indicate which statistical test was used use `show.tests=TRUE`
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
@@ -82,13 +79,12 @@ show.tests=TRUE)
 
 \newpage
 
-Effect sizes (Cramer V and $\eta^2$) can be added with effSize=TRUE
+Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer's V for categorical variables.
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
-effSize=TRUE,show.tests=TRUE)
-
+show.tests=TRUE, effSize=TRUE)
 ```
 
 \newpage
@@ -99,8 +95,7 @@ Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for 
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1'),
 testcont='ANOVA',
-show.tests=TRUE)
-
+show.tests=TRUE, effSize=TRUE)
 ```
 
 \newpage
@@ -132,7 +127,8 @@ Combining multiple univariate regression analyses into a single table
 
 ```{r }
 rm_uvsum(data=pembrolizumab, response='orr',
-covs=c('age','pdl1','change_ctdna_group'))
+covs=c('age','pdl1','change_ctdna_group'),p.adjust = 'holm')
+
 
 ```
 
@@ -157,6 +153,7 @@ covs=c('age','pdl1','change_ctdna_group'))
 Correlated observations can be handled using GEE
 
 ```{r}
+data("ctDNA")
  rm_uvsum(response = 'size_change',
  covs=c('time','ctdna_status'),
  gee=TRUE,
@@ -183,9 +180,9 @@ To create a nice display for multivariable models the model needs to first be fi
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit)
-```
+rm_mvsum(glm_fit,p.adjust = 'holm')
 
+```
 
 p-values can be adjusted for multiple comparisons using any of the options available in the `p.adjust` function. This argument is also available for univariate models run with rm_uvsum.
 
@@ -193,7 +190,6 @@ p-values can be adjusted for multiple comparisons using any of the options avail
 rm_mvsum(glm_fit, showN = TRUE, vif=TRUE,p.adjust = 'holm')
 
 ```
-
 
 \newpage
 
@@ -233,7 +229,7 @@ rm_uv_mv(uvsumTable,mvsumTable)
 
 # Changing the output
 
-If you need to make changes to the tables, setting `tableOnly=TRUE` will return  a data frame for any of the `rm_` functions. Changes can be made, and the table output using `outTable()`
+If you need to make changes to the tables, setting `tableOnly=TRUE` will return a data frame for any of the `rm_` functions. Changes can be made, and the table output using `outTable()`
 
 ```{r}
 mvsumTable <- rm_mvsum(glm_fit, showN = TRUE,tableOnly = TRUE)
@@ -244,6 +240,7 @@ outTable(mvsumTable)
 # Combining tables
 
 Tables can be nested with the `nestTable()` function
+
 ```{r}
 cohortA <- rm_uvsum(data=subset(pembrolizumab,cohort=='A'), 
                      response = 'pdl1',
@@ -261,7 +258,7 @@ nestTable(rbind(cohortA,cohortE),head_col = 'Cohort',to_col = 'Covariate')
 
 \newpage
 
-# Simple Survival Summaries 
+# Simple Survival Summaries
 
 Displaying survival probabilities at different times by sex using Kaplan Meier estimates
 
@@ -283,7 +280,6 @@ rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 
 ```
 
-
 Displaying survival probabilities at different times by sex, adjusting for age using Cox PH estimates
 
 ```{r}
@@ -292,13 +288,84 @@ rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
 
 ```
 
-
 \newpage
 
 # Stratified Survival Summary
+
 ```{r}
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
             covs='sex',strata='cohort',digits=1)
+```
+
+\newpage
+
+# Working with Labels
+
+Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the default). Variable labels are set using the `label` attribute of individual variables (assigned using `reportRmd` or another package like `haven`).
+
+`reportRmd` supports the addition, removal and export of labels using the following functions:
+
+-   `set_labels` will set labels for a data frame from a lookup table
+-   `set_var_labels` allows you to set individual variable labels to a data frame
+-   `clear_labels` removes all labels from a data frame
+-   `export_labels` extracts variable labels from a data frame and returns a data frame of variable names and variable labels
+
+## Worked Example
+
+Get some descriptive stats for the ctDNA data that comes with the package. The `nicenames` argument is TRUE by default so underscores are replaced by spaces
+
+```{r}
+data(ctDNA)
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+### set_labels {#sec-set_labels}
+
+If we have a lookup table of variable names and labels that we imported from a data dictionary we can set the variable labels for the data frame and these will be used in the `rm_` functions
+
+```{r}
+
+ctDNA_names <- data.frame(var=names(ctDNA),
+                          label=c('Patient ID',
+                                  'Study Cohort',
+                                  'Change in ctDNA since baseline',
+                                  'Number of weeks on treatment',
+                                  'Percentage change in tumour measurement'))
+ctDNA <- set_labels(ctDNA,ctDNA_names)
+
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+### set_var_labels {#sec-set_var_labels}
+
+Individual labels can be changed with with the `set_var_labels` command
+
+```{r}
+ctDNA <- set_var_labels(ctDNA,
+                        cohort="A new cohort label")
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+### extract_labels {#sec-extract_labels}
+
+Extract the variable labels to a data frame
+
+```{r}
+var_labels <- extract_labels(ctDNA)
+var_labels
+```
+
+### clear_labels {#sec-clear_labels}
+Or clear them all
+
+```{r}
+ctDNA <- clear_labels(ctDNA)
 ```
 
 \newpage
@@ -317,15 +384,59 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 
 \newpage
 
-## Plotting odds ratios
+## Plotting univariable odds ratios
 
-This will default to a log scale, but can be set to linear using `logscale=FALSE`
+This will default to linear scale, but can be set to log scale using `logScale=TRUE`
+
+```{r, , fig.width=7, fig.height=2}
+forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+```
+
+\newpage
+
+## Plotting multivariable odds ratios
+
 ```{r, , fig.width=7, fig.height=2}
 require(ggplot2)
-glm_fit <- glm(orr~age+sex+change_ctdna_group+pdl1,
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
                family='binomial',
                data = pembrolizumab)
-forestplot2(glm_fit)
+forestplotMV(glm_fit)
+```
+
+\newpage
+
+# Plotting combined univariable and multivariable model odd ratios
+
+To display odds ratios from univariate and multivariable models in a single forest plot, run the forestplotUV and forestplotMV functions and combine.
+
+```{r}
+uvFP <- forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvFP <- forestplotMV(glm_fit)
+
+forestplotUVMV(uvFP,mvFP,showN=T,showEvent=T)
+```
+
+\newpage
+
+This can also be done with log scale odds ratios (default is linear scale). Number of subjects and/or number of events can also be turned off, as well as different colours used.
+
+```{r}
+uvFP <- forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvFP <- forestplotMV(glm_fit)
+
+forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),logScale=T)
 ```
 
 \newpage
@@ -338,6 +449,30 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
+\newpage
+
+# Options
+
+The following options can be set:
+
+-   reportRmd.digits, detault is 2. Sets the default number of digits in output functions. Does not affect p-values.
+-   reportRmd.forceWald, default is FALSE. If set to TRUE then Wald CI, as opposed to likelihood profile CI will be used in the rm_uvsum function.
+-   reportRmd.logScale, default is TRUE. The scale of the forest plots will default to log unless otherwise specified.
+
+Example:
+
+```{r}
+ rm_uvsum(response = 'baseline_ctdna',
+ covs=c('age','sex','l_size','pdl1','tmb'),
+ data=pembrolizumab)
+ 
+ options('reportRmd.digits'=1) 
+ 
+rm_uvsum(response = 'baseline_ctdna',
+ covs=c('age','sex','l_size','pdl1','tmb'),
+ data=pembrolizumab)
+
+```
 
 \newpage
 
@@ -347,34 +482,29 @@ For pdf to be correctly generate when using survival curves it is recommended th
 
 `knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")`
 
-
 # Data Sets
 
 ## pembrolizumab
-
 
 Survival status and ctDNA levels for patients receiving pembrolizumab
 
 A data frame with 94 rows and 15 variables:
 
-
-- **id** Patient ID
-- **age** Age at study entry
-- **sex** Patient Sex
-- **cohort** Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor
-- **l_size** Target lesion size at baseline
-- **pdl1** PD L1 percent
-- **tmb** log of TMB
-- **baseline_ctdna** Baseline ctDNA
-- **change_ctdna_group** Did ctDNA increase or decrease from baseline to cycle 3
-- **orr** Objective Response
-- **cbr** Clinical Beneficial Response
-- **os_status** Overall survival status, 0 = alive, 1 = deceased
-- **os_time** Overall survival time in months
-- **pfs_status** Progression free survival status, 0 = progression free, 1 = progressed
-- **pfs_time** Progression free survival time in months
-
-
+-   **id** Patient ID
+-   **age** Age at study entry
+-   **sex** Patient Sex
+-   **cohort** Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor
+-   **l_size** Target lesion size at baseline
+-   **pdl1** PD L1 percent
+-   **tmb** log of TMB
+-   **baseline_ctdna** Baseline ctDNA
+-   **change_ctdna_group** Did ctDNA increase or decrease from baseline to cycle 3
+-   **orr** Objective Response
+-   **cbr** Clinical Beneficial Response
+-   **os_status** Overall survival status, 0 = alive, 1 = deceased
+-   **os_time** Overall survival time in months
+-   **pfs_status** Progression free survival status, 0 = progression free, 1 = progressed
+-   **pfs_time** Progression free survival time in months
 
 ## ctDNA
 
@@ -382,10 +512,9 @@ Longitudinal changes in tumour size since baseline for patients by changes in ct
 
 A data frame with 270 rows and 5 variables:
 
-- **id** Patient ID
-- **cohort** Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor
-- **ctdna_status** Change in ctDNA since baseline
-- **time** Number of weeks on treatment
-- **size_change** Percentage change in tumour measurement
-
-
+-   **id** Patient ID
+-   **cohort** Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor
+-   **ctdna_status** Change in ctDNA since baseline
+-   **time** Number of weeks on treatment
+-   **size_change** Percentage change in tumour measurement
+-   **increase** dichotomous variable indicating if size_change is negative/0 or positive

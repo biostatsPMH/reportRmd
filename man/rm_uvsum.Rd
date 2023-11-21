@@ -8,7 +8,7 @@ rm_uvsum(
   response,
   covs,
   data,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   covTitle = "",
   caption = NULL,
   tableOnly = FALSE,
@@ -21,12 +21,16 @@ rm_uvsum(
   corstr = NULL,
   family = NULL,
   type = NULL,
+  offset,
   strata = 1,
   nicenames = TRUE,
   showN = TRUE,
+  showEvent = TRUE,
   CIwidth = 0.95,
   reflevel = NULL,
-  returnModels = FALSE
+  returnModels = FALSE,
+  fontsize,
+  forceWald
 )
 }
 \arguments{
@@ -78,6 +82,9 @@ you want to override this you can manually specify the type. Options
 include "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal",
 "geeglm"}
 
+\item{offset}{string specifying the offset term to be used for Poisson or
+negative binomial regression. Example: offset="log(follow_up)"}
+
 \item{strata}{character vector of covariates to stratify by. Only used for
 coxph and crr}
 
@@ -85,6 +92,9 @@ coxph and crr}
 with a space}
 
 \item{showN}{boolean indicating if you want to show sample sizes}
+
+\item{showEvent}{boolean indicating if you want to show number of events. Only
+available for logistic.}
 
 \item{CIwidth}{width of confidence interval, default is 0.95}
 
@@ -97,6 +107,13 @@ returned. If this is TRUE then the models will be returned, but the output
 will be suppressed. In addition to the model elements a data element will
 be appended to each model so that the fitted data can be examined, if
 necessary. See Details}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
+
+\item{forceWald}{boolean indicating if Wald confidence intervals should be
+used instead of profile likelihood. This is not recommended, but can speed
+up computations. To use throughout a document use
+options(reportRmd.forceWald=TRUE)}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -123,6 +140,7 @@ desired.
 \examples{
 # Examples are for demonstration and are not meaningful
 # Coxph model with 90\% CI
+data("pembrolizumab")
 rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 data=pembrolizumab,CIwidth=.9)
@@ -140,9 +158,9 @@ data=pembrolizumab,family = binomial)
 mList <- rm_uvsum(response = 'baseline_ctdna',
 covs=c('age','sex','l_size','pdl1','tmb'),
 data=pembrolizumab, returnModels=TRUE)
-# mList$sex$data # will expose the modelled data
-
+#'
 # GEE on correlated outcomes
+data("ctDNA")
 rm_uvsum(response = 'size_change',
 covs=c('time','ctdna_status'),
 gee=TRUE,

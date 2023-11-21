@@ -9,9 +9,12 @@ rm_uv_mv(
   mvsumTable,
   covTitle = "",
   vif = FALSE,
+  showN = FALSE,
+  showEvent = FALSE,
   caption = NULL,
   tableOnly = FALSE,
-  chunk_label
+  chunk_label,
+  fontsize
 )
 }
 \arguments{
@@ -26,11 +29,18 @@ use the column name 'Covariate'.}
 \item{vif}{boolean indicating if the variance inflation factor should be
 shown if present in the mvsumTable. Default is FALSE.}
 
+\item{showN}{boolean indicating if sample sizes should be displayed.}
+
+\item{showEvent}{boolean indicating if number of events (dichotomous
+outcomes) should be displayed.}
+
 \item{caption}{table caption}
 
 \item{tableOnly}{boolean indicating if unformatted table should be returned}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -39,15 +49,15 @@ which case a data frame is returned
 \description{
 This function will combine rm_uvsum and rm_mvsum outputs into a single table.
 The tableOnly argument must be set to TRUE when tables to be combined are
-created. The resulting table will be in the same order as the uvsum table
-and will contain the same columns as the uvsum and mvsum tables, but the
-p-values will be combined into a single column. There must be a variable overlapping
-between the uvsum and mvsum tables and all variables in the mvsum table
-must also appear in the uvsum table.
+created. The resulting table will be in the same order as the uvsum table and
+will contain the same columns as the uvsum and mvsum tables, but the p-values
+will be combined into a single column. There must be a variable overlapping
+between the uvsum and mvsum tables and all variables in the mvsum table must
+also appear in the uvsum table.
 }
 \examples{
 require(survival)
-
+data("pembrolizumab")
 uvTab <- rm_uvsum(response = c('os_time','os_status'),
 covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 data=pembrolizumab,tableOnly=TRUE)

@@ -12,12 +12,14 @@ outTable(
   rows_bold = numeric(0),
   bold_cells = NULL,
   caption = NULL,
-  digits,
+  digits = getOption("reportRmd.digits", 2),
   align,
   applyAttributes = TRUE,
   keep.rownames = FALSE,
+  nicenames = TRUE,
   fontsize,
-  chunk_label
+  chunk_label,
+  format = NULL
 )
 }
 \arguments{
@@ -56,9 +58,15 @@ haven't changed.}
 
 \item{keep.rownames}{should the row names be included in the output}
 
+\item{nicenames}{boolean indicating if you want to replace . and _ in strings
+with a space}
+
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 
 \item{chunk_label}{only used knitting to Word docs to allow cross-referencing}
+
+\item{format}{if specified ('html','latex') will override the
+global pandoc setting}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -75,15 +83,21 @@ to spaces. To disable this set rm_ to FALSE
 }
 \examples{
 # To make custom changes or change the fontsize in PDF/HTML
+data("pembrolizumab")
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
 covs=c('age','sex','pdl1','tmb','l_size'),show.tests=TRUE,tableOnly = TRUE)
 outTable(tab, fontsize=7)
 
 # To bold columns with the variable names
- rows_bold <- c(1,4,7,10,13)
- outTable(tab,rows_bold = rows_bold)
+rows_bold <- c(1,4,7,10,13)
+outTable(tab,rows_bold = rows_bold)
 
- # To bold the estimates for male/female
- bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
- outTable(tab,bold_cells= bold_cells)
+# To bold the estimates for male/female
+bold_cells <- as.matrix(expand.grid(5:6,1:ncol(tab)))
+outTable(tab,bold_cells= bold_cells)
+
+# Output the above table to HTML or LaTeX
+#cat(outTable(tab=tab)) #Knits to specified global setting
+#cat(outTable(tab, format="html"), file = "tab.html") #HTML output
+#cat(outTable(tab, format="latex"), file = "tab.tex") #LaTeX output
 }

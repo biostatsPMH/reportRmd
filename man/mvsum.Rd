@@ -7,8 +7,9 @@
 mvsum(
   model,
   data,
-  digits = 2,
-  showN = FALSE,
+  digits = getOption("reportRmd.digits", 2),
+  showN = TRUE,
+  showEvent = TRUE,
   markup = TRUE,
   sanitize = TRUE,
   nicenames = TRUE,
@@ -25,6 +26,9 @@ mvsum(
 
 \item{showN}{boolean indicating sample sizes should be shown for each
 comparison, can be useful for interactions}
+
+\item{showEvent}{boolean indicating if number of events should be shown. Only
+available for logistic.}
 
 \item{markup}{boolean indicating if you want latex markup}
 
@@ -64,7 +68,6 @@ Diagnostics, Journal of the American Statistical Association, 87:417,
 178-183, DOI: 10.1080/01621459.1992.10475190
 
 John Fox and Sanford Weisberg (2019). An {R} Companion to
-Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
-https://socialsciences.mcmaster.ca/jfox/Books/Companion
+Applied Regression, Third Edition. Thousand Oaks CA: Sage.
 }
 \keyword{dataframe}

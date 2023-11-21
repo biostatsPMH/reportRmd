@@ -17,6 +17,7 @@ number at risk table
 This function puts together a survival curve, and a number at risk table
 }
 \examples{
+data("pembrolizumab")
 plot <- ggkmcif(response=c('pfs_time','pfs_status'),
 data=pembrolizumab,returns = TRUE)
 

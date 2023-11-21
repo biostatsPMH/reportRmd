@@ -40,8 +40,14 @@ You can install the development version of reportRmd from [GitHub](https://githu
 
 ``` r
 # install.packages("devtools")
- devtools::install_github("biostatsPMH/reportRmd",ref='development')
+devtools::install_github("biostatsPMH/reportRmd", ref="development")
 ```
+
+## New Features
+
+- Survival curves have been improved and now return ggplots
+- Variable labels will now be automatically output in tables
+
 
 ## Documentation
 
@@ -57,6 +63,21 @@ data("pembrolizumab")
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
+
+```
+
+### Using Variable Labels
+
+```{r }
+var_names <- data.frame(var=c("age","pdl1","change_ctdna_group"),
+                          label=c('Age at study entry',
+                                  'PD L1 percent',
+                                  'ctDNA change from baseline to cycle 3'))
+
+pembrolizumab <- set_labels(pembrolizumab,var_names)
+
+rm_covsum(data=pembrolizumab, maincov = 'sex',
+covs=c('age','pdl1','change_ctdna_group'))
 
 ```
 
@@ -107,15 +128,23 @@ Does not allow for covariates or strata, just simple tests between groups
 
 ```
 
+### Summarise Cumulative incidence
 
+```{r}
+library(survival)
+data(pbc)
+rm_cifsum(data=pbc,time='time',status='status',group=c('trt','sex'),
+eventtimes=c(1825,3650),eventtimeunit='day')
+```
 
 ### Plotting survival curves
 
 ```{r}
-ggkmcif(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab)
 ```
+
 
 ### Plotting odds ratios
 

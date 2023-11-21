@@ -7,17 +7,19 @@
 rm_mvsum(
   model,
   data,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   covTitle = "",
-  showN = FALSE,
+  showN = TRUE,
+  showEvent = TRUE,
   CIwidth = 0.95,
   vif = TRUE,
   caption = NULL,
   tableOnly = FALSE,
   p.adjust = "none",
   unformattedp = FALSE,
+  nicenames = TRUE,
   chunk_label,
-  nicenames = TRUE
+  fontsize
 )
 }
 \arguments{
@@ -36,6 +38,9 @@ use the column name 'Covariate'.}
 \item{showN}{boolean indicating sample sizes should be shown for each
 comparison, can be useful for interactions}
 
+\item{showEvent}{boolean indicating if number of events should be shown. Only
+available for logistic.}
+
 \item{CIwidth}{width for confidence intervals, defaults to 0.95}
 
 \item{vif}{boolean indicating if the variance inflation factor should be
@@ -51,10 +56,12 @@ included. See details}
 returned unformatted (ie not rounded or prefixed with '<'). Should be used
 in conjuction with the digits argument.}
 
-\item{chunk_label}{only used if output is to Word to allow cross-referencing}
-
 \item{nicenames}{boolean indicating if you want to replace . and _ in strings
 with a space}
+
+\item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -71,7 +78,8 @@ lme models an attempt is made to re-fit the model using ML and if,successful
 LRT is used to obtain a global p-value. For coxph models the model is re-run
 without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
-Wald global p-values are returned.
+Wald global p-values are returned. For negative binomial models a deviance
+test is used.
 
 If the variance inflation factor is requested (VIF=T) then a generalised VIF
 will be calculated in the same manner as the car package.
@@ -82,6 +90,7 @@ digits are required for p-values then use tableOnly=TRUE and format as
 desired.
 }
 \examples{
+data("pembrolizumab")
 glm_fit = glm(change_ctdna_group~sex:age+baseline_ctdna+l_size,
 data=pembrolizumab,family = 'binomial')
 rm_mvsum(glm_fit)
@@ -97,9 +106,8 @@ rm_mvsum(res.cox, vif=TRUE)
 \references{
 John Fox & Georges Monette (1992) Generalized Collinearity
 Diagnostics, Journal of the American Statistical Association, 87:417,
-178-183, DOI: 10.1080/01621459.1992.10475190
+178-183, \doi{10.1080/01621459.1992.10475190}
 
 John Fox and Sanford Weisberg (2019). An {R} Companion to
-Applied Regression, Third Edition. Thousand Oaks CA: Sage. URL:
-https://socialsciences.mcmaster.ca/jfox/Books/Companion
+Applied Regression, Third Edition. Thousand Oaks CA: Sage.
 }

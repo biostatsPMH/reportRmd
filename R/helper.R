@@ -1,3 +1,15 @@
+xcn <- function(v){
+  sapply(v, function(x){
+    colHead <- toupper(x)
+    if (nchar(colHead)>1){
+      l1 = substr(colHead,1,1)
+      l2 = substr(colHead,2,2)
+      rtn <- 26*which(LETTERS==l1)+which(LETTERS==l2)
+    } else {
+      rtn <- which(LETTERS==colHead)
+    }
+  })}
+
 is.error <- function(x) inherits(x, "try-error")
 csep<-function(){return(", ")}
 
@@ -176,7 +188,7 @@ formatp<- function(pvalues){
   p_out <- sapply(pvalues, function(x){
     xsig <-suppressWarnings(as.numeric(x))
     fmtX <- ifelse(xsig<0.001,"<0.001",
-                   ifelse(xsig<0.01,format(round(xsig,3),nsmall=3),
+                   ifelse(xsig<0.1,format(round(xsig,3),nsmall=3),
                           format(round(xsig,2),nsmall=2)))
     x <- ifelse(x=='excl','excl',fmtX)
   })
@@ -300,6 +312,31 @@ modelmatrix<-function(f,data=NULL){
   }else{
     return(x)
   }}
+
+nicecall <- function(model_call) {
+  call_str <- deparse1(model_call)
+  call_str <- gsub("[\"]","'",call_str)
+  return(call_str)
+}
+matchdata <- function(dataArg){
+  df_str <- as.character(dataArg)
+  if (length(df_str)>1) df_str = df_str[2]
+  no_fnc <- gsub("[A-Za-z]+[(]","",df_str)
+  txt_bts <- unlist(strsplit(no_fnc,split = "[^A-Za-z0-9_.]"))
+  txt_bts <- txt_bts[txt_bts!=""]
+  obj <- intersect(txt_bts,ls(name=".GlobalEnv"))
+  if (length(obj)>0){
+    dfInd <-sapply(obj,function(x)inherits(get0(x),'data.frame'))
+    df <- obj[dfInd]
+    if (length(df)>1){
+      message("Multiple data objects found in function call")
+      return(NULL)
+    } else return(df)
+  } else {
+    message("Data object could not be extracted from function call")
+    return(NULL)
+  }
+}
 
 matchcovariate=function(betanames,ucall){
   out=as.vector(sapply(betanames,function(betaname){
@@ -638,3 +675,9 @@ scale_colour_reportRx <- function(
   )
 }
 
+fillNAs <- function(x) {
+  ind = which(!is.na(x))
+  if(is.na(x[1]))
+    ind = c(1,ind)
+  rep(x[ind], times = diff(c(ind, length(x) + 1) ))
+}

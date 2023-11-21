@@ -20,9 +20,10 @@ rm_survtime(
   conf.type = "log",
   na.action = "na.omit",
   showCounts = TRUE,
-  digits = 2,
+  digits = getOption("reportRmd.digits", 2),
   caption = NULL,
-  tableOnly = FALSE
+  tableOnly = FALSE,
+  fontsize
 )
 }
 \arguments{
@@ -73,6 +74,8 @@ columns should be output, default is TRUE}
 \item{caption}{table caption for markdown output}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the survival table source code, unless tableOnly=TRUE in
@@ -90,6 +93,7 @@ estimates. Setting type = 'PH' will force a proportional hazards model.
 }
 \examples{
 # Kaplan-Mieir survival probabilities with time displayed in years
+data("pembrolizumab")
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
 strata="cohort",type='KM',survtimes=seq(12,72,12),
 survtimesLbls=seq(1,6,1),

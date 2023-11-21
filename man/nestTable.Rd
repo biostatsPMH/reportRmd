@@ -15,8 +15,9 @@ nestTable(
   boldheaders = TRUE,
   hdr_prefix = "",
   hdr_suffix = "",
-  digits = 2,
-  tableOnly = FALSE
+  digits = getOption("reportRmd.digits", 2),
+  tableOnly = FALSE,
+  fontsize
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ number or a vector corresponding to the number of numeric columns}
 
 \item{tableOnly}{boolean indicating if the table should be formatted for
 printing or returned as a data frame}
+
+\item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -66,12 +69,12 @@ function.
 \examples{
 ## Investigate models to predict baseline ctDNA and tumour size and display together
 ## (not clinically useful!)
+data(pembrolizumab)
 fit1 <- lm(baseline_ctdna~age+l_size+pdl1,data=pembrolizumab)
 m1 <- rm_mvsum(fit1,tableOnly=TRUE)
 m1$Response = 'ctDNA'
 fit2 <- lm(l_size~age+baseline_ctdna+pdl1,data=pembrolizumab)
 m2 <- rm_mvsum(fit2,tableOnly=TRUE)
 m2$Response = 'Tumour Size'
-rbind(m1,m2)
 nestTable(rbind(m1,m2),head_col='Response',to_col='Covariate')
 }

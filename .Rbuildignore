@@ -15,4 +15,10 @@
 ^CRAN-RELEASE$
 ^\.github$
 ^doc$
-^_etSum.R$
+^_etSum\.R$
+^_old\.qmd
+^_old\.R
+^_old\.Rmd
+^lblCode_orig\.R$
+^overview\.qmd$
+^vignettes/overview_files$
