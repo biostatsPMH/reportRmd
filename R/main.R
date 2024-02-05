@@ -2299,48 +2299,52 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
 }
 
 
-#' Plot multiple bivariate relationships in a single plot
+#'Plot multiple bivariate relationships in a single plot
 #'
-#' This function is designed to accompany \code{\link{uvsum}} as a means of
-#' visualising the results, and uses similar syntax.
+#'This function is designed to accompany \code{\link{uvsum}} as a means of
+#'visualising the results, and uses similar syntax.
 #'
-#' Plots are displayed as follows: If response is continuous For a numeric
-#' predictor scatterplot For a categorical predictor: If 20+ observations
-#' available boxplot, otherwise dotplot with median line If response is a factor
-#' For a numeric predictor: If 20+ observations available boxplot, otherwise
-#' dotplot with median line For a categorical predictor barplot Response
-#' variables are shown on the ordinate (y-axis) and covariates on the abscissa
-#' (x-axis)
+#'Plots are displayed as follows: If response is continuous For a numeric
+#'predictor scatterplot For a categorical predictor: If 20+ observations
+#'available boxplot, otherwise dotplot with median line If response is a factor
+#'For a numeric predictor: If 20+ observations available boxplot, otherwise
+#'dotplot with median line For a categorical predictor barplot Response
+#'variables are shown on the ordinate (y-axis) and covariates on the abscissa
+#'(x-axis)
 #'
-#' @param response character vector with names of columns to use for response
-#' @param covs character vector with names of columns to use for covariates
-#' @param data dataframe containing your data
-#' @param showN boolean indicating whether sample sizes should be shown on the
-#'   plots
-#' @param showPoints boolean indicating whether individual data points should be
-#'   shown when n>20 in a category
-#' @param na.rm boolean indicating whether na values should be shown or removed
-#' @param response_title character value with title of the plot
-#' @param return_plotlist boolean indicating that the list of plots should be
-#'   returned instead of a plot, useful for applying changes to the plot, see
-#'   details
-#' @param ncol the number of columns of plots to be display in the ggarrange
-#'   call, defaults to 2
-#' @param p_margins sets the TRBL margins of the individual plots, defaults to
-#'   c(0,0.2,1,.2)
-#' @param bpThreshold Default is 20, if there are fewer than 20 observations in
-#'   a category then dotplots, as opposed to boxplots are shown.
-#' @param mixed should a mix of dotplots and boxplots be shown based on sample
-#'   size? If false then all categories will be shown as either dotplots, or
-#'   boxplots according the bpThreshold and the smallest category size
-#' @keywords plot
-#' @returns a list containing plots for each variable in covs
-#' @importFrom ggplot2 ggplot aes_string geom_boxplot geom_point geom_text
-#'   stat_summary scale_x_discrete stat theme labs .data
-#' @importFrom ggpubr ggarrange
-#' @importFrom stats median
-#' @return a plot object
-#' @export
+#'@param response character vector with names of columns to use for response
+#'@param covs character vector with names of columns to use for covariates
+#'@param data dataframe containing your data
+#'@param showN boolean indicating whether sample sizes should be shown on the
+#'  plots
+#'@param showPoints boolean indicating whether individual data points should be
+#'  shown when n>20 in a category
+#'@param na.rm boolean indicating whether na values should be shown or removed
+#'@param response_title character value with title of the plot
+#'@param return_plotlist boolean indicating that the list of plots should be
+#'  returned instead of a plot, useful for applying changes to the plot, see
+#'  details
+#'@param ncol the number of columns of plots to be display in the ggarrange
+#'  call, defaults to 2
+#'@param p_margins sets the TRBL margins of the individual plots, defaults to
+#'  c(0,0.2,1,.2)
+#'@param bpThreshold Default is 20, if there are fewer than 20 observations in a
+#'  category then dotplots, as opposed to boxplots are shown.
+#'@param mixed should a mix of dotplots and boxplots be shown based on sample
+#'  size? If false then all categories will be shown as either dotplots, or
+#'  boxplots according the bpThreshold and the smallest category size
+#'@param violin Show violin plots instead of boxplots. This will override
+#'  bpThreshold and mixed.
+#'@param position for categorical variables how should barplots be presented.
+#'  Default is "dodge" IF stack is TRUE then n will not be shown.
+#'@keywords plot
+#'@returns a list containing plots for each variable in covs
+#'@importFrom ggplot2 ggplot aes_string geom_boxplot geom_point geom_text
+#'  stat_summary scale_x_discrete stat theme labs .data
+#'@importFrom ggpubr ggarrange
+#'@importFrom stats median
+#'@return a plot object
+#'@export
 #' @examples
 #' ## Run multiple univariate analyses on the pembrolizumab dataset to predict cbr and
 #' ## then visualise the relationships.
@@ -2349,15 +2353,27 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
 #' response='cbr',covs=c('age','sex','l_size','baseline_ctdna'))
 #' plotuv(data=pembrolizumab,  response='cbr',
 #' covs=c('age','sex','l_size','baseline_ctdna'),showN=TRUE)
-#' @seealso \code{\link{ggplot}} and \code{\link{ggarrange}}
+#'@seealso \code{\link{ggplot}} and \code{\link{ggarrange}}
 plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
                    response_title=NULL,return_plotlist=FALSE,ncol=2,p_margins=c(0,0.2,1,.2),
-                   bpThreshold=20,mixed=TRUE){
+                   bpThreshold=20,mixed=TRUE,violin=FALSE,position=c("dodge","stack","fill")){
   for (v in c(response,covs)){
     if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
     if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
   }
-
+  if (violin){
+    showPoints=FALSE
+  }
+  position = match.arg(position)
+  if (position=="stack"){
+    bar_position=ggplot2::position_stack
+    showN=FALSE
+  } else if (position=="dodge"){
+    bar_position=ggplot2::position_dodge
+  } else if (position=="fill"){
+    bar_position=ggplot2::position_fill
+    showN=FALSE
+  }
   if (is.null(response_title)) response_title = response
   response_title = niceStr(response_title)
   plist <- NULL
@@ -2396,8 +2412,13 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
                               levels = c('0','1'))
           black_points <- pdata[!pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
           coloured_points <- pdata[pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
-          p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]],fill=.data[[response]])) +
-            geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)  +
+          p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]],fill=.data[[response]]))
+          if (violin) {
+            p <- p + geom_violin(aes(alpha=.data[['alpha']],linetype=.data[['lty']]))
+          } else{
+            p <- p + geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)
+          }
+          p <- p +
             scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
             scale_linetype_manual(breaks=c('0','1'),values = c(0,1))
           if (showPoints) {
@@ -2416,7 +2437,7 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
                 axis.ticks.y = element_blank())
       } else {  # x_var is categorical
         p <- ggplot(data=pdata, aes(x=.data[[x_var]],fill=.data[[response]])) +
-          geom_bar(position=position_dodge()) +
+          geom_bar(position=bar_position()) +
           scale_x_discrete(labels= function(x) wrp_lbl(x))
         if (showN){
           p <- p +
@@ -2471,9 +2492,13 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
                               levels=c('0','1'))
           black_points <- pdata[!pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
           coloured_points <- pdata[pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
-          p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]])) +
-            geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)  +
-            scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
+          p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]))
+          if (violin) {
+            p <- p + geom_violin(aes(alpha=.data[['alpha']],linetype=.data[['lty']]))
+          } else{
+            p <- p + geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)
+          }
+          scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
             scale_linetype_manual(breaks=c('0','1'),values = c(0,1))+
             scale_x_discrete(labels= function(x) wrp_lbl(x))
           if (showPoints) {
@@ -2916,18 +2941,19 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' outTable(tab,digits=5)
 #' outTable(tab,digits=5, applyAttributes=FALSE) # remove bold/indent
 rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = FALSE,
-                       covTitle = "", digits = 1, digits.cat = 0, nicenames = TRUE,
-                       IQR = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE,
-                       p.adjust='none', unformattedp = FALSE,
-                       show.tests = FALSE, testcont = c("rank-sum test", "ANOVA"),
-                       testcat = c("Chi-squared", "Fisher"), full = TRUE, include_missing = FALSE,
-                       percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
-                       numobs = NULL, fontsize,chunk_label)
+                      covTitle = "", digits = 1, digits.cat = 0, nicenames = TRUE,
+                      IQR = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE,
+                      p.adjust='none', unformattedp = FALSE,
+                      show.tests = FALSE, testcont = c("rank-sum test", "ANOVA"),
+                      testcat = c("Chi-squared", "Fisher"), full = TRUE, include_missing = FALSE,
+                      percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
+                      numobs = NULL, fontsize,chunk_label)
 {
   if (unformattedp |p.adjust !='none')
-    formatp <- function(x) {
-      as.numeric(x)
-    }
+    formatp_new <- formatp
+  formatp <- function(x) {
+    as.numeric(x)
+  }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   df_nm <- matchdata(argList$data)
   argsToPass <- intersect(names(formals(covsum)), names(argList))
@@ -2945,12 +2971,12 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
     if (p.adjust!='none'){
-      tab[["p (unadjusted)"]] <- tab[["p-value"]]
+      tab[["p (unadjusted)"]] <- formatp_new(tab[["p-value"]])
       tab[["p-value"]] <- sapply(tab[["p-value"]],function(x) p.adjust(x,method=p.adjust))
     }
     to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
     p_vals <- tab[["p-value"]]
-    new_p <- sapply(p_vals, formatp)
+    new_p <- sapply(p_vals, formatp_new)
     tab[["p-value"]] <- new_p
     if (length(to_bold_p) > 0)
       bold_cells <- rbind(bold_cells, matrix(cbind(to_bold_p,
@@ -2972,8 +2998,8 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
     return(tab)
   }
   argL <- list(tab = tab, to_indent = to_indent, bold_cells = bold_cells,
-           caption = caption, chunk_label = ifelse(missing(chunk_label),
-                                                   "NOLABELTOADD", chunk_label))
+               caption = caption, chunk_label = ifelse(missing(chunk_label),
+                                                       "NOLABELTOADD", chunk_label))
   if (!missing(fontsize)) argL[['fontsize']] <- fontsize
   do.call(outTable, argL)
 }

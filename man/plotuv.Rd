@@ -16,7 +16,9 @@ plotuv(
   ncol = 2,
   p_margins = c(0, 0.2, 1, 0.2),
   bpThreshold = 20,
-  mixed = TRUE
+  mixed = TRUE,
+  violin = FALSE,
+  position = c("dodge", "stack", "fill")
 )
 }
 \arguments{
@@ -46,12 +48,18 @@ call, defaults to 2}
 \item{p_margins}{sets the TRBL margins of the individual plots, defaults to
 c(0,0.2,1,.2)}
 
-\item{bpThreshold}{Default is 20, if there are fewer than 20 observations in
-a category then dotplots, as opposed to boxplots are shown.}
+\item{bpThreshold}{Default is 20, if there are fewer than 20 observations in a
+category then dotplots, as opposed to boxplots are shown.}
 
 \item{mixed}{should a mix of dotplots and boxplots be shown based on sample
 size? If false then all categories will be shown as either dotplots, or
 boxplots according the bpThreshold and the smallest category size}
+
+\item{violin}{Show violin plots instead of boxplots. This will override
+bpThreshold and mixed.}
+
+\item{position}{for categorical variables how should barplots be presented.
+Default is "dodge" IF stack is TRUE then n will not be shown.}
 }
 \value{
 a list containing plots for each variable in covs
