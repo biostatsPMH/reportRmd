@@ -2949,11 +2949,6 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                       percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
                       numobs = NULL, fontsize,chunk_label)
 {
-  if (unformattedp |p.adjust !='none')
-    formatp_new <- formatp
-  formatp <- function(x) {
-    as.numeric(x)
-  }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   df_nm <- matchdata(argList$data)
   argsToPass <- intersect(names(formals(covsum)), names(argList))
@@ -2971,13 +2966,15 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
     if (p.adjust!='none'){
-      tab[["p (unadjusted)"]] <- formatp_new(tab[["p-value"]])
-      tab[["p-value"]] <- sapply(tab[["p-value"]],function(x) p.adjust(x,method=p.adjust))
+      #tab[["p (unadjusted)"]] <- tab[["p-value"]]
+      unadjusted_p <- tab[["p-value"]]
+      tab[["p-value"]] <- p.adjust(unadjusted_p,method=p.adjust)
     }
     to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
-    p_vals <- tab[["p-value"]]
-    new_p <- sapply(p_vals, formatp_new)
-    tab[["p-value"]] <- new_p
+    if (!unformattedp){
+#      if (!is.null(tab[["p (unadjusted)"]])) tab[["p (unadjusted)"]] <- sapply(tab[["p (unadjusted)"]],formatp)
+      tab[["p-value"]] <- sapply(tab[["p-value"]],formatp)
+    }
     if (length(to_bold_p) > 0)
       bold_cells <- rbind(bold_cells, matrix(cbind(to_bold_p,
                                                    which(names(tab) == "p-value")), ncol = 2))
