@@ -26,3 +26,8 @@ ctDNA |> set_var_labels(
    ctdna_status="detectable ctDNA",
   cohort="A cohort label")
 }
+\seealso{
+\code{\link[=set_labels]{set_labels()}} for setting variable labels using a data frame,
+\code{\link[=extract_labels]{extract_labels()}} for creating a data frame of all variable labels,
+\code{\link[=clear_labels]{clear_labels()}} for removing variable labels
+}

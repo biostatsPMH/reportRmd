@@ -60,6 +60,9 @@ extract_labels <- function(data,sep="_"){
 #' @param ... Name-label pairs the name gives the name of the column in the
 #'   output and the label is a character vector of length one.
 #' @export
+#' @seealso [set_labels()] for setting variable labels using a data frame,
+#'   [extract_labels()] for creating a data frame of all variable labels,
+#'   [clear_labels()] for removing variable labels
 #' @examples
 #' # set labels using name-label pairs
 #' # and return labelled data frame
@@ -100,6 +103,9 @@ set_var_labels = function (data, ...) {
 #'   data and column 2 containing variable labels. Other columns will be
 #'   ignored.
 #' @export
+#' @seealso [set_var_labels()] for setting individual variable labels,
+#'   [extract_labels()] for creating a data frame of all variable labels,
+#'   [clear_labels()] for removing variable labels
 #' @examples
 #' # create data frame with labels
 #' lbls <- data.frame(c1=c('cohort','size_change'),

@@ -31,3 +31,8 @@ c2=c('Cancer cohort','Change in tumour size'))
 # set labels and return labelled data frame
 set_labels(ctDNA,lbls)
 }
+\seealso{
+\code{\link[=set_var_labels]{set_var_labels()}} for setting individual variable labels,
+\code{\link[=extract_labels]{extract_labels()}} for creating a data frame of all variable labels,
+\code{\link[=clear_labels]{clear_labels()}} for removing variable labels
+}
