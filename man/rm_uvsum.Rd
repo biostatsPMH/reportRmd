@@ -15,6 +15,7 @@ rm_uvsum(
   removeInf = FALSE,
   p.adjust = "none",
   unformattedp = FALSE,
+  whichp = c("levels", "global", "both"),
   chunk_label,
   gee = FALSE,
   id = NULL,
@@ -61,6 +62,10 @@ from the table}
 returned unformatted (ie not rounded or prefixed with '<'). Should be used
 in conjunction with the digits argument.}
 
+\item{whichp}{string indicating whether you want to display p-values for
+levels within categorical data ("levels"), global p values ("global"), or
+both ("both"). Irrelevant for continuous predictors.}
+
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
 
 \item{gee}{boolean indicating if gee models should be fit to account for
@@ -69,18 +74,17 @@ column in the data which indicates the correlated clusters.}
 
 \item{id}{character vector which identifies clusters. Only used for geeglm}
 
-\item{corstr}{character string specifying the correlation structure. Only
-used for geeglm. The following are permitted: '"independence"',
-'"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'}
+\item{corstr}{character string specifying the correlation structure. Only used
+for geeglm. The following are permitted: '"independence"', '"exchangeable"',
+'"ar1"', '"unstructured"' and '"userdefined"'}
 
 \item{family}{description of the error distribution and link function to be
 used in the model. Only used for geeglm}
 
 \item{type}{string indicating the type of univariate model to fit. The
 function will try and guess what type you want based on your response. If
-you want to override this you can manually specify the type. Options
-include "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal",
-"geeglm"}
+you want to override this you can manually specify the type. Options include
+"linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal", "geeglm"}
 
 \item{offset}{string specifying the offset term to be used for Poisson or
 negative binomial regression. Example: offset="log(follow_up)"}
@@ -104,8 +108,8 @@ the function throws an error}
 
 \item{returnModels}{boolean indicating if a list of fitted models should be
 returned. If this is TRUE then the models will be returned, but the output
-will be suppressed. In addition to the model elements a data element will
-be appended to each model so that the fitted data can be examined, if
+will be suppressed. In addition to the model elements a data element will be
+appended to each model so that the fitted data can be examined, if
 necessary. See Details}
 
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
@@ -170,6 +174,5 @@ data=ctDNA,showN=TRUE)
 }
 \seealso{
 \code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
-\code{\link{coxph}},
-\code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
+\code{\link{coxph}}, \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
 }

@@ -13,6 +13,7 @@ rm_mvsum(
   showEvent = TRUE,
   CIwidth = 0.95,
   vif = TRUE,
+  whichp = c("levels", "global", "both"),
   caption = NULL,
   tableOnly = FALSE,
   p.adjust = "none",
@@ -45,6 +46,10 @@ available for logistic.}
 
 \item{vif}{boolean indicating if the variance inflation factor should be
 included. See details}
+
+\item{whichp}{string indicating whether you want to display p-values for
+levels within categorical data ("levels"), global p values ("global"), or
+both ("both"). Irrelevant for continuous predictors.}
 
 \item{caption}{table caption}
 
