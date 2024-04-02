@@ -2954,6 +2954,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                        numobs = NULL, fontsize,chunk_label)
 {
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
+
   df_nm <- matchdata(argList$data)
   argsToPass <- intersect(names(formals(covsum)), names(argList))
   covsumArgs <- argList[names(argList) %in% argsToPass]
@@ -2982,6 +2983,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
     if (length(to_bold_p) > 0)
       bold_cells <- rbind(bold_cells, matrix(cbind(to_bold_p,
                                                    which(names(tab) == "p-value")), ncol = 2))
+    tab[["p-value"]] <-gsub("",NA,tab[["p-value"]])
   }
   if ("Effect Size" %in% names(tab)) {
     e_vals <- tab[["Effect Size"]]
@@ -3322,7 +3324,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #' require(survival)
   #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
   #' rm_mvsum(res.cox, vif=TRUE)
-  rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
+  rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=FALSE,
                        whichp=c("levels","global","both"),
                        caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,chunk_label, fontsize){
     if (unformattedp) formatp <- function(x) {as.numeric(x)}
@@ -4719,6 +4721,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     if (inherits(mtbl, "matrix")) {
       m_CI <- apply(mtbl[, grep("median|LCL|UCL", colnames(mtbl))],
                     1, function(x) psthr(x, y = digits))
+      m_CI <- gsub("NA","NE",m_CI)
       lr <- survival::survdiff(as.formula(paste0("survival::Surv(",
                                                  time, ",", status, ") ~", paste0(group, collapse = "+"))),
                                data = data)
@@ -4745,6 +4748,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     else {
       m_CI <- psthr(mtbl[grep("median|LCL|UCL", names(mtbl))],
                     y = digits)
+      m_CI <- gsub("NA","NE",m_CI)
       nt <- paste0(mtbl["events"], "/", mtbl["n.start"])
       w <- cbind(nt, m_CI, w)
       tab <- data.frame(w)

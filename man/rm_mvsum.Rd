@@ -12,7 +12,7 @@ rm_mvsum(
   showN = TRUE,
   showEvent = TRUE,
   CIwidth = 0.95,
-  vif = TRUE,
+  vif = FALSE,
   whichp = c("levels", "global", "both"),
   caption = NULL,
   tableOnly = FALSE,
