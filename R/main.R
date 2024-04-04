@@ -2983,7 +2983,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
     if (length(to_bold_p) > 0)
       bold_cells <- rbind(bold_cells, matrix(cbind(to_bold_p,
                                                    which(names(tab) == "p-value")), ncol = 2))
-    tab[["p-value"]] <-gsub("",NA,tab[["p-value"]])
+    tab[["p-value"]] <- sapply(tab[["p-value"]],function(x) ifelse(nchar(x)==0,NA,x))
   }
   if ("Effect Size" %in% names(tab)) {
     e_vals <- tab[["Effect Size"]]
