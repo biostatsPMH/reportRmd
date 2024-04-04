@@ -4394,9 +4394,6 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
       gB$widths[2:5] <- as.list(maxWidth)
       gC$widths[2:5] <- as.list(maxWidth)
 
-      gridExtra::grid.arrange(gA, gB, gC,
-                              clip = FALSE, nrow = 3, ncol = 1,
-                              heights = unit(c(2, .1, .25), c("null", "null", "null")))
 
       if(returns) {
         if(table==TRUE){
@@ -4404,6 +4401,11 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
         } else a <- p
 
         return(a)
+      } else {
+        gridExtra::grid.arrange(gA, gB, gC,
+                                clip = FALSE, nrow = 3, ncol = 1,
+                                heights = unit(c(2, .1, .25), c("null", "null", "null")))
+
       }
     } else(return(p))
 
