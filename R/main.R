@@ -927,6 +927,13 @@ uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),
     strataVar <- ""
     strata <- ""
   }
+  if (length(response)==1) {
+    if (sum(is.na(data[[response]]))>0) message(paste(sum(is.na(data[[response]])),"observations with missing outcome removed."))
+    data <- subset(data,!is.na(data[[response]]))
+  } else {
+    if (sum(is.na(data[[response[1]]])|is.na(data[[response[2]]]))>0) message(paste(sum(is.na(data[[response[1]]])|is.na(data[[response[2]]])),"observations with missing outcome removed."))
+    data <- subset(data,!(is.na(data[[response[1]]])|is.na(data[[response[2]]])))
+  }
   if (!is.null(type)) {
     if (length(response)==1 & (type %in% c('coxph','crr')))
       stop('Please specify two variables in the response for survival models. \nExample: response=c("time","status")')
