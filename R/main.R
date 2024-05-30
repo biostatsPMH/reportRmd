@@ -5992,4 +5992,6 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     return(as.list(environment(), all=TRUE))
   }
 
-
+example <- function(x) {
+  print(x)
+}
