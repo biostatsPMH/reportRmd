@@ -24,11 +24,12 @@ Suggests:
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Imports: 
     aod,
     cmprsk,
     cowplot,
+    dplyr, 
     geepack,
     ggplot2,
     ggpubr,
@@ -42,10 +43,10 @@ Imports:
     rlang,
     rstatix,
     scales,
+    stats,
     survival
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'delta_calculation.R' 'myHelpers.R' 'rm_compactsummary.R' 'xvar_functions.R'
 Depends: 
     R (>= 4.2)
 LazyData: true
 VignetteBuilder: knitr, rmarkdown
-

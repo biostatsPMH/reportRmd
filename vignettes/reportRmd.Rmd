@@ -26,12 +26,13 @@ by Pandoc will be used.
 
 ```{r setup, include=FALSE}
 library(reportRmd)
-knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
+# knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
 \newpage
 
-# Summary statistics
+# Detailed summary statistics
 
 Basic summary statistics
 
@@ -118,6 +119,75 @@ pvalue = FALSE,
 percentage='row')
 
 ```
+
+# Compact summary statistics
+
+Basic summary statistics
+```{r}
+rm_compactsummary(data = pembrolizumab, xvars = c("change_ctdna_group", "l_size"))
+```
+Set `iqr = T` for interquartile range instead of Min/Max
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars = c("change_ctdna_group", "l_size"), iqr=TRUE)
+
+```
+Or `all.stats=T` for both
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars = c("change_ctdna_group", "l_size"), all.stats = T)
+
+```
+
+\newpage
+
+This will produce summary statistics by sex:
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex')
+
+```
+
+To indicate which statistical test was used use `show.tests=TRUE`
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', show.tests=TRUE)
+
+```
+
+\newpage
+
+Effect sizes can be added with `effSize = TRUE`. If `show.tests = TRUE` as well, the effStat will also be shown:
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', effSize = T, show.tests = T)
+```
+\newpage
+
+The default summary statistic for numerical variables is median. To specify which numerical variables should have mean displayed instead, change the `use_mean` argument. Unspecificed xvars will use the default median
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', use_mean = c("pdl1"), effSize = T, show.tests = T)
+```
+The digits and digits.cat arguments can be changed to a custom numerical value. The default digits is 1, the default digits.cat is 0
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', use_mean = c("pdl1"), digits = 2, digits.cat = 1, effSize = T, show.tests = T)
+```
+To specify custom digit arguments for numerical variables, change the `digits` argument. Unspecified variables will use the default value.
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('age','pdl1','l_size'), grp = 'sex', digits = c("age" = 3, "l_size" = 2), effSize = T, show.tests = T)
+```
+\newpage
+
+The default is to indicate percentages by columns (ie. percentages within columns add to 100). But you can also specify to show by row instead
+
+```{r}
+rm_compactsummary(data=pembrolizumab, xvars=c('change_ctdna_group','orr'), grp = 'cohort', effSize = T, show.tests = T, percentage = "row")
+
+```
+
 
 \newpage
 
