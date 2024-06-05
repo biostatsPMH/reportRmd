@@ -22,7 +22,7 @@ rm_uvsum(
   corstr = NULL,
   family = NULL,
   type = NULL,
-  offset,
+  offset = NULL,
   strata = 1,
   nicenames = TRUE,
   showN = TRUE,

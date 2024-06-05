@@ -3130,7 +3130,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                      whichp=c("levels","global","both"),
                      chunk_label,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
-                     offset,
+                     offset=NULL,
                      strata = 1,
                      nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
                      reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
@@ -3173,7 +3173,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (unformattedp) formatp <- function (x,...){x}
   # get the table
   rtn <- uvsum(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
-               gee=gee,id = id,
+               gee=gee,id = id, offset=offset,
                corstr = corstr,family = family,type = type,strata = strata,
                nicenames = FALSE,showN = showN,showEvent = showEvent,
                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
