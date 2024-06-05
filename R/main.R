@@ -2796,12 +2796,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
   # ensure that the data are sorted by the header column and to column in the order they first appear
   # necessary if there is a misplaced row
   data[[head_col]] <- factor(data[[head_col]],levels=unique(data[[head_col]]),ordered = T)
-  # works when the same levels exist for different variables
-  data[order(data[[head_col]],1:nrow(data)),]
-
-  # data[[to_col]] <- factor(data[[to_col]],levels=unique(data[[to_col]]),ordered = T)
-  # data <- data[order(data[[head_col]],data[[to_col]]),]
-
+  data[[to_col]] <- factor(data[[to_col]],levels=unique(data[[to_col]]),ordered = T)
+  data <- data[order(data[[head_col]],data[[to_col]]),]
   data[[head_col]] <- as.character(data[[head_col]])
   data[[to_col]] <- as.character(data[[to_col]])
   new_row = data[1,]
@@ -3134,7 +3130,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                      whichp=c("levels","global","both"),
                      chunk_label,
                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
-                     offset,
+                     offset=NULL,
                      strata = 1,
                      nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
                      reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
@@ -3177,7 +3173,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (unformattedp) formatp <- function (x,...){x}
   # get the table
   rtn <- uvsum(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
-               gee=gee,id = id,
+               gee=gee,id = id, offset=offset,
                corstr = corstr,family = family,type = type,strata = strata,
                nicenames = FALSE,showN = showN,showEvent = showEvent,
                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
@@ -5884,7 +5880,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
         rel.height.table <- table.height
       }
 
-      p <- cowplot::plot_grid(gA, gC, nrow = 2, ncol = 1, align="v",axis="l",rel_heights = c(1,rel.height.table))
+      p <- cowplot::plot_grid(gA, gC, nrow = 2, ncol = 1, rel_heights = c(1,rel.height.table))
     }
     return(p)
   }
