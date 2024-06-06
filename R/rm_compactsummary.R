@@ -183,33 +183,3 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
   }
   return(outTable(result, caption = caption, nicenames = nicenames))
 }
-
-# View(rm_compactsummary(data = pembrolizumab, xvars = c("age", "change_ctdna_group"), grp = "cohort", use_mean = "age", tableOnly = TRUE, digits = 2, effSize = TRUE, show.tests = TRUE))
-# View(rm_compactsummary(data = pembrolizumab, xvars = c("age", "change_ctdna_group"), grp = "cohort", use_mean = "age", tableOnly = TRUE, digits = 2, effSize = TRUE, show.tests = TRUE))
-# View(rm_compactsummary(data = pembrolizumab, xvars = c("age", "change_ctdna_group", "l_size"), grp = "sex", use_mean = "age", tableOnly = TRUE, digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE, show.tests = TRUE))
-# View(rm_compactsummary(data = pembrolizumab, xvars = c("age", "change_ctdna_group"), grp = "cohort", use_mean = "age", tableOnly = TRUE, digits = 2, pvalue = FALSE, effSize = TRUE, show.tests = TRUE))
-# output <- rm_compactsummary(data = pembrolizumab, xvars = c("age", "change_ctdna_group"), grp = "cohort", use_mean = "age", tableOnly = TRUE, digits = 2, pvalue = FALSE, effSize = TRUE, show.tests = TRUE)
-# output[["Effect Size (95% CI)"]]
-# out1 <- rm_compactsummary(data = pembrolizumab, xvars = c("tmb", "l_size"), grp = "cohort", use_mean = "age", tableOnly = TRUE, digits = 2, pvalue = TRUE, effSize = TRUE, show.tests = FALSE)
-# View(out1)
-# out1[["Effect Size (95% CI)"]]
-# out1[["pTest"]]
-# out1[["effStat"]]
-# out2 <- rm_compactsummary(data = pembrolizumab, xvars = c("tmb", "l_size", "baseline_ctdna", "orr"), grp = "sex", use_mean = c("tmb", "l_size"), tableOnly = F, digits = c("tmb" = 3, "baseline_ctdna" = 2), pvalue = TRUE, show.tests = FALSE)
-# View(out2)
-
-# data("pembrolizumab")
-# pembrolizumab$binary <- ifelse(is.na(pembrolizumab$change_ctdna_group), NA,
-#                                ifelse(pembrolizumab$change_ctdna_group=="Increase from baseline", 1, 0))
-# pembrolizumab$test_grp <- ifelse(pembrolizumab$cohort == "A", NA, as.character(pembrolizumab$change_ctdna_group))
-# pembrolizumab$test_grp <- as.factor(pembrolizumab$test_grp)
-# pembrolizumab$test_no_female <- ifelse(pembrolizumab$sex == "Female", NA, as.character(pembrolizumab$change_ctdna_group))
-# pembrolizumab$test_no_female <- as.factor(pembrolizumab$test_no_female)
-# pembrolizumab$test_no_male_age <- ifelse(pembrolizumab$sex == "Male", NA, pembrolizumab$age)
-# pembrolizumab$test_binary_no_male <- ifelse(pembrolizumab$sex == "Male", NA, pembrolizumab$binary)
-
-temp <- data.frame()
-temp <- pembrolizumab[, "age"]
-temp[["age"]] <- rep(19, nrow(pembrolizumab))
-rm_compactsummary(data = temp, xvars = "age", use_mean = "age", tableOnly = TRUE)
-
