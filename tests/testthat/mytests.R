@@ -76,11 +76,4 @@ test_that("rm_compactsummary works with sd == 0", {
   output <- rm_compactsummary(data = temp, xvars = "age", use_mean = "age", tableOnly = TRUE)
   expect_equal(output[["Full Sample (n=94)"]], "19.0 (0.0)")
 })
-# check when all values are in one group
 
-all_in_a <- data <- data.frame(
-  Category = c("A", "A", "A", "A", "A"),
-  Value = c(10, 20, 30, 40, 50),
-  Description = c("First", "Second", "Third", "Fourth", "Fifth")
-)
-print(all_in_a)

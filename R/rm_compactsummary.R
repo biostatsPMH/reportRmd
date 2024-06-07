@@ -166,6 +166,9 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
+  if (!full) {
+    result <- result[, -2]
+  }
   if ("p-value" %in% colnames(result)) {
     if (!pvalue) {
       result <- result[, -which(names(result) == "p-value")]

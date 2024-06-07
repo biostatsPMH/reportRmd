@@ -84,6 +84,6 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
   return(paste0(sum(subset_grp[[xvar]], na.rm = TRUE), bracket))
 }
 
-is_binary <- function(x) all(unique(x) %in% c(0, 1))
+is_binary <- function(x) all(unique(na.omit(x)) %in% c(0, 1))
 
 
