@@ -166,6 +166,8 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
+  if (all(result[["Missing"]] == 0))
+    result <- result[, -which(names(result) == "Missing")]
   if (!full) {
     result <- result[, -2]
   }

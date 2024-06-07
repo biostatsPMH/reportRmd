@@ -31,7 +31,7 @@ test_that("rm_compact_summary works with non-logical use_mean and vector digits"
 
 test_that("rm_compactsummary works with mixed use_mean and digits", {
   output <- rm_compactsummary(data = pembrolizumab, xvars = c("tmb", "l_size", "baseline_ctdna", "orr"), grp = "sex", use_mean = c("tmb", "l_size"), tableOnly = TRUE, digits = c("tmb" = 3, "baseline_ctdna" = 2), pvalue = TRUE, show.tests = FALSE)
-  expect_equal(ncol(output), 6)
+  expect_equal(ncol(output), 5)
   expect_equal(output[["Covariate"]], c("tmb Mean (sd)", "l_size Mean (sd)", "baseline_ctdna Median (Min, Max)", "orr n(%)"))
   expect_equal(output[["Full Sample (n=94)"]], c("0.911 (0.969)", "87.9 (59.6)", "86.03 (0.00, 4475.01)", "78 (83)"))
   expect_equal(output[["p-value"]], c("0.76", "0.23", "0.97", "0.18"))
@@ -61,7 +61,7 @@ test_that("rm_compactsummary works with effSize = TRUE, show.tests = TRUE, but p
 
 test_that("rm_compactsummary works with effSize = TRUE and pvalue = TRUE, but show.tests = FALSE", {
   output <- rm_compactsummary(data = pembrolizumab, xvars = c("tmb", "l_size"), grp = "cohort", tableOnly = TRUE, digits = 2, pvalue = TRUE, effSize = TRUE, show.tests = FALSE)
-  expect_equal(ncol(output), 10)
+  expect_equal(ncol(output), 9)
   expect_equal(output[["Effect Size (95% CI)"]], c("0.19 (0.07, 0.41)", "0.31 (0.14, 0.58)"))
   expect_equal(output[["pTest"]], NULL)
   expect_equal(output[["effStat"]], NULL)
