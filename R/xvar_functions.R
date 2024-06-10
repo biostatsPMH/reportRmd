@@ -49,6 +49,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
   if (!pvalue) {
     show.tests = FALSE
   }
+  ## *** why change the class?
   class(xvar) <- "character"
   df <- data.frame(Covariate = paste0(xvar, " n(%)"))
   if (covTitle == "") {

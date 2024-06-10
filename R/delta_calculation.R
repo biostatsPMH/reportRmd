@@ -395,19 +395,30 @@ lambda_toWilcoxR <- function(lambda,N){
 
 # Effect Size (with CI) functions ----------------------------------------------------
 # Then, we can write a function to compute the effect size and CI
+
 calc_omegaSq <- function(anova_test){
   summary_anova <- summary(anova_test)
   # First calculate the effect size
   omega <- anova_toOmegaSq(summary_anova)
-  # then the delta CI  - this is the CI on the non-central F, not the CI on omega
-  delta_ci <- delta_CI(anova_test)
-  # then, we need to also transform the delta_ci to the effect size scale
-  eff_ci <- lambda_toOmegaSq(delta_ci,sum(summary_anova[[1]]$Df)+1)
-  eff_ci[eff_ci<0] <-0
-  # return the effect size, lower bound, upper bound
+
+  # use boot for bootstrap re-sampling
   output = c("omega squared"=omega,lower=eff_ci[1],upper=eff_ci[2])
   return(output)
 }
+
+# calc_omegaSq <- function(anova_test){
+#   summary_anova <- summary(anova_test)
+#   # First calculate the effect size
+#   omega <- anova_toOmegaSq(summary_anova)
+#   # then the delta CI  - this is the CI on the non-central F, not the CI on omega
+#   delta_ci <- delta_CI(anova_test)
+#   # then, we need to also transform the delta_ci to the effect size scale
+#   eff_ci <- lambda_toOmegaSq(delta_ci,sum(summary_anova[[1]]$Df)+1)
+#   eff_ci[eff_ci<0] <-0
+#   # return the effect size, lower bound, upper bound
+#   output = c("omega squared"=omega,lower=eff_ci[1],upper=eff_ci[2])
+#   return(output)
+# }
 
 calc_CramerV <- function(chisq_test){
   cramer <- chi_toCramer(chisq_test)
@@ -467,22 +478,5 @@ calc_epsilonSq <- function(kruskal_test){
 }
 
 
-# Still Need calc_Wilcoxon, calc_
-# I'm sorry - I should have told you about this function - it takes the estimate, lower, upper (as a single vector) and digits and returns a nice string
-# it default to 2 digits
-v <- c(estimate=1,lower=.5,upper=1.5)
-reportRmd:::psthr(v)
-reportRmd:::psthr(v,3)
-
-pstprn <- reportRmd:::pstprn # already in the package
-# we need to re-write to make it handle zeros a little better
-psthr <- function (x, y = 2)
-{
-  x <- sapply(x, function(x) {
-      ifelse(abs(x) >0 && (abs(x) < 0.01 || abs(x) > 1000), format(x, scientific = TRUE,
-                                                   digits = y), format(round(x, y), nsmall = y))
-  })
-  pstprn(x)
-}
 
 
