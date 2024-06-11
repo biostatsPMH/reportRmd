@@ -48,10 +48,9 @@ max on a separate line) should be displayed. Overrides iqr}
 \item{pvalue}{logical indicating if you want p-values included in the table}
 
 \item{effSize}{logical indicating if you want effect sizes and their 95\%
-confidence intervals included in the table. Can only be obtained if pvalue
-is also requested. Effect sizes calculated include Cramer's V for
-categorical variables, and Cohen's d, Wilcoxon r, Epsilon-squared, or
-Omega-squared for numeric/continuous variables}
+confidence intervals included in the table. Effect sizes calculated include
+Cramer's V for categorical variables, and Cohen's d, Wilcoxon r,
+Epsilon-squared, or Omega-squared for numeric/continuous variables}
 
 \item{show.tests}{logical indicating if the type of statistical test and
 effect size (if effSize = TRUE) used should be shown in a column beside the

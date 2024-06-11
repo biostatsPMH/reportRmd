@@ -70,10 +70,9 @@ max on a separate line) should be displayed. Overrides iqr}
 \item{pvalue}{logical indicating if you want p-values included in the table}
 
 \item{effSize}{logical indicating if you want effect sizes and their 95\%
-confidence intervals included in the table. Can only be obtained if pvalue
-is also requested. Effect sizes calculated include Cramer's V for
-categorical variables, and Cohen's d, Wilcoxon r, Epsilon-squared, or
-Omega-squared for numeric/continuous variables}
+confidence intervals included in the table. Effect sizes calculated include
+Cramer's V for categorical variables, and Cohen's d, Wilcoxon r,
+Epsilon-squared, or Omega-squared for numeric/continuous variables}
 
 \item{p.adjust}{p-adjustments to be performed}
 
@@ -113,9 +112,9 @@ rm_compactsummary(data = pembrolizumab, xvars = c("age",
 digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
 show.tests = TRUE)
 
-# To Show Effect Sizes
+# To show effect sizes
 rm_compactsummary(data = pembrolizumab, xvars = c("age",
-"change_ctdna_group"), grp = "cohort", use_mean = "age", digits = 2,
+"change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
 effSize = TRUE, show.tests = TRUE)
 
 # To return unformatted p-values

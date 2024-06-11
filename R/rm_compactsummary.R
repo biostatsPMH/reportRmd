@@ -40,10 +40,9 @@
 #'   max on a separate line) should be displayed. Overrides iqr
 #' @param pvalue logical indicating if you want p-values included in the table
 #' @param effSize logical indicating if you want effect sizes and their 95%
-#'   confidence intervals included in the table. Can only be obtained if pvalue
-#'   is also requested. Effect sizes calculated include Cramer's V for
-#'   categorical variables, and Cohen's d, Wilcoxon r, Epsilon-squared, or
-#'   Omega-squared for numeric/continuous variables
+#'   confidence intervals included in the table. Effect sizes calculated include
+#'   Cramer's V for categorical variables, and Cohen's d, Wilcoxon r,
+#'   Epsilon-squared, or Omega-squared for numeric/continuous variables
 #' @param p.adjust p-adjustments to be performed
 #' @param unformattedp logical indicating if you would like the p-value to be
 #'   returned unformatted (ie. not rounded or prefixed with '<'). Best used with
@@ -87,9 +86,9 @@
 #' digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
 #' show.tests = TRUE)
 #'
-#' # To Show Effect Sizes
+#' # To show effect sizes
 #' rm_compactsummary(data = pembrolizumab, xvars = c("age",
-#' "change_ctdna_group"), grp = "cohort", use_mean = "age", digits = 2,
+#' "change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
 #' effSize = TRUE, show.tests = TRUE)
 #'
 #' # To return unformatted p-values
@@ -98,13 +97,69 @@
 #'
 #' @export
 rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.tests = FALSE, full = TRUE, percentage = "col") {
+  if (missing(data))
+    stop("data is a required argument")
+  if (missing(xvars))
+    stop("xvars is a required argument")
+  if (!inherits(data, "data.frame"))
+    stop("data must be supplied as a data frame.")
+  if (!inherits(xvars, "character"))
+    stop("xvars must be supplied as a character vector or string indicating variables in data")
+  missing_vars = setdiff(xvars, names(data))
+  if (length(missing_vars) > 0) {
+    stop(paste("These xvars are not in the data:", paste0(missing_vars, collapse = ", ")))
+  }
+
+  if (!missing(grp)) {
+    if (!inherits(grp, "character") | length(grp) >
+        1)
+      stop("grp must be supplied as a string indicating a variable in data")
+  }
+
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
 
+  if (!missing(grp)) {
+    if (!(grp %in% names(data))) {
+      stop("grp is not in the data")
+    }
+    if (is.logical(data[[grp]]) | is.character(data[[grp]]) | (is.numeric(data[[grp]]) & length(unique(data[[grp]])) <= 5)) {
+      data[[grp]] <- as.factor(data[[grp]])
+      args$data <- data
+    }
+    else if (is.numeric(data[[grp]]) & length(unique(data[[grp]])) > 5) {
+      stop("Convert grp to a factor")
+    }
+  }
+  for (xvar in xvars) {
+    if (inherits(data[[xvar]], "Date") || inherits(data[[xvar]], "POSIXt")) {
+      xvars <- setdiff(xvars, xvar)
+      warning(paste("date variable", xvar, "will be ignored"))
+    }
+  }
+  for (xvar in xvars) {
+    if (is.character(data[[xvar]]) | is.logical(data[[xvar]])) {
+      data[[xvar]] <- as.factor(data[[xvar]])
+      args$data <- data
+    }
+  }
+  ignored_xvars <- c()
+  if (!(missing(use_mean))) {
+    if (!is.logical(use_mean)) {
+      for (xvar in use_mean) {
+        if (is.factor(data[[xvar]]) | is_binary(data[[xvar]]) | grepl(class(data[[xvar]]),"factor")) {
+          ignored_xvars <- c(ignored_xvars, xvar)
+        }
+      }
+      if (length(ignored_xvars) > 0) {
+        warning(paste("use_mean will be ignored for non-numerical xvars:", paste0(ignored_xvars, collapse = ", ")))
+      }
+    }
+  }
+
   if (!pvalue) {
-    args$effSize <- FALSE
     args$show.tests <- FALSE
   }
   if (tableOnly) {
@@ -113,18 +168,18 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
 
   # Data check to add:
   # Test these before you iterate through all the xvars
-  # test that the variables are found in data, and if not stop and tell the user that the variables weren't found
-  # test that the grp variable is either a logical, character, factor, or a numeric with fewer than five unique values.
-  # If it's logical, character, or numeric with <=5 unique values, change to factor
-  # if numeric with more than 5 values, tell the user they need to change the variable to a factor to use
-  # test the xvars and if they are character or logical, change to factor
-  # test the variables specified in use mean, and if they are factors or categories, then warn the user that use mean will be ignored (because you'll use a contingency table)
-  # check that data and xvars are not missing - if they are stop and warn the user
-  # check that data inherits from class data.frame, if not stop and warn (see rm_covsum)
+  # DONE !! test that the variables are found in data, and if not stop and tell the user that the variables weren't found
+  # DONE !! test that the grp variable is either a logical, character, factor, or a numeric with fewer than five unique values.
+  # DONE !! If it's logical, character, or numeric with <=5 unique values, change to factor
+  # DONE !! if numeric with more than 5 values, tell the user they need to change the variable to a factor to use
+  # DONE !! test the xvars and if they are character or logical, change to factor
+  # DONE !! test the variables specified in use mean, and if they are factors or categories, then warn the user that use mean will be ignored (because you'll use a contingency table)
+  # DONE !! check that data and xvars are not missing - if they are stop and warn the user
+  # DONE !! check that data inherits from class data.frame, if not stop and warn (see rm_covsum)
   # check the rm_covsum checks at the top of the code and incorporate the ones that make sense for this function
   # for now, let's not summarise dates, so if the xvars are dates, then warn the user it will be ignored, if grp is a date then stop (with a message)
 
-  # I think it should be possible for effect size to be True and p-value to be false, in which case we would want to show the effect size metric (Cramer's, eta etc)
+  # DONE (Unless can show when show.tests = F) !! I think it should be possible for effect size to be True and p-value to be false, in which case we would want to show the effect size metric (Cramer's, eta etc)
   output_list <- NULL
   for (xvar in xvars) {
     if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) == 2) {
@@ -133,7 +188,7 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
     else if (inherits(data[[xvar]],"factor")) {
       class(xvar) <- c(class(xvar),"rm_categorical")
     }
-    else if (is.numeric(data[[xvar]]) && is_binary(na.omit(data[[xvar]]))) {
+    else if (is.numeric(data[[xvar]]) && is_binary(data[[xvar]])) {
       class(xvar) <- c(class(xvar), "rm_binary")
     }
     else if (is.numeric(data[[xvar]])) {

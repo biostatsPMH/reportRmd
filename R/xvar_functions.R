@@ -19,10 +19,9 @@
 #'   max on a separate line) should be displayed. Overrides iqr
 #' @param pvalue logical indicating if you want p-values included in the table
 #' @param effSize logical indicating if you want effect sizes and their 95%
-#'   confidence intervals included in the table. Can only be obtained if pvalue
-#'   is also requested. Effect sizes calculated include Cramer's V for
-#'   categorical variables, and Cohen's d, Wilcoxon r, Epsilon-squared, or
-#'   Omega-squared for numeric/continuous variables
+#'   confidence intervals included in the table. Effect sizes calculated include
+#'   Cramer's V for categorical variables, and Cohen's d, Wilcoxon r,
+#'   Epsilon-squared, or Omega-squared for numeric/continuous variables
 #' @param show.tests logical indicating if the type of statistical test and
 #'   effect size (if effSize = TRUE) used should be shown in a column beside the
 #'   p-values. Ignored if pvalue = FALSE
@@ -337,9 +336,6 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
         df[1, "pTest"] <- "ChiSq"
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
-          if (effSize) {
-            df[1, "effStat"] <- "Cramer's V"
-          }
         }
       }
     }
@@ -355,9 +351,6 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
         df[1, "pTest"] <- "Fisher Exact"
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
-          if (effSize) {
-            df[1, "effStat"] <- "Cramer's V"
-          }
         }
       }
     }
