@@ -111,8 +111,7 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
   }
 
   if (!missing(grp)) {
-    if (!inherits(grp, "character") | length(grp) >
-        1)
+    if (!inherits(grp, "character") | length(grp) > 1)
       stop("grp must be supplied as a string indicating a variable in data")
   }
 
@@ -158,6 +157,19 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
       }
     }
   }
+  ignored_xvars <- c()
+  if (!(missing(digits))) {
+    if (!is.logical(digits)) {
+      for (xvar in names(digits)) {
+        if (is.factor(data[[xvar]]) | is_binary(data[[xvar]]) | grepl(class(data[[xvar]]),"factor")) {
+          ignored_xvars <- c(ignored_xvars, xvar)
+        }
+      }
+      if (length(ignored_xvars) > 0) {
+        warning(paste("digits will be ignored for non-numerical xvars:", paste0(ignored_xvars, collapse = ", ")))
+      }
+    }
+  }
 
   if (!pvalue) {
     args$show.tests <- FALSE
@@ -166,20 +178,6 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
     args$covTitle <- "Covariate"
   }
 
-  # Data check to add:
-  # Test these before you iterate through all the xvars
-  # DONE !! test that the variables are found in data, and if not stop and tell the user that the variables weren't found
-  # DONE !! test that the grp variable is either a logical, character, factor, or a numeric with fewer than five unique values.
-  # DONE !! If it's logical, character, or numeric with <=5 unique values, change to factor
-  # DONE !! if numeric with more than 5 values, tell the user they need to change the variable to a factor to use
-  # DONE !! test the xvars and if they are character or logical, change to factor
-  # DONE !! test the variables specified in use mean, and if they are factors or categories, then warn the user that use mean will be ignored (because you'll use a contingency table)
-  # DONE !! check that data and xvars are not missing - if they are stop and warn the user
-  # DONE !! check that data inherits from class data.frame, if not stop and warn (see rm_covsum)
-  # check the rm_covsum checks at the top of the code and incorporate the ones that make sense for this function
-  # for now, let's not summarise dates, so if the xvars are dates, then warn the user it will be ignored, if grp is a date then stop (with a message)
-
-  # DONE (Unless can show when show.tests = F) !! I think it should be possible for effect size to be True and p-value to be false, in which case we would want to show the effect size metric (Cramer's, eta etc)
   output_list <- NULL
   for (xvar in xvars) {
     if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) == 2) {
