@@ -402,7 +402,15 @@ calc_omegaSq <- function(anova_test){
   omega <- anova_toOmegaSq(summary_anova)
 
   # use boot for bootstrap re-sampling
-  output = c("omega squared"=omega,lower=eff_ci[1],upper=eff_ci[2])
+  bs_omega <- function(data,indices){
+    dt <- data[indices,]
+    new_anova <- update(anova_test,data=dt)
+    new_summary <- summary(new_anova)
+    anova_toOmegaSq(new_summary) # NOTE: this really should be changed so that negative values are truncated at zero
+  }
+  b_omega <- boot::boot(anova_test$model,bs_omega,R=1000)
+  b_ci <- boot::boot.ci(b_omega,conf = CIwidth,type="basic")
+  output = c("omega squared"=omega,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
 
