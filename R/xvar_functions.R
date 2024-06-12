@@ -50,12 +50,13 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
   }
   ## *** why change the class?
   class(xvar) <- "character"
-  df <- data.frame(Covariate = paste0(xvar, " n(%)"))
+  df <- data.frame(Covariate = xvar)
+  df[["disp"]] <- " n(%)"
   if (covTitle == "") {
-    colnames(df) <- " "
+    names(df$`Covariate`) <- " "
   }
   else {
-    colnames(df) <- covTitle
+    names(df) <- covTitle
   }
   x_var <- data[[xvar]]
   if (percentage == "row") {
@@ -123,12 +124,13 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
     show.tests = FALSE
   }
   class(xvar) <- "character"
-  df <- data.frame(Covariate = paste0(xvar, " Mean (sd)"))
+  df <- data.frame(Covariate = xvar)
+  df[["disp"]] <- " Mean (sd)"
   if (covTitle == "") {
-    colnames(df) <- " "
+    names(df$`Covariate`) <- " "
   }
   else {
-    colnames(df) <- covTitle
+    names(df$`Covariate`) <- covTitle
   }
   x_var <- data[[xvar]]
   df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
@@ -194,10 +196,10 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   if (all.stats) {
     df <- data.frame(Covariate = c(xvar, "  Median (Q1, Q3)", "  Range (min, max)"))
     if (covTitle == "") {
-      colnames(df) <- " "
+      names(df$`Covariate`) <- " "
     }
     else {
-      colnames(df) <- covTitle
+      names(df$`Covariate`) <- covTitle
     }
     bracket_iqr <- paste0("(", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), ", ", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")")
     bracket_range <- paste0("(", format(round(min(x_var, na.rm = TRUE), digits), nsmall = digits), ", ", format(round(max(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
@@ -205,12 +207,13 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     df[3, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
   }
   else {
-    df <- data.frame(Covariate = paste0(xvar, ifelse(!iqr, " Median (Min, Max)", " Median (Q1, Q3)")))
+    df <- data.frame(Covariate = xvar)
+    df[["disp"]] <- ifelse(!iqr, " Median (Min, Max)", " Median (Q1, Q3)")
     if (covTitle == "") {
-      colnames(df) <- " "
+      names(df$`Covariate`) <- " "
     }
     else {
-      colnames(df) <- covTitle
+      names(df$`Covariate`) <- covTitle
     }
     bracket <- ifelse(!iqr, paste0("(", format(round(min(x_var, na.rm = TRUE), digits), nsmall = digits), ", ", format(round(max(x_var, na.rm = TRUE), digits), nsmall = digits), ")"), paste0("(", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), ", ", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")"))
     df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket)
@@ -286,16 +289,17 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
   }
   class(xvar) <- "character"
   x_var <- data[[xvar]]
-  rows <- c(paste0(xvar, " n(%)"))
+  rows <- c(paste0(xvar, " n (%)"))
   for (xvar_level in levels(x_var)) {
     rows <- append(rows, xvar_level)
   }
-  df <- data.frame(Covariate = rows)
+  df <- data.frame(Covariate = rows, "disp" = rep("", length(rows)))
+  df[1, "disp"] <-  " n(%)"
   if (covTitle == "") {
-    colnames(df) <- " "
+    names(df$`Covariate`) <- " "
   }
   else {
-    colnames(df) <- covTitle
+    names(df$`Covariate`) <- covTitle
   }
   i = 2
   for (xvar_level in levels(x_var)) {
@@ -378,12 +382,13 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp <- data[, xvar]
     temp[[xvar]] <- binary_column
   }
-  df <- data.frame(Covariate = paste0(xvar, " n(%)"))
+  df <- data.frame(Covariate = xvar)
+  df[["disp"]] <-  " n(%)"
   if (covTitle == "") {
-    colnames(df) <- " "
+    names(df$`Covariate`) <- " "
   }
   else {
-    colnames(df) <- covTitle
+    names(df$`Covariate`) <- covTitle
   }
   x_var <- temp[[xvar]]
   if (percentage == "row") {

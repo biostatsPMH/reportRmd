@@ -252,8 +252,15 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
   }
   # We will need something like this to get the variable names to be replaced by labels
   # But to do this, the variable name and what is being computed (mean/median/pct) will need to be in separate columns
-#  if (nicenames) tab$Covariate <- replaceLbl(df_nm, tab$Covariate)
-
+  # print(inherits(result[["Covariate"]],'character'))
+  # print(names(result))
+  # print(extract_labels(result))
+  # lbl <- replaceLbl(result, "Covariate")
+  # print(lbl)
+  # if (nicenames) result$Covariate <- replaceLbl(result, "Covariate")
+  if (nicenames) result[, 1] <- replaceLbl(args$data, xvars)
+  result[, 1] <- paste(result[, 1],result$`disp`)
+  result$`disp` <- NULL
   if (tableOnly) {
     return(result)
   }
