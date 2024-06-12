@@ -401,7 +401,7 @@ lambda_toWilcoxR <- function(lambda,N){
 # Then, we can write a function to compute the effect size and CI
 
 
-calc_CramerV <- function(chisq_test) {
+calc_CramerV <- function(chisq_test, CIwidth = 0.95) {
   # First calculate the effect size
   cramer <- chi_toCramer(chisq_test)
   df_cont <- data.frame(chisq_test$observed)
@@ -432,7 +432,7 @@ calc_CramerV <- function(chisq_test) {
 #   return(output)
 # }
 
-calc_cohenD <- function(t_test) {
+calc_cohenD <- function(t_test, CIwidth = 0.95) {
   # First calculate the effect size
   cohen <- t_toCohen(t_test)
   df <- data.frame(xvar = t_test$xvar, grp = t_test$grp)
@@ -463,7 +463,7 @@ calc_cohenD <- function(t_test) {
 #   return(output)
 # }
 
-calc_WilcoxonR <- function(wilcox_test) {
+calc_WilcoxonR <- function(wilcox_test, CIwidth = 0.95) {
   # First calculate the effect size
   r <- wilcox_effSize(wilcox_test)
   df <- data.frame(xvar = wilcox_test$xvar, grp = wilcox_test$grp)
@@ -492,7 +492,7 @@ calc_WilcoxonR <- function(wilcox_test) {
 #   return(output)
 # }
 
-calc_epsilonSq <- function(kruskal_test) {
+calc_epsilonSq <- function(kruskal_test, CIwidth = 0.95) {
   # First calculate the effect size
   eps <- chi_toEpsilonSq(kruskal_test)
   df <- data.frame(xvar = kruskal_test$xvar, grp = kruskal_test$grp)
@@ -536,7 +536,7 @@ calc_epsilonSq <- function(kruskal_test) {
 #   return(output)
 # }
 
-calc_omegaSq <- function(anova_test){
+calc_omegaSq <- function(anova_test, CIwidth = 0.95){
   summary_anova <- summary(anova_test)
   # First calculate the effect size
   omega <- anova_toOmegaSq(summary_anova)
@@ -568,6 +568,15 @@ calc_omegaSq <- function(anova_test){
 #   return(output)
 # }
 
-
+pstprn <- reportRmd:::pstprn # already in the package
+# we need to re-write to make it handle zeros a little better
+psthr <- function (x, y = 2)
+{
+  x <- sapply(x, function(x) {
+    ifelse(abs(x) >0 && (abs(x) < 0.01 || abs(x) > 1000), format(x, scientific = TRUE,
+                                                                 digits = y), format(round(x, y), nsmall = y))
+  })
+  pstprn(x)
+}
 
 

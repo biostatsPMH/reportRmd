@@ -233,7 +233,7 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
-  if (all(result[["Missing"]] == 0))
+  if (all(result[["Missing"]]) == 0)
     result <- result[, -which(names(result) == "Missing")]
   if (!full) {
     result <- result[, -2]
@@ -258,7 +258,16 @@ rm_compactsummary <- function(data, xvars, grp, use_mean, caption = NULL, tableO
   # lbl <- replaceLbl(result, "Covariate")
   # print(lbl)
   # if (nicenames) result$Covariate <- replaceLbl(result, "Covariate")
-  if (nicenames) result[, 1] <- replaceLbl(args$data, xvars)
+  lbl <- c()
+  for (xvar in xvars) {
+    if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
+      lbl <- c(lbl, xvar, levels(data[[xvar]]))
+    }
+    else {
+      lbl <- c(lbl, xvar)
+    }
+  }
+  if (nicenames) result[, 1] <- replaceLbl(args$data, lbl)
   result[, 1] <- paste(result[, 1],result$`disp`)
   result$`disp` <- NULL
   if (tableOnly) {

@@ -51,7 +51,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
   ## *** why change the class?
   class(xvar) <- "character"
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <- " n(%)"
+  df[["disp"]] <- " n (%)"
   if (covTitle == "") {
     names(df$`Covariate`) <- " "
   }
@@ -289,12 +289,12 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
   }
   class(xvar) <- "character"
   x_var <- data[[xvar]]
-  rows <- c(paste0(xvar, " n (%)"))
+  rows <- c(paste0(xvar))
   for (xvar_level in levels(x_var)) {
     rows <- append(rows, xvar_level)
   }
   df <- data.frame(Covariate = rows, "disp" = rep("", length(rows)))
-  df[1, "disp"] <-  " n(%)"
+  df[1, "disp"] <-  " n (%)"
   if (covTitle == "") {
     names(df$`Covariate`) <- " "
   }
@@ -383,7 +383,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp[[xvar]] <- binary_column
   }
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  " n(%)"
+  df[["disp"]] <-  " n (%)"
   if (covTitle == "") {
     names(df$`Covariate`) <- " "
   }
