@@ -259,6 +259,8 @@ t.test.rm <- function(xvar,grp){
   }))
   names(n) <- levels(grp)
   t_test$n <- n
+  t_test$xvar <- xvar
+  t_test$grp <- grp
   class(t_test) <- c(class(t_test),"t.test.rm")
   return(t_test)
 }
@@ -303,6 +305,8 @@ kruskal.test.rm <- function(xvar,grp){
   kruskal_test <- stats::kruskal.test(xvar~grp)
   n <- length(na.omit(xvar))
   kruskal_test$n <- n
+  kruskal_test$xvar <- xvar
+  kruskal_test$grp <- grp
   class(kruskal_test) <- c(class(kruskal_test),"kruskal.test.rm")
   return(kruskal_test)
 }
@@ -396,6 +400,142 @@ lambda_toWilcoxR <- function(lambda,N){
 # Effect Size (with CI) functions ----------------------------------------------------
 # Then, we can write a function to compute the effect size and CI
 
+
+calc_CramerV <- function(chisq_test) {
+  # First calculate the effect size
+  cramer <- chi_toCramer(chisq_test)
+  df_cont <- data.frame(chisq_test$observed)
+  # this is ugly, but we need to re-create the data
+  df <- dplyr::bind_rows(lapply(1:nrow(df_cont),function(x){
+    data.frame(df_cont[rep(x,df_cont$Freq[x]),-ncol(df_cont)])
+  }))
+  # use boot for bootstrap re-sampling
+  bs_cramer <- function(data,indices){
+    dt <- data[indices,]
+    new_chi <- chi.test.rm(dt[[1]],df[[2]])
+#    new_summary <- summary(new_chi)
+    chi_toCramer(new_chi) # NOTE: this really should be changed so that negative values are truncated at zero
+  }
+  b_cramer <- boot::boot(df,bs_cramer,R=1000)
+  b_ci <- boot::boot.ci(b_cramer,conf = CIwidth,type="basic")
+  output = c("cramer v"=cramer,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  return(output)
+}
+
+# calc_CramerV <- function(chisq_test){
+#   cramer <- chi_toCramer(chisq_test)
+#   delta_ci <- delta_CI(chisq_test)
+#   eff_ci <- lambda_toCramer(delta_ci,sum(chisq_test$observed),min(dim(chisq_test$observed), na.rm = TRUE),chisq_test$parameter)
+#   eff_ci[eff_ci<0] <-0
+#   # return the effect size, lower bound, upper bound
+#   output = c("Cramer V"=cramer,lower=eff_ci[1],upper=eff_ci[2])
+#   return(output)
+# }
+
+calc_cohenD <- function(t_test) {
+  # First calculate the effect size
+  cohen <- t_toCohen(t_test)
+  df <- data.frame(xvar = t_test$xvar, grp = t_test$grp)
+
+  # use boot for bootstrap re-sampling
+  bs_cohen <- function(data,indices){
+    dt <- data[indices,]
+    new_t <- try( t.test.rm(dt$xvar,dt$grp))
+    ## CLARINA - We need to implement something
+    if (!inherits(new_t,"try_error")){
+      #    new_stat <- new_t$statistic
+      t_toCohen(new_t) # NOTE: this really should be changed so that negative values are truncated at zero
+    } else return(NA)
+  }
+  b_cohen <- boot::boot(df,bs_cohen,R=1000)
+  b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="basic")
+  output = c("cohen d"=cohen,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  return(output)
+}
+
+# calc_cohenD <- function(t_test){
+#   cohen <-  t_toCohen(t_test)
+#   delta_ci <- delta_CI(t_test)
+#   eff_ci <- lambda_toCohen(delta_ci,t_test$n[1],t_test$n[2])
+#   # return the effect size, lower bound, upper bound
+#   eff_ci[eff_ci<0] <-0
+#   output = c("Cohen d"=cohen,lower=eff_ci[1],upper=eff_ci[2])
+#   return(output)
+# }
+
+calc_WilcoxonR <- function(wilcox_test) {
+  # First calculate the effect size
+  r <- wilcox_effSize(wilcox_test)
+  df <- data.frame(xvar = wilcox_test$xvar, grp = wilcox_test$grp)
+
+  # use boot for bootstrap re-sampling
+  bs_r <- function(data,indices){
+    dt <- data[indices,]
+    new_wilcox <- wilcox.test.rm(dt$xvar, dt$grp)
+  #  new_stat <- new_wilcox$statistic
+    wilcox_effSize(new_wilcox) # NOTE: this really should be changed so that negative values are truncated at zero
+  }
+  b_r <- boot::boot(df,bs_r,R=1000)
+  b_ci <- boot::boot.ci(b_r,conf = CIwidth,type="basic")
+  output = c("wilcoxon r"=r,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  return(output)
+}
+
+# This is for the Wilcoxon test
+# calc_WilcoxonR <- function(wilcox_test){
+#   r <- wilcox_effSize(wilcox_test)
+#   delta_ci <- delta_CI(wilcox_test)
+#   eff_ci <- lambda_toWilcoxR(delta_ci,sum(wilcox_test$n))
+#   eff_ci[eff_ci<0] <-0
+#   # return the effect size, lower bound, upper bound
+#   output = c("Wilcoxn R"=r,lower=eff_ci[1],upper=eff_ci[2])
+#   return(output)
+# }
+
+calc_epsilonSq <- function(kruskal_test) {
+  # First calculate the effect size
+  eps <- chi_toEpsilonSq(kruskal_test)
+  df <- data.frame(xvar = kruskal_test$xvar, grp = kruskal_test$grp)
+
+  # use boot for bootstrap re-sampling
+  bs_epsilon <- function(data,indices){
+    dt <- data[indices,]
+    new_kruskal <- kruskal.test.rm(dt$xvar,dt$grp)
+  #  new_stat <- new_kruskal$statistic
+    chi_toEpsilonSq(new_kruskal) # NOTE: this really should be changed so that negative values are truncated at zero
+  }
+  b_epsilon <- boot::boot(df,bs_epsilon,R=1000)
+  b_ci <- boot::boot.ci(b_epsilon,conf = CIwidth,type="basic")
+  output = c("epsilon sq"=eps,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  return(output)
+}
+
+# This is for the Kruskal Wallis and, for now, the Wilcoxon test
+# calc_epsilonSq <- function(kruskal_test){
+#   # The wilcoxon is a special case of the krukal wallis for two groups
+#   if (inherits(kruskal_test,"wilcox.test.rm")){
+#     kruskal_test <- kruskal.test.rm(kruskal_test$xvar,kruskal_test$grp)
+#   }
+#   epsilonSq <- chi_toEpsilonSq(kruskal_test)
+#   delta_ci <- delta_CI(kruskal_test)
+#   eff_ci <- lambda_toEpsilon(delta_ci,kruskal_test$n,kruskal_test$parameter)
+#   # return the effect size, lower bound, upper bound
+#   eff_ci[eff_ci<0] <-0
+#   output = c("Epsilon Squared"=epsilonSq,lower=eff_ci[1],upper=eff_ci[2])
+#   return(output)
+# }
+
+# # WRONG This is for the Wilcoxon test
+# calc_etaSq <- function(wilcox_test){
+#   eta2 <- chi_toetaSq(wilcox_test)
+#   delta_ci <- delta_CI(wilcox_test)
+#   eff_ci <- lambda_toEtaSq(delta_ci,sum(wilcox_test$n))
+#   eff_ci[eff_ci<0] <-0
+#   # return the effect size, lower bound, upper bound
+#   output = c("eta squared"=eta2,lower=eff_ci[1],upper=eff_ci[2])
+#   return(output)
+# }
+
 calc_omegaSq <- function(anova_test){
   summary_anova <- summary(anova_test)
   # First calculate the effect size
@@ -428,147 +568,6 @@ calc_omegaSq <- function(anova_test){
 #   return(output)
 # }
 
-calc_CramerV <- function(chisq_test) {
-  # First calculate the effect size
-  cramer <- chi_toCramer(chisq_test)
 
-  # use boot for bootstrap re-sampling
-  bs_cramer <- function(data,indices){
-    dt <- data[indices,]
-    new_chi <- chisq.test(dt)
-    new_summary <- summary(new_chi)
-    chi_toCramer(new_summary) # NOTE: this really should be changed so that negative values are truncated at zero
-  }
-  b_cramer <- boot::boot(chisq_test$statistic,bs_cramer,R=1000)
-  b_ci <- boot::boot.ci(b_cramer,conf = CIwidth,type="basic")
-  output = c("cramer v"=cramer,lower=b_ci$basic[4],upper=b_ci$basic[5])
-  return(output)
-}
-
-# calc_CramerV <- function(chisq_test){
-#   cramer <- chi_toCramer(chisq_test)
-#   delta_ci <- delta_CI(chisq_test)
-#   eff_ci <- lambda_toCramer(delta_ci,sum(chisq_test$observed),min(dim(chisq_test$observed), na.rm = TRUE),chisq_test$parameter)
-#   eff_ci[eff_ci<0] <-0
-#   # return the effect size, lower bound, upper bound
-#   output = c("Cramer V"=cramer,lower=eff_ci[1],upper=eff_ci[2])
-#   return(output)
-# }
-
-calc_cohenD <- function(t_test) {
-  # First calculate the effect size
-  cohen <- t_toCohen(t_test)
-
-  # use boot for bootstrap re-sampling
-  bs_cohen <- function(data,indices){
-    dt <- data[indices,]
-    new_t <- t.test(dt)
-    new_stat <- new_t$statistic
-    t_toCohen(new_stat) # NOTE: this really should be changed so that negative values are truncated at zero
-  }
-  b_cohen <- boot::boot(t_test,bs_cohen,R=1000)
-  b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="basic")
-  output = c("cohen d"=cohen,lower=b_ci$basic[4],upper=b_ci$basic[5])
-  return(output)
-}
-
-# calc_cohenD <- function(t_test){
-#   cohen <-  t_toCohen(t_test)
-#   delta_ci <- delta_CI(t_test)
-#   eff_ci <- lambda_toCohen(delta_ci,t_test$n[1],t_test$n[2])
-#   # return the effect size, lower bound, upper bound
-#   eff_ci[eff_ci<0] <-0
-#   output = c("Cohen d"=cohen,lower=eff_ci[1],upper=eff_ci[2])
-#   return(output)
-# }
-
-calc_WilcoxonR <- function(wilcox_test) {
-  # First calculate the effect size
-  r <- wilcox_effSize(wilcox_test)
-  df <- data.frame(xvar = wilcox_test$xvar, grp = wilcox_test$grp)
-
-  # use boot for bootstrap re-sampling
-  bs_r <- function(data,indices){
-    dt <- data[indices,]
-    new_wilcox <- wilcox.test.rm(dt$xvar, dt$grp)
-    new_stat <- new_wilcox$statistic
-    wilcox_effSize(new_stat) # NOTE: this really should be changed so that negative values are truncated at zero
-  }
-  b_r <- boot::boot(df,bs_r,R=1000)
-  b_ci <- boot::boot.ci(b_r,conf = CIwidth,type="basic")
-  output = c("wilcoxon r"=r,lower=b_ci$basic[4],upper=b_ci$basic[5])
-  return(output)
-}
-
-# This is for the Wilcoxon test
-# calc_WilcoxonR <- function(wilcox_test){
-#   r <- wilcox_effSize(wilcox_test)
-#   delta_ci <- delta_CI(wilcox_test)
-#   eff_ci <- lambda_toWilcoxR(delta_ci,sum(wilcox_test$n))
-#   eff_ci[eff_ci<0] <-0
-#   # return the effect size, lower bound, upper bound
-#   output = c("Wilcoxn R"=r,lower=eff_ci[1],upper=eff_ci[2])
-#   return(output)
-# }
-
-# # WRONG This is for the Wilcoxon test
-# calc_etaSq <- function(wilcox_test){
-#   eta2 <- chi_toetaSq(wilcox_test)
-#   delta_ci <- delta_CI(wilcox_test)
-#   eff_ci <- lambda_toEtaSq(delta_ci,sum(wilcox_test$n))
-#   eff_ci[eff_ci<0] <-0
-#   # return the effect size, lower bound, upper bound
-#   output = c("eta squared"=eta2,lower=eff_ci[1],upper=eff_ci[2])
-#   return(output)
-# }
-
-calc_epsilonSq <- function(kruskal_test) {
-  # First calculate the effect size
-  eps <- chi_toEpsilonSq(kruskal_test)
-
-  # use boot for bootstrap re-sampling
-  bs_epsilon <- function(data,indices){
-    dt <- data[indices,]
-    new_kruskal <- kruskal.test(dt)
-    new_stat <- new_kruskal$statistic
-    chi_toEpsilonSq(new_stat) # NOTE: this really should be changed so that negative values are truncated at zero
-  }
-  b_epsilon <- boot::boot(kruskal_test,bs_epsilon,R=1000)
-  b_ci <- boot::boot.ci(b_epsilon,conf = CIwidth,type="basic")
-  output = c("epsilon sq"=eps,lower=b_ci$basic[4],upper=b_ci$basic[5])
-  return(output)
-}
-
-# This is for the Kruskal Wallis and, for now, the Wilcoxon test
-# calc_epsilonSq <- function(kruskal_test){
-#   # The wilcoxon is a special case of the krukal wallis for two groups
-#   if (inherits(kruskal_test,"wilcox.test.rm")){
-#     kruskal_test <- kruskal.test.rm(kruskal_test$xvar,kruskal_test$grp)
-#   }
-#   epsilonSq <- chi_toEpsilonSq(kruskal_test)
-#   delta_ci <- delta_CI(kruskal_test)
-#   eff_ci <- lambda_toEpsilon(delta_ci,kruskal_test$n,kruskal_test$parameter)
-#   # return the effect size, lower bound, upper bound
-#   eff_ci[eff_ci<0] <-0
-#   output = c("Epsilon Squared"=epsilonSq,lower=eff_ci[1],upper=eff_ci[2])
-#   return(output)
-# }
-
-# I'm sorry - I should have told you about this function - it takes the estimate, lower, upper (as a single vector) and digits and returns a nice string
-# it default to 2 digits
-v <- c(estimate=1,lower=.5,upper=1.5)
-reportRmd:::psthr(v)
-reportRmd:::psthr(v,3)
-
-pstprn <- reportRmd:::pstprn # already in the package
-# we need to re-write to make it handle zeros a little better
-psthr <- function (x, y = 2)
-{
-  x <- sapply(x, function(x) {
-    ifelse(abs(x) >0 && (abs(x) < 0.01 || abs(x) > 1000), format(x, scientific = TRUE,
-                                                                 digits = y), format(round(x, y), nsmall = y))
-  })
-  pstprn(x)
-}
 
 
