@@ -1,3 +1,4 @@
+set.seed(1234)
 # Cramer's V CI
 # References (need to place in wrapper function):
 # Smithson, M. (2002). Noncentral CIwidthidence Intervals for Standardized Effect Sizes. In CIwidthidence Intervals (07/140 ed., Vol. 140). SAGE Publications. https://doi.org/10.4135/9781412983761.n4
@@ -440,13 +441,12 @@ calc_cohenD <- function(t_test, CIwidth = 0.95) {
   # use boot for bootstrap re-sampling
   bs_cohen <- function(data,indices){
     dt <- data[indices,]
-    new_t <- try( t.test.rm(dt$xvar,dt$grp))
+    new_t <- tryCatch(t.test.rm(dt$xvar,dt$grp))
     ## CLARINA - We need to implement something
-    if (!inherits(new_t,"try_error")){
       #    new_stat <- new_t$statistic
-      t_toCohen(new_t) # NOTE: this really should be changed so that negative values are truncated at zero
-    } else return(NA)
+    t_toCohen(new_t) # NOTE: this really should be changed so that negative values are truncated at zero
   }
+
   b_cohen <- boot::boot(df,bs_cohen,R=1000)
   b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="basic")
   output = c("cohen d"=cohen,lower=b_ci$basic[4],upper=b_ci$basic[5])
@@ -544,7 +544,7 @@ calc_omegaSq <- function(anova_test, CIwidth = 0.95){
   # use boot for bootstrap re-sampling
   bs_omega <- function(data,indices){
     dt <- data[indices,]
-    new_anova <- update(anova_test,data=dt)
+    new_anova <- stats::update(anova_test,data=dt)
     new_summary <- summary(new_anova)
     anova_toOmegaSq(new_summary) # NOTE: this really should be changed so that negative values are truncated at zero
   }

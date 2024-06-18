@@ -85,30 +85,39 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
       df[1, "Missing"] <- sum(is.na(x_var), na.rm = TRUE)
       return(df)
     }
-    if (!any(chi.test.rm(cont_table)$expected < 5)) {
-      chisq_test <- chi.test.rm(cont_table)
-      df[1, "p-value"] <- chisq_test$p.value
-      if (effSize) {
-        output <- calc_CramerV(chisq_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[1, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[1, "pTest"] <- "ChiSq"
+    no_na <- subset(data, !is.na(data[[xvar]]))
+    no_na_tab <- table(no_na[[grp]])
+    if (any(no_na_tab < 2)) {
+      effSize <- FALSE
+      pvalue <- FALSE
+      show.tests <- FALSE
+    }
+    if (pvalue | effSize | show.tests) {
+      if (!any(chi.test.rm(cont_table)$expected < 5)) {
+        chisq_test <- chi.test.rm(cont_table)
+        df[1, "p-value"] <- chisq_test$p.value
+        if (effSize) {
+          output <- calc_CramerV(chisq_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[1, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[1, "pTest"] <- "ChiSq"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-    }
-    else if (any(chi.test.rm(cont_table)$expected < 5)) {
-      fisher_test <- fisher.test.rm(cont_table)
-      df[1, "p-value"] <-fisher_test$p.value
-      if (effSize) {
-        output <- calc_CramerV(fisher_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      if (show.tests) {
-        df[1, "pTest"] <- "Fisher Exact"
+      else if (any(chi.test.rm(cont_table)$expected < 5)) {
+        fisher_test <- fisher.test.rm(cont_table)
+        df[1, "p-value"] <-fisher_test$p.value
+        if (effSize) {
+          output <- calc_CramerV(fisher_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        if (show.tests) {
+          df[1, "pTest"] <- "Fisher Exact"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
         }
@@ -123,7 +132,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
   if (!pvalue) {
     show.tests = FALSE
   }
-  class(xvar) <- "character"
+  # class(xvar) <- "character"
   df <- data.frame(Covariate = xvar)
   df[["disp"]] <- " Mean (sd)"
   if (covTitle == "") {
@@ -150,33 +159,41 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
       df[, "Missing"] <- sum(is.na(x_var))
       return(df)
     }
-
-    if (length(levels(group_var)) == 2) {
-      t_test <- t.test.rm(x_var, group_var)
-      df[, "p-value"] <- t_test$p.value
-      N <- nrow(data)
-      if (effSize) {
-        output <- calc_cohenD(t_test)
-        df[, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[, "pTest"] <- "t-test"
+    no_na <- subset(data, !is.na(data[[xvar]]))
+    no_na_tab <- table(no_na[[grp]])
+    if (any(no_na_tab < 2)) {
+      effSize <- FALSE
+      pvalue <- FALSE
+      show.tests <- FALSE
+    }
+    if (pvalue | effSize | show.tests) {
+      if (length(levels(group_var)) == 2) {
+        t_test <- t.test.rm(x_var, group_var)
+        df[, "p-value"] <- t_test$p.value
+        N <- nrow(data)
+        if (effSize) {
+          output <- calc_cohenD(t_test)
+          df[, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[, "pTest"] <- "t-test"
+        }
         if (effSize) {
           df[, "effStat"] <- "Cohen's d"
         }
       }
-    }
-    else if (length(levels(group_var)) > 2) {
-      anova_test <- stats::aov(x_var ~ group_var)
-      df[, "p-value"] <- summary(anova_test)[[1]][["Pr(>F)"]][1]
-      if (effSize) {
-        output <- calc_omegaSq(anova_test)
-        df[, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[, "pTest"] <- "ANOVA"
+      else if (length(levels(group_var)) > 2) {
+        anova_test <- stats::aov(x_var ~ group_var)
+        df[, "p-value"] <- summary(anova_test)[[1]][["Pr(>F)"]][1]
+        if (effSize) {
+          output <- calc_omegaSq(anova_test)
+          df[, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[, "pTest"] <- "ANOVA"
+        }
         if (effSize) {
           df[, "effStat"] <- "Omega Sq"
         }
@@ -248,31 +265,40 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
       df[1, "Missing"] <- sum(is.na(x_var))
       return(df)
     }
-    if (length(unique(group_var)) == 2) {
-      wilcox_test <- wilcox.test.rm(x_var, group_var)
-      df[1, "p-value"] <- wilcox_test$p.value
-      if (effSize) {
-        output <- calc_WilcoxonR(wilcox_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[1, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[1, "pTest"] <- "Wilcoxon Rank Sum"
+    no_na <- subset(data, !is.na(data[[xvar]]))
+    no_na_tab <- table(no_na[[grp]])
+    if (any(no_na_tab < 2)) {
+      effSize <- FALSE
+      pvalue <- FALSE
+      show.tests <- FALSE
+    }
+    if (pvalue | effSize | show.tests) {
+      if (length(unique(group_var)) == 2) {
+        wilcox_test <- wilcox.test.rm(x_var, group_var)
+        df[1, "p-value"] <- wilcox_test$p.value
+        if (effSize) {
+          output <- calc_WilcoxonR(wilcox_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[1, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[1, "pTest"] <- "Wilcoxon Rank Sum"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Wilcoxon r"
         }
       }
-    }
-    else if (length(levels(group_var)) > 2) {
-      kruskal_test <- kruskal.test.rm(x_var, group_var)
-      df[1, "p-value"] <- kruskal_test$p.value
-      if (effSize) {
-        output <- calc_epsilonSq(kruskal_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[1, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[1, "pTest"] <- "Kruskal Wallis"
+      else if (length(levels(group_var)) > 2) {
+        kruskal_test <- kruskal.test.rm(x_var, group_var)
+        df[1, "p-value"] <- kruskal_test$p.value
+        if (effSize) {
+          output <- calc_epsilonSq(kruskal_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[1, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[1, "pTest"] <- "Kruskal Wallis"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Epsilon sq"
         }
@@ -327,32 +353,40 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
       df[1, "Missing"] <- sum(is.na(x_var))
       return(df)
     }
-
-    if (!any(chi.test.rm(cont_table)$expected < 5)) {
-      chisq_test <- chi.test.rm(cont_table)
-      df[1, "p-value"] <- chisq_test$p.value
-      if (effSize) {
-        output <- calc_CramerV(chisq_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[1, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[1, "pTest"] <- "ChiSq"
+    no_na <- subset(data, !is.na(data[[xvar]]))
+    no_na_tab <- table(no_na[[grp]])
+    if (any(no_na_tab < 2)) {
+      effSize <- FALSE
+      pvalue <- FALSE
+      show.tests <- FALSE
+    }
+    if (pvalue | effSize | show.tests) {
+      if (!any(chi.test.rm(cont_table)$expected < 5)) {
+        chisq_test <- chi.test.rm(cont_table)
+        df[1, "p-value"] <- chisq_test$p.value
+        if (effSize) {
+          output <- calc_CramerV(chisq_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[1, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[1, "pTest"] <- "ChiSq"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-    }
 
-    else if (any(chi.test.rm(cont_table)$expected < 5)) {
-      fisher_test <- fisher.test.rm(cont_table)
-      df[1, "p-value"] <- fisher_test$p.value
-      if (effSize) {
-        output <- calc_CramerV(fisher_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      if (show.tests) {
-        df[1, "pTest"] <- "Fisher Exact"
+      else if (any(chi.test.rm(cont_table)$expected < 5)) {
+        fisher_test <- fisher.test.rm(cont_table)
+        df[1, "p-value"] <- fisher_test$p.value
+        if (effSize) {
+          output <- calc_CramerV(fisher_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        if (show.tests) {
+          df[1, "pTest"] <- "Fisher Exact"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
         }
@@ -417,30 +451,39 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
       df[1, "Missing"] <- sum(is.na(x_var))
       return(df)
     }
-    if (!any(chi.test.rm(cont_table)$expected < 5)) {
-      chisq_test <- chi.test.rm(cont_table)
-      df[1, "p-value"] <- chisq_test$p.value
-      if (effSize) {
-        output <- calc_CramerV(chisq_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      df[1, "Missing"] <- sum(is.na(x_var))
-      if (show.tests) {
-        df[1, "pTest"] <- "ChiSq"
+    no_na <- subset(data, !is.na(data[[xvar]]))
+    no_na_tab <- table(no_na[[grp]])
+    if (any(no_na_tab < 2)) {
+      effSize <- FALSE
+      pvalue <- FALSE
+      show.tests <- FALSE
+    }
+    if (pvalue | effSize | show.tests) {
+      if (!any(chi.test.rm(cont_table)$expected < 5)) {
+        chisq_test <- chi.test.rm(cont_table)
+        df[1, "p-value"] <- chisq_test$p.value
+        if (effSize) {
+          output <- calc_CramerV(chisq_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        df[1, "Missing"] <- sum(is.na(x_var))
+        if (show.tests) {
+          df[1, "pTest"] <- "ChiSq"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-    }
-    else if (any(chi.test.rm(cont_table)$expected < 5)) {
-      fisher_test <- fisher.test.rm(cont_table)
-      df[1, "p-value"] <-fisher_test$p.value
-      if (effSize) {
-        output <- calc_CramerV(fisher_test)
-        df[1, "Effect Size (95% CI)"] <- psthr(output)
-      }
-      if (show.tests) {
-        df[1, "pTest"] <- "Fisher Exact"
+      else if (any(chi.test.rm(cont_table)$expected < 5)) {
+        fisher_test <- fisher.test.rm(cont_table)
+        df[1, "p-value"] <-fisher_test$p.value
+        if (effSize) {
+          output <- calc_CramerV(fisher_test)
+          df[1, "Effect Size (95% CI)"] <- psthr(output)
+        }
+        if (show.tests) {
+          df[1, "pTest"] <- "Fisher Exact"
+        }
         if (effSize) {
           df[1, "effStat"] <- "Cramer's V"
         }
