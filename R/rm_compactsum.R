@@ -56,11 +56,17 @@
 #'   table, ignored if grp is not specified
 #' @param percentage choice of how percentages are presented, either column
 #'   (default) or row
-#' @return A character vector of the table source code, unless tableOnly = TRUE
-#' in which case a data frame is returned
+#' @returns A character vector of the table source code, unless tableOnly = TRUE
+#'   in which case a data frame is returned. The output has the following
+#'   attribute:
 #'
-#' @references Smithson, M. (2002). Noncentral CIwidthidence Intervals for
-#'   Standardized Effect Sizes. In CIwidthidence Intervals (07/140 ed., Vol.
+#'   * "paragraph", which describes what is included in the
+#'   output table and the type of statistical summary for each covariate. When
+#'   applicable, the types of statistical tests used will be included. If
+#'   effSize = TRUE, the effect sizes for each covariate will also be mentioned.
+#'
+#' @references Smithson, M. (2002). Noncentral Confidence Intervals for
+#'   Standardized Effect Sizes. (07/140 ed., Vol.
 #'   140). SAGE Publications. \url{https://doi.org/10.4135/9781412983761.n4}
 #' @references Steiger, J. H. (2004). Beyond the F Test: Effect Size Confidence
 #'   Intervals and Tests of Close Fit in the Analysis of Variance and Contrast
