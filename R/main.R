@@ -2786,6 +2786,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
   if (inherits(data,'data.frame')){
     colNames <- names(data)
     data <- data.frame(data)
+    names(data) <- colNames
   } else stop('data must be a data.frame')
   if (length(which(names(data)==head_col))==0) stop ('head_col must be a string specifying a variable in data')
   if (length(which(names(data)==to_col))==0) stop ('to_col must be a string specifying a variable in data')
@@ -5192,6 +5193,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #'   you want to override this you can manually specify the type. Options
   #'   include "KM", and ,"CIF"
   #' @param plot.event  Which event(s) to plot (1,2, or c(1,2))
+  #' @param returnPlots Logical values. If true returns the separate plot and table objects
   #' @param ... additional plotting arguments see \code{\link{ggkmcif2Parameters}}
   #'
   #' @importFrom stats median qnorm as.formula pchisq model.matrix time
@@ -5229,7 +5231,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   ggkmcif2 <- function (response, cov = NULL, data,  pval = TRUE,
                         conf.curves = FALSE,
                         table = TRUE,   xlab = "Time", ylab = NULL, col = NULL,
-                        times = NULL, type = NULL, plot.event = 1,...)
+                        times = NULL, type = NULL, plot.event = 1,returnPlots=FALSE,...)
   {
     mainArgs <- as.list(match.call(expand.dots = TRUE)[-1])
     toAdd <- mainArgs[setdiff(names(mainArgs),ls())]
@@ -5727,7 +5729,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                                   data = eval(sfit$call$data))
       pval <- pchisq(sdiff$chisq, length(sdiff$n) - 1, lower.tail = FALSE)
       pvaltxt <- lpvalue2(pval, pval.digits)
-      pvaltxt <- paste(pvaltxt, "(Log Rank)")
+      pvaltxt <- ifelse(pval.txt,paste(pvaltxt, "(Log Rank)"),pvaltxt)
       if (is.null(pval.pos)) {
         p <- p + annotate("text", x = 0.85 * max(times),
                           y = ylim[1], label = pvaltxt, size = psize)
@@ -5740,7 +5742,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
         test <- test[rownames(test) == plot.event, ]
         pval <- test[2]
         pvaltxt <- lpvalue2(pval, pval.digits)
-        pvaltxt <- paste(pvaltxt, "(Gray's test)")
+        pvaltxt <- ifelse(pval.txt,paste(pvaltxt, "(Gray's test)"),pvaltxt)
         if (is.null(pval.pos)) {
           p <- p + annotate("text", x = 0.85 * max(times),
                             y = ylim[1], label = pvaltxt, size = psize)
@@ -5879,8 +5881,8 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
       if (!is.null(table.height)){
         rel.height.table <- table.height
       }
-
-      p <- cowplot::plot_grid(gA, gC, nrow = 2, ncol = 1, rel_heights = c(1,rel.height.table))
+      if (returnPlots) return(list(Plot=p,Table=data.table))
+      p <- cowplot::plot_grid(gA, gC, nrow = 2, ncol = 1, rel_heights = c(1,rel.height.table),align = 'v', axis = 'l')
     }
     return(p)
   }
@@ -5970,6 +5972,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #'   specified time
   #' @param print.n.missing Logical, should the number of missing be shown !Needs
   #'   to be checked
+  #' @param pval.txt Logical, should the test the p-value applies to be shown
   ggkmcif2Parameters <- function(table.height = NULL,
                                  HR = FALSE, HR_pval = FALSE,  conf.type = "log",
                                  main = NULL, stratalabs = NULL, strataname,
@@ -5984,7 +5987,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                                  event = c("col", "linetype"), flip.CIF = FALSE,
                                  cut = NULL, eventlabs = NULL, event.name = NULL, Numbers_at_risk_text = "Number at risk",
                                  HR.digits = 2, HR.pval.digits = 3, pval.digits = 3, median.digits = 3,
-                                 set.time.digits = 3, print.n.missing = TRUE){
+                                 set.time.digits = 3, print.n.missing = TRUE,pval.txt=TRUE){
     return(as.list(environment(), all=TRUE))
   }
 

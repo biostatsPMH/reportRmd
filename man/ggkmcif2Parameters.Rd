@@ -50,7 +50,8 @@ ggkmcif2Parameters(
   pval.digits = 3,
   median.digits = 3,
   set.time.digits = 3,
-  print.n.missing = TRUE
+  print.n.missing = TRUE,
+  pval.txt = TRUE
 )
 }
 \arguments{
@@ -178,6 +179,8 @@ specified time}
 
 \item{print.n.missing}{Logical, should the number of missing be shown !Needs
 to be checked}
+
+\item{pval.txt}{Logical, should the test the p-value applies to be shown}
 }
 \description{
 Additional parameters passed to ggkmcif2

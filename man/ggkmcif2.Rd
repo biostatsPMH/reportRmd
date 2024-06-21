@@ -17,6 +17,7 @@ ggkmcif2(
   times = NULL,
   type = NULL,
   plot.event = 1,
+  returnPlots = FALSE,
   ...
 )
 }
@@ -49,6 +50,8 @@ you want to override this you can manually specify the type. Options
 include "KM", and ,"CIF"}
 
 \item{plot.event}{Which event(s) to plot (1,2, or c(1,2))}
+
+\item{returnPlots}{Logical values. If true returns the separate plot and table objects}
 
 \item{...}{additional plotting arguments see \code{\link{ggkmcif2Parameters}}}
 }

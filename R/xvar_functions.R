@@ -132,7 +132,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
   if (!pvalue) {
     show.tests = FALSE
   }
-  # class(xvar) <- "character"
+  class(xvar) <- "character"
   df <- data.frame(Covariate = xvar)
   df[["disp"]] <- " Mean (sd)"
   if (covTitle == "") {

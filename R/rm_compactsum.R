@@ -134,6 +134,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
+  #return(args)
   # args$covTitle = covTitle
   # args$digits = digits
   # args$digits.cat = digits.cat
