@@ -60,7 +60,7 @@
 #'   in which case a data frame is returned. The output has the following
 #'   attribute:
 #'
-#'   * "paragraph", which describes what is included in the
+#'   * "description", which describes what is included in the
 #'   output table and the type of statistical summary for each covariate. When
 #'   applicable, the types of statistical tests used will be included. If
 #'   effSize = TRUE, the effect sizes for each covariate will also be mentioned.
@@ -86,7 +86,7 @@
 #' Experimental Psychology. General, 141(1), 2–18.
 #' \url{https://doi.org/10.1037/a0024338}
 #'
-#' @export
+#'
 #' @examples
 #' data("pembrolizumab")
 #' rm_compactsum(data = pembrolizumab, xvars = c("age",
@@ -365,11 +365,11 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   result[, 1] <- paste0(result[, 1],result$`disp`)
   result$`disp` <- NULL
-  attr(result, "paragraph") <- generate_paragraph(xvars, output_list)
+  attr(result, "description") <- generate_description(xvars, output_list)
   if (tableOnly) {
     return(result)
   }
   nicetable <- outTable(result, caption = caption, nicenames = nicenames)
-  attr(nicetable, "paragraph") <- generate_paragraph(xvars, output_list)
+  attr(nicetable, "description") <- generate_description(xvars, output_list)
   return(nicetable)
 }

@@ -84,7 +84,19 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
 
 is_binary <- function(x) all(unique(na.omit(x)) %in% c(0, 1))
 
-generate_paragraph <- function(xvars, tables) {
+format_var_names <- function(variables) {
+  if (length(variables) == 1) {
+    return(variables)
+  } else if (length(variables) == 2) {
+    return(paste(variables[1], "and", variables[2]))
+  } else {
+    last_var <- variables[length(variables)]
+    first_vars <- paste(variables[-length(variables)], collapse = ", ")
+    return(paste0(first_vars, ", and ", last_var))
+  }
+}
+
+generate_description <- function(xvars, tables) {
   descr_sum <- list()
   for (xvar in xvars) {
     x_sum <- attr(tables[[xvar]], "stat_sum")
@@ -121,24 +133,38 @@ generate_paragraph <- function(xvars, tables) {
       }
     }
   }
-  intro <- paste0("This table provides statistical summaries for covariates '", paste0(xvars, collapse = "', '"), "'.")
-  ret <- intro
+  ret <- ""
   if (length(names(descr_sum)) > 0) {
+    sum_sent <- c()
     for (x_sum in names(descr_sum)) {
-      sum_stat <- paste0(x_sum, " statistical summaries are displayed for '", paste0(descr_sum[[x_sum]], collapse = "', '"), "' variable(s).")
-      ret <- paste(ret, sum_stat)
+      summ<- paste0(x_sum, " for ", format_var_names(descr_sum[[x_sum]]))
+      sum_sent <- c(sum_sent, summ)
     }
+    sum_sent <- paste0("Descriptive statistics were calculated as ", format_var_names(sum_sent), ".")
+    ret <- paste(ret, sum_sent)
   }
-  for (x_stat in names(descr_stat)) {
-    test <- paste0("The '", x_stat, "' was used for covariate(s) '", paste(descr_stat[[x_stat]], collapse = "', '"), "'.")
-    ret <- paste(ret, test)
+
+  if (length(names(descr_stat)) > 0) {
+    stat_sent <- c()
+    for (x_stat in names(descr_stat)) {
+      stat <- paste0(x_stat, " for ", format_var_names(descr_stat[[x_stat]]))
+      stat_sent <- c(stat_sent, stat)
+    }
+    stat_sent <- paste0("Between group comparisons were made using ", format_var_names(stat_sent), ".")
+    ret <- paste(ret, stat_sent)
   }
+
   if (length(names(descr_eff)) > 0) {
+    eff_sent <- c()
     for (x_eff in names(descr_eff)) {
-      eff <- paste0("The '", paste(descr_eff[[x_eff]], collapse = "', '"), "' variable(s) use ", x_eff, " for effect size.")
-      ret <- paste(ret, eff)
+      eff <- paste0(x_eff, " for ", format_var_names(descr_eff[[x_eff]]))
+      eff_sent <- paste(eff_sent, eff)
     }
+    eff_sent <- paste0("Reported effect sizes are ", format_var_names(eff_sent), ". 1000 bootstrap samples were used to calculate effect size confidence intervals.")
+    ret <- paste(ret, eff_sent)
   }
+  ret <- trimws(ret, "both")
+  print(ret)
   return(ret)
 }
 

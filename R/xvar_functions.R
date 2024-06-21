@@ -104,7 +104,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
         if (show.tests & pvalue) {
           df[1, "pTest"] <- "ChiSq"
         }
-        attr(df, "stat_test") <- "Chi-Square Test"
+        attr(df, "stat_test") <- "chi-square test"
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
           attr(df, "eff_size") <- "Cramer's V"
@@ -129,7 +129,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
-  attr(df, "stat_sum") <- "Counts and percentage"
+  attr(df, "stat_sum") <- "counts (%)"
   return(df)
 }
 
@@ -184,7 +184,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
         if (show.tests & pvalue) {
           df[, "pTest"] <- "t-test"
         }
-        attr(df, "stat_test") <- "T-test"
+        attr(df, "stat_test") <- "independent t-test"
         if (show.tests & effSize) {
           df[, "effStat"] <- "Cohen's d"
           attr(df, "eff_size") <- "Cohen's d"
@@ -210,7 +210,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
     }
   }
   df[, "Missing"] <- sum(is.na(x_var))
-  attr(df, "stat_sum") <- "Mean and standard deviation"
+  attr(df, "stat_sum") <- "mean (sd)"
   return(df)
 }
 
@@ -294,10 +294,10 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
         if (show.tests & pvalue) {
           df[1, "pTest"] <- "Wilcoxon Rank Sum"
         }
-        attr(df, "stat_test") <- "Wilcoxon Signed Rank Test"
+        attr(df, "stat_test") <- "Wilcoxon rank sum test"
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Wilcoxon r"
-          attr(df, "eff_size") <- "Wilcoxon r"
+          attr(df, "eff_size") <- "Wilcoxon R"
         }
       }
       else if (length(levels(group_var)) > 2) {
@@ -321,10 +321,10 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   if (iqr) {
-    attr(df, "stat_sum") <- "Median and interquartile"
+    attr(df, "stat_sum") <- "median (IQR)"
   }
   else {
-    attr(df, "stat_sum") <- "Median and min/max"
+    attr(df, "stat_sum") <- "median (min/max)"
   }
   return(df)
 }
@@ -392,7 +392,7 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
         if (show.tests & pvalue) {
           df[1, "pTest"] <- "ChiSq"
         }
-        attr(df, "stat_test") <- "Chi-Square Test"
+        attr(df, "stat_test") <- "chi-square test"
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
           attr(df, "eff_size") <- "Cramer's V"
@@ -417,7 +417,7 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
       }
     }
   }
-  attr(df, "stat_sum") <- "Counts and percentage"
+  attr(df, "stat_sum") <- "counts (%)"
   df[1, "Missing"] <- sum(is.na(x_var))
 
   return(df)
@@ -496,7 +496,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
         if (show.tests & pvalue) {
           df[1, "pTest"] <- "ChiSq"
         }
-        attr(df, "stat_test") <- "Chi-Square Test"
+        attr(df, "stat_test") <- "chi-square test"
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
           attr(df, "eff_size") <- "Cramer's V"
@@ -521,6 +521,6 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
-  attr(df, "stat_sum") <- "Counts and percentage"
+  attr(df, "stat_sum") <- "counts (%)"
   return(df)
 }
