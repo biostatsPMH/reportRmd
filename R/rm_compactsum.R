@@ -56,11 +56,17 @@
 #'   table, ignored if grp is not specified
 #' @param percentage choice of how percentages are presented, either column
 #'   (default) or row
-#' @return A character vector of the table source code, unless tableOnly = TRUE
-#' in which case a data frame is returned
+#' @returns A character vector of the table source code, unless tableOnly = TRUE
+#'   in which case a data frame is returned. The output has the following
+#'   attribute:
 #'
-#' @references Smithson, M. (2002). Noncentral CIwidthidence Intervals for
-#'   Standardized Effect Sizes. In CIwidthidence Intervals (07/140 ed., Vol.
+#'   * "paragraph", which describes what is included in the
+#'   output table and the type of statistical summary for each covariate. When
+#'   applicable, the types of statistical tests used will be included. If
+#'   effSize = TRUE, the effect sizes for each covariate will also be mentioned.
+#'
+#' @references Smithson, M. (2002). Noncentral Confidence Intervals for
+#'   Standardized Effect Sizes. (07/140 ed., Vol.
 #'   140). SAGE Publications. \url{https://doi.org/10.4135/9781412983761.n4}
 #' @references Steiger, J. H. (2004). Beyond the F Test: Effect Size Confidence
 #'   Intervals and Tests of Close Fit in the Analysis of Variance and Contrast
@@ -109,7 +115,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     stop("xvars must be supplied as a character vector or string indicating variables in data")
   missing_vars = setdiff(xvars, names(data))
   if (length(missing_vars) > 0) {
-    stop(paste("These xvars are not in the data:", paste0(missing_vars, collapse = ", ")))
+    stop(paste0("These xvars are not in the data: '", paste0(missing_vars, collapse = "', '"), "'"))
   }
   if (missing(use_mean)) {
     use_mean <- FALSE
@@ -192,9 +198,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   ignored_xvars <- c()
   if (!(missing(use_mean))) {
     if (!is.logical(use_mean)) {
-
-      ## check if all vars in use_mean are in xvars too if not stop!!!!!
-      ## same for digits!!!
       for (xvar in use_mean) {
         if (!(xvar %in% names(data))) {
           stop(paste0("variable '", xvar, "' in use_mean is not in data '", dt, "'"))
@@ -292,6 +295,40 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     args$xvar = xvar
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
+  # print(output_list)
+  # descr_sum <- list()
+  # for (xvar in xvars) {
+  #   x_sum <- attr(output_list[[xvar]], "stat_sum")
+  #   if (!is.null(x_sum)) {
+  #     if (!(x_sum %in% names(descr_sum))) {
+  #       descr_sum[[x_sum]] <- xvar
+  #     }
+  #     else {
+  #       descr_sum[[x_sum]] <- c(descr_sum[[x_sum]], xvar)
+  #     }
+  #   }
+  # }
+  # descr_eff <- list()
+  # for (xvar in xvars) {
+  #   x_eff <- attr(output_list[[xvar]], "eff_size")
+  #   if (!is.null(x_eff)) {
+  #     if (!(x_eff %in% names(descr_eff))) {
+  #       descr_eff[[x_eff]] <- xvar
+  #     }
+  #     else {
+  #       descr_eff[[x_eff]] <- c(descr_eff[[x_eff]], xvar)
+  #     }
+  #   }
+  # }
+  # for (x_eff in names(descr_eff)) {
+  #   print(paste0("The '", paste(descr_eff[[x_eff]], collapse = "', '"), "' variables use ", x_eff, " for effect size."))
+  # }
+  # for (x_sum in names(descr_sum)) {
+  #   print(paste(x_sum, "statistical summaries are displayed for '", paste(descr_sum[[x_sum]], collapse = "', '"), "' variables."))
+  # }
+  # # descr <-
+
+
   result <-dplyr::bind_rows(output_list)
   if (all(result[["Missing"]] == 0))
     result <- result[, -which(names(result) == "Missing")]
@@ -329,8 +366,11 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   result[, 1] <- paste0(result[, 1],result$`disp`)
   result$`disp` <- NULL
+  attr(result, "paragraph") <- generate_paragraph(xvars, output_list)
   if (tableOnly) {
     return(result)
   }
-  return(outTable(result, caption = caption, nicenames = nicenames))
+  nicetable <- outTable(result, caption = caption, nicenames = nicenames)
+  attr(nicetable, "paragraph") <- generate_paragraph(xvars, output_list)
+  return(nicetable)
 }

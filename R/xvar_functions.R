@@ -45,7 +45,7 @@ xvar_function.default <- function(xvar, ...) {
 }
 
 xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
-  if (!pvalue) {
+  if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
   ## *** why change the class?
@@ -101,11 +101,13 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "ChiSq"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Chi-Square Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
+          attr(df, "eff_size") <- "Cramer's V"
         }
       }
       else if (any(chi.test.rm(cont_table)$expected < 5)) {
@@ -115,21 +117,24 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
           output <- calc_CramerV(fisher_test)
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "Fisher Exact"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Fisher's Exact Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
+          attr(df, "eff_size") <- "Cramer's V"
         }
       }
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
+  attr(df, "stat_sum") <- "Counts and percentage"
   return(df)
 }
 
 xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
-  if (!pvalue) {
+  if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
   class(xvar) <- "character"
@@ -176,11 +181,13 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
           df[, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[, "pTest"] <- "t-test"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "T-test"
+        if (show.tests & effSize) {
           df[, "effStat"] <- "Cohen's d"
+          attr(df, "eff_size") <- "Cohen's d"
         }
       }
       else if (length(levels(group_var)) > 2) {
@@ -191,21 +198,24 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
           df[, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[, "pTest"] <- "ANOVA"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "ANOVA"
+        if (show.tests & effSize) {
           df[, "effStat"] <- "Omega Sq"
+          attr(df, "eff_size") <- "Omega Squared"
         }
       }
     }
   }
   df[, "Missing"] <- sum(is.na(x_var))
+  attr(df, "stat_sum") <- "Mean and standard deviation"
   return(df)
 }
 
 xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
-  if (!pvalue) {
+  if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
   class(xvar) <- "character"
@@ -281,11 +291,13 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "Wilcoxon Rank Sum"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Wilcoxon Signed Rank Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Wilcoxon r"
+          attr(df, "eff_size") <- "Wilcoxon r"
         }
       }
       else if (length(levels(group_var)) > 2) {
@@ -296,21 +308,29 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "Kruskal Wallis"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Kruskal Wallis Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Epsilon sq"
+          attr(df, "eff_size") <- "Epsilon-squared"
         }
       }
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
+  if (iqr) {
+    attr(df, "stat_sum") <- "Median and interquartile"
+  }
+  else {
+    attr(df, "stat_sum") <- "Median and min/max"
+  }
   return(df)
 }
 
 xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
-  if (!pvalue) {
+  if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
   class(xvar) <- "character"
@@ -369,11 +389,13 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "ChiSq"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Chi-Square Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
+          attr(df, "eff_size") <- "Cramer's V"
         }
       }
 
@@ -384,21 +406,25 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
           output <- calc_CramerV(fisher_test)
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "Fisher Exact"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Fisher's Exact Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
+          attr(df, "eff_size") <- "Cramer's V"
         }
       }
     }
   }
+  attr(df, "stat_sum") <- "Counts and percentage"
   df[1, "Missing"] <- sum(is.na(x_var))
+
   return(df)
 }
 
 xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
-  if (!pvalue) {
+  if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
   class(xvar) <- "character"
@@ -467,11 +493,13 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
         df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "ChiSq"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Chi-Square Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
+          attr(df, "eff_size") <- "Cramer's V"
         }
       }
       else if (any(chi.test.rm(cont_table)$expected < 5)) {
@@ -481,15 +509,18 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
           output <- calc_CramerV(fisher_test)
           df[1, "Effect Size (95% CI)"] <- psthr(output)
         }
-        if (show.tests) {
+        if (show.tests & pvalue) {
           df[1, "pTest"] <- "Fisher Exact"
         }
-        if (effSize) {
+        attr(df, "stat_test") <- "Fisher's Exact Test"
+        if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
+          attr(df, "eff_size") <- "Cramer's V"
         }
       }
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
+  attr(df, "stat_sum") <- "Counts and percentage"
   return(df)
 }

@@ -92,7 +92,14 @@ table, ignored if grp is not specified}
 }
 \value{
 A character vector of the table source code, unless tableOnly = TRUE
-in which case a data frame is returned
+in which case a data frame is returned. The output has the following
+attribute:
+\itemize{
+\item "paragraph", which describes what is included in the
+output table and the type of statistical summary for each covariate. When
+applicable, the types of statistical tests used will be included. If
+effSize = TRUE, the effect sizes for each covariate will also be mentioned.
+}
 }
 \description{
 Returns a data frame corresponding to a descriptive table.
@@ -124,8 +131,8 @@ rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 
 }
 \references{
-Smithson, M. (2002). Noncentral CIwidthidence Intervals for
-Standardized Effect Sizes. In CIwidthidence Intervals (07/140 ed., Vol.
+Smithson, M. (2002). Noncentral Confidence Intervals for
+Standardized Effect Sizes. (07/140 ed., Vol.
 140). SAGE Publications. \url{https://doi.org/10.4135/9781412983761.n4}
 
 Steiger, J. H. (2004). Beyond the F Test: Effect Size Confidence

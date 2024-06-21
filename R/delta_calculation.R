@@ -1,4 +1,3 @@
-set.seed(1234)
 # Cramer's V CI
 # References (need to place in wrapper function):
 # Smithson, M. (2002). Noncentral CIwidthidence Intervals for Standardized Effect Sizes. In CIwidthidence Intervals (07/140 ed., Vol. 140). SAGE Publications. https://doi.org/10.4135/9781412983761.n4
@@ -442,7 +441,6 @@ calc_cohenD <- function(t_test, CIwidth = 0.95) {
   bs_cohen <- function(data,indices){
     dt <- data[indices,]
     new_t <- tryCatch(t.test.rm(dt$xvar,dt$grp))
-    ## CLARINA - We need to implement something
       #    new_stat <- new_t$statistic
     t_toCohen(new_t) # NOTE: this really should be changed so that negative values are truncated at zero
   }

@@ -84,4 +84,61 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
 
 is_binary <- function(x) all(unique(na.omit(x)) %in% c(0, 1))
 
+generate_paragraph <- function(xvars, tables) {
+  descr_sum <- list()
+  for (xvar in xvars) {
+    x_sum <- attr(tables[[xvar]], "stat_sum")
+    if (!is.null(x_sum)) {
+      if (!(x_sum %in% names(descr_sum))) {
+        descr_sum[[x_sum]] <- xvar
+      }
+      else {
+        descr_sum[[x_sum]] <- c(descr_sum[[x_sum]], xvar)
+      }
+    }
+  }
+  descr_eff <- list()
+  for (xvar in xvars) {
+    x_eff <- attr(tables[[xvar]], "eff_size")
+    if (!is.null(x_eff)) {
+      if (!(x_eff %in% names(descr_eff))) {
+        descr_eff[[x_eff]] <- xvar
+      }
+      else {
+        descr_eff[[x_eff]] <- c(descr_eff[[x_eff]], xvar)
+      }
+    }
+  }
+  descr_stat <- list()
+  for (xvar in xvars) {
+    x_stat <- attr(tables[[xvar]], "stat_test")
+    if (!is.null(x_stat)) {
+      if (!(x_stat %in% names(descr_stat))) {
+        descr_stat[[x_stat]] <- xvar
+      }
+      else {
+        descr_stat[[x_stat]] <- c(descr_stat[[x_stat]], xvar)
+      }
+    }
+  }
+  intro <- paste0("This table provides statistical summaries for covariates '", paste0(xvars, collapse = "', '"), "'.")
+  ret <- intro
+  if (length(names(descr_sum)) > 0) {
+    for (x_sum in names(descr_sum)) {
+      sum_stat <- paste0(x_sum, " statistical summaries are displayed for '", paste0(descr_sum[[x_sum]], collapse = "', '"), "' variable(s).")
+      ret <- paste(ret, sum_stat)
+    }
+  }
+  for (x_stat in names(descr_stat)) {
+    test <- paste0("The '", x_stat, "' was used for covariate(s) '", paste(descr_stat[[x_stat]], collapse = "', '"), "'.")
+    ret <- paste(ret, test)
+  }
+  if (length(names(descr_eff)) > 0) {
+    for (x_eff in names(descr_eff)) {
+      eff <- paste0("The '", paste(descr_eff[[x_eff]], collapse = "', '"), "' variable(s) use ", x_eff, " for effect size.")
+      ret <- paste(ret, eff)
+    }
+  }
+  return(ret)
+}
 
