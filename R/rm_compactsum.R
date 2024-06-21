@@ -140,15 +140,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
-  # args$covTitle = covTitle
-  # args$digits = digits
-  # args$digits.cat = digits.cat
-  # args$iqr = iqr
-  # args$all.stats = all.stats
-  # args$pvalue = pvalue
-  # args$effSize = effSize
-  # args$show.tests = show.tests
-  # args$percentage = percentage
 
   dt <- as.name(args$data)
   if (!missing(grp)) {
@@ -179,9 +170,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     else if (any(grp_tab < 5)) {
       warning("Small sample size in '", grp, "' group may lead to unstable effect sizes.")
     }
-    #### !!!! in xvar function, if effSIze then fdo table on grp and get num of ppl in each group. if any are fewer than 5 print warning of unstable effsize
   }
-  ### NE Instead NA
   for (xvar in xvars) {
     if (inherits(data[[xvar]], "Date") || inherits(data[[xvar]], "POSIXt")) {
       xvars <- setdiff(xvars, xvar)
@@ -294,40 +283,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     args$xvar = xvar
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
-  # print(output_list)
-  # descr_sum <- list()
-  # for (xvar in xvars) {
-  #   x_sum <- attr(output_list[[xvar]], "stat_sum")
-  #   if (!is.null(x_sum)) {
-  #     if (!(x_sum %in% names(descr_sum))) {
-  #       descr_sum[[x_sum]] <- xvar
-  #     }
-  #     else {
-  #       descr_sum[[x_sum]] <- c(descr_sum[[x_sum]], xvar)
-  #     }
-  #   }
-  # }
-  # descr_eff <- list()
-  # for (xvar in xvars) {
-  #   x_eff <- attr(output_list[[xvar]], "eff_size")
-  #   if (!is.null(x_eff)) {
-  #     if (!(x_eff %in% names(descr_eff))) {
-  #       descr_eff[[x_eff]] <- xvar
-  #     }
-  #     else {
-  #       descr_eff[[x_eff]] <- c(descr_eff[[x_eff]], xvar)
-  #     }
-  #   }
-  # }
-  # for (x_eff in names(descr_eff)) {
-  #   print(paste0("The '", paste(descr_eff[[x_eff]], collapse = "', '"), "' variables use ", x_eff, " for effect size."))
-  # }
-  # for (x_sum in names(descr_sum)) {
-  #   print(paste(x_sum, "statistical summaries are displayed for '", paste(descr_sum[[x_sum]], collapse = "', '"), "' variables."))
-  # }
-  # # descr <-
-
-
   result <-dplyr::bind_rows(output_list)
   if (all(result[["Missing"]] == 0))
     result <- result[, -which(names(result) == "Missing")]

@@ -84,7 +84,7 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
 
 is_binary <- function(x) all(unique(na.omit(x)) %in% c(0, 1))
 
-format_var_names <- function(variables) {
+format_strings <- function(variables) {
   if (length(variables) == 1) {
     return(variables)
   } else if (length(variables) == 2) {
@@ -137,34 +137,34 @@ generate_description <- function(xvars, tables) {
   if (length(names(descr_sum)) > 0) {
     sum_sent <- c()
     for (x_sum in names(descr_sum)) {
-      summ<- paste0(x_sum, " for ", format_var_names(descr_sum[[x_sum]]))
+      summ<- paste0(x_sum, " for ", format_strings(descr_sum[[x_sum]]))
       sum_sent <- c(sum_sent, summ)
     }
-    sum_sent <- paste0("Descriptive statistics were calculated as ", format_var_names(sum_sent), ".")
+    sum_sent <- paste0("Descriptive statistics were calculated as ", format_strings(sum_sent), ".")
     ret <- paste(ret, sum_sent)
   }
 
   if (length(names(descr_stat)) > 0) {
     stat_sent <- c()
     for (x_stat in names(descr_stat)) {
-      stat <- paste0(x_stat, " for ", format_var_names(descr_stat[[x_stat]]))
+      stat <- paste0(x_stat, " for ", format_strings(descr_stat[[x_stat]]))
       stat_sent <- c(stat_sent, stat)
     }
-    stat_sent <- paste0("Between group comparisons were made using ", format_var_names(stat_sent), ".")
+    stat_sent <- paste0("Between group comparisons were made using ", format_strings(stat_sent), ".")
+    print(stat_sent)
     ret <- paste(ret, stat_sent)
   }
 
   if (length(names(descr_eff)) > 0) {
     eff_sent <- c()
     for (x_eff in names(descr_eff)) {
-      eff <- paste0(x_eff, " for ", format_var_names(descr_eff[[x_eff]]))
-      eff_sent <- paste(eff_sent, eff)
+      eff <- paste0(x_eff, " for ", format_strings(descr_eff[[x_eff]]))
+      eff_sent <- c(eff_sent, eff)
     }
-    eff_sent <- paste0("Reported effect sizes are ", format_var_names(eff_sent), ". 1000 bootstrap samples were used to calculate effect size confidence intervals.")
+    eff_sent <- paste0("Reported effect sizes are ", format_strings(eff_sent), ". 1000 bootstrap samples were used to calculate effect size confidence intervals.")
     ret <- paste(ret, eff_sent)
   }
   ret <- trimws(ret, "both")
-  print(ret)
   return(ret)
 }
 
