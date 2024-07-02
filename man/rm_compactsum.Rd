@@ -82,7 +82,7 @@ tableOnly = T and outTable function. See examples}
 
 \item{show.tests}{logical indicating if the type of statistical test and
 effect size (if effSize = TRUE) used should be shown in a column beside the
-p-values. Ignored if pvalue = FALSE}
+p-values.}
 
 \item{full}{logical indicating if you want the full sample included in the
 table, ignored if grp is not specified}
