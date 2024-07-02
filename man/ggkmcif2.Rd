@@ -17,7 +17,6 @@ ggkmcif2(
   times = NULL,
   type = NULL,
   plot.event = 1,
-  returnPlots = FALSE,
   ...
 )
 }
@@ -51,9 +50,7 @@ include "KM", and ,"CIF"}
 
 \item{plot.event}{Which event(s) to plot (1,2, or c(1,2))}
 
-\item{returnPlots}{Logical values. If true returns the separate plot and table objects}
-
-\item{...}{additional plotting arguments see \code{\link{ggkmcif2Parameters}}}
+\item{...}{for additional plotting arguments see \link{ggkmcif2Parameters}}
 }
 \value{
 ggplot object; if table = F then only curves are output;

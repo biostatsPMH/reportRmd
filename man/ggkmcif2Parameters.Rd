@@ -3,60 +3,7 @@
 \name{ggkmcif2Parameters}
 \alias{ggkmcif2Parameters}
 \title{Additional parameters passed to ggkmcif2}
-\usage{
-ggkmcif2Parameters(
-  table.height = NULL,
-  HR = FALSE,
-  HR_pval = FALSE,
-  conf.type = "log",
-  main = NULL,
-  stratalabs = NULL,
-  strataname,
-  stratalabs.table = NULL,
-  strataname.table = strataname,
-  median.text = FALSE,
-  median.lines = FALSE,
-  median.CI = FALSE,
-  set.time.text = NULL,
-  set.time.line = FALSE,
-  set.time = 5,
-  set.time.CI = FALSE,
-  censor.marks = TRUE,
-  censor.size = 3,
-  censor.stroke = 1.5,
-  fsize = 11,
-  nsize = 3,
-  lsize = 1,
-  psize = 3.5,
-  median.size = 3,
-  median.pos = NULL,
-  median.lsize = 1,
-  set.size = 3,
-  set.pos = NULL,
-  set.lsize = 1,
-  ylim = c(0, 1),
-  linetype = NULL,
-  xlim = NULL,
-  legend.pos = NULL,
-  pval.pos = NULL,
-  event = c("col", "linetype"),
-  flip.CIF = FALSE,
-  cut = NULL,
-  eventlabs = NULL,
-  event.name = NULL,
-  Numbers_at_risk_text = "Number at risk",
-  HR.digits = 2,
-  HR.pval.digits = 3,
-  pval.digits = 3,
-  median.digits = 3,
-  set.time.digits = 3,
-  print.n.missing = TRUE,
-  pval.txt = TRUE
-)
-}
 \arguments{
-\item{table.height}{Relative height of risk table (0-1)}
-
 \item{HR}{boolean to specify if you want hazard ratios included in the plot}
 
 \item{HR_pval}{boolean to specify if you want HR p-values in the plot}
@@ -69,6 +16,8 @@ determined from conf.int. The log option calculates intervals based on the
 cumulative hazard or log(survival). The log-log option bases the intervals
 on the log hazard or log(-log(survival)), and the logit option on
 log(survival/(1-survival)).}
+
+\item{table.height}{Relative height of risk table (0-1)}
 
 \item{main}{String corresponding to main title. When NULL uses Kaplan-Meier
 Plot s, and "Cumulative Incidence Plot for CIF"}
@@ -179,9 +128,8 @@ specified time}
 
 \item{print.n.missing}{Logical, should the number of missing be shown !Needs
 to be checked}
-
-\item{pval.txt}{Logical, should the test the p-value applies to be shown}
 }
 \description{
-Additional parameters passed to ggkmcif2
+This section documents the additional parameters for \link{ggkmcif2}.
 }
+\keyword{internal}

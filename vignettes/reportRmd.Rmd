@@ -185,8 +185,14 @@ The default is to indicate percentages by columns (ie. percentages within column
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr'), grp = 'cohort', effSize = T, show.tests = T, percentage = "row")
-
 ```
+
+To view the self-generated description for the table:
+```{r}
+summary_tab <- rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr', 'age'), grp = 'cohort', effSize = T, show.tests = T)
+attr(summary_tab, "description")
+```
+
 
 
 \newpage
@@ -449,8 +455,13 @@ These plots are designed for quick inspection of many variables, not for publica
 ```{r, , fig.width=7, fig.height=4}
 plotuv(data=pembrolizumab, response='orr',
 covs=c('age','cohort','pdl1','change_ctdna_group'))
-
 ```
+
+The plotuv function can also be used without a response variable to display summary of variables
+```{r}
+plotuv(data = pembrolizumab, covs=c('age','cohort','pdl1','change_ctdna_group'), showN = T)
+```
+
 
 \newpage
 

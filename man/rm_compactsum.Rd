@@ -95,7 +95,7 @@ A character vector of the table source code, unless tableOnly = TRUE
 in which case a data frame is returned. The output has the following
 attribute:
 \itemize{
-\item "paragraph", which describes what is included in the
+\item "description", which describes what is included in the
 output table and the type of statistical summary for each covariate. When
 applicable, the types of statistical tests used will be included. If
 effSize = TRUE, the effect sizes for each covariate will also be mentioned.
