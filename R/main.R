@@ -2363,192 +2363,243 @@ forestplotUVMV = function (UVmodel, MVmodel, model = "glm",
 #'@seealso \code{\link{ggplot}} and \code{\link{ggarrange}}
 plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
                    response_title=NULL,return_plotlist=FALSE,ncol=2,p_margins=c(0,0.2,1,.2),
-                   bpThreshold=20,mixed=TRUE,violin=FALSE,position=c("dodge","stack","fill")){
-  for (v in c(response,covs)){
-    if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
-    if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
+                   bpThreshold=20,mixed=TRUE,violin=FALSE,position=c("dodge","stack","fill")) {
+
+  if (missing(response) & !is.null(response_title)) {
+    warning("response_title will be ignored because no response variable was provided")
   }
   if (violin){
     showPoints=FALSE
   }
-  position = match.arg(position)
-  if (position=="stack"){
-    bar_position=ggplot2::position_stack
-    showN=FALSE
-  } else if (position=="dodge"){
-    bar_position=ggplot2::position_dodge
-  } else if (position=="fill"){
-    bar_position=ggplot2::position_fill
-    showN=FALSE
-  }
-  if (is.null(response_title)) response_title = response
-  response_title = niceStr(response_title)
-  plist <- NULL
-  if (inherits(data[[response]],c('factor','ordered'))){
-    use_common_legend = TRUE
-    # ensure that all levels have the same colours for all plots
-    lvls <- NULL
-    for (x_var in covs){
-      t <-table(data[[response]][!is.na(data[[x_var]])])
-      lvls <- unique(c(lvls,names(t)[which(t>0)]))
+  if (missing(response)) {
+    for (v in covs){
+      if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
+      if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
     }
-    levels(data[[response]]) <- c(levels(data[[response]])[which(levels(data[[response]])%in% lvls)],rep(NA,length(levels(data[[response]]))-length(lvls)))
-    niceStr(levels(data[[response]]))
-    lvlCol <- reportRx_pal()(length(levels(data[[response]])))
-    names(lvlCol) = levels(data[[response]])
-    for (x_var in covs){
-      flip=FALSE
-      # remove missing data, if requested
-      if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
+    plist <- NULL
 
-      if (inherits(pdata[[x_var]],'numeric')){
-        if (all(table(pdata[[response]])<bpThreshold) | (any(table(pdata[[response]])<bpThreshold) & !mixed)){
-          p<-ggplot(data=pdata, aes(x=.data[[response]],y=.data[[x_var]],fill=.data[[response]]),colour=.data[[response]]) +
-            geom_dotplot(binaxis = "y",stackdir = "center",dotsize = .8  ) +
-            stat_summary(fun = median, fun.min = median, fun.max = median,
-                         geom = "crossbar", width = 0.5) +
-            coord_flip()
-          flip = TRUE
-        } else{
-          if (any(table(pdata[[response]])<bpThreshold)){
-            message(paste('Boxplots not shown for categories with fewer than', bpThreshold ,'observations.'))
-          }
-          pdata$alpha <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],'light','regular'),
-                                levels=c('light','regular'))
-          pdata$lty <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],'0','1'),
-                              levels = c('0','1'))
-          black_points <- pdata[!pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
-          coloured_points <- pdata[pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
-          p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]],fill=.data[[response]]))
-          if (violin) {
-            p <- p + geom_violin(aes(alpha=.data[['alpha']],linetype=.data[['lty']]))
-          } else{
-            p <- p + geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)
-          }
-          p <- p +
-            scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
-            scale_linetype_manual(breaks=c('0','1'),values = c(0,1))
-          if (showPoints) {
-            p <- p +geom_jitter(data=coloured_points,aes(colour=.data[[response]]), alpha=0.9)
-            p <- p +geom_jitter(data= black_points,
-                                color="black", size=0.4, alpha=0.9)
-          }
-          if (showN){
-            p <-  p+
-              stat_summary(aes(x=min(.data[[x_var]])),geom='label',vjust=-0.5,hjust=0,fun.data = lbl_count,label.size=0,fill='white',label.padding = unit(0.15, "lines"),alpha=.8)
-          }
-
+    for (x_var in covs) {
+      if (na.rm) {
+        pdata <- stats::na.omit(data[, x_var])
+      }
+      else {
+        pdata <- data[, x_var]
+      }
+      if (inherits(pdata[[x_var]], "numeric")) { # if x_var is numeric
+        p <- ggplot(data = pdata, aes(x = .data[[x_var]]))
+        if (violin) {
+          p <- p + geom_violin()
         }
-        p<- p+
-          theme(axis.text.y=element_blank(),
-                axis.ticks.y = element_blank())
-      } else {  # x_var is categorical
-        p <- ggplot(data=pdata, aes(x=.data[[x_var]],fill=.data[[response]])) +
-          geom_bar(position=bar_position()) +
-          scale_x_discrete(labels= function(x) wrp_lbl(x))
+        else {
+          p <- p + geom_boxplot(outlier.shape = 16, outlier.colour = "red", na.rm = TRUE)
+        }
+      }
+      else {  # x_var is categorical
+        p <- ggplot(data = pdata, aes(x = .data[[x_var]])) + geom_bar(fill = "white", colour = "black") + scale_x_discrete(labels = function(x) wrp_lbl(x))
         if (showN){
-          p <- p +
-            geom_text(aes(label=stat(count)),position = position_dodge(width = 1),stat='count',vjust=1)
+          p <- p + geom_text(aes(label = stat(count)), position = position_dodge(width = 1), stat = 'count', vjust = 2, size = 2.5)
         }
         if (length(unique(pdata[[x_var]]))>8){
           p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1))
         }
       }
-      p <- p  +
-        theme_bw() +
-        theme(
-          plot.title = element_text(size=10),
-          plot.margin = unit(p_margins, "lines")) +
-        guides(alpha='none',linetype='none',colour='none')+
-        scale_colour_manual(values=lvlCol)+
-        scale_fill_manual(values=lvlCol)
-
-      if (flip){
-        plist[[x_var]] <- p +
-          labs(y=niceStr(x_var),x='',fill=response_title)
-      } else {
-        plist[[x_var]] <- p +
-          labs(x=niceStr(x_var),y='',fill=response_title)
-
-      }
+      plist[[x_var]] <- p + labs(x=niceStr(x_var),y='',fill=response_title)
     }
+    if (return_plotlist){
+      return(plist)
+    }
+    else {
+      suppressMessages(ggpubr::ggarrange(plotlist=plist,
+                                         ncol=ncol,
+                                         nrow=ceiling(length(plist)/ncol)))
+    }
+  }
+  else {
+    for (v in c(response,covs)){
+      if (!v %in% names(data)) stop(paste(v,'is not a variable in data.'))
+      if (inherits(data[[v]],'character')) data[[v]] <- factor(data[[v]])
+    }
+    position = match.arg(position)
+    if (position=="stack"){
+      bar_position=ggplot2::position_stack
+      showN=FALSE
+    } else if (position=="dodge"){
+      bar_position=ggplot2::position_dodge
+    } else if (position=="fill"){
+      bar_position=ggplot2::position_fill
+      showN=FALSE
+    }
+    if (is.null(response_title)) response_title = response
+    response_title = niceStr(response_title)
+    plist <- NULL
+    if (inherits(data[[response]],c('factor','ordered'))){
+      use_common_legend = TRUE
+      # ensure that all levels have the same colours for all plots
+      lvls <- NULL
+      for (x_var in covs){
+        t <-table(data[[response]][!is.na(data[[x_var]])])
+        lvls <- unique(c(lvls,names(t)[which(t>0)]))
+      }
+      levels(data[[response]]) <- c(levels(data[[response]])[which(levels(data[[response]])%in% lvls)],rep(NA,length(levels(data[[response]]))-length(lvls)))
+      niceStr(levels(data[[response]]))
+      lvlCol <- reportRx_pal()(length(levels(data[[response]])))
+      names(lvlCol) = levels(data[[response]])
+      for (x_var in covs){
+        flip=FALSE
+        # remove missing data, if requested
+        if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
 
-  } else{ # Response is numeric
-    use_common_legend = FALSE # colours have different meanings, indicated on x axis
-    for (x_var in covs){
-      # remove missing data, if requested
-      if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
-
-      if (inherits(pdata[[x_var]],'numeric')){
-        p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]])) +
-          geom_point()
-      } else{
-        if (all(table(pdata[[x_var]])<bpThreshold)){
-          p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]),colour=.data[[x_var]]) +
-            geom_dotplot(binaxis = "y",stackdir = "center" ,dotsize = .8) +
-            stat_summary(fun = median, fun.min = median, fun.max = median,
-                         geom = "crossbar", width = 0.5)+
-            scale_x_discrete(labels= function(x) wrp_lbl(x))
-        } else{
-          if (any(table(pdata[[x_var]])<bpThreshold)){
-            message(paste('Boxplots not shown for categories with fewer than', bpThreshold ,'observations.'))
-          }
-          pdata$alpha <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],'light','regular'),
-                                c('light','regular'))
-          pdata$lty <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],'0','1'),
-                              levels=c('0','1'))
-          black_points <- pdata[!pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
-          coloured_points <- pdata[pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
-          p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]))
-          if (violin) {
-            p <- p + geom_violin(aes(alpha=.data[['alpha']],linetype=.data[['lty']]))
+        if (inherits(pdata[[x_var]],'numeric')){
+          if (all(table(pdata[[response]])<bpThreshold) | (any(table(pdata[[response]])<bpThreshold) & !mixed)){
+            p<-ggplot(data=pdata, aes(x=.data[[response]],y=.data[[x_var]],fill=.data[[response]]),colour=.data[[response]]) +
+              geom_dotplot(binaxis = "y",stackdir = "center",dotsize = .8  ) +
+              stat_summary(fun = median, fun.min = median, fun.max = median,
+                           geom = "crossbar", width = 0.5) +
+              coord_flip()
+            flip = TRUE
           } else{
-            p <- p + geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)
+            if (any(table(pdata[[response]])<bpThreshold)){
+              message(paste('Boxplots not shown for categories with fewer than', bpThreshold ,'observations.'))
+            }
+            pdata$alpha <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],'light','regular'),
+                                  levels=c('light','regular'))
+            pdata$lty <- factor(ifelse(pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],'0','1'),
+                                levels = c('0','1'))
+            black_points <- pdata[!pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
+            coloured_points <- pdata[pdata[[response]] %in% names(table(pdata[[response]]))[table(pdata[[response]])<bpThreshold],]
+            p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]],fill=.data[[response]]))
+            if (violin) {
+              p <- p + geom_violin(aes(alpha=.data[['alpha']],linetype=.data[['lty']]))
+            } else{
+              p <- p + geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)
+            }
+            p <- p +
+              scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
+              scale_linetype_manual(breaks=c('0','1'),values = c(0,1))
+            if (showPoints) {
+              p <- p +geom_jitter(data=coloured_points,aes(colour=.data[[response]]), alpha=0.9)
+              p <- p +geom_jitter(data= black_points,
+                                  color="black", size=0.4, alpha=0.9)
+            }
+            if (showN){
+              p <-  p+
+                stat_summary(aes(x=min(.data[[x_var]])),geom='label',vjust=-0.5,hjust=0,fun.data = lbl_count,label.size=0,fill='white',label.padding = unit(0.15, "lines"),alpha=.8)
+            }
+
           }
-          p <- p + scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
-            scale_linetype_manual(breaks=c('0','1'),values = c(0,1))+
+          p<- p+
+            theme(axis.text.y=element_blank(),
+                  axis.ticks.y = element_blank())
+        } else {  # x_var is categorical
+          p <- ggplot(data=pdata, aes(x=.data[[x_var]],fill=.data[[response]])) +
+            geom_bar(position=bar_position()) +
             scale_x_discrete(labels= function(x) wrp_lbl(x))
-          p <- p +geom_point(data=coloured_points,aes(colour=.data[[x_var]]),
-                             position=position_jitterdodge(),alpha=0.9)
-
-          if (showPoints) {
-            p <- p +geom_jitter(data= black_points,
-                                color="black", size=0.4, alpha=0.9)
-          }
           if (showN){
-            p <-  p+
-              stat_summary(aes(y=max(.data[[response]])*1.05,vjust=0),geom='label',fun.data = lbl_count,label.size=0,fill='white',label.padding = unit(0.15, "lines"),alpha=.8)+
-              geom_blank(aes( y=max(.data[[response]])*1.1))
-
+            p <- p +
+              geom_text(aes(label=stat(count)),position = position_dodge(width = 1),stat='count',vjust=1)
           }
+          if (length(unique(pdata[[x_var]]))>8){
+            p <- p + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+          }
+        }
+        p <- p  +
+          theme_bw() +
+          theme(
+            plot.title = element_text(size=10),
+            plot.margin = unit(p_margins, "lines")) +
+          guides(alpha='none',linetype='none',colour='none')+
+          scale_colour_manual(values=lvlCol)+
+          scale_fill_manual(values=lvlCol)
+
+        if (flip){
+          plist[[x_var]] <- p +
+            labs(y=niceStr(x_var),x='',fill=response_title)
+        } else {
+          plist[[x_var]] <- p +
+            labs(x=niceStr(x_var),y='',fill=response_title)
 
         }
       }
-      plist[[x_var]] <- p  +
-        theme_bw() +
-        theme(
-          legend.position = 'none',
-          plot.title = element_text(size=9),
-          plot.margin = unit(p_margins, "lines")) +
-        labs(x=niceStr(x_var),y=niceStr(response_title)) +
-        guides(colour='none',linetype='none',alpha='none')+
-        scale_colour_reportRx()
 
+    } else{ # Response is numeric
+      use_common_legend = FALSE # colours have different meanings, indicated on x axis
+      for (x_var in covs){
+        # remove missing data, if requested
+        if (na.rm) pdata = stats::na.omit(data[,c(response,x_var)]) else pdata = data[,c(response,x_var)]
+
+        if (inherits(pdata[[x_var]],'numeric')){
+          p <- ggplot(data=pdata, aes(y=.data[[response]],x=.data[[x_var]])) +
+            geom_point()
+        } else{
+          if (all(table(pdata[[x_var]])<bpThreshold)){
+            p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]),colour=.data[[x_var]]) +
+              geom_dotplot(binaxis = "y",stackdir = "center" ,dotsize = .8) +
+              stat_summary(fun = median, fun.min = median, fun.max = median,
+                           geom = "crossbar", width = 0.5)+
+              scale_x_discrete(labels= function(x) wrp_lbl(x))
+          } else{
+            if (any(table(pdata[[x_var]])<bpThreshold)){
+              message(paste('Boxplots not shown for categories with fewer than', bpThreshold ,'observations.'))
+            }
+            pdata$alpha <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],'light','regular'),
+                                  c('light','regular'))
+            pdata$lty <- factor(ifelse(pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],'0','1'),
+                                levels=c('0','1'))
+            black_points <- pdata[!pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
+            coloured_points <- pdata[pdata[[x_var]] %in% names(table(pdata[[x_var]]))[table(pdata[[x_var]])<bpThreshold],]
+            p <- ggplot(data=pdata, aes(x=.data[[x_var]],y=.data[[response]],fill=.data[[x_var]]))
+            if (violin) {
+              p <- p + geom_violin(aes(alpha=.data[['alpha']],linetype=.data[['lty']]))
+            } else{
+              p <- p + geom_boxplot(aes(alpha=.data[['alpha']],linetype=.data[['lty']]),outlier.shape = NA)
+            }
+            p <- p + scale_alpha_manual(breaks=c('light','regular'),values=c(0,1)) +
+              scale_linetype_manual(breaks=c('0','1'),values = c(0,1))+
+              scale_x_discrete(labels= function(x) wrp_lbl(x))
+            p <- p +geom_point(data=coloured_points,aes(colour=.data[[x_var]]),
+                               position=position_jitterdodge(),alpha=0.9)
+
+            if (showPoints) {
+              p <- p +geom_jitter(data= black_points,
+                                  color="black", size=0.4, alpha=0.9)
+            }
+            if (showN){
+              p <-  p+
+                stat_summary(aes(y=max(.data[[response]])*1.05,vjust=0),geom='label',fun.data = lbl_count,label.size=0,fill='white',label.padding = unit(0.15, "lines"),alpha=.8)+
+                geom_blank(aes( y=max(.data[[response]])*1.1))
+
+            }
+
+          }
+        }
+        plist[[x_var]] <- p  +
+          theme_bw() +
+          theme(
+            legend.position = 'none',
+            plot.title = element_text(size=9),
+            plot.margin = unit(p_margins, "lines")) +
+          labs(x=niceStr(x_var),y=niceStr(response_title)) +
+          guides(colour='none',linetype='none',alpha='none')+
+          scale_colour_reportRx()
+
+      }
+    }
+    # if the first plot doesn't have all the levels, take the legend from a plot that does
+    if (inherits(data[[response]],c('factor','ordered'))){
+      lvls_miss<-sapply(covs,function(x) length(setdiff(names(lvlCol),unique(data[[response]][!is.na(data[[x]])]))))
+      if (lvls_miss[1]>0) legend.grob <- ggpubr::get_legend(plist[[which(lvls_miss==0)[1]]]) else legend.grob <- NULL
+    } else legend.grob <- NULL
+    if (return_plotlist){
+      return(plist)
+    } else{   suppressMessages(ggpubr::ggarrange(plotlist=plist,
+                                                 common.legend = use_common_legend,
+                                                 ncol=ncol,
+                                                 nrow=ceiling(length(plist)/ncol),
+                                                 legend.grob = legend.grob))
     }
   }
-  # if the first plot doesn't have all the levels, take the legend from a plot that does
-  if (inherits(data[[response]],c('factor','ordered'))){
-    lvls_miss<-sapply(covs,function(x) length(setdiff(names(lvlCol),unique(data[[response]][!is.na(data[[x]])]))))
-    if (lvls_miss[1]>0) legend.grob <- ggpubr::get_legend(plist[[which(lvls_miss==0)[1]]]) else legend.grob <- NULL
-  } else legend.grob <- NULL
-  if (return_plotlist){
-    return(plist)
-  } else{   suppressMessages(ggpubr::ggarrange(plotlist=plist,
-                                               common.legend = use_common_legend,
-                                               ncol=ncol,
-                                               nrow=ceiling(length(plist)/ncol),
-                                               legend.grob = legend.grob))
-  }}
+}
+
 
 # Rmarkdown Reporting --------------------------------------------------------------
 
@@ -5192,7 +5243,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #'   you want to override this you can manually specify the type. Options
   #'   include "KM", and ,"CIF"
   #' @param plot.event  Which event(s) to plot (1,2, or c(1,2))
-  #' @param ... additional plotting arguments see \code{\link{ggkmcif2Parameters}}
+  #' @param ... for additional plotting arguments see \link{ggkmcif2Parameters}
+  #'
+  #' @name ggkmcif2
   #'
   #' @importFrom stats median qnorm as.formula pchisq model.matrix time
   #' @importFrom cmprsk cuminc
@@ -5887,6 +5940,8 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 
   #' Additional parameters passed to ggkmcif2
   #'
+  #' This section documents the additional parameters for \link{ggkmcif2}.
+  #'
   #' @param HR boolean to specify if you want hazard ratios included in the plot
   #' @param HR_pval boolean to specify if you want HR p-values in the plot
   #' @param conf.type One of "none"(the default), "plain", "log" , "log-log" or
@@ -5970,24 +6025,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #'   specified time
   #' @param print.n.missing Logical, should the number of missing be shown !Needs
   #'   to be checked
-  ggkmcif2Parameters <- function(table.height = NULL,
-                                 HR = FALSE, HR_pval = FALSE,  conf.type = "log",
-                                 main = NULL, stratalabs = NULL, strataname,
-                                 stratalabs.table = NULL, strataname.table = strataname,
-                                 median.text = FALSE, median.lines = FALSE, median.CI = FALSE,
-                                 set.time.text = NULL, set.time.line = FALSE, set.time = 5,
-                                 set.time.CI = FALSE, censor.marks = TRUE, censor.size = 3,
-                                 censor.stroke = 1.5, fsize = 11, nsize = 3, lsize = 1, psize = 3.5,
-                                 median.size = 3, median.pos = NULL, median.lsize = 1, set.size = 3,
-                                 set.pos = NULL, set.lsize = 1, ylim = c(0, 1),
-                                 linetype = NULL, xlim = NULL, legend.pos = NULL, pval.pos = NULL,
-                                 event = c("col", "linetype"), flip.CIF = FALSE,
-                                 cut = NULL, eventlabs = NULL, event.name = NULL, Numbers_at_risk_text = "Number at risk",
-                                 HR.digits = 2, HR.pval.digits = 3, pval.digits = 3, median.digits = 3,
-                                 set.time.digits = 3, print.n.missing = TRUE){
-    return(as.list(environment(), all=TRUE))
-  }
-
-example <- function(x) {
-  print(x)
-}
+  #'
+  #' @name ggkmcif2Parameters
+  #' @keywords internal
+  NULL

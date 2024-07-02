@@ -50,7 +50,7 @@ include "KM", and ,"CIF"}
 
 \item{plot.event}{Which event(s) to plot (1,2, or c(1,2))}
 
-\item{...}{additional plotting arguments see \code{\link{ggkmcif2Parameters}}}
+\item{...}{for additional plotting arguments see \link{ggkmcif2Parameters}}
 }
 \value{
 ggplot object; if table = F then only curves are output;
