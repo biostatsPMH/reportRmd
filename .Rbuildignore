@@ -19,7 +19,6 @@
 ^_old\.qmd
 ^_old\.R
 ^_old\.Rmd
-^lblCode_orig\.R$
 ^overview\.qmd$
 ^vignettes/overview_files$
 ^delta_calculation\.R$

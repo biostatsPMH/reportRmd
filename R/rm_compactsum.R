@@ -1187,13 +1187,13 @@ calc_CramerV <- function(chisq_test, CIwidth = 0.95) {
 
   bs_cramer <- function(data,indices){
     dt <- data[indices,]
-    new_chi <- chi.test.rm(dt[[1]],df[[2]])
+    new_chi <- chi.test.rm(dt[[1]],dt[[2]])
 
     chi_toCramer(new_chi)
   }
   b_cramer <- boot::boot(df,bs_cramer,R=1000)
-  b_ci <- boot::boot.ci(b_cramer,conf = CIwidth,type="basic")
-  output = c("cramer v"=cramer,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  b_ci <- boot::boot.ci(b_cramer,conf = CIwidth,type="perc")
+  output = c("cramer v"=cramer,lower=b_ci$perc[4],upper=b_ci$perc[5])
   return(output)
 }
 
@@ -1208,8 +1208,8 @@ calc_cohenD <- function(t_test, CIwidth = 0.95) {
   }
 
   b_cohen <- boot::boot(df,bs_cohen,R=1000)
-  b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="basic")
-  output = c("cohen d"=cohen,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="perc")
+  output = c("cohen d"=cohen,lower=b_ci$perc[4],upper=b_ci$perc[5])
   return(output)
 }
 
@@ -1223,8 +1223,8 @@ calc_WilcoxonR <- function(wilcox_test, CIwidth = 0.95) {
     wilcox_effSize(new_wilcox)
   }
   b_r <- boot::boot(df,bs_r,R=1000)
-  b_ci <- boot::boot.ci(b_r,conf = CIwidth,type="basic")
-  output = c("wilcoxon r"=r,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  b_ci <- boot::boot.ci(b_r,conf = CIwidth,type="perc")
+  output = c("wilcoxon r"=r,lower=b_ci$perc[4],upper=b_ci$perc[5])
   return(output)
 }
 
@@ -1239,8 +1239,8 @@ calc_epsilonSq <- function(kruskal_test, CIwidth = 0.95) {
     chi_toEpsilonSq(new_kruskal)
   }
   b_epsilon <- boot::boot(df,bs_epsilon,R=1000)
-  b_ci <- boot::boot.ci(b_epsilon,conf = CIwidth,type="basic")
-  output = c("epsilon sq"=eps,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  b_ci <- boot::boot.ci(b_epsilon,conf = CIwidth,type="perc")
+  output = c("epsilon sq"=eps,lower=b_ci$perc[4],upper=b_ci$perc[5])
   return(output)
 }
 
@@ -1255,8 +1255,8 @@ calc_omegaSq <- function(anova_test, CIwidth = 0.95){
     anova_toOmegaSq(new_summary)
   }
   b_omega <- boot::boot(anova_test$model,bs_omega,R=1000)
-  b_ci <- boot::boot.ci(b_omega,conf = CIwidth,type="basic")
-  output = c("omega squared"=omega,lower=b_ci$basic[4],upper=b_ci$basic[5])
+  b_ci <- boot::boot.ci(b_omega,conf = CIwidth,type="perc")
+  output = c("omega squared"=omega,lower=b_ci$perc[4],upper=b_ci$perc[5])
   return(output)
 }
 
@@ -1273,6 +1273,4 @@ format_delta <- function(x,digits=2){
   ci <- paste0(out[1], " (", out[2], ", ", out[3], ")")
   return(ci)
 }
-
-
 
