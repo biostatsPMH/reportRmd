@@ -6028,4 +6028,20 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #'
   #' @name ggkmcif2Parameters
   #' @keywords internal
-  NULL
+  ggkmcif2Parameters <- function(table.height = NULL,
+                                 HR = FALSE, HR_pval = FALSE,  conf.type = "log",
+                                 main = NULL, stratalabs = NULL, strataname,
+                                 stratalabs.table = NULL, strataname.table = strataname,
+                                 median.text = FALSE, median.lines = FALSE, median.CI = FALSE,
+                                 set.time.text = NULL, set.time.line = FALSE, set.time = 5,
+                                 set.time.CI = FALSE, censor.marks = TRUE, censor.size = 3,
+                                 censor.stroke = 1.5, fsize = 11, nsize = 3, lsize = 1, psize = 3.5,
+                                 median.size = 3, median.pos = NULL, median.lsize = 1, set.size = 3,
+                                 set.pos = NULL, set.lsize = 1, ylim = c(0, 1),
+                                 linetype = NULL, xlim = NULL, legend.pos = NULL, pval.pos = NULL,
+                                 event = c("col", "linetype"), flip.CIF = FALSE,
+                                 cut = NULL, eventlabs = NULL, event.name = NULL, Numbers_at_risk_text = "Number at risk",
+                                 HR.digits = 2, HR.pval.digits = 3, pval.digits = 3, median.digits = 3,
+                                 set.time.digits = 3, print.n.missing = TRUE){
+    return(as.list(environment(), all=TRUE))
+  }
