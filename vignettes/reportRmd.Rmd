@@ -32,7 +32,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 \newpage
 
-# Detailed summary statistics
+# Summary statistics
 
 Basic summary statistics
 
@@ -40,7 +40,6 @@ Basic summary statistics
 data("pembrolizumab")
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'))
-
 ```
 
 Set `IQR = T` for interquartile range instead of Min/Max
@@ -48,7 +47,6 @@ Set `IQR = T` for interquartile range instead of Min/Max
 ```{r}
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'),IQR=TRUE)
-
 ```
 
 Or `all.stats=T` for both
@@ -56,18 +54,20 @@ Or `all.stats=T` for both
 ```{r}
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'),all.stats = TRUE)
-
 ```
 
 \newpage
+
+## Summaries By Group
 
 This will produce summary statistics by Sex
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'))
-
 ```
+
+## Showing Statistical Tests
 
 To indicate which statistical test was used use `show.tests=TRUE`
 
@@ -75,20 +75,23 @@ To indicate which statistical test was used use `show.tests=TRUE`
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
-
 ```
 
 \newpage
+
+## Including Effect Sizes
 
 Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer's V for categorical variables.
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
-covs=c('age','pdl1','change_ctdna_group'),
-show.tests=TRUE, effSize=TRUE)
+covs=c('age','change_ctdna_group'),
+effSize=TRUE)
 ```
 
 \newpage
+
+## Parametric vs Non-parametric Comparisons
 
 Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for t-tests/ANOVA
 
@@ -101,13 +104,14 @@ show.tests=TRUE, effSize=TRUE)
 
 \newpage
 
-The default is to indicate percentages by columns (ie percentages within columns add to 100)
+## Row vs Column Summaries
+
+The default is to indicate percentages by columns (ie. percentages within columns add to 100)
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('cohort'),
 pvalue = FALSE)
-
 ```
 
 But you can also specify to show by row instead
@@ -117,46 +121,49 @@ rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('cohort'),
 pvalue = FALSE,
 percentage='row')
-
 ```
+
+\newpage
 
 # Compact summary statistics
 
 Basic summary statistics
+
 ```{r}
 rm_compactsum(data = pembrolizumab, xvars = c("change_ctdna_group", "l_size"))
 ```
+
 Set `iqr = T` for interquartile range instead of Min/Max
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars = c("change_ctdna_group", "l_size"), iqr=TRUE)
-
 ```
+
 Or `all.stats=T` for both
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars = c("change_ctdna_group", "l_size"), all.stats = T)
-
 ```
 
 \newpage
 
+## Summaries By Group
 This will produce summary statistics by sex:
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex')
-
 ```
 
+## Showing Statistical Tests
 To indicate which statistical test was used use `show.tests=TRUE`
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', show.tests=TRUE)
-
 ```
 
 \newpage
 
+## Including Effect Sizes
 Effect sizes can be added with `effSize = TRUE`. If `show.tests = TRUE` as well, the effStat will also be shown:
 
 ```{r}
@@ -164,68 +171,98 @@ rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), gr
 ```
 \newpage
 
-The default summary statistic for numerical variables is median. To specify which numerical variables should have mean displayed instead, change the `use_mean` argument. Unspecificed xvars will use the default median
+## Using Mean Summary Statistic Instead of Median
+The default summary statistic for numerical variables is median. To specify which numerical variables should have mean displayed instead, change the `use_mean` argument. Unspecified xvars will use the default median
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', use_mean = c("pdl1"), effSize = T, show.tests = T)
 ```
+
+## Custom Digits Argument
 The digits and digits.cat arguments can be changed to a custom numerical value. The default digits is 1, the default digits.cat is 0
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', use_mean = c("pdl1"), digits = 2, digits.cat = 1, effSize = T, show.tests = T)
 ```
-To specify custom digit arguments for numerical variables, change the `digits` argument. Unspecified variables will use the default value.
+
+To specify custom digit arguments for different numerical variables, change the `digits` argument. Unspecified variables will use the default value.
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','l_size'), grp = 'sex', digits = c("age" = 3, "l_size" = 2), effSize = T, show.tests = T)
 ```
 \newpage
 
+## Row vs Column Summaries
 The default is to indicate percentages by columns (ie. percentages within columns add to 100). But you can also specify to show by row instead
 
 ```{r}
 rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr'), grp = 'cohort', effSize = T, show.tests = T, percentage = "row")
 ```
 
+## Viewing the Self-Generated Description
 To view the self-generated description for the table:
+
 ```{r}
 summary_tab <- rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr', 'age'), grp = 'cohort', effSize = T, show.tests = T)
-attr(summary_tab, "description")
+cat(attr(summary_tab, "description"))
 ```
-
-
 
 \newpage
 
 # Univariate regression
 
-Combining multiple univariate regression analyses into a single table
+Combining multiple univariate regression analyses into a single table. The function will try to determine the most appropriate model from the data.
 
-```{r }
+```{r}
 rm_uvsum(data=pembrolizumab, response='orr',
-covs=c('age','pdl1','change_ctdna_group'),p.adjust = 'holm')
-
-
+covs=c('age','pdl1','change_ctdna_group'))
 ```
 
-If the response is continuous linear regression is the default
+## Simple Linear Regression
+If the response is continuous linear regression is the default. Using `type = 'linear'` will ensure linear regression.
 
 ```{r }
 rm_uvsum(data=pembrolizumab, response='l_size',
 covs=c('age','cohort'))
-
 ```
 
-...unless two variables are specified and then survival analysis is run
+## Logistic Regression
+If the response is binomial, logistic regression will be run (or specified with `type = 'logistic'`).
+
+```{r }
+rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','cohort'))
+```
+
+## Poisson Regression
+If the response is integer, poisson regression will be run (or specified with `type = 'poisson'`).
+
+```{r }
+pembrolizumab$Counts <- rpois(nrow(pembrolizumab),lambda = 3)
+rm_uvsum(data=pembrolizumab, response='Counts',
+covs=c('age','cohort'))
+```
+
+## Survival Analysis
+If two response variables are specified and then survival analysis is run (specified with `type='coxph'`).
 
 ```{r }
 rm_uvsum(data=pembrolizumab, response=c('os_time','os_status'),
 covs=c('age','pdl1','change_ctdna_group'))
+```
 
+## Competing Risk
+Competing risk models need to be explicitly specified using `type='crr'`.
+
+```{r }
+rm_uvsum(data=pembrolizumab, response=c('os_time','os_status'),
+covs=c('age','pdl1','change_ctdna_group'),
+type='crr')
 ```
 
 \newpage
 
+## GEE Models
 Correlated observations can be handled using GEE
 
 ```{r}
@@ -238,6 +275,7 @@ data("ctDNA")
  data=ctDNA,showN=TRUE)
 ```
 
+## Returning Model Objects
 If you want to check the underlying models, set `returnModels = TRUE`
 
 ```{r}
@@ -246,25 +284,45 @@ rm_uvsum(response = 'orr',
  data=pembrolizumab,returnModels = TRUE)
 ```
 
+The data analysed can be examined by interrogating the data object appended to each model
+
+```{r}
+mList <-  rm_uvsum(response = 'orr',
+ covs=c('age'),
+ data=pembrolizumab,returnModels = TRUE)
+head(mList$age$data)
+```
+
+## Adjusting p-values
+Multiple comparisons can be controlled for with the p.adjust argument, which accepts any of the options from the `p.adjust` function.
+
+```{r}
+ rm_uvsum(response = 'orr',
+ covs=c('age','sex','pdl1'),
+ data=pembrolizumab,p.adjust = 'fdr')
+```
+
+**Note:** The raw p-value column is suppressed when there are categorical variables with >2 levels, to prevent three columns of p-values from appearing.
+
 \newpage
 
 # Multivariable analysis
 
-To create a nice display for multivariable models the model needs to first be fit. By default, the variance inflation factor will be shown to check for multicollinearity. To suppress this column set `vif=FALSE`. Note: variance inflation factors are not computed (yet) for multilevel or GEE models.
+To create a nice display for multivariable models the model needs to first be fit. 
+
+By default, the variance inflation factor will be shown to check for multicollinearity. To suppress this column set `vif=FALSE`. Note: variance inflation factors are not computed (yet) for multilevel or GEE models.
 
 ```{r}
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit,p.adjust = 'holm')
-
+rm_mvsum(glm_fit, showN = TRUE, vif=TRUE)
 ```
 
 p-values can be adjusted for multiple comparisons using any of the options available in the `p.adjust` function. This argument is also available for univariate models run with rm_uvsum.
 
 ```{r}
 rm_mvsum(glm_fit, showN = TRUE, vif=TRUE,p.adjust = 'holm')
-
 ```
 
 \newpage
@@ -287,7 +345,7 @@ rm_uv_mv(uvsumTable,mvsumTable)
 
 \newpage
 
-This can also be done with adjusted p-values, but when combined the raw p-values are dropped
+**Note:** This can also be done with adjusted p-values, but when combined the raw p-values are dropped.
 
 ```{r}
 uvsumTable <- rm_uvsum(data=pembrolizumab, response='orr',
@@ -341,7 +399,6 @@ Displaying survival probabilities at different times by sex using Kaplan Meier e
 ```{r}
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
  group="sex",survtimes=seq(12,36,12),survtimeunit='months')
-
 ```
 
 \newpage
@@ -353,20 +410,18 @@ Displaying survival probabilities at different times by sex using Cox PH estimat
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
  strata="sex",survtimes=c(12,24),survtimeunit='mo',type='PH')
-
 ```
 
+## Survival Times With Covariate Adjustments
 Displaying survival probabilities at different times by sex, adjusting for age using Cox PH estimates
 
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
  strata="sex",survtimes=c(12,24),survtimeunit='mo',type='PH')
-
 ```
 
-\newpage
-
 # Stratified Survival Summary
+To combine estimates across strata
 
 ```{r}
 rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
@@ -376,6 +431,8 @@ rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 \newpage
 
 # Working with Labels
+
+New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
 
 Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the default). Variable labels are set using the `label` attribute of individual variables (assigned using `reportRmd` or another package like `haven`).
 
@@ -458,29 +515,41 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 ```
 
 The plotuv function can also be used without a response variable to display summary of variables
+
 ```{r}
 plotuv(data = pembrolizumab, covs=c('age','cohort','pdl1','change_ctdna_group'), showN = T)
 ```
 
-
 \newpage
 
-## Plotting univariable odds ratios
+## Plotting survival curves
+Survival curves are now ggplot2-based, the older version, ggkmcif is deprecated from version 0.1.0
 
-This will default to linear scale, but can be set to log scale using `logScale=TRUE`
-
-```{r, , fig.width=7, fig.height=2}
-forestplotUV(data=pembrolizumab, response='orr',
-covs=c('age','sex','pdl1','change_ctdna_group'))
+```{r, fig.width=7,fig.height=5}
+ggkmcif(response = c('os_time','os_status'),
+cov='cohort',
+data=pembrolizumab)
 ```
 
 \newpage
 
-## Plotting multivariable odds ratios
+## Forest Plots
 
-```{r, , fig.width=7, fig.height=2}
-require(ggplot2)
-glm_fit <- glm(orr~change_ctdna_group+pdl1,
+Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0
+
+This will default to a log scale, but can be set to linear using `logScale=FALSE`
+
+```{r, eval=F,echo=T}
+data("pembrolizumab")
+forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
+data=pembrolizumab, family='binomial')
+```
+
+
+### Multivariable Model Forest Plot
+
+```{r, eval=F,echo=T}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
 forestplotMV(glm_fit)
@@ -488,25 +557,21 @@ forestplotMV(glm_fit)
 
 \newpage
 
-# Plotting combined univariable and multivariable model odd ratios
+## Combining univariable and multivariable models into a single plot
 
 To display odds ratios from univariate and multivariable models in a single forest plot, run the forestplotUV and forestplotMV functions and combine.
+```{r, eval=F,echo=T}
+UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
+ "l_size"), data=pembrolizumab, family='binomial')
+ MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
+ data=pembrolizumab,family = 'binomial'))
+ forestplotUVMV(UVp, MVp)
 
-```{r}
-uvFP <- forestplotUV(data=pembrolizumab, response='orr',
-covs=c('age','sex','pdl1','change_ctdna_group'))
-
-glm_fit <- glm(orr~change_ctdna_group+pdl1,
-               family='binomial',
-               data = pembrolizumab)
-mvFP <- forestplotMV(glm_fit)
-
-forestplotUVMV(uvFP,mvFP,showN=T,showEvent=T)
 ```
 
 \newpage
 
-This can also be done with log scale odds ratios (default is linear scale). Number of subjects and/or number of events can also be turned off, as well as different colours used.
+This can also be done with log scale odds ratios. Number of subjects and/or number of events can also be turned off, as well as different colours used.
 
 ```{r}
 uvFP <- forestplotUV(data=pembrolizumab, response='orr',
@@ -522,21 +587,11 @@ forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),
 
 \newpage
 
-## Plotting survival curves
-
-```{r, fig.width=7,fig.height=5}
-ggkmcif(response = c('os_time','os_status'),
-cov='cohort',
-data=pembrolizumab)
-```
-
-\newpage
-
 # Options
 
 The following options can be set:
 
--   reportRmd.digits, detault is 2. Sets the default number of digits in output functions. Does not affect p-values.
+-   reportRmd.digits, default is 2. Sets the default number of digits in output functions. Does not affect p-values.
 -   reportRmd.forceWald, default is FALSE. If set to TRUE then Wald CI, as opposed to likelihood profile CI will be used in the rm_uvsum function.
 -   reportRmd.logScale, default is TRUE. The scale of the forest plots will default to log unless otherwise specified.
 

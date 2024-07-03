@@ -46,7 +46,7 @@ Imports:
     scales,
     stats,
     survival
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'delta_calculation.R'
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R'
 Depends: 
     R (>= 4.2)
 LazyData: true

@@ -22,4 +22,4 @@
 ^lblCode_orig\.R$
 ^overview\.qmd$
 ^vignettes/overview_files$
-^delta_calculation\.R$
+^_delta_calculation\.R$

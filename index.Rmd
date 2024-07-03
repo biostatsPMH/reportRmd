@@ -55,11 +55,9 @@ by Pandoc will be used.
 
 Basic summary statistics
 
-
 ```{r}
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'))
-
 ```
 
 Set `IQR = T` for interquartile range instead of Min/Max
@@ -67,14 +65,12 @@ Set `IQR = T` for interquartile range instead of Min/Max
 ```{r}
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'),IQR=TRUE)
-
 ```
 
 Or `all.stats=T` for both
 ```{r}
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'),all.stats = TRUE)
-
 ```
 
 ## Summaries By Group
@@ -84,28 +80,26 @@ This will produce summary statistics by Sex
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'))
-
 ```
 
 ## Showing Statistical Tests
-To indicate which statistical test was used  use `show.tests=TRUE`
 
+To indicate which statistical test was used  use `show.tests=TRUE`
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
-
 ```
 
 ## Including Effect Sizes
-Cramer V is shown for categorical covariates and $\eta^2$ for continuous covariates.
+
+Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer's V for categorical variables.
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','change_ctdna_group'),
 effSize=TRUE)
-
 ```
 
 ## Parametric vs Non-parametric Comparisons
@@ -116,19 +110,17 @@ Group comparisons are non-parametric by default, specify `testcont='ANOVA'` for 
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1'),
 testcont='ANOVA',
-show.tests=TRUE)
-
+show.tests=TRUE, effSize=TRUE)
 ```
 
 ## Row vs Column Summaries
 
-The default is to indicate percentages by columns (ie percentages within columns add to 100)
+The default is to indicate percentages by columns (ie. percentages within columns add to 100)
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('cohort'),
 pvalue = FALSE)
-
 ```
 
 But you can also specify to show by row instead
@@ -138,43 +130,85 @@ rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('cohort'),
 pvalue = FALSE,
 percentage='row')
-
 ```
 
 \newpage
-# Using Labelled Variables
-New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
+
+# Compact summary statistics 
+
+Basic summary statistics
 
 ```{r}
-
-ctDNA_names <- data.frame(var=names(ctDNA),
-                          label=c('Patient ID',
-                                  'Study Cohort',
-                                  'Change in ctDNA since baseline',
-                                  'Number of weeks on treatment',
-                                  'Percentage change in tumour measurement'))
-ctDNA <- set_labels(ctDNA,ctDNA_names)
-
-rm_covsum(data=ctDNA,
-          covs=c('cohort','ctdna_status'))
+rm_compactsum(data = pembrolizumab, xvars = c("change_ctdna_group", "l_size"))
 ```
 
-We can change individual labels with the set_var_labels command
+Set `iqr = T` for interquartile range instead of Min/Max
 
 ```{r}
-ctDNA <- set_var_labels(ctDNA,
-                        cohort="A new cohort label")
-rm_covsum(data=ctDNA,
-          covs=c('cohort'))
-
+rm_compactsum(data=pembrolizumab, xvars = c("change_ctdna_group", "l_size"), iqr=TRUE)
 ```
 
-If variable labels need to be changed en masse, they can be extracted:
+Or `all.stats=T` for both
+
 ```{r}
-var_labels <- extract_labels(ctDNA)
-var_labels
+rm_compactsum(data=pembrolizumab, xvars = c("change_ctdna_group", "l_size"), all.stats = T)
 ```
 
+## Summaries By Group
+This will produce summary statistics by Sex:
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex')
+```
+
+## Showing Statistical Tests
+To indicate which statistical test was used use `show.tests=TRUE`
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', show.tests=TRUE)
+```
+
+## Including Effect Sizes
+Effect sizes can be added with `effSize = TRUE`. If `show.tests = TRUE` as well, the effStat will also be shown:
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', effSize = T, show.tests = T)
+```
+
+## Using Mean Summary Statistic Instead of Median
+The default summary statistic for numerical variables is median. To specify which numerical variables should have mean displayed instead, change the `use_mean` argument. Unspecified xvars will use the default median
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', use_mean = c("pdl1"), effSize = T, show.tests = T)
+```
+
+## Custom Digits Argument
+The digits and digits.cat arguments can be changed to a custom numerical value. The default digits is 1, the default digits.cat is 0
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','change_ctdna_group'), grp = 'sex', use_mean = c("pdl1"), digits = 2, digits.cat = 1, effSize = T, show.tests = T)
+```
+
+To specify custom digit arguments for different numerical variables, change the `digits` argument. Unspecified variables will use the default value.
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('age','pdl1','l_size'), grp = 'sex', digits = c("age" = 3, "l_size" = 2), effSize = T, show.tests = T)
+```
+
+## Row vs Column Summaries
+The default is to indicate percentages by columns (ie. percentages within columns add to 100). But you can also specify to show by row instead
+
+```{r}
+rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr'), grp = 'cohort', effSize = T, show.tests = T, percentage = "row")
+```
+
+## Viewing the Self-Generated Description
+To view the self-generated description for the summary table:
+
+```{r}
+summary_tab <- rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr', 'age'), grp = 'cohort', effSize = T, show.tests = T)
+cat(attr(summary_tab, "description"))
+```
 
 \newpage
 
@@ -185,7 +219,6 @@ Combining multiple univariate regression analyses into a single table. The funct
 ```{r }
 rm_uvsum(data=pembrolizumab, response='orr',
 covs=c('age','pdl1','change_ctdna_group'))
-
 ```
 
 ## Simple Linear Regression
@@ -222,7 +255,6 @@ covs=c('age','pdl1','change_ctdna_group'))
 ```
 
 ## Competing Risk
-
 Competing risk models need to be explicitly specified using `type='crr'`.
 
 ```{r }
@@ -259,11 +291,9 @@ mList <-  rm_uvsum(response = 'orr',
  covs=c('age'),
  data=pembrolizumab,returnModels = TRUE)
 head(mList$age$data)
-
 ```
 
 ## Adjusting p-values
-
 Multiple comparisons can be controlled for with the p.adjust argument, which accepts any of the options from the `p.adjust` function.
 
 ```{r}
@@ -289,7 +319,11 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
 rm_mvsum(glm_fit, showN = TRUE, vif=TRUE)
 ```
 
+p-values can be adjusted for multiple comparisons using any of the options available in the `p.adjust` function. This argument is also available for univariate models run with rm_uvsum.
 
+```{r}
+rm_mvsum(glm_fit, showN = TRUE, vif=TRUE,p.adjust = 'holm')
+```
 
 # Combining univariate and multivariable models
 
@@ -309,6 +343,17 @@ rm_uv_mv(uvsumTable,mvsumTable)
 
 **Note:** This can also be done with adjusted p-values, but when combined the raw p-values are dropped.
 
+```{r}
+uvsumTable <- rm_uvsum(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'),tableOnly = TRUE,p.adjust='holm')
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE,p.adjust='holm')
+
+rm_uv_mv(uvsumTable,mvsumTable)
+```
 
 # Changing the output
 
@@ -323,6 +368,7 @@ outTable(mvsumTable)
 # Combining tables
 
 Tables can be nested with the `nestTable()` function
+
 ```{r}
 cohortA <- rm_uvsum(data=subset(pembrolizumab,cohort=='A'), 
                      response = 'pdl1',
@@ -347,7 +393,6 @@ Displaying survival probabilities at different times by sex using Kaplan Meier e
 ```{r}
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
  group="sex",survtimes=seq(12,36,12),survtimeunit='months')
-
 ```
 
 \newpage
@@ -359,7 +404,6 @@ Displaying survival probabilities at different times by sex using Cox PH estimat
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status',
  strata="sex",survtimes=c(12,24),survtimeunit='mo',type='PH')
-
 ```
 
 ## Survival Times With Covariate Adjustments
@@ -368,9 +412,7 @@ Displaying survival probabilities at different times by sex, adjusting for age u
 ```{r}
 rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
  strata="sex",survtimes=c(12,24),survtimeunit='mo',type='PH')
-
 ```
-
 
 # Stratified Survival Summary
 To combine estimates across strata
@@ -380,6 +422,80 @@ rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
             covs='sex',strata='cohort',digits=1)
 ```
 
+\newpage
+
+# Working with Labels
+
+New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
+
+Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the default). Variable labels are set using the `label` attribute of individual variables (assigned using `reportRmd` or another package like `haven`).
+
+`reportRmd` supports the addition, removal and export of labels using the following functions:
+
+-   `set_labels` will set labels for a data frame from a lookup table
+-   `set_var_labels` allows you to set individual variable labels to a data frame
+-   `clear_labels` removes all labels from a data frame
+-   `export_labels` extracts variable labels from a data frame and returns a data frame of variable names and variable labels
+
+## Worked Example
+
+Get some descriptive stats for the ctDNA data that comes with the package. The `nicenames` argument is TRUE by default so underscores are replaced by spaces
+
+```{r}
+data(ctDNA)
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+### set_labels {#sec-set_labels}
+
+If we have a lookup table of variable names and labels that we imported from a data dictionary we can set the variable labels for the data frame and these will be used in the `rm_` functions
+
+```{r}
+
+ctDNA_names <- data.frame(var=names(ctDNA),
+                          label=c('Patient ID',
+                                  'Study Cohort',
+                                  'Change in ctDNA since baseline',
+                                  'Number of weeks on treatment',
+                                  'Percentage change in tumour measurement'))
+ctDNA <- set_labels(ctDNA,ctDNA_names)
+
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+### set_var_labels {#sec-set_var_labels}
+
+Individual labels can be changed with with the `set_var_labels` command
+
+```{r}
+ctDNA <- set_var_labels(ctDNA,
+                        cohort="A new cohort label")
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+### extract_labels {#sec-extract_labels}
+
+Extract the variable labels to a data frame
+
+```{r}
+var_labels <- extract_labels(ctDNA)
+var_labels
+```
+
+### clear_labels {#sec-clear_labels}
+Or clear them all
+
+```{r}
+ctDNA <- clear_labels(ctDNA)
+```
+
+\newpage
 
 # Plotting Functions
 
@@ -392,7 +508,6 @@ These plots are designed for quick inspection of many variables, not for publica
 ```{r, eval=FALSE,echo=TRUE}
 plotuv(data=pembrolizumab, response='orr',
 covs=c('age','cohort','pdl1','change_ctdna_group'))
-
 ```
 
 ```{r, eval=FALSE,echo=FALSE}
@@ -403,11 +518,17 @@ ggsave('images/plotuv.png',width = 5,height = 4,dpi = 300)
 
 ![](images/plotuv.png)
 
+The plotuv function can also be used without a response variable to display summary of variables
+
+```{r}
+plotuv(data = pembrolizumab, covs=c('age','cohort','pdl1','change_ctdna_group'), showN = T)
+```
+
 \newpage
 
 ## Plotting survival curves
-
 Survival curves are now ggplot2-based, the older version, ggkmcif is deprecated from version 0.1.0
+
 ```{r, eval=F,echo=T}
 ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
@@ -434,13 +555,12 @@ ggsave('images/ggkmcif_sm.png',width = 4,height = 2.5)
 
 Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0
 
-This will default to a log scale, but can be set to linear using `logscale=FALSE`
+This will default to a log scale, but can be set to linear using `logScale=FALSE`
 
 ```{r, eval=F,echo=T}
 data("pembrolizumab")
 forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 data=pembrolizumab, family='binomial')
-
 ```
 
 ```{r, eval=F,echo=FALSE}
@@ -448,14 +568,12 @@ data("pembrolizumab")
 forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 data=pembrolizumab, family='binomial')
 ggsave('images/forestuv.png',width = 5,height = 1.5)
-
 ```
 
 ![](images/forestuv.png)
 ### Multivariable Model Forest Plot
 
 ```{r, eval=F,echo=T}
-
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
@@ -473,14 +591,14 @@ ggsave('images/forestmv.png',width = 4,height = 1.5)
 
 ![](images/forestmv.png)
 
-### Combining UV & MV models into a single plot
+## Combining univariable and multivariable models into a single plot
+
 ```{r, eval=F,echo=T}
 UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
  "l_size"), data=pembrolizumab, family='binomial')
  MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
  data=pembrolizumab,family = 'binomial'))
  forestplotUVMV(UVp, MVp)
-
 ```
 
 ```{r, eval=F,echo=F}
@@ -497,22 +615,46 @@ ggsave('images/forestuvmv.png',width = 5,height = 2)
 
 \newpage
 
+\newpage
+
+# Options
+
+The following options can be set:
+
+-   reportRmd.digits, default is 2. Sets the default number of digits in output functions. Does not affect p-values.
+-   reportRmd.forceWald, default is FALSE. If set to TRUE then Wald CI, as opposed to likelihood profile CI will be used in the rm_uvsum function.
+-   reportRmd.logScale, default is TRUE. The scale of the forest plots will default to log unless otherwise specified.
+
+Example:
+
+```{r}
+ rm_uvsum(response = 'baseline_ctdna',
+ covs=c('age','sex','l_size','pdl1','tmb'),
+ data=pembrolizumab)
+ 
+ options('reportRmd.digits'=1) 
+ 
+rm_uvsum(response = 'baseline_ctdna',
+ covs=c('age','sex','l_size','pdl1','tmb'),
+ data=pembrolizumab)
+
+```
+
+\newpage
+
 # PDF Output
 
 For pdf to be correctly generate when using survival curves it is recommended that the cairo format be used. This can be specified with the following command in the setup code chunk:
 
 `knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")`
 
-
 # Data Sets
 
-### pembrolizumab
-
+## pembrolizumab
 
 Survival status and ctDNA levels for patients receiving pembrolizumab
 
 A data frame with 94 rows and 15 variables:
-
 
 - **id** Patient ID
 - **age** Age at study entry
@@ -530,9 +672,7 @@ A data frame with 94 rows and 15 variables:
 - **pfs_status** Progression free survival status, 0 = progression free, 1 = progressed
 - **pfs_time** Progression free survival time in months
 
-
-
-### ctDNA
+## ctDNA
 
 Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline.
 
