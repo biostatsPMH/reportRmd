@@ -224,9 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="competing-risk" class="section level2 hasAnchor" number="4.5">
 <h2><span class="header-section-number">4.5</span> Competing Risk<a href="competing-risk.html#competing-risk" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Competing risk models need to be explicitly specified using <code>type='crr'</code>.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="competing-risk.html#cb27-1" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="fu">c</span>(<span class="st">&#39;os_time&#39;</span>,<span class="st">&#39;os_status&#39;</span>),</span>
-<span id="cb27-2"><a href="competing-risk.html#cb27-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),</span>
-<span id="cb27-3"><a href="competing-risk.html#cb27-3" tabindex="-1"></a><span class="at">type=</span><span class="st">&#39;crr&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="competing-risk.html#cb26-1" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="fu">c</span>(<span class="st">&#39;os_time&#39;</span>,<span class="st">&#39;os_status&#39;</span>),</span>
+<span id="cb26-2"><a href="competing-risk.html#cb26-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),</span>
+<span id="cb26-3"><a href="competing-risk.html#cb26-3" tabindex="-1"></a><span class="at">type=</span><span class="st">&#39;crr&#39;</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

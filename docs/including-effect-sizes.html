@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>4.2 Logistic Regression | reportRmd Package</title>
-  <meta name="description" content="4.2 Logistic Regression | reportRmd Package" />
+  <title>2.3 Including Effect Sizes | reportRmd Package</title>
+  <meta name="description" content="2.3 Including Effect Sizes | reportRmd Package" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="4.2 Logistic Regression | reportRmd Package" />
+  <meta property="og:title" content="2.3 Including Effect Sizes | reportRmd Package" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="4.2 Logistic Regression | reportRmd Package" />
+  <meta name="twitter:title" content="2.3 Including Effect Sizes | reportRmd Package" />
   
   
   
@@ -28,8 +28,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="simple-linear-regression.html"/>
-<link rel="next" href="poisson-regression.html"/>
+<link rel="prev" href="showing-statistical-tests.html"/>
+<link rel="next" href="parametric-vs-non-parametric-comparisons.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -221,27 +221,31 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="logistic-regression" class="section level2 hasAnchor" number="4.2">
-<h2><span class="header-section-number">4.2</span> Logistic Regression<a href="logistic-regression.html#logistic-regression" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>If the response is binomial, logistic regression will be run (or specified with <code>type = 'logistic'</code>).</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="logistic-regression.html#cb23-1" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb23-2"><a href="logistic-regression.html#cb23-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;cohort&#39;</span>))</span></code></pre></div>
+<div id="including-effect-sizes" class="section level2 hasAnchor" number="2.3">
+<h2><span class="header-section-number">2.3</span> Including Effect Sizes<a href="including-effect-sizes.html#including-effect-sizes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Effect sizes can be added with <code>effSize = TRUE</code>. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen’s d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer’s V for categorical variables.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="including-effect-sizes.html#cb6-1" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">maincov =</span> <span class="st">&#39;sex&#39;</span>,</span>
+<span id="cb6-2"><a href="including-effect-sizes.html#cb6-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),</span>
+<span id="cb6-3"><a href="including-effect-sizes.html#cb6-3" tabindex="-1"></a><span class="at">effSize=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
 </th>
 <th style="text-align:right;">
-OR(95%CI)
+Full Sample (n=94)
+</th>
+<th style="text-align:right;">
+Female (n=58)
+</th>
+<th style="text-align:right;">
+Male (n=36)
 </th>
 <th style="text-align:right;">
 p-value
 </th>
 <th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Event
+Effect Size
 </th>
 </tr>
 </thead>
@@ -251,115 +255,123 @@ Event
 <span style="font-weight: bold;">age</span>
 </td>
 <td style="text-align:right;">
-1.0 (0.9, 1.0)
 </td>
 <td style="text-align:right;">
-0.089
 </td>
 <td style="text-align:right;">
-94
 </td>
 <td style="text-align:right;">
-78
+0.30
+</td>
+<td style="text-align:right;">
+0.11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Mean (sd)
+</td>
+<td style="text-align:right;">
+57.9 (12.8)
+</td>
+<td style="text-align:right;">
+56.9 (12.6)
+</td>
+<td style="text-align:right;">
+59.3 (13.1)
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Median (Min,Max)
+</td>
+<td style="text-align:right;">
+59.1 (21.1, 81.8)
+</td>
+<td style="text-align:right;">
+56.6 (34.1, 78.2)
+</td>
+<td style="text-align:right;">
+61.2 (21.1, 81.8)
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">cohort</span>
+<span style="font-weight: bold;">change ctdna group</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-94
 </td>
 <td style="text-align:right;">
-78
+0.84
+</td>
+<td style="text-align:right;">
+0.020
 </td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
-A
+Decrease from baseline
 </td>
 <td style="text-align:right;">
-Reference
+33 (45)
+</td>
+<td style="text-align:right;">
+19 (48)
+</td>
+<td style="text-align:right;">
+14 (42)
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-16
-</td>
-<td style="text-align:right;">
-13
 </td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
-B
+Increase from baseline
 </td>
 <td style="text-align:right;">
-7e+07 (8e-76, NA)
+40 (55)
 </td>
 <td style="text-align:right;">
-0.99
+21 (52)
+</td>
+<td style="text-align:right;">
+19 (58)
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Missing
+</td>
+<td style="text-align:right;">
+21
 </td>
 <td style="text-align:right;">
 18
 </td>
 <td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-C
+3
 </td>
 <td style="text-align:right;">
-7e+07 (8e-74, NA)
 </td>
 <td style="text-align:right;">
-0.99
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-D
-</td>
-<td style="text-align:right;">
-0.1 (0.0, 0.6)
-</td>
-<td style="text-align:right;">
-<span style="font-weight: bold;">0.015</span>
-</td>
-<td style="text-align:right;">
-12
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-E
-</td>
-<td style="text-align:right;">
-1.2 (0.2, 5.5)
-</td>
-<td style="text-align:right;">
-0.86
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-25
 </td>
 </tr>
 </tbody>
@@ -370,8 +382,8 @@ E
           </div>
         </div>
       </div>
-<a href="simple-linear-regression.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="poisson-regression.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="showing-statistical-tests.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="parametric-vs-non-parametric-comparisons.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

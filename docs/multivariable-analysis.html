@@ -225,10 +225,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1><span class="header-section-number">5</span> Multivariable analysis<a href="multivariable-analysis.html#multivariable-analysis" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>To create a nice display for multivariable models the multivariable model first needs to be fit.</p>
 <p>By default, the variance inflation factor will be shown to check for multicollinearity. To suppress this column set <code>vif=FALSE</code>. Note: variance inflation factors are not computed (yet) for multilevel or GEE models.</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="multivariable-analysis.html#cb34-1" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1<span class="sc">+</span>age,</span>
-<span id="cb34-2"><a href="multivariable-analysis.html#cb34-2" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
-<span id="cb34-3"><a href="multivariable-analysis.html#cb34-3" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
-<span id="cb34-4"><a href="multivariable-analysis.html#cb34-4" tabindex="-1"></a><span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>, <span class="at">vif=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="multivariable-analysis.html#cb33-1" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1<span class="sc">+</span>age,</span>
+<span id="cb33-2"><a href="multivariable-analysis.html#cb33-2" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb33-3"><a href="multivariable-analysis.html#cb33-3" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb33-4"><a href="multivariable-analysis.html#cb33-4" tabindex="-1"></a><span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>, <span class="at">vif=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -350,7 +350,7 @@ Increase from baseline
 </tbody>
 </table>
 <p>p-values can be adjusted for multiple comparisons using any of the options available in the <code>p.adjust</code> function. This argument is also available for univariate models run with rm_uvsum.</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="multivariable-analysis.html#cb35-1" tabindex="-1"></a><span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>, <span class="at">vif=</span><span class="cn">TRUE</span>,<span class="at">p.adjust =</span> <span class="st">&#39;holm&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="multivariable-analysis.html#cb34-1" tabindex="-1"></a><span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>, <span class="at">vif=</span><span class="cn">TRUE</span>,<span class="at">p.adjust =</span> <span class="st">&#39;holm&#39;</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

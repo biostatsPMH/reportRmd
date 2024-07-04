@@ -224,9 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="changing-the-output" class="section level1 hasAnchor" number="7">
 <h1><span class="header-section-number">7</span> Changing the output<a href="changing-the-output.html#changing-the-output" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>If you need to make changes to the tables, setting <code>tableOnly=TRUE</code> will return a data frame for any of the <code>rm_</code> functions. Changes can be made, and the table output using <code>outTable()</code></p>
-<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="changing-the-output.html#cb38-1" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb38-2"><a href="changing-the-output.html#cb38-2" tabindex="-1"></a><span class="fu">names</span>(mvsumTable)[<span class="dv">1</span>] <span class="ot">&lt;-</span><span class="st">&#39;Predictor&#39;</span></span>
-<span id="cb38-3"><a href="changing-the-output.html#cb38-3" tabindex="-1"></a><span class="fu">outTable</span>(mvsumTable)</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="changing-the-output.html#cb37-1" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-2"><a href="changing-the-output.html#cb37-2" tabindex="-1"></a><span class="fu">names</span>(mvsumTable)[<span class="dv">1</span>] <span class="ot">&lt;-</span><span class="st">&#39;Predictor&#39;</span></span>
+<span id="cb37-3"><a href="changing-the-output.html#cb37-3" tabindex="-1"></a><span class="fu">outTable</span>(mvsumTable)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

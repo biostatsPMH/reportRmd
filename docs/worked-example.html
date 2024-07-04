@@ -224,9 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="worked-example" class="section level2 hasAnchor" number="12.1">
 <h2><span class="header-section-number">12.1</span> Worked Example<a href="worked-example.html#worked-example" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Get some descriptive stats for the ctDNA data that comes with the package. The <code>nicenames</code> argument is TRUE by default so underscores are replaced by spaces</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="worked-example.html#cb44-1" tabindex="-1"></a><span class="fu">data</span>(ctDNA)</span>
-<span id="cb44-2"><a href="worked-example.html#cb44-2" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>ctDNA,</span>
-<span id="cb44-3"><a href="worked-example.html#cb44-3" tabindex="-1"></a>          <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>,<span class="st">&#39;size_change&#39;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="worked-example.html#cb43-1" tabindex="-1"></a><span class="fu">data</span>(ctDNA)</span>
+<span id="cb43-2"><a href="worked-example.html#cb43-2" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>ctDNA,</span>
+<span id="cb43-3"><a href="worked-example.html#cb43-3" tabindex="-1"></a>          <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>,<span class="st">&#39;size_change&#39;</span>))</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -352,16 +352,16 @@ Missing
 <div id="sec-set_labels" class="section level3 hasAnchor" number="12.1.1">
 <h3><span class="header-section-number">12.1.1</span> set_labels<a href="worked-example.html#sec-set_labels" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>If we have a lookup table of variable names and labels that we imported from a data dictionary we can set the variable labels for the data frame and these will be used in the <code>rm_</code> functions</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="worked-example.html#cb45-1" tabindex="-1"></a>ctDNA_names <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var=</span><span class="fu">names</span>(ctDNA),</span>
-<span id="cb45-2"><a href="worked-example.html#cb45-2" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">c</span>(<span class="st">&#39;Patient ID&#39;</span>,</span>
-<span id="cb45-3"><a href="worked-example.html#cb45-3" tabindex="-1"></a>                                  <span class="st">&#39;Study Cohort&#39;</span>,</span>
-<span id="cb45-4"><a href="worked-example.html#cb45-4" tabindex="-1"></a>                                  <span class="st">&#39;Change in ctDNA since baseline&#39;</span>,</span>
-<span id="cb45-5"><a href="worked-example.html#cb45-5" tabindex="-1"></a>                                  <span class="st">&#39;Number of weeks on treatment&#39;</span>,</span>
-<span id="cb45-6"><a href="worked-example.html#cb45-6" tabindex="-1"></a>                                  <span class="st">&#39;Percentage change in tumour measurement&#39;</span>))</span>
-<span id="cb45-7"><a href="worked-example.html#cb45-7" tabindex="-1"></a>ctDNA <span class="ot">&lt;-</span> <span class="fu">set_labels</span>(ctDNA,ctDNA_names)</span>
-<span id="cb45-8"><a href="worked-example.html#cb45-8" tabindex="-1"></a></span>
-<span id="cb45-9"><a href="worked-example.html#cb45-9" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>ctDNA,</span>
-<span id="cb45-10"><a href="worked-example.html#cb45-10" tabindex="-1"></a>          <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>,<span class="st">&#39;size_change&#39;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="worked-example.html#cb44-1" tabindex="-1"></a>ctDNA_names <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">var=</span><span class="fu">names</span>(ctDNA),</span>
+<span id="cb44-2"><a href="worked-example.html#cb44-2" tabindex="-1"></a>                          <span class="at">label=</span><span class="fu">c</span>(<span class="st">&#39;Patient ID&#39;</span>,</span>
+<span id="cb44-3"><a href="worked-example.html#cb44-3" tabindex="-1"></a>                                  <span class="st">&#39;Study Cohort&#39;</span>,</span>
+<span id="cb44-4"><a href="worked-example.html#cb44-4" tabindex="-1"></a>                                  <span class="st">&#39;Change in ctDNA since baseline&#39;</span>,</span>
+<span id="cb44-5"><a href="worked-example.html#cb44-5" tabindex="-1"></a>                                  <span class="st">&#39;Number of weeks on treatment&#39;</span>,</span>
+<span id="cb44-6"><a href="worked-example.html#cb44-6" tabindex="-1"></a>                                  <span class="st">&#39;Percentage change in tumour measurement&#39;</span>))</span>
+<span id="cb44-7"><a href="worked-example.html#cb44-7" tabindex="-1"></a>ctDNA <span class="ot">&lt;-</span> <span class="fu">set_labels</span>(ctDNA,ctDNA_names)</span>
+<span id="cb44-8"><a href="worked-example.html#cb44-8" tabindex="-1"></a></span>
+<span id="cb44-9"><a href="worked-example.html#cb44-9" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>ctDNA,</span>
+<span id="cb44-10"><a href="worked-example.html#cb44-10" tabindex="-1"></a>          <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>,<span class="st">&#39;size_change&#39;</span>))</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -488,10 +488,10 @@ Missing
 <div id="sec-set_var_labels" class="section level3 hasAnchor" number="12.1.2">
 <h3><span class="header-section-number">12.1.2</span> set_var_labels<a href="worked-example.html#sec-set_var_labels" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Individual labels can be changed with with the <code>set_var_labels</code> command</p>
-<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="worked-example.html#cb46-1" tabindex="-1"></a>ctDNA <span class="ot">&lt;-</span> <span class="fu">set_var_labels</span>(ctDNA,</span>
-<span id="cb46-2"><a href="worked-example.html#cb46-2" tabindex="-1"></a>                        <span class="at">cohort=</span><span class="st">&quot;A new cohort label&quot;</span>)</span>
-<span id="cb46-3"><a href="worked-example.html#cb46-3" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>ctDNA,</span>
-<span id="cb46-4"><a href="worked-example.html#cb46-4" tabindex="-1"></a>          <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>,<span class="st">&#39;size_change&#39;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="worked-example.html#cb45-1" tabindex="-1"></a>ctDNA <span class="ot">&lt;-</span> <span class="fu">set_var_labels</span>(ctDNA,</span>
+<span id="cb45-2"><a href="worked-example.html#cb45-2" tabindex="-1"></a>                        <span class="at">cohort=</span><span class="st">&quot;A new cohort label&quot;</span>)</span>
+<span id="cb45-3"><a href="worked-example.html#cb45-3" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>ctDNA,</span>
+<span id="cb45-4"><a href="worked-example.html#cb45-4" tabindex="-1"></a>          <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>,<span class="st">&#39;size_change&#39;</span>))</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -618,8 +618,8 @@ Missing
 <div id="sec-extract_labels" class="section level3 hasAnchor" number="12.1.3">
 <h3><span class="header-section-number">12.1.3</span> extract_labels<a href="worked-example.html#sec-extract_labels" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Extract the variable labels to a data frame</p>
-<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="worked-example.html#cb47-1" tabindex="-1"></a>var_labels <span class="ot">&lt;-</span> <span class="fu">extract_labels</span>(ctDNA)</span>
-<span id="cb47-2"><a href="worked-example.html#cb47-2" tabindex="-1"></a>var_labels</span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="worked-example.html#cb46-1" tabindex="-1"></a>var_labels <span class="ot">&lt;-</span> <span class="fu">extract_labels</span>(ctDNA)</span>
+<span id="cb46-2"><a href="worked-example.html#cb46-2" tabindex="-1"></a>var_labels</span></code></pre></div>
 <pre><code>##       variable                                   label
 ## 1           id                              Patient ID
 ## 2       cohort                      A new cohort label
@@ -630,7 +630,7 @@ Missing
 <div id="sec-clear_labels" class="section level3 hasAnchor" number="12.1.4">
 <h3><span class="header-section-number">12.1.4</span> clear_labels<a href="worked-example.html#sec-clear_labels" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Or clear them all</p>
-<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="worked-example.html#cb49-1" tabindex="-1"></a>ctDNA <span class="ot">&lt;-</span> <span class="fu">clear_labels</span>(ctDNA)</span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="worked-example.html#cb48-1" tabindex="-1"></a>ctDNA <span class="ot">&lt;-</span> <span class="fu">clear_labels</span>(ctDNA)</span></code></pre></div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>

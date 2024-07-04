@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>4.2 Logistic Regression | reportRmd Package</title>
-  <meta name="description" content="4.2 Logistic Regression | reportRmd Package" />
+  <title>4 Univariate regression | reportRmd Package</title>
+  <meta name="description" content="4 Univariate regression | reportRmd Package" />
   <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="4.2 Logistic Regression | reportRmd Package" />
+  <meta property="og:title" content="4 Univariate regression | reportRmd Package" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="4.2 Logistic Regression | reportRmd Package" />
+  <meta name="twitter:title" content="4 Univariate regression | reportRmd Package" />
   
   
   
@@ -28,8 +28,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="simple-linear-regression.html"/>
-<link rel="next" href="poisson-regression.html"/>
+<link rel="prev" href="viewing-the-self-generated-description.html"/>
+<link rel="next" href="simple-linear-regression.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -221,11 +221,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="logistic-regression" class="section level2 hasAnchor" number="4.2">
-<h2><span class="header-section-number">4.2</span> Logistic Regression<a href="logistic-regression.html#logistic-regression" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>If the response is binomial, logistic regression will be run (or specified with <code>type = 'logistic'</code>).</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="logistic-regression.html#cb23-1" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb23-2"><a href="logistic-regression.html#cb23-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;cohort&#39;</span>))</span></code></pre></div>
+<div id="univariate-regression" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">4</span> Univariate regression<a href="univariate-regression.html#univariate-regression" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Combining multiple univariate regression analyses into a single table. The function will try to determine the most appropriate model from the data.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="univariate-regression.html#cb21-1" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb21-2"><a href="univariate-regression.html#cb21-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>))</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -265,22 +265,40 @@ Event
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">cohort</span>
+<span style="font-weight: bold;">pdl1</span>
+</td>
+<td style="text-align:right;">
+1.0 (1.0, 1.0)
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">&lt;0.001</span>
+</td>
+<td style="text-align:right;">
+93
+</td>
+<td style="text-align:right;">
+77
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">change ctdna group</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+<span style="font-weight: bold;">0.002</span>
 </td>
 <td style="text-align:right;">
-94
+73
 </td>
 <td style="text-align:right;">
-78
+58
 </td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
-A
+Decrease from baseline
 </td>
 <td style="text-align:right;">
 Reference
@@ -288,78 +306,26 @@ Reference
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-16
+33
 </td>
 <td style="text-align:right;">
-13
+19
 </td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
-B
+Increase from baseline
 </td>
 <td style="text-align:right;">
-7e+07 (8e-76, NA)
+28.7 (5.2, 540.2)
 </td>
 <td style="text-align:right;">
-0.99
 </td>
 <td style="text-align:right;">
-18
+40
 </td>
 <td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-C
-</td>
-<td style="text-align:right;">
-7e+07 (8e-74, NA)
-</td>
-<td style="text-align:right;">
-0.99
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-18
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-D
-</td>
-<td style="text-align:right;">
-0.1 (0.0, 0.6)
-</td>
-<td style="text-align:right;">
-<span style="font-weight: bold;">0.015</span>
-</td>
-<td style="text-align:right;">
-12
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-E
-</td>
-<td style="text-align:right;">
-1.2 (0.2, 5.5)
-</td>
-<td style="text-align:right;">
-0.86
-</td>
-<td style="text-align:right;">
-30
-</td>
-<td style="text-align:right;">
-25
+39
 </td>
 </tr>
 </tbody>
@@ -370,8 +336,8 @@ E
           </div>
         </div>
       </div>
-<a href="simple-linear-regression.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="poisson-regression.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="viewing-the-self-generated-description.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="simple-linear-regression.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

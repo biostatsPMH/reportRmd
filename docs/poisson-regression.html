@@ -224,9 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="poisson-regression" class="section level2 hasAnchor" number="4.3">
 <h2><span class="header-section-number">4.3</span> Poisson Regression<a href="poisson-regression.html#poisson-regression" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>If the response is integer, poisson regression will be run (or specified with <code>type = 'poisson'</code>).</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="poisson-regression.html#cb25-1" tabindex="-1"></a>pembrolizumab<span class="sc">$</span>Counts <span class="ot">&lt;-</span> <span class="fu">rpois</span>(<span class="fu">nrow</span>(pembrolizumab),<span class="at">lambda =</span> <span class="dv">3</span>)</span>
-<span id="cb25-2"><a href="poisson-regression.html#cb25-2" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;Counts&#39;</span>,</span>
-<span id="cb25-3"><a href="poisson-regression.html#cb25-3" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;cohort&#39;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="poisson-regression.html#cb24-1" tabindex="-1"></a>pembrolizumab<span class="sc">$</span>Counts <span class="ot">&lt;-</span> <span class="fu">rpois</span>(<span class="fu">nrow</span>(pembrolizumab),<span class="at">lambda =</span> <span class="dv">3</span>)</span>
+<span id="cb24-2"><a href="poisson-regression.html#cb24-2" tabindex="-1"></a><span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;Counts&#39;</span>,</span>
+<span id="cb24-3"><a href="poisson-regression.html#cb24-3" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;cohort&#39;</span>))</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -252,7 +252,7 @@ N
 1.0 (1.0, 1.0)
 </td>
 <td style="text-align:right;">
-0.73
+0.98
 </td>
 <td style="text-align:right;">
 94
@@ -288,10 +288,10 @@ Reference
 B
 </td>
 <td style="text-align:right;">
-1.2 (0.8, 1.9)
+1.5 (1.1, 2.2)
 </td>
 <td style="text-align:right;">
-0.36
+<span style="font-weight: bold;">0.027</span>
 </td>
 <td style="text-align:right;">
 18
@@ -302,10 +302,10 @@ B
 C
 </td>
 <td style="text-align:right;">
-1.4 (0.9, 2.1)
+1.2 (0.8, 1.8)
 </td>
 <td style="text-align:right;">
-0.14
+0.31
 </td>
 <td style="text-align:right;">
 18
@@ -316,10 +316,10 @@ C
 D
 </td>
 <td style="text-align:right;">
-1.7 (1.1, 2.6)
+1.0 (0.6, 1.5)
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;">0.016</span>
+0.85
 </td>
 <td style="text-align:right;">
 12
@@ -330,10 +330,10 @@ D
 E
 </td>
 <td style="text-align:right;">
-1.5 (1.0, 2.2)
+1.1 (0.7, 1.5)
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;">0.031</span>
+0.77
 </td>
 <td style="text-align:right;">
 30

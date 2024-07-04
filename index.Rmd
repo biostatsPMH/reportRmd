@@ -205,10 +205,11 @@ rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr'), grp = 'co
 ## Viewing the Self-Generated Description
 To view the self-generated description for the summary table:
 
-```{r}
+```{r, results = 'asis'}
 summary_tab <- rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','orr', 'age'), grp = 'cohort', effSize = T, show.tests = T)
 cat(attr(summary_tab, "description"))
 ```
+
 
 \newpage
 

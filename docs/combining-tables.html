@@ -224,17 +224,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="combining-tables" class="section level1 hasAnchor" number="8">
 <h1><span class="header-section-number">8</span> Combining tables<a href="combining-tables.html#combining-tables" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Tables can be nested with the <code>nestTable()</code> function</p>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="combining-tables.html#cb39-1" tabindex="-1"></a>cohortA <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;A&#39;</span>), </span>
-<span id="cb39-2"><a href="combining-tables.html#cb39-2" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
-<span id="cb39-3"><a href="combining-tables.html#cb39-3" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
-<span id="cb39-4"><a href="combining-tables.html#cb39-4" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
-<span id="cb39-5"><a href="combining-tables.html#cb39-5" tabindex="-1"></a>cohortA<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort A&#39;</span></span>
-<span id="cb39-6"><a href="combining-tables.html#cb39-6" tabindex="-1"></a>cohortE <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;E&#39;</span>), </span>
-<span id="cb39-7"><a href="combining-tables.html#cb39-7" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
-<span id="cb39-8"><a href="combining-tables.html#cb39-8" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
-<span id="cb39-9"><a href="combining-tables.html#cb39-9" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
-<span id="cb39-10"><a href="combining-tables.html#cb39-10" tabindex="-1"></a>cohortE<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort E&#39;</span></span>
-<span id="cb39-11"><a href="combining-tables.html#cb39-11" tabindex="-1"></a><span class="fu">nestTable</span>(<span class="fu">rbind</span>(cohortA,cohortE),<span class="at">head_col =</span> <span class="st">&#39;Cohort&#39;</span>,<span class="at">to_col =</span> <span class="st">&#39;Covariate&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="combining-tables.html#cb38-1" tabindex="-1"></a>cohortA <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;A&#39;</span>), </span>
+<span id="cb38-2"><a href="combining-tables.html#cb38-2" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
+<span id="cb38-3"><a href="combining-tables.html#cb38-3" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
+<span id="cb38-4"><a href="combining-tables.html#cb38-4" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
+<span id="cb38-5"><a href="combining-tables.html#cb38-5" tabindex="-1"></a>cohortA<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort A&#39;</span></span>
+<span id="cb38-6"><a href="combining-tables.html#cb38-6" tabindex="-1"></a>cohortE <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span><span class="fu">subset</span>(pembrolizumab,cohort<span class="sc">==</span><span class="st">&#39;E&#39;</span>), </span>
+<span id="cb38-7"><a href="combining-tables.html#cb38-7" tabindex="-1"></a>                     <span class="at">response =</span> <span class="st">&#39;pdl1&#39;</span>,</span>
+<span id="cb38-8"><a href="combining-tables.html#cb38-8" tabindex="-1"></a>                     <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>),</span>
+<span id="cb38-9"><a href="combining-tables.html#cb38-9" tabindex="-1"></a>                     <span class="at">tableOnly =</span> T)</span>
+<span id="cb38-10"><a href="combining-tables.html#cb38-10" tabindex="-1"></a>cohortE<span class="sc">$</span>Cohort <span class="ot">&lt;-</span> <span class="st">&#39;Cohort E&#39;</span></span>
+<span id="cb38-11"><a href="combining-tables.html#cb38-11" tabindex="-1"></a><span class="fu">nestTable</span>(<span class="fu">rbind</span>(cohortA,cohortE),<span class="at">head_col =</span> <span class="st">&#39;Cohort&#39;</span>,<span class="at">to_col =</span> <span class="st">&#39;Covariate&#39;</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

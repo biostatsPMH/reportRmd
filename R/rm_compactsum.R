@@ -350,7 +350,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 #'   Epsilon-squared, or Omega-squared for numeric/continuous variables
 #' @param show.tests logical indicating if the type of statistical test and
 #'   effect size (if effSize = TRUE) used should be shown in a column beside the
-#'   p-values. Ignored if pvalue = FALSE
+#'   p-values.
 #' @param percentage choice of how percentages are presented, either column
 #'   (default) or row
 #' @return A data frame is returned

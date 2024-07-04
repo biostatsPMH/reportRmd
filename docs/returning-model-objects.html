@@ -224,9 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="returning-model-objects" class="section level2 hasAnchor" number="4.7">
 <h2><span class="header-section-number">4.7</span> Returning Model Objects<a href="returning-model-objects.html#returning-model-objects" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>If you want to check the underlying models, set <code>returnModels = TRUE</code></p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="returning-model-objects.html#cb29-1" tabindex="-1"></a> <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb29-2"><a href="returning-model-objects.html#cb29-2" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
-<span id="cb29-3"><a href="returning-model-objects.html#cb29-3" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="returning-model-objects.html#cb28-1" tabindex="-1"></a> <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb28-2"><a href="returning-model-objects.html#cb28-2" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
+<span id="cb28-3"><a href="returning-model-objects.html#cb28-3" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <pre><code>## $age
 ## 
 ## Call:  glm(formula = orr ~ age, family = binomial, data = data)
@@ -239,10 +239,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## Null Deviance:       85.77 
 ## Residual Deviance: 82.53     AIC: 86.53</code></pre>
 <p>The data analysed can be examined by interrogating the data object appended to each model</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="returning-model-objects.html#cb31-1" tabindex="-1"></a>mList <span class="ot">&lt;-</span>  <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb31-2"><a href="returning-model-objects.html#cb31-2" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
-<span id="cb31-3"><a href="returning-model-objects.html#cb31-3" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb31-4"><a href="returning-model-objects.html#cb31-4" tabindex="-1"></a><span class="fu">head</span>(mList<span class="sc">$</span>age<span class="sc">$</span>data)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="returning-model-objects.html#cb30-1" tabindex="-1"></a>mList <span class="ot">&lt;-</span>  <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb30-2"><a href="returning-model-objects.html#cb30-2" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>),</span>
+<span id="cb30-3"><a href="returning-model-objects.html#cb30-3" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">returnModels =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb30-4"><a href="returning-model-objects.html#cb30-4" tabindex="-1"></a><span class="fu">head</span>(mList<span class="sc">$</span>age<span class="sc">$</span>data)</span></code></pre></div>
 <pre><code>##     orr      age
 ## 1 SD/PD 62.07803
 ## 2 SD/PD 62.15743
