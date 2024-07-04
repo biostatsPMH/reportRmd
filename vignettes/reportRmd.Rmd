@@ -692,5 +692,3 @@ A data frame with 270 rows and 5 variables:
 - **ctdna_status** Change in ctDNA since baseline
 - **time** Number of weeks on treatment
 - **size_change** Percentage change in tumour measurement
-
-
