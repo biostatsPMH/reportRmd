@@ -224,12 +224,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="gee-models" class="section level2 hasAnchor" number="4.6">
 <h2><span class="header-section-number">4.6</span> GEE Models<a href="gee-models.html#gee-models" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Correlated observations can be handled using GEE</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="gee-models.html#cb27-1" tabindex="-1"></a> <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;size_change&#39;</span>,</span>
-<span id="cb27-2"><a href="gee-models.html#cb27-2" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;time&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>),</span>
-<span id="cb27-3"><a href="gee-models.html#cb27-3" tabindex="-1"></a> <span class="at">gee=</span><span class="cn">TRUE</span>,</span>
-<span id="cb27-4"><a href="gee-models.html#cb27-4" tabindex="-1"></a> <span class="at">id=</span><span class="st">&#39;id&#39;</span>, <span class="at">corstr=</span><span class="st">&quot;exchangeable&quot;</span>,</span>
-<span id="cb27-5"><a href="gee-models.html#cb27-5" tabindex="-1"></a> <span class="at">family=</span><span class="fu">gaussian</span>(<span class="st">&quot;identity&quot;</span>),</span>
-<span id="cb27-6"><a href="gee-models.html#cb27-6" tabindex="-1"></a> <span class="at">data=</span>ctDNA,<span class="at">showN=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="gee-models.html#cb27-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;ctDNA&quot;</span>)</span>
+<span id="cb27-2"><a href="gee-models.html#cb27-2" tabindex="-1"></a> <span class="fu">rm_uvsum</span>(<span class="at">response =</span> <span class="st">&#39;size_change&#39;</span>,</span>
+<span id="cb27-3"><a href="gee-models.html#cb27-3" tabindex="-1"></a> <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;time&#39;</span>,<span class="st">&#39;ctdna_status&#39;</span>),</span>
+<span id="cb27-4"><a href="gee-models.html#cb27-4" tabindex="-1"></a> <span class="at">gee=</span><span class="cn">TRUE</span>,</span>
+<span id="cb27-5"><a href="gee-models.html#cb27-5" tabindex="-1"></a> <span class="at">id=</span><span class="st">&#39;id&#39;</span>, <span class="at">corstr=</span><span class="st">&quot;exchangeable&quot;</span>,</span>
+<span id="cb27-6"><a href="gee-models.html#cb27-6" tabindex="-1"></a> <span class="at">family=</span><span class="fu">gaussian</span>(<span class="st">&quot;identity&quot;</span>),</span>
+<span id="cb27-7"><a href="gee-models.html#cb27-7" tabindex="-1"></a> <span class="at">data=</span>ctDNA,<span class="at">showN=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

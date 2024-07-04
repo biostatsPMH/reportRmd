@@ -229,7 +229,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb54-4"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb54-4" tabindex="-1"></a> <span class="at">data=</span>pembrolizumab,<span class="at">family =</span> <span class="st">&#39;binomial&#39;</span>))</span>
 <span id="cb54-5"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb54-5" tabindex="-1"></a> <span class="fu">forestplotUVMV</span>(UVp, MVp)</span></code></pre></div>
 <p><img src="images/forestuvmv.png" /></p>
-<div style="page-break-after: always;"></div>
+<p>This can also be done with linear scale odds ratios. Number of subjects and/or number of events can also be turned off, as well as different colours used.</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-1" tabindex="-1"></a>uvFP <span class="ot">&lt;-</span> <span class="fu">forestplotUV</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb55-2"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>))</span>
+<span id="cb55-3"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-3" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-4" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
+<span id="cb55-5"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-5" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb55-6"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-6" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb55-7"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-7" tabindex="-1"></a>mvFP <span class="ot">&lt;-</span> <span class="fu">forestplotMV</span>(glm_fit)</span>
+<span id="cb55-8"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-8" tabindex="-1"></a></span>
+<span id="cb55-9"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html#cb55-9" tabindex="-1"></a><span class="fu">forestplotUVMV</span>(uvFP,mvFP,<span class="at">showN=</span>F,<span class="at">showEvent=</span>F,<span class="at">colours=</span><span class="fu">c</span>(<span class="st">&quot;orange&quot;</span>,<span class="st">&quot;black&quot;</span>,<span class="st">&quot;blue&quot;</span>),<span class="at">logScale=</span>F)</span></code></pre></div>
+<p><img src="images/forestuvmvlin.png" /></p>
 <div style="page-break-after: always;"></div>
 </div>
 <!-- </div> -->

@@ -224,8 +224,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="summary-statistics" class="section level1 hasAnchor" number="2">
 <h1><span class="header-section-number">2</span> Summary statistics<a href="summary-statistics.html#summary-statistics" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Basic summary statistics</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="summary-statistics.html#cb1-1" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, </span>
-<span id="cb1-2"><a href="summary-statistics.html#cb1-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="summary-statistics.html#cb1-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;pembrolizumab&quot;</span>)</span>
+<span id="cb1-2"><a href="summary-statistics.html#cb1-2" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, </span>
+<span id="cb1-3"><a href="summary-statistics.html#cb1-3" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>))</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>

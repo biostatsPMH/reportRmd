@@ -56,6 +56,7 @@ by Pandoc will be used.
 Basic summary statistics
 
 ```{r}
+data("pembrolizumab")
 rm_covsum(data=pembrolizumab, 
 covs=c('age','sex'))
 ```
@@ -268,6 +269,7 @@ type='crr')
 Correlated observations can be handled using GEE
 
 ```{r}
+data("ctDNA")
  rm_uvsum(response = 'size_change',
  covs=c('time','ctdna_status'),
  gee=TRUE,
@@ -443,7 +445,6 @@ Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the 
 Get some descriptive stats for the ctDNA data that comes with the package. The `nicenames` argument is TRUE by default so underscores are replaced by spaces
 
 ```{r}
-data(ctDNA)
 rm_covsum(data=ctDNA,
           covs=c('cohort','ctdna_status','size_change'))
 
@@ -465,7 +466,6 @@ ctDNA <- set_labels(ctDNA,ctDNA_names)
 
 rm_covsum(data=ctDNA,
           covs=c('cohort','ctdna_status','size_change'))
-
 ```
 
 ### set_var_labels {#sec-set_var_labels}
@@ -477,7 +477,6 @@ ctDNA <- set_var_labels(ctDNA,
                         cohort="A new cohort label")
 rm_covsum(data=ctDNA,
           covs=c('cohort','ctdna_status','size_change'))
-
 ```
 
 ### extract_labels {#sec-extract_labels}
@@ -546,7 +545,6 @@ cov='cohort',
 data=pembrolizumab,returns = T)
 plot(p[[1]])
 ggsave('images/ggkmcif_sm.png',width = 4,height = 2.5)
-
 ```
 
 ![](images/ggkmcif.png)
@@ -559,13 +557,11 @@ Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariat
 This will default to a log scale, but can be set to linear using `logScale=FALSE`
 
 ```{r, eval=F,echo=T}
-data("pembrolizumab")
 forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 data=pembrolizumab, family='binomial')
 ```
 
 ```{r, eval=F,echo=FALSE}
-data("pembrolizumab")
 forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 data=pembrolizumab, family='binomial')
 ggsave('images/forestuv.png',width = 5,height = 1.5)
@@ -587,7 +583,6 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                data = pembrolizumab)
 forestplotMV(glm_fit)
 ggsave('images/forestmv.png',width = 4,height = 1.5)
-
 ```
 
 ![](images/forestmv.png)
@@ -609,12 +604,38 @@ UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
  data=pembrolizumab,family = 'binomial'))
  forestplotUVMV(UVp, MVp)
 ggsave('images/forestuvmv.png',width = 5,height = 2)
-
 ```
 
 ![](images/forestuvmv.png)
 
-\newpage
+This can also be done with linear scale odds ratios. Number of subjects and/or number of events can also be turned off, as well as different colours used.
+
+```{r, eval=F,echo=T}
+uvFP <- forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvFP <- forestplotMV(glm_fit)
+
+forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),logScale=F)
+```
+
+```{r, eval=F,echo=F}
+uvFP <- forestplotUV(data=pembrolizumab, response='orr',
+covs=c('age','sex','pdl1','change_ctdna_group'))
+
+glm_fit <- glm(orr~change_ctdna_group+pdl1,
+               family='binomial',
+               data = pembrolizumab)
+mvFP <- forestplotMV(glm_fit)
+
+forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),logScale=F)
+ggsave('images/forestuvmvlin.png',width = 5,height = 2)
+```
+
+![](images/forestuvmvlin.png)
 
 \newpage
 
@@ -638,7 +659,6 @@ Example:
 rm_uvsum(response = 'baseline_ctdna',
  covs=c('age','sex','l_size','pdl1','tmb'),
  data=pembrolizumab)
-
 ```
 
 \newpage
@@ -684,5 +704,3 @@ A data frame with 270 rows and 5 variables:
 - **ctdna_status** Change in ctDNA since baseline
 - **time** Number of weeks on treatment
 - **size_change** Percentage change in tumour measurement
-
-
