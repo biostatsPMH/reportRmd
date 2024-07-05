@@ -480,7 +480,7 @@ ctDNA <- clear_labels(ctDNA)
 
 # Plotting Functions
 
-![](images/ggkmcif_sm.png)
+![](images/ggkmcif_sm.png){width=100%}{width=100%}
 
 ## Plotting bivariate relationships
 
@@ -497,7 +497,7 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 ggsave('images/plotuv.png',scale = 0.5,dpi = 300)
 ```
 
-![](images/plotuv.png)
+![](images/plotuv.png){width=100%}
 
 The plotuv function can also be used without a response variable to display summary of variables
 
@@ -510,7 +510,7 @@ plotuv(data = pembrolizumab, covs=c('age','cohort','pdl1','change_ctdna_group'),
 ggsave('images/plotuv_nores.png',scale = 0.5,dpi = 300)
 ```
 
-![](images/plotuv_nores.png)
+![](images/plotuv_nores.png){width=100%}
 
 \newpage
 
@@ -535,7 +535,7 @@ plot(p[[1]])
 ggsave('images/ggkmcif_sm.png',scale = 0.5)
 ```
 
-![](images/ggkmcif.png)
+![](images/ggkmcif.png){width=100%}
 \newpage
 
 ## Forest Plots
@@ -555,7 +555,7 @@ data=pembrolizumab, family='binomial')
 ggsave('images/forestuv.png', scale = 0.5)
 ```
 
-![](images/forestuv.png)
+![](images/forestuv.png){width=100%}
 ### Multivariable Model Forest Plot
 
 ```{r, eval=F,echo=T}
@@ -573,7 +573,7 @@ forestplotMV(glm_fit)
 ggsave('images/forestmv.png', scale = 0.5)
 ```
 
-![](images/forestmv.png)
+![](images/forestmv.png){width=100%}
 
 ## Combining univariable and multivariable models into a single plot
 
@@ -594,7 +594,7 @@ UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
 ggsave('images/forestuvmv.png', scale = 0.5)
 ```
 
-![](images/forestuvmv.png)
+![](images/forestuvmv.png){width=100%}
 
 This can also be done with linear scale odds ratios. Number of subjects and/or number of events can also be turned off, as well as different colours used.
 
@@ -623,7 +623,7 @@ forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),
 ggsave('images/forestuvmvlin.png', scale = 0.5)
 ```
 
-![](images/forestuvmvlin.png)
+![](images/forestuvmvlin.png){width=100%}
 
 \newpage
 

@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>13.3 Forest Plots | reportRmd Package</title>
   <meta name="description" content="13.3 Forest Plots | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="13.3 Forest Plots | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,8 @@
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
 <script src="libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
 
 
 <style type="text/css">
@@ -227,13 +229,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>This will default to a log scale, but can be set to linear using <code>logScale=FALSE</code></p>
 <div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="forest-plots.html#cb52-1" tabindex="-1"></a><span class="fu">forestplotUV</span>(<span class="at">response=</span><span class="st">&quot;orr&quot;</span>, <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&quot;change_ctdna_group&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;l_size&quot;</span>),</span>
 <span id="cb52-2"><a href="forest-plots.html#cb52-2" tabindex="-1"></a><span class="at">data=</span>pembrolizumab, <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>)</span></code></pre></div>
-<p><img src="images/forestuv.png" />
+<p><img src="images/forestuv.png" style="width:100.0%" />
 ### Multivariable Model Forest Plot</p>
 <div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="forest-plots.html#cb53-1" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1<span class="sc">+</span>age,</span>
 <span id="cb53-2"><a href="forest-plots.html#cb53-2" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
 <span id="cb53-3"><a href="forest-plots.html#cb53-3" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
 <span id="cb53-4"><a href="forest-plots.html#cb53-4" tabindex="-1"></a><span class="fu">forestplotMV</span>(glm_fit)</span></code></pre></div>
-<p><img src="images/forestmv.png" /></p>
+<p><img src="images/forestmv.png" style="width:100.0%" /></p>
 </div>
             </section>
 

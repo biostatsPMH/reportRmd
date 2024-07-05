@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>13.1 Plotting bivariate relationships | reportRmd Package</title>
   <meta name="description" content="13.1 Plotting bivariate relationships | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.40 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
 
   <meta property="og:title" content="13.1 Plotting bivariate relationships | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -52,6 +52,8 @@
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
 <script src="libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
 
 
 <style type="text/css">
@@ -226,10 +228,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>These plots are designed for quick inspection of many variables, not for publication. This is the plotting version of rm_uvsum</p>
 <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="plotting-bivariate-relationships.html#cb49-1" tabindex="-1"></a><span class="fu">plotuv</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
 <span id="cb49-2"><a href="plotting-bivariate-relationships.html#cb49-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>))</span></code></pre></div>
-<p><img src="images/plotuv.png" /></p>
+<p><img src="images/plotuv.png" style="width:100.0%" /></p>
 <p>The plotuv function can also be used without a response variable to display summary of variables</p>
 <div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="plotting-bivariate-relationships.html#cb50-1" tabindex="-1"></a><span class="fu">plotuv</span>(<span class="at">data =</span> pembrolizumab, <span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;cohort&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>), <span class="at">showN =</span> T)</span></code></pre></div>
-<p><img src="_main_files/figure-html/unnamed-chunk-528-1.png" width="672" /></p>
+<p><img src="_main_files/figure-html/unnamed-chunk-48-1.png" width="672" /></p>
 <div style="page-break-after: always;"></div>
 </div>
             </section>
