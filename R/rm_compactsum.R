@@ -152,7 +152,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       stop("grp is not in the data")
     }
     if (grp %in% xvars){
-      warning(paste(grp,'is the grouping variable and can not appear as a covariate. \n',
+      warning(paste(grp,'is the grouping variable and cannot appear as a covariate. \n',
                     'It is omitted from the output.'))
       xvars <- setdiff(xvars, grp)
     }
@@ -285,7 +285,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
-  if (all(result[["Missing"]] == 0))
+  if (all(result[["Missing"]]) == 0)
     result <- result[, -which(names(result) == "Missing")]
   if (!full) {
     result <- result[, -2]
@@ -327,11 +327,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   to_indent <- c()
   n <- 0
-  # for (xvar in xvars) {
-  #   if ("factor" %in% class(data[[xvar]]) & length(unique(na.omit(data[[xvar]]))) > 2) {
-  #     print(xvar)
-  #   }
-  # }
   for (xvar in xvars) {
     n = n+1
     if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
@@ -339,7 +334,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       n = n + length(unique(na.omit(data[[xvar]])))
     }
   }
-  print(to_indent)
   nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
   return(nicetable)
