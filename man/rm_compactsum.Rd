@@ -129,6 +129,12 @@ effSize = TRUE, show.tests = TRUE)
 rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 
+# To view self-generated description
+summary_tab <- rm_compactsum(data=pembrolizumab, xvars =
+c("change_ctdna_group", "orr", "age"), grp = "cohort", effSize = TRUE,
+show.tests = TRUE)
+attr(summary_tab, "description")
+
 }
 \references{
 Smithson, M. (2002). Noncentral Confidence Intervals for

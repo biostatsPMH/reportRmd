@@ -102,6 +102,12 @@
 #' rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 #' "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 #'
+#' # To view self-generated description
+#' summary_tab <- rm_compactsum(data=pembrolizumab, xvars =
+#' c("change_ctdna_group", "orr", "age"), grp = "cohort", effSize = TRUE,
+#' show.tests = TRUE)
+#' attr(summary_tab, "description")
+#'
 #' @export
 rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.tests = FALSE, full = TRUE, percentage = "col") {
   if (missing(data))
