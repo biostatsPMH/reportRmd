@@ -1326,9 +1326,9 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
   lifecycle::deprecate_soft("0.2.0","covsum(markup)")
   lifecycle::deprecate_soft("0.2.0","covsum(sanitize)")
 
-  if (any(is.na(model$coefficients))) stop(paste0('The following model coefficients could not be estimated:\n',
+  if (any(is.na(model$coefficients))) stop(paste0('rm_mvsum can not run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
                                                   paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
-                                                  "\nPlease re-fit a valid model prior to reporting."))
+                                                  "\nPlease re-fit a valid model prior to reporting. Do you need to run droplevels?"))
   if (!markup) {
     lbld <- identity
     addspace <- identity
