@@ -325,7 +325,22 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (tableOnly) {
     return(result)
   }
-  nicetable <- outTable(result, caption = caption, nicenames = nicenames)
+  to_indent <- c()
+  n <- 0
+  # for (xvar in xvars) {
+  #   if ("factor" %in% class(data[[xvar]]) & length(unique(na.omit(data[[xvar]]))) > 2) {
+  #     print(xvar)
+  #   }
+  # }
+  for (xvar in xvars) {
+    n = n+1
+    if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
+      to_indent <- c(to_indent, n + (1:length(unique(na.omit(data[[xvar]])))))
+      n = n + length(unique(na.omit(data[[xvar]])))
+    }
+  }
+  print(to_indent)
+  nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
   return(nicetable)
 }
