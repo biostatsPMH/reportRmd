@@ -1,6 +1,12 @@
+# Allow access to the uvmodels internal data object
+data(sysdata, envir=environment())
+
 # Function to determine the appropriate regression type based on the response variable
-derive_type <- function(data,response,gee) {
-  # list2env(attributes(data),envir = environment())
+derive_type <- function(data,response,gee,type,family) {
+
+  if (!is.null(type)){
+    merge(data.frame(type=type),uvmodels,all.x = T)
+  }
   if (length(response)==2){
     status_var <- data[[response[2]]]
     if (length(unique(na.omit(data[[response[2]]])))==3){

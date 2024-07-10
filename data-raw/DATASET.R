@@ -1,3 +1,4 @@
+# Package Data -------------------------
 # The data for the package comes from the Bratman paper in Nature Cancer
 # Bratman, S.V., Yang, S.Y.C., Iafolla, M.A.J. et al.
 # Personalized circulating tumor DNA analysis as a predictive biomarker in
@@ -88,3 +89,7 @@ for (f in grep('_var',sheets,value=T)){
 }
 
 
+# Package System Data --------------------
+
+uvmodels <- readxl::read_excel('data-raw/uvmodels.xlsx')
+save(uvmodels,file="data/sysdata.rda")
