@@ -1,52 +1,52 @@
-
-
-model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
-  mcoeff <- coeffSum(model,CIwidth,digits)
-  # check units - if any lwr==upr issue warning
-  if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
-
-  terms <- attr(model$terms, "term.labels")
-  if (all(mcoeff$Term %in% terms)){
-    # No categorical variables
-  } else {
-    # Categorical variables
-    for (catVar in setdiff(terms,mcoeff$Term)){
-      vpos <- sapply(paste0(catVar,model$xlevels[[catVar]]),function(x) {
-        p = which(mcoeff$Term==x)
-        if (length(p)==0) p = NA
-        return(p)})
-      vpos <- vpos[!is.na(vpos)]
-      reg_lvls <- gsub(catVar,"",mcoeff$Term[vpos])
-      ref_lvl <- setdiff(model$xlevels[[catVar]],reg_lvls)
-
-      catInfo <- data.frame(Term = mcoeff$Term[vpos],
-                            Variable= catVar,
-                            var_level=reg_lvls,
-                            ref_level=ref_lvl)
-    }
-
-  }
-  tpos <- model$assign[-1]
-  vars <- sapply(tpos,function(x) terms[x])
-  if (!all(mcoeff$Term==vars)){
-    mcoeff$variable <- vars
-    drop_p <- drop1(model,scope=terms,test = "Chisq")
-    gp <- data.frame(variable=rownames(drop_p)[-1],
-                     global_p = drop_p[-1,5])
-    mcoeff$order <- 1:nrow(mcoeff)
-    return <- merge(mcoeff,gp,all.x = TRUE,sort=FALSE)
-    return <- return[order(return$order),]
-    return$level <- mapply(function(term,var){
-      sub(var,'',term)
-    },return$Term,return$variable)
-    for (term in terms) {
-      reg_lvls <- gsub(term,"",names(model$coefficients))[varInd]
-      ref_lvl <- setdiff(unique(model$model[[term]]),reg_lvls)
-      print(ref_lvl)
-    }
-
-  }
-}
+#
+#
+# model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
+#   mcoeff <- coeffSum(model,CIwidth,digits)
+#   # check units - if any lwr==upr issue warning
+#   if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
+#
+#   terms <- attr(model$terms, "term.labels")
+#   if (all(mcoeff$Term %in% terms)){
+#     # No categorical variables
+#   } else {
+#     # Categorical variables
+#     for (catVar in setdiff(terms,mcoeff$Term)){
+#       vpos <- sapply(paste0(catVar,model$xlevels[[catVar]]),function(x) {
+#         p = which(mcoeff$Term==x)
+#         if (length(p)==0) p = NA
+#         return(p)})
+#       vpos <- vpos[!is.na(vpos)]
+#       reg_lvls <- gsub(catVar,"",mcoeff$Term[vpos])
+#       ref_lvl <- setdiff(model$xlevels[[catVar]],reg_lvls)
+#
+#       catInfo <- data.frame(Term = mcoeff$Term[vpos],
+#                             Variable= catVar,
+#                             var_level=reg_lvls,
+#                             ref_level=ref_lvl)
+#     }
+#
+#   }
+#   tpos <- model$assign[-1]
+#   vars <- sapply(tpos,function(x) terms[x])
+#   if (!all(mcoeff$Term==vars)){
+#     mcoeff$variable <- vars
+#     drop_p <- drop1(model,scope=terms,test = "Chisq")
+#     gp <- data.frame(variable=rownames(drop_p)[-1],
+#                      global_p = drop_p[-1,5])
+#     mcoeff$order <- 1:nrow(mcoeff)
+#     return <- merge(mcoeff,gp,all.x = TRUE,sort=FALSE)
+#     return <- return[order(return$order),]
+#     return$level <- mapply(function(term,var){
+#       sub(var,'',term)
+#     },return$Term,return$variable)
+#     for (term in terms) {
+#       reg_lvls <- gsub(term,"",names(model$coefficients))[varInd]
+#       ref_lvl <- setdiff(unique(model$model[[term]]),reg_lvls)
+#       print(ref_lvl)
+#     }
+#
+#   }
+# }
 
 # Extract model components ------------
 coeffSum <- function(model,CIwidth=.95,digits=2,...) {

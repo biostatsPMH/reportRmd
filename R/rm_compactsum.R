@@ -65,6 +65,10 @@
 #'   applicable, the types of statistical tests used will be included. If
 #'   effSize = TRUE, the effect sizes for each covariate will also be mentioned.
 #'
+#' @returns The "Missing" column of the output table refers to the total missing
+#'   values for each xvar across all groups, rather than missingness within the
+#'   grp variable. If the number of missing values for all xvars specified is 0,
+#'   the "Missing" column will be removed from the table.
 #' @references Smithson, M. (2002). Noncentral Confidence Intervals for
 #'   Standardized Effect Sizes. (07/140 ed., Vol.
 #'   140). SAGE Publications. \url{https://doi.org/10.4135/9781412983761.n4}
@@ -162,6 +166,12 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     }
     else if (is.numeric(data[[grp]]) & length(unique(data[[grp]])) > 5) {
       stop("Convert grp to a factor")
+    }
+  }
+  if (!missing(grp)) {
+    grp_missing <- length(which(is.na(data[[grp]])))
+    if (grp_missing > 0) {
+      message(paste0("There are ", grp_missing, " missing cases for grouping variable '", grp, "'."))
     }
   }
   if (!missing(grp) & (effSize | show.tests | pvalue)) {
@@ -285,8 +295,9 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
-  if (all(result[["Missing"]]) == 0)
+  if (all(na.omit(result[["Missing"]]) == 0)) {
     result <- result[, -which(names(result) == "Missing")]
+  }
   if (!full) {
     result <- result[, -2]
   }
@@ -792,13 +803,14 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   binary_column <- ifelse(x_var == unique_levels[1], 0, 1)
 
   if (!missing(grp)) {
-    temp <- data[, grp]
+    temp <- subset(data, select = grp)
     temp[[xvar]] <- binary_column
   }
   else {
-    temp <- data[, xvar]
+    temp <- subset(data, select = xvar)
     temp[[xvar]] <- binary_column
   }
+
   df <- data.frame(Covariate = xvar)
   df[["disp"]] <-  " n (%)"
   if (covTitle == "") {

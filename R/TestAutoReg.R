@@ -1,6 +1,6 @@
 # Test Code
 library(devtools)
-load_all()
+# load_all()
 data("pembrolizumab")
 head(pembrolizumab)
 
@@ -53,7 +53,9 @@ gee_out <- autoreg(response,data=pembrolizumab,x_var,family="binomial",id=id)
 gee_out
 
 # Summarising the model output -----------------
-coeffSum(lm_fit,CIwidth=0.95)
+lm_sum <- coeffSum(lm_fit,CIwidth=0.95)
+class(lm_sum)
+typeof(lm_sum)
 coeffSum(binom_fit, CIwidth=0.95)
 coeffSum(pois_fit, CIwidth=0.95)
 coeffSum(neg_fit, CIwidth=0.95)
