@@ -31,19 +31,21 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
     # add to the data frame
     mcoeff <- merge(mcoeff,cat_vars,all.x=T)
   }
-  tpos <- model$assign[-1]
+  tpos <- model$assign[-1] # This only works for linear models :-(
   vars <- sapply(tpos,function(x) terms[x])
   # This needs to calculate "global" p-values for categorical variables
   # works for linear models - need to test all the others!
   # it adds the global-p-value to the dataframe
   if (!all(mcoeff$Term==vars)){
     mcoeff$variable <- vars
-    drop_p <- drop1(model,scope=terms,test = "Chisq")
-    gp <- data.frame(variable=rownames(drop_p)[-1],
-                     global_p = drop_p[-1,5])
-    mcoeff <- merge(mcoeff,gp,all.x = TRUE,sort=FALSE)
+    gobal_p <- gp(model)
+    # drop_p <- drop1(model,scope=terms,test = "Chisq")
+    # gp <- data.frame(variable=rownames(drop_p)[-1],
+    #                  global_p = drop_p[-1,5])
+    mcoeff <- merge(mcoeff,gobal_p,all.x = TRUE,sort=FALSE)
   }
   mcoeff <- mcoeff[order(mcoeff$order),]
+  return(mcoeff)
   # From here - need to add the reference levels as rows to the table
 }
 
@@ -203,29 +205,45 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2,...) {
 
 
 # Calculate a global p-value for categorical variables --------
-gp <- function(model, reduced_model, ...) {
-  UseMethod("gp", model,reduced_model,...)
+gp <- function(model) {
+  UseMethod("gp", model)
 }
-gp.default <- function(model,CIwidth=.95,digits=2,...) { # lm, negbin
+gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test = "Chisq")
+  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+                   global_p = globalpvalue[-1,5])
+
+  return(gp)
 }
-gp.glm <- function(model,CIwidth=.95,digits=2,...) {
+gp.glm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="LRT")
+  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+                   global_p = globalpvalue[-1,5])
+  return(gp)
 }
-gp.lme <- function(model,CIwidth=.95,digits=2,...) {
+gp.lme <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(update(model,method="ML"),scope=terms,test = "Chisq")
+  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+                   global_p = globalpvalue[-1,5])
+  return(gp)
 }
-gp.gee <- function(model,CIwidth=.95,digits=2,...) {
+gp.gee <- function(model,CIwidth=.95,digits=2) {
   globalpvalue <- try(aod::wald.test(b = model$coefficients[covariateindex],
                                      Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
                                      Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
                       silent = T)
-  if (inherits(globalpvalue,"try-error")) return(NULL)
+  if (inherits(globalpvalue,"try-error")) {
+    return(NULL)
+    } else {
+    gp <- data.frame(variable=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue[-1,5])
+    return(gp)}
 
 }
+
 
 wald_gp <- function(){
   globalpvalue <- try(aod::wald.test(b = model$coef$fixed[covariateindex],
