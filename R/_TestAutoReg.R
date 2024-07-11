@@ -17,7 +17,7 @@ lm_fit <- autoreg(response,data=pembrolizumab,x_var)
 response="orr"
 class(response) <-c(class(response),"rm_glm")
 binom_fit <- autoreg(response,data=pembrolizumab,x_var,family="binomial")
-
+model <- binom_fit
 
 # Poisson
 pembrolizumab$int_var <- rpois(n=nrow(pembrolizumab),lambda = 1)
@@ -80,7 +80,17 @@ coeffSum(cox_fit, CIwidth=0.95)
 coeffSum(gee_out,CIwidth=0.95)
 
 
+# for testing global p
+model <- survival::coxph(formula = as.formula(survival::Surv(os_time,
+                                                             os_status) ~ age+sex+cohort), data = pembrolizumab)
 
+model <- MASS::polr(formula = ord_var ~ age+sex+cohort, data = pembrolizumab, Hess = TRUE,
+           method = "logistic")
+
+idf <- as.numeric(factor(pembrolizumab$id))
+model <- geepack::geeglm(orr2 ~ age+sex+cohort, family = binomial,
+                         data = pembrolizumab,
+                         id = idf, corstr = "independence")
 # TO DO:
 # - test all the different autoreg functions
 # - test all the coeffSum functions

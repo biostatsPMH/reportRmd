@@ -22,6 +22,8 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
       reg_lvls <- gsub(catVar,"",mcoeff$Term[vpos])
       ref_lvl <- setdiff(model$xlevels[[catVar]],reg_lvls)
 
+      for (i in 2:ncol(df)) data.frame(table(df[[1]],df[,i]))
+
       catInfo <- data.frame(Term = mcoeff$Term[vpos],
                             Variable= catVar,
                             var_level=reg_lvls,
@@ -32,7 +34,8 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
     mcoeff <- merge(mcoeff,cat_vars,all.x=T)
   }
   mcoeff$Variable[is.na(mcoeff$Variable)] <- mcoeff$Term[is.na(mcoeff$Variable)]
-  #tpos <- model$assign[-1] # This only works for linear models :-(
+
+
   tpos <- as.numeric(factor(mcoeff$Variable))
   vars <- sapply(tpos,function(x) terms[x])
   # This needs to calculate "global" p-values for categorical variables
@@ -41,9 +44,6 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
   if (!all(mcoeff$Term==vars)){
     mcoeff$variable <- vars
     gobal_p <- gp(model)
-    # drop_p <- drop1(model,scope=terms,test = "Chisq")
-    # gp <- data.frame(variable=rownames(drop_p)[-1],
-    #                  global_p = drop_p[-1,5])
     mcoeff <- merge(mcoeff,gobal_p,all.x = TRUE,sort=FALSE)
   }
   mcoeff <- mcoeff[order(mcoeff$order),]
@@ -113,7 +113,6 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,...) {
     upr=ci[,2]
   )
   rownames(cs) <- NULL
-
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   beta <- ifelse(model$family$family=="gaussian","Estimate",
                  ifelse(model$family$family=="binomial","OR",
@@ -218,6 +217,36 @@ gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
 
   return(gp)
 }
+
+
+gp.coxph <- function(model,CIwidth=.95,digits=2) {
+  terms <- attr(model$terms, "term.labels")
+  globalpvalue <- drop1(model,scope=terms,test="Chisq")
+  gp <- data.frame(variable=terms,
+                   global_p = globalpvalue[["Pr(>Chi)"]][-1])
+  return(gp)
+}
+
+gp.crr <- function(model,CIwidth=.95,digits=2) {
+  terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
+  terms <- sapply(terms,trimws)
+  gp_vals <- data.frame(variable=terms,
+                   global_p = NA)
+  rownames(gp_vals) <- NULL
+  for (t in terms){
+    eval(parse(text = paste('m2 <-try(crrRx(',paste(paste(setdiff(names(model$data),terms),collapse = "+"),
+                                                 "~", setdiff(terms,t), sep = ""),
+                            ',data = model$data))')))
+
+    if (!inherits(m2,"try-error")) {
+      degf <- length(grep(t,names(model$coef)))
+      gp <- pchisq(2*(model$loglik-m2$loglik),degf)
+    } else gp <- NA
+    gp_vals$global_p[which(gp_vals$variable==t)] <- gp
+  }
+  return(gp_vals)
+}
+
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="LRT")
@@ -232,36 +261,30 @@ gp.lme <- function(model,CIwidth=.95,digits=2) {
                    global_p = globalpvalue[-1,5])
   return(gp)
 }
+
+gp.polr <- function(model,CIwidth=.95,digits=2) {
+  terms <- attr(model$terms, "term.labels")
+  globalpvalue <- drop1(model,scope=terms,test="ChiSq")
+  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+                   global_p = globalpvalue[["Pr(>Chi)"]][-1])
+}
+
 gp.gee <- function(model,CIwidth=.95,digits=2) {
-  globalpvalue <- try(aod::wald.test(b = model$coefficients[covariateindex],
+  terms <- attr(model$terms, "term.labels")
+  terms <- sapply(terms,trimws)
+  gp_vals <- data.frame(variable=terms,
+                        global_p = NA)
+  rownames(gp_vals) <- NULL
+  for (t in terms){
+    covariateindex <- grep(paste0("^",t),names(model$coefficients))
+    gp <- try(aod::wald.test(b = model$coefficients[covariateindex],
                                      Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
                                      Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
                       silent = T)
-  if (inherits(globalpvalue,"try-error")) {
-    return(NULL)
-    } else {
-    gp <- data.frame(variable=rownames(globalpvalue)[-1],
-                     global_p = globalpvalue[-1,5])
-    return(gp)}
-
-}
-
-
-wald_gp <- function(){
-  globalpvalue <- try(aod::wald.test(b = model$coef$fixed[covariateindex],
-                                     Sigma = vcov(model)[covariateindex, covariateindex],
-                                     Terms = seq_along(covariateindex))$result$chi2[3],silent = T)
-
-}
-anova_gp <- function(model,terms,...){
-  gp_vals <- data.frame(Term=terms,global_p=NA)
-  for (t in terms){
-    reduced_model <-try( update(model,as.formula(paste(".~",paste(setdiff(terms,t),collapse = "+")))),silent = T)
-    if (!inherits(reduced_model,"try-error")) {
-      print(attr(reduced_model$terms, "term.labels"))
-      gp <-try(stats::na.omit(anova(model,reduced_model)[,"Pr(Chi)"]))
-    } else gp <- NA
-    gp_vals$global_p[which(gp_vals$Term==t)] <- gp
+    if (inherits(gp,"try-error")) gp <- NA
+    gp_vals$global_p[which(gp_vals$variable==t)] <- gp
   }
   return(gp_vals)
 }
+
+
