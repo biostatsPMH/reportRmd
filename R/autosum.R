@@ -31,7 +31,9 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
     # add to the data frame
     mcoeff <- merge(mcoeff,cat_vars,all.x=T)
   }
-  tpos <- model$assign[-1] # This only works for linear models :-(
+  mcoeff$Variable[is.na(mcoeff$Variable)] <- mcoeff$Term[is.na(mcoeff$Variable)]
+  #tpos <- model$assign[-1] # This only works for linear models :-(
+  tpos <- as.numeric(factor(mcoeff$Variable))
   vars <- sapply(tpos,function(x) terms[x])
   # This needs to calculate "global" p-values for categorical variables
   # works for linear models - need to test all the others!

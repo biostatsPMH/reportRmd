@@ -19,21 +19,48 @@ derive_type <- function(data,response,gee,type,family) {
   var <- data[[response]]
   if (is.numeric(var)) {
     if (all(var %in% c(0,1))) {
-      if (gee) return(c("rm_gee","rm_binomial")) else return(c("rm_glm","rm_binomial"))
-    }
+      if (gee) {
+        rtn <- "rm_gee"
+        attr(rtn,"family") = "binomial"
+        return(rtn)
+        } else {
+          rtn <- "rm_glm"
+          attr(rtn,"family") = "binomial"
+          return(rtn)
+        }
     if (length(unique(na.omit(var)))==2){
       message("Binary response detected.\nTo use binomial regression recode data in 0/1 format or change to factor.\nLinear regression will be performed.")
-      if (gee) return(c("rm_gee","rm_gaussian")) else return("rm_continuous")
+      if (gee) {
+        rtn <- "rm_gee"
+        attr(rtn,"family") = "gaussian"
+        return(rtn)
+      } else return("rm_lm")
     }
     if (is.integer(var)){
       message("Integer response detected. Poisson regression will be performed, set the type argument to change this.")
-      if (gee) return(c("rm_gee","rm_poisson")) else return(c("rm_glm","rm_poisson"))
+      if (gee) {
+        rtn <- "rm_gee"
+        attr(rtn,"family") = "poisson"
+        return(rtn)
+      } else {
+        rtn <- "rm_glm"
+        attr(rtn,"family") = "poisson"
+        return(rtn)
+      }
     }
   }
   if (is.factor(var)) {
     n_levels <- length(levels(var))
     if (n_levels == 2) {
-      if (gee) return(c("rm_gee","rm_binomial")) else return(c("rm_glm","rm_binomial"))
+      if (gee) {
+        rtn <- "rm_gee"
+        attr(rtn,"family") = "binomial"
+        return(rtn)
+      } else {
+        rtn <- "rm_glm"
+        attr(rtn,"family") = "binomial"
+        return(rtn)
+      }
     }
     if (inherits(var,"ordered")){
       return("rm_ordinal")
@@ -98,13 +125,17 @@ autoreg.rm_glm <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
   return(m2)
 }
 
-autoreg.rm_gee <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  idf <- as.numeric(as.factor(data[[id]]))
+  class(response) <- "character"
+  if (inherits(data[[response]],"factor")) data[[response]] <- as.numeric(data[[response]])-1
   eval(parse(text = paste0("m2 <- geepack::geeglm(",paste(response, "~",x_var, sep = ""),
                            ",family = ",family,",",
                            ifelse(is.null(offset),"",paste("offset=",offset,",")),
-                           "data = data, id = id, corstr = '",corstr,"')")))
+                           "data = data, id = idf, corstr = '",corstr,"')")))
   return(m2)
 }
+
 
 autoreg.rm_negbin <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   f <- paste(response, "~",x_var,

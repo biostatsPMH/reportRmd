@@ -44,13 +44,29 @@ response = c("os_time","os_status")
 class(response) <-c(class(response),"rm_coxph")
 cox_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
 
-# GEE Model - binomial
-
-response="orr"
+# GEE Model - binomial  - both should work now
+response="orr"; x_var <- "sex"
 class(response) <-c(class(response),"rm_gee")
 
-gee_out <- autoreg(response,data=pembrolizumab,x_var,family="binomial",id=id)
-gee_out
+gee_out <- autoreg(response,data=pembrolizumab,x_var,family="binomial",id="id")
+
+pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
+response="orr2"; x_var <- "sex"
+class(response) <-c(class(response),"rm_gee")
+
+gee_out <- autoreg(response,data=pembrolizumab,x_var,family="binomial",id="id")
+
+
+autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  idf <- as.numeric(as.factor(data[[id]]))
+  class(response) <- "character"
+  if (inherits(data[[response]],"factor")) data[[response]] <- as.numeric(data[[response]])-1
+  eval(parse(text = paste0("m2 <- geepack::geeglm(",paste(response, "~",x_var, sep = ""),
+                           ",family = ",family,",",
+                           ifelse(is.null(offset),"",paste("offset=",offset,",")),
+                           "data = data, id = idf, corstr = '",corstr,"')")))
+  return(m2)
+}
 
 # Summarising the model output -----------------
 lm_sum <- coeffSum(lm_fit,CIwidth=0.95)
