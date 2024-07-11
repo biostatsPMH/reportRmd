@@ -1,6 +1,4 @@
-
-
-model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
+model.summary <- function(model,digits=2,CIwidth = 0.95, globalp = FALSE, ...){
   mcoeff <- coeffSum(model,CIwidth,digits)
   # check units - if any lwr==upr issue warning
   if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
@@ -31,20 +29,31 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
     # add to the data frame
     mcoeff <- merge(mcoeff,cat_vars,all.x=T)
   }
+  print(mcoeff)
   tpos <- model$assign[-1]
   vars <- sapply(tpos,function(x) terms[x])
   # This needs to calculate "global" p-values for categorical variables
   # works for linear models - need to test all the others!
   # it adds the global-p-value to the dataframe
-  if (!all(mcoeff$Term==vars)){
-    mcoeff$variable <- vars
-    drop_p <- drop1(model,scope=terms,test = "Chisq")
-    gp <- data.frame(variable=rownames(drop_p)[-1],
-                     global_p = drop_p[-1,5])
-    mcoeff <- merge(mcoeff,gp,all.x = TRUE,sort=FALSE)
+  if (globalp) {
+    if (!all(mcoeff$Term==vars)){
+      mcoeff$variable <- vars
+      drop_p <- drop1(model,scope=terms,test = "Chisq")
+      gp <- data.frame(variable=rownames(drop_p)[-1],
+                       global_p = drop_p[-1,5])
+      mcoeff <- merge(mcoeff,gp,all.x = TRUE,sort=FALSE)
+    }
   }
   mcoeff <- mcoeff[order(mcoeff$order),]
+  print(mcoeff)
+  if (!all(mcoeff$Term %in% terms)){ #categorical
   # From here - need to add the reference levels as rows to the table
+    ref_row <- data.frame(var_level = mcoeff$ref_level[1], Est_CI = "Reference", Term = paste0(mcoeff$Variable[1], mcoeff$ref_level[1]), variable = mcoeff$variable[1], Variable = mcoeff$Variable[1], ref_level = mcoeff$ref_level[1])
+    # reference_row <- c(mcoeff$ref_level[1], "Reference", rep(NA, ncol(mcoeff) - 2))
+    mcoeff <- bind_rows(ref_row, mcoeff)
+    print(mcoeff)
+  }
+  View(mcoeff)
 }
 
 # Extract model components ------------
