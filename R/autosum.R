@@ -134,6 +134,35 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,...) {
   ci <- confint(model,level=CIwidth)
   if (grepl("log",model$family$link)) estFun <- exp else estFun <- identity
   ci <- estFun(ci)
+
+  # Calculate the sample size
+  var_types <- attr(model$terms,"dataClasses")
+  m_df <- model$model
+  ss <-lapply(names(m_df)[-1],function(v){
+    if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
+    if (var_types[[v]]=="factor") {
+      d <- data.frame(table(m_df[[v]]))
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  # ss needs to be added to cs below
+
+  # Calculate the number of events for binomial models
+  if (model$family=="binomial"){
+    events <- lapply(names(m_df)[-1],function(v){
+      if (var_types[[v]]=="numeric") return(data.frame(Variable=v,events=sum(model$y)))
+      if (var_types[[v]]=="factor") {
+        d <- data.frame(table(model$y,m_df[[v]])) |>
+          dplyr::filter(Var1==1) |>
+          dplyr::select(-Var1)
+        names(d) <- c("Variable","events")
+        return(d)
+      }
+    })
+  }
+  # event counts need to be added as well - we also need to do this for cox_ph models, and gee models with family=binomial
+
   cs <- data.frame(
     Term=rownames(ms),
     est=estFun(ms[,1]),

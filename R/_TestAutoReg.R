@@ -25,6 +25,7 @@ response="int_var"
 class(response) <-c(class(response),"rm_glm")
 pois_fit <- autoreg(response,data=pembrolizumab,x_var,family="poisson",offset=NULL)
 
+mv_pois_fit <-  glm(formula = int_var ~ age+cohort, family = poisson, data = pembrolizumab)
 
 # Negative Binomial
 response="int_var"
