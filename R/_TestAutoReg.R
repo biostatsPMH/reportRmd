@@ -44,6 +44,13 @@ response = c("os_time","os_status")
 class(response) <-c(class(response),"rm_coxph")
 cox_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
 
+# CRR
+pembrolizumab$os_status2 <- pembrolizumab$os_status
+pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
+response = c("os_time","os_status2")
+class(response) <-c(class(response),"rm_crr")
+crr_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
+
 # GEE Model - binomial  - both should work now
 response="orr"; x_var <- "sex"
 class(response) <-c(class(response),"rm_gee")
@@ -57,16 +64,6 @@ class(response) <-c(class(response),"rm_gee")
 gee_out <- autoreg(response,data=pembrolizumab,x_var,family="binomial",id="id")
 
 
-autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NULL, corstr = "independence"){
-  idf <- as.numeric(as.factor(data[[id]]))
-  class(response) <- "character"
-  if (inherits(data[[response]],"factor")) data[[response]] <- as.numeric(data[[response]])-1
-  eval(parse(text = paste0("m2 <- geepack::geeglm(",paste(response, "~",x_var, sep = ""),
-                           ",family = ",family,",",
-                           ifelse(is.null(offset),"",paste("offset=",offset,",")),
-                           "data = data, id = idf, corstr = '",corstr,"')")))
-  return(m2)
-}
 
 # Summarising the model output -----------------
 lm_sum <- coeffSum(lm_fit,CIwidth=0.95)
@@ -78,7 +75,7 @@ coeffSum(neg_fit, CIwidth=0.95)
 coeffSum(ord_fit, CIwidth=0.95)
 coeffSum(cox_fit, CIwidth=0.95)
 coeffSum(gee_out,CIwidth=0.95)
-
+coeffSum(crr_fit,CIwidth=0.95)
 
 # for testing global p
 model <- survival::coxph(formula = as.formula(survival::Surv(os_time,

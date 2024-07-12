@@ -241,9 +241,9 @@ gp <- function(model) {
 gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test = "Chisq")
-  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
-
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
@@ -251,27 +251,29 @@ gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
 gp.coxph <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="Chisq")
-  gp <- data.frame(variable=terms,
+  gp <- data.frame(Variable=terms,
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
 gp.crr <- function(model,CIwidth=.95,digits=2) {
   terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
   terms <- sapply(terms,trimws)
-  gp_vals <- data.frame(variable=terms,
-                   global_p = NA)
+  gp_vals <- data.frame(Variable=terms,
+                        global_p = NA)
   rownames(gp_vals) <- NULL
   for (t in terms){
     eval(parse(text = paste('m2 <-try(crrRx(',paste(paste(setdiff(names(model$data),terms),collapse = "+"),
-                                                 "~", setdiff(terms,t), sep = ""),
+                                                    "~", setdiff(terms,t), sep = ""),
                             ',data = model$data))')))
 
     if (!inherits(m2,"try-error")) {
       degf <- length(grep(t,names(model$coef)))
       gp <- pchisq(2*(model$loglik-m2$loglik),degf)
     } else gp <- NA
-    gp_vals$global_p[which(gp_vals$variable==t)] <- gp
+    gp_vals$global_p[which(gp_vals$Variable==t)] <- gp
+    attr(gp_vals,"global_p") <-"LRT"
   }
   return(gp_vals)
 }
@@ -279,40 +281,45 @@ gp.crr <- function(model,CIwidth=.95,digits=2) {
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="LRT")
-  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 gp.lme <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(update(model,method="ML"),scope=terms,test = "Chisq")
-  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
 gp.polr <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="ChiSq")
-  gp <- data.frame(variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
+  attr(gp,"global_p") <-"LRT"
+  return(gp)
 }
 
 gp.gee <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   terms <- sapply(terms,trimws)
-  gp_vals <- data.frame(variable=terms,
+  gp_vals <- data.frame(Variable=terms,
                         global_p = NA)
   rownames(gp_vals) <- NULL
   for (t in terms){
     covariateindex <- grep(paste0("^",t),names(model$coefficients))
     gp <- try(aod::wald.test(b = model$coefficients[covariateindex],
-                                     Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
-                                     Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
-                      silent = T)
+                             Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
+                             Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
+              silent = T)
     if (inherits(gp,"try-error")) gp <- NA
-    gp_vals$global_p[which(gp_vals$variable==t)] <- gp
+    gp_vals$global_p[which(gp_vals$Variable==t)] <- gp
   }
+  attr(gp_vals,"global_p") <-"Wald test"
   return(gp_vals)
 }
 
