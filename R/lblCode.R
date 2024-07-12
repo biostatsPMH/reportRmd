@@ -132,7 +132,7 @@ set_labels <- function(data,names_labels){
   v_lbls$index <- varIndx
   tryCatch({
     varNIndx <- which(!names(data) %in% names_labels[[1]])
-    v_Nlbls <- cbind.data.frame(colnames(data)[varNIndx], colnames(data)[varNIndx])
+    v_Nlbls <- cbind.data.frame(colnames(data)[varNIndx], gsub("_|[.]"," ",colnames(data)[varNIndx]))
     colnames(v_Nlbls) <- c("var", "label")
     v_Nlbls$index <- varNIndx
     v_lbls <- rbind(v_lbls, v_Nlbls)
