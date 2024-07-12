@@ -23,21 +23,19 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, whichp = FALSE, ...) {
         if (length(p)==0) p = NA
         return(p)})
       vpos <- vpos[!is.na(vpos)]
-      print(vpos)
       reg_lvls <- gsub(catVar,"",mcoeff$Term[vpos])
-      print(reg_lvls)
       ref_lvl <- setdiff(model$xlevels[[catVar]],reg_lvls)
-      print(ref_lvl)
 
+
+      print(length(mcoeff$Term[vpos]))
+      print(length(catVar))
+      print(length(reg_lvls))
+      print(length(ref_lvl))
       catInfo <- data.frame(Term = mcoeff$Term[vpos],
                             Variable= catVar,
                             var_level=reg_lvls,
                             ref_level=ref_lvl)
-      print(catInfo)
-      print("here")
       cat_vars <- dplyr::bind_rows(cat_vars,catInfo)
-      print(cat_vars)
-      print("above")
     }
     mcoeff <- merge(mcoeff,cat_vars,all.x=T)
   }
@@ -45,11 +43,6 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, whichp = FALSE, ...) {
 
   tpos <- as.numeric(factor(mcoeff$Variable))
   vars <- sapply(tpos,function(x) terms[x])
-  print(is.ordered(vars))
-  print(vars)
-  print(order(vars))
-  vars <- vars[order(vars)]
-  print(vars)
 
   if (!all(mcoeff$Term==vars)){
     mcoeff$variable <- vars #why do we need this column?
@@ -65,9 +58,14 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, whichp = FALSE, ...) {
       #find where its first term is
       first_t <- min(which(mcoeff$Variable == var))
       print(first_t)
+      ref <- mcoeff[first_t, "ref_level"]
+      print("ref below")
+      print(ref)
       var_row <- data.frame(Term = var, Variable = var)
+      ref_row <- data.frame(Term = paste0(var, ref), Variable = var, Est_CI = "Reference")
+      print(nrow(ref_row))
       mcoeff <- bind_rows(mcoeff[1:(first_t - 1), ],
-                        var_row,
+                        var_row, ref_row,
                         mcoeff[- (1:(first_t - 1)), ])
       rownames(mcoeff) <- 1:nrow(mcoeff)
       View(mcoeff)
