@@ -807,8 +807,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   x_var <- data[[xvar]]
   unique_levels <- unique(x_var)
   unique_levels <- sort(unique_levels)
+  show_level <- as.character(unique_levels[2])
   binary_column <- ifelse(x_var == unique_levels[1], 0, 1)
-
   if (!missing(grp)) {
     temp <- subset(data, select = grp)
     temp[[xvar]] <- binary_column
@@ -817,9 +817,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp <- subset(data, select = xvar)
     temp[[xvar]] <- binary_column
   }
-
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  " n (%)"
+  df[["disp"]] <-  paste0(" - ", show_level, " n (%)")
   if (covTitle == "") {
     names(df$`Covariate`) <- " "
   }
