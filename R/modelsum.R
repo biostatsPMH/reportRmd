@@ -1,4 +1,4 @@
-source("autosum.R")
+#source("autosum.R")
 
 modelsum <- function(model, digits = 2, CIwidth = 0.95, whichp = FALSE, ...) {
   if (!(whichp %in% c(FALSE, "level", "global", "both"))) {
