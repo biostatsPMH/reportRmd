@@ -151,6 +151,13 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   args <- argList[argsToPass]
 
   dt <- as.name(args$data)
+
+  for (xvar in xvars) {
+    if (is.logical(data[[xvar]]) || is.character(data[[xvar]])) {
+      data[[xvar]] <- as.factor(data[[xvar]])
+      args$data <- data
+    }
+  }
   if (!missing(grp)) {
     if (!(grp %in% names(data))) {
       stop("grp is not in the data")
@@ -166,10 +173,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     }
     else if (is.numeric(data[[grp]]) & length(unique(data[[grp]])) > 5) {
       stop("Convert grp to a factor")
-    }
-    if (is.logical(data[[xvar]]) | is.character(data[[xvar]])) {
-      data[[xvar]] <- as.factor(data[[xvar]])
-      args$data <- data
     }
   }
   if (!missing(grp)) {
@@ -303,7 +306,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     result <- result[, -which(names(result) == "Missing")]
   }
   if (!full) {
-    result <- result[, -2]
+    result <- result[, -grep("^Full Sample", names(result))]
   }
   if ("p-value" %in% colnames(result)) {
     if (!pvalue) {
