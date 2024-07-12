@@ -5,7 +5,6 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
   # check units - if any lwr==upr issue warning
   if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
 
-  # TO DO - not all the models have terms - add a terms item to crr models
   terms <- attr(model$terms, "term.labels")
   if (all(mcoeff$Term %in% terms)){
     # No categorical variables, no need to add any reference data
@@ -214,7 +213,7 @@ gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   globalpvalue <- drop1(model,scope=terms,test = "Chisq")
   gp <- data.frame(variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
-
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
@@ -224,6 +223,7 @@ gp.coxph <- function(model,CIwidth=.95,digits=2) {
   globalpvalue <- drop1(model,scope=terms,test="Chisq")
   gp <- data.frame(variable=terms,
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
@@ -243,6 +243,7 @@ gp.crr <- function(model,CIwidth=.95,digits=2) {
       gp <- pchisq(2*(model$loglik-m2$loglik),degf)
     } else gp <- NA
     gp_vals$global_p[which(gp_vals$variable==t)] <- gp
+    attr(gp_vals,"global_p") <-"LRT"
   }
   return(gp_vals)
 }
@@ -252,6 +253,7 @@ gp.glm <- function(model,CIwidth=.95,digits=2) {
   globalpvalue <- drop1(model,scope=terms,test="LRT")
   gp <- data.frame(variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 gp.lme <- function(model,CIwidth=.95,digits=2) {
@@ -259,6 +261,7 @@ gp.lme <- function(model,CIwidth=.95,digits=2) {
   globalpvalue <- drop1(update(model,method="ML"),scope=terms,test = "Chisq")
   gp <- data.frame(variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
+  attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
@@ -267,6 +270,8 @@ gp.polr <- function(model,CIwidth=.95,digits=2) {
   globalpvalue <- drop1(model,scope=terms,test="ChiSq")
   gp <- data.frame(variable=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
+  attr(gp,"global_p") <-"LRT"
+  return(gp)
 }
 
 gp.gee <- function(model,CIwidth=.95,digits=2) {
@@ -284,6 +289,7 @@ gp.gee <- function(model,CIwidth=.95,digits=2) {
     if (inherits(gp,"try-error")) gp <- NA
     gp_vals$global_p[which(gp_vals$variable==t)] <- gp
   }
+  attr(gp_vals,"global_p") <-"Wald test"
   return(gp_vals)
 }
 
