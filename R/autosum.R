@@ -1,6 +1,6 @@
 
 
-model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
+model.summary <- function(model,digits=2,CIwidth = 0.95, whichp = FALSE, ...){
   mcoeff <- coeffSum(model,CIwidth,digits)
   # check units - if any lwr==upr issue warning
   if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
@@ -47,8 +47,37 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
     mcoeff <- merge(mcoeff,gobal_p,all.x = TRUE,sort=FALSE)
   }
   mcoeff <- mcoeff[order(mcoeff$order),]
-  return(mcoeff)
+  # return(mcoeff)
   # From here - need to add the reference levels as rows to the table
+  for (var in unique(mcoeff$variable)) {
+    ref_row <- data.frame(var_level = mcoeff$ref_level[1], Est_CI = "Reference", Term = paste0(mcoeff$Variable[1], mcoeff$ref_level[1]), variable = mcoeff$variable[1], Variable = mcoeff$Variable[1], ref_level = mcoeff$ref_level[1])
+    mcoeff <- bind_rows(ref_row, mcoeff)
+    subset_var <- subset(mcoeff, variable == var)
+    if (length(unique(subset_var$Term)) > 2) {
+      if (whichp == "global" | whichp == "both") {
+        var_row <- data.frame(var_level = mcoeff$Variable[1], p_value = mcoeff$global_p[1])
+      }
+      else { # whichp == "level"
+        var_row <- data.frame(var_level = mcoeff$Variable[1])
+      }
+    }
+    else { # two or less levels
+
+      non_ref <- setdiff(subset_var$var_level, mcoeff$ref_level)
+      # print(non_ref)
+      # print(which(mcoeff$var_level == non_ref))
+
+      mcoeff[which(mcoeff$var_level == non_ref), "p_value"] <- NA
+      var_row <- data.frame(var_level = mcoeff$Variable[1], p_value = as.numeric(mcoeff$global_p))
+    }
+    mcoeff <- bind_rows(var_row, mcoeff)
+  }
+
+
+  # reference_row <- c(mcoeff$ref_level[1], "Reference", rep(NA, ncol(mcoeff) - 2))
+  # mcoeff <- bind_rows(var_row, ref_row, mcoeff)
+  # mcoeff <- select(mcoeff, var_level, Est_CI, p_value, est, lwr, upr, global_p)
+  View(mcoeff)
 }
 
 # Extract model components ------------

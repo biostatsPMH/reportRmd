@@ -167,6 +167,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     else if (is.numeric(data[[grp]]) & length(unique(data[[grp]])) > 5) {
       stop("Convert grp to a factor")
     }
+    if (is.logical(data[[xvar]]) | is.character(data[[xvar]])) {
+      data[[xvar]] <- as.factor(data[[xvar]])
+      args$data <- data
+    }
   }
   if (!missing(grp)) {
     grp_missing <- length(which(is.na(data[[grp]])))
