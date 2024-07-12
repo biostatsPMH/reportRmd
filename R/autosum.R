@@ -5,7 +5,7 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, ...){
   # check units - if any lwr==upr issue warning
   if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
 
-  # Basically, we want to take mcoeff and
+  # TO DO - not all the models have terms - add a terms item to crr models
   terms <- attr(model$terms, "term.labels")
   if (all(mcoeff$Term %in% terms)){
     # No categorical variables, no need to add any reference data

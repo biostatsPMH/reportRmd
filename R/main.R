@@ -240,6 +240,8 @@ crrRx<-function(f,data){
   ff<-modelmatrix(f,data)
   m1<-cmprsk::crr(ff[[1]][,1],ff[[1]][,2],ff[[2]])
   m1$formula <- paste("~",covs)
+  m1$terms <- covs
+  attr(m1$terms,"term.labels") <- covs
   m1$call<-as.call(list(f,data=argList$data))
   m1$data <- data
   return(m1)
