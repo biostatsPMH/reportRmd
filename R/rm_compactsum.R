@@ -818,7 +818,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp[[xvar]] <- binary_column
   }
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  paste0(" - ", show_level, " n (%)")
+  df[["disp"]] <-  paste0(" - ", show_level, " (n (%))")
   if (covTitle == "") {
     names(df$`Covariate`) <- " "
   }
