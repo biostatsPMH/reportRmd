@@ -135,6 +135,7 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,...) {
   if (grepl("log",model$family$link)) estFun <- exp else estFun <- identity
   ci <- estFun(ci)
 
+  # For Clarina:
   # Calculate the sample size
   var_types <- attr(model$terms,"dataClasses")
   m_df <- model$model
