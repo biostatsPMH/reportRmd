@@ -106,6 +106,8 @@ autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,o
   } else{
     eval(parse(text = paste('m2 <- survival::coxph(formula=as.formula(',f,'),id =',id,', data = data)')))
   }
+  # Clarina - I've just included the status and the xvar
+  m2$model <- data[,c(response[2],x_var)]
   return(m2)
 }
 
@@ -113,7 +115,10 @@ autoreg.rm_crr <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
   eval(parse(text = paste('m2 <- crrRx(',paste(paste(response,collapse = "+"),
                                                "~", x_var, sep = ""),
                           ',data = data)')))
+  # Maybe we don't need this?
   m2$data <- data
+  # And we just have this ?
+  m2$model <- data[,c(response[2],x_var)]
   return(m2)
 }
 
