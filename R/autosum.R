@@ -89,6 +89,21 @@ coeffSum <- function(model,CIwidth=.95,digits=2,...) {
 coeffSum.default <- function(model,CIwidth=.95,digits=2,...) {
   ms <- summary(model)$coefficients
   ci <- confint(model,level=CIwidth)
+
+  var_types <- attr(model$terms,"dataClasses")
+  m_df <- model$model
+  ss <-lapply(names(m_df)[-1],function(v){
+    if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
+    if (var_types[[v]]=="factor") {
+      tab <- table(m_df[[v]])
+      names(tab) <- paste0(v, names(tab))
+      d <- data.frame(tab)
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  ss <- bind_rows(ss)
+
   cs <- data.frame(
     Term=rownames(ms),
     est=ms[,1],
@@ -100,7 +115,19 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,...) {
 
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
-  return(cs[-1,])
+  cs <- cs[-1,]
+
+  term_col <- cs[["Term"]]
+  cs <- full_join(ss, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
+  return(cs)
 }
 coeffSum.geeglm <- function(model,CIwidth=.95,digits=2,...) {
   ms <- summary(model)$coefficients
@@ -112,6 +139,40 @@ coeffSum.geeglm <- function(model,CIwidth=.95,digits=2,...) {
     ci_mult <- stats::qt(1 - (1 - CIwidth)/2,model$df.residual)
   }
   ci <- cbind(estFun(ms[,1]-ci_mult*ms[,2]),estFun(ms[,1]+ci_mult*ms[,2]))
+
+  var_types <- attr(model$terms,"dataClasses")
+  m_df <- model$model
+  ss <-lapply(names(m_df)[-1],function(v){
+    if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
+    if (var_types[[v]]=="factor") {
+      tab <- table(m_df[[v]])
+      names(tab) <- paste0(v, names(tab))
+      d <- data.frame(tab)
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  ss <- bind_rows(ss)
+
+  if (model$family[1]=="binomial"){
+    events <- lapply(names(m_df)[-1],function(v){
+      if (var_types[[v]]=="numeric") return(data.frame(Variable=v,events=sum(model$y)))
+      if (var_types[[v]]=="factor") {
+        tab <- table(model$y,m_df[[v]])
+        colnames(tab) <- paste0(v, names(tab[1,]))
+        d <- data.frame(tab) |>
+          dplyr::filter(Var1==1) |>
+          dplyr::select(-Var1)
+        names(d) <- c("Variable","events")
+        return(d)
+      }
+    })
+    events <- bind_rows(events)
+    counts <- merge(ss, events)
+  }
+  else {
+    counts <- ss
+  }
   cs <- data.frame(
     Term=rownames(ms),
     est=estFun(ms[,1]),
@@ -126,7 +187,20 @@ coeffSum.geeglm <- function(model,CIwidth=.95,digits=2,...) {
                  ifelse(model$family$family=="binomial","OR",
                         ifelse(model$family$family=="poisson","RR","GEE Estimate")))
   attr(cs,'estLabel') <- betaWithCI(beta,CIwidth)
-  return(cs[-1,])
+
+  cs <- cs[-1,]
+
+  term_col <- cs[["Term"]]
+  cs <- full_join(counts, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
+  return(cs)
 }
 
 coeffSum.glm <- function(model,CIwidth=.95,digits=2,...) {
@@ -142,26 +216,46 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,...) {
   ss <-lapply(names(m_df)[-1],function(v){
     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
     if (var_types[[v]]=="factor") {
-      d <- data.frame(table(m_df[[v]]))
+
+      # k <- lapply(names(table(m_df[[v]])), function(x) {paste0(v, x)})
+      # print(k)
+      tab <- table(m_df[[v]])
+      names(tab) <- paste0(v, names(tab))
+      # print(names(table(m_df[[v]])))
+      d <- data.frame(tab)
       names(d) <- c("Variable","n")
       return(d)
     }
   })
+  ss <- bind_rows(ss)
+
   # ss needs to be added to cs below
 
   # Calculate the number of events for binomial models
-  if (model$family=="binomial"){
+  if (model$family[1]=="binomial"){
     events <- lapply(names(m_df)[-1],function(v){
       if (var_types[[v]]=="numeric") return(data.frame(Variable=v,events=sum(model$y)))
       if (var_types[[v]]=="factor") {
-        d <- data.frame(table(model$y,m_df[[v]])) |>
+        tab <- table(model$y,m_df[[v]])
+        print(tab)
+        print(m_df)
+        print("below")
+        print(m_df[[v]])
+        colnames(tab) <- paste0(v, names(tab[1,]))
+        d <- data.frame(tab) |>
           dplyr::filter(Var1==1) |>
           dplyr::select(-Var1)
         names(d) <- c("Variable","events")
         return(d)
       }
     })
+    events <- bind_rows(events)
+    counts <- merge(ss, events)
   }
+  else {
+    counts <- ss
+  }
+
   # event counts need to be added as well - we also need to do this for cox_ph models, and gee models with family=binomial
 
   cs <- data.frame(
@@ -177,12 +271,61 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,...) {
                  ifelse(model$family$family=="binomial","OR",
                         ifelse(model$family$family=="poisson","RR","GLM Estimate")))
   attr(cs,'estLabel') <- betaWithCI(beta,CIwidth)
-  return(cs[-1,])
+  cs <- cs[-1,]
+  term_col <- cs[["Term"]]
+  cs <- full_join(counts, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
+  return(cs)
 }
 
 coeffSum.negbin <- function(model,CIwidth=.95,digits=2,...) {
   ms <- summary(model)$coefficients
   ci <- exp(confint(model,level=CIwidth))
+
+  var_types <- attr(model$terms,"dataClasses")
+  m_df <- model$model
+  ss <-lapply(names(m_df)[-1],function(v){
+    if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
+    if (var_types[[v]]=="factor") {
+      tab <- table(m_df[[v]])
+      names(tab) <- paste0(v, names(tab))
+      d <- data.frame(tab)
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  ss <- bind_rows(ss)
+
+  # ss needs to be added to cs below
+
+  # Calculate the number of events for binomial models
+  if (model$family[1]=="binomial"){
+    events <- lapply(names(m_df)[-1],function(v){
+      if (var_types[[v]]=="numeric") return(data.frame(Variable=v,events=sum(model$y)))
+      if (var_types[[v]]=="factor") {
+        tab <- table(model$y,m_df[[v]])
+        colnames(tab) <- paste0(v, names(tab[1,]))
+        d <- data.frame(tab) |>
+          dplyr::filter(Var1==1) |>
+          dplyr::select(-Var1)
+        names(d) <- c("Variable","events")
+        return(d)
+      }
+    })
+    events <- bind_rows(events)
+    counts <- merge(ss, events)
+  }
+  else {
+    counts <- ss
+  }
+
   cs <- data.frame(
     Term=rownames(ms),
     est=exp(ms[,1]),
@@ -193,12 +336,64 @@ coeffSum.negbin <- function(model,CIwidth=.95,digits=2,...) {
   rownames(cs) <- NULL
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("RR",CIwidth)
-  return(cs[-1,])
+
+  cs <- cs[-1,]
+  term_col <- cs[["Term"]]
+  cs <- full_join(counts, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
+  return(cs)
 }
 
 coeffSum.coxph <- function(model,CIwidth=.95,digits=2,...) {
   ms <- summary(model)$coefficients
   ci <- exp(confint(model,level = CIwidth))
+  var_types <- attr(model$terms, "term.labels")
+  dat <- model$call[3]
+  print(dat)
+  ss <-lapply(var_types,function(v){
+    if (inherits(dat[[v]], "numeric")) return(data.frame(Variable=v,n=length(na.omit(dat[[v]]))))
+    if (inherits(dat[[v]], "factor")) {
+      tab <- table(dat[[v]])
+      names(tab) <- paste0(v, names(tab))
+      d <- data.frame(tab)
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  ss <- bind_rows(ss)
+
+  ###in mvsum there are no number of events?? So nothing to compare event numbers to
+  # Calculate the number of events for binomial models
+  events <- lapply(var_types,function(v){
+    if (inherits(dat[[v]], "numeric")) return(data.frame(Variable=v,events=sum(as.matrix(model$y)[, "status"])))
+    if (inherits(dat[[v]], "factor")) {
+      # print("in factors")
+      survs <- as.matrix(model$y)[, "status"]
+      # print(survs)
+      model_data <- dat[, var_types][[v]]
+      tab <- table(survs, model_data)
+      # print(model_data)
+      # print(tab)
+      # print(ncol(tab))
+      colnames(tab) <- paste0(v, colnames(tab))
+      print(tab)
+      d <- data.frame(tab) |>
+        dplyr::filter(survs==1) |>
+        dplyr::select(-survs)
+      names(d) <- c("Variable","events")
+      return(d)
+    }
+  })
+  events <- bind_rows(events)
+  counts <- merge(ss, events, by = "Variable", sort = FALSE)
+
   cs <- data.frame(
     Term=rownames(ms),
     est=exp(ms[,1]),
@@ -209,6 +404,17 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2,...) {
   rownames(cs) <- NULL
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
+
+  term_col <- cs[["Term"]]
+  cs <- full_join(counts, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
   return(cs)
 }
 
@@ -216,6 +422,21 @@ coeffSum.crr <- function(model,CIwidth=.95,digits=2,...) {
   out <- summary(model, conf.int = CIwidth)
   ms <- out$coef
   ci <- out$conf.int
+
+  var_types <- attr(model$terms,"dataClasses")
+  m_df <- model$model
+  ss <-lapply(names(m_df)[-1],function(v){
+    if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
+    if (var_types[[v]]=="factor") {
+      tab <- table(m_df[[v]])
+      names(tab) <- paste0(v, names(tab))
+      d <- data.frame(tab)
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  ss <- bind_rows(ss)
+
   cs <- data.frame(
     Term=rownames(ms),
     est=ms[,1],
@@ -226,12 +447,39 @@ coeffSum.crr <- function(model,CIwidth=.95,digits=2,...) {
   rownames(cs) <- NULL
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
+
+  cs <- cs[-1,]
+  term_col <- cs[["Term"]]
+  cs <- full_join(ss, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
   return(cs)
 }
 
 coeffSum.lme <- function(model,CIwidth=.95,digits=2,...) {
   ms <- summary(model)$tTable
   t_mult <- qt(1 - (1 - CIwidth)/2,ms[,3])
+
+  var_types <- attr(model$terms,"dataClasses")
+  m_df <- model$model
+  ss <-lapply(names(m_df)[-1],function(v){
+    if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
+    if (var_types[[v]]=="factor") {
+      tab <- table(m_df[[v]])
+      names(tab) <- paste0(v, names(tab))
+      d <- data.frame(tab)
+      names(d) <- c("Variable","n")
+      return(d)
+    }
+  })
+  ss <- bind_rows(ss)
+
   cs <- data.frame(
     Term=rownames(ms),
     est=ms[,1],
@@ -242,6 +490,18 @@ coeffSum.lme <- function(model,CIwidth=.95,digits=2,...) {
   rownames(cs) <- NULL
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
+
+  cs <- cs[-1,]
+  term_col <- cs[["Term"]]
+  cs <- full_join(ss, cs, by = c("Variable" = "Term"))
+  #adding reference levels in:
+  i = 1
+  for (var in cs[["Variable"]]) {
+    if (!(var %in% term_col)) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    i = i+1
+  }
   return(cs)
 }
 
