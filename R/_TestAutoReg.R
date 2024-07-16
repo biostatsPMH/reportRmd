@@ -45,6 +45,7 @@ response = c("os_time","os_status")
 class(response) <-c(class(response),"rm_coxph")
 cox_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
 
+
 # CRR
 pembrolizumab$os_status2 <- pembrolizumab$os_status
 pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2

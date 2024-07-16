@@ -242,6 +242,7 @@ crrRx<-function(f,data){
   m1$formula <- paste("~",covs)
   m1$terms <- covs
   attr(m1$terms,"term.labels") <- covs
+  attr(m1$terms,"dataClasses") <- sapply(covs,function(x)class(data[[x]]))
   m1$call<-as.call(list(f,data=argList$data))
   m1$data <- data
   return(m1)
