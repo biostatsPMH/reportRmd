@@ -116,7 +116,7 @@ autoreg.rm_crr <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
                                                "~", x_var, sep = ""),
                           ',data = data)')))
   # Maybe we don't need this?
-  m2$data <- data
+  # m2$data <- data
   # And we just have this ?
   m2$model <- data[,c(response[2],x_var)]
   return(m2)
