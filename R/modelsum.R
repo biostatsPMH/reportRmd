@@ -4,8 +4,6 @@
 modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FALSE, ...) {
   mcoeff <- coeffSum(model, CIwidth, digits, vif)
 
-  ex <- getVarLevels(model)
-  print(ex)
   if (!(whichp %in% c(FALSE, "level", "global", "both"))) {
       stop("argument whichp must be FALSE, or one of 'level', 'global', or 'both'")
   }
@@ -17,19 +15,10 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FA
   terms <- mcoeff$Variable
   if (whichp == "global" | whichp == "both") {
     glob_p <- gp(model)
-    # print("gp vars below")
-    # print(glob_p$Variable)
-    # print(glob_p)
     for (row in mcoeff$Variable) {
       if (!(row %in% glob_p$Variable)) {
         d <- data.frame(Variable = row, global_p = NA)
-        # print(d)
-        # ind <- which(d$Variable == glob_p$Variable)
-        # glob_p_1 <- glob_p[1:(ind - 1), ]
-        # glob_p_2 <- glob_p[ind:nrow(glob_p), ]
-        # glob_p <- rbind(glob_p_1, 2, glob_p_2)
         glob_p <- rbind(glob_p, d)
-        # print("unedited below")
         glob_p <- glob_p[order(match(glob_p$Variable, mcoeff$Variable)),]
       }
     }
@@ -41,21 +30,29 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FA
     }
     else if (whichp == "both") {
       mcoeff[["p_value"]] <- sapply(1:nrow(glob_p), function(i) {ifelse(!is.na(glob_p$global_p[i]), glob_p$global_p[i], mcoeff$p_value[i])})
-      i = 1
-      while (i <= nrow(mcoeff)) {
-        if ((mcoeff$Variable[i] %in% attr(model$terms, "term.labels"))
-            & ((attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "factor")
-               | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered"))
-            & (nlevels(model$model[[mcoeff$Variable[i]]]) == 2)) {
-          last_ind <- i + nlevels(model$model[[mcoeff$Variable[i]]])
-          mcoeff[["p_value"]][(i+1):last_ind] <- NA
-          i = i+nlevels(model$model[[mcoeff$Variable[i]]])
-        }
-          i = i+1
-      }
-    #otherwise, keep pvalue column same since coeffSum outputs pvals by level anyways
     #if whichp = FALSE, then get rid of the column later, in the next function
     }
+  }
+  i = 1
+  for (v in mcoeff$Variable) {
+    if (mcoeff$Variable[i] %in% attr(model$terms, "term.labels")) {
+      if (((attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "factor")
+           | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered"))
+          & (nlevels(model$model[[mcoeff$Variable[i]]]) == 2)) {
+
+        #then v has two levels
+
+        if (!(whichp == "global")) {
+          p <- subset(mcoeff, var == v)[["p_value"]][2]
+          mcoeff[i, "p_value"] <- p
+          mcoeff[(i+1):(i+2), "p_value"] <- NA
+        }
+        else {
+          mcoeff[(i+1):(i+2), "p_value"] <- NA
+        }
+      }
+    }
+    i = i+1
   }
   return(mcoeff)
 }

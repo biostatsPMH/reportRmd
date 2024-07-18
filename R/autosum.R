@@ -109,7 +109,6 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
       return(d)
     }
   })
-  print(refs_df)
   ss <- bind_rows(ss)
 
   cs <- data.frame(
@@ -124,14 +123,11 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   cs <- cs[-1,]
-  ex <- getVarLevels(model)
-  print(ex)
-  ex <- merge(ex, refs_df, by = "terms", sort = FALSE)
-  print(ex)
-  cs <- full_join(cs, ex, by = c("Term" = "terms"))
-  print(cs)
-
   term_col <- cs[["Term"]]
+  ex <- getVarLevels(model)
+  ex <- bind_rows(ex, refs_df)
+  cs <- full_join(cs, ex, by = c("Term" = "terms"))
+
   cs <- full_join(ss, cs, by = c("Variable" = "Term"))
   i = 1
   for (var in cs[["Variable"]]) {
@@ -143,7 +139,7 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
 
   for (var in setdiff(attr(model$terms, "term.labels"),cs[["Variable"]])) {
     first_t <- min(which(grepl(paste0("^", var), cs[["Variable"]])))
-    var_row <- data.frame(Variable = var)
+    var_row <- data.frame(Variable = var, var = var, lvl = "NA")
     if (first_t == 1) {
       cs <- bind_rows(var_row, cs)
     }
@@ -179,12 +175,19 @@ coeffSum.geeglm <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   }
   ci <- cbind(estFun(ms[,1]-ci_mult*ms[,2]),estFun(ms[,1]+ci_mult*ms[,2]))
 
+  refs_df <- data.frame(terms = c(), var = c(), lvl = c())
   var_types <- attr(model$terms,"dataClasses")
   m_df <- model$model
   ss <-lapply(names(m_df)[-1],function(v){
     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
     if (var_types[[v]]=="factor") {
       tab <- table(m_df[[v]])
+      for (lev in names(tab)) {
+        if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
+          df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
+          refs_df <<- bind_rows(refs_df, df)
+        }
+      }
       names(tab) <- paste0(v, names(tab))
       d <- data.frame(tab)
       names(d) <- c("Variable","n")
@@ -228,8 +231,13 @@ coeffSum.geeglm <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   attr(cs,'estLabel') <- betaWithCI(beta,CIwidth)
 
   cs <- cs[-1,]
-
   term_col <- cs[["Term"]]
+
+  ex <- getVarLevels(model)
+  ex <- bind_rows(ex, refs_df)
+  cs <- full_join(cs, ex, by = c("Term" = "terms"))
+
+
   cs <- full_join(counts, cs, by = c("Variable" = "Term"))
   #adding reference levels in:
   i = 1
@@ -250,15 +258,22 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
 
   # For Clarina:
   # Calculate the sample size
+  refs_df <- data.frame(terms = c(), var = c(), lvl = c())
   var_types <- attr(model$terms,"dataClasses")
   m_df <- model$model
   ss <-lapply(names(m_df)[-1],function(v){
     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
     if (var_types[[v]]=="factor") {
 
-      # k <- lapply(names(table(m_df[[v]])), function(x) {paste0(v, x)})
-      # print(k)
       tab <- table(m_df[[v]])
+
+      for (lev in names(tab)) {
+        if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
+          df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
+          refs_df <<- bind_rows(refs_df, df)
+        }
+      }
+
       names(tab) <- paste0(v, names(tab))
       # print(names(table(m_df[[v]])))
       d <- data.frame(tab)
@@ -311,12 +326,20 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
                         ifelse(model$family$family=="poisson","RR","GLM Estimate")))
   attr(cs,'estLabel') <- betaWithCI(beta,CIwidth)
   cs <- cs[-1,]
+
   term_col <- cs[["Term"]]
+
+  ex <- getVarLevels(model)
+  ex <- bind_rows(ex, refs_df)
+  cs <- full_join(cs, ex, by = c("Term" = "terms"))
+
+
   cs <- full_join(counts, cs, by = c("Variable" = "Term"))
   #adding reference levels in:
   i = 1
   for (var in cs[["Variable"]]) {
     if (!(var %in% term_col)) {
+      print(var)
       cs[i, "Est_CI"] <- "Reference"
     }
     i = i+1
@@ -356,12 +379,20 @@ coeffSum.negbin <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   ms <- summary(model)$coefficients
   ci <- exp(confint(model,level=CIwidth))
 
+  refs_df <- data.frame(terms = c(), var = c(), lvl = c())
+
   var_types <- attr(model$terms,"dataClasses")
   m_df <- model$model
   ss <-lapply(names(m_df)[-1],function(v){
     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
     if (var_types[[v]]=="factor") {
       tab <- table(m_df[[v]])
+      for (lev in names(tab)) {
+        if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
+          df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
+          refs_df <<- bind_rows(refs_df, df)
+        }
+      }
       names(tab) <- paste0(v, names(tab))
       d <- data.frame(tab)
       names(d) <- c("Variable","n")
@@ -405,6 +436,11 @@ coeffSum.negbin <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   attr(cs,'estLabel') <- betaWithCI("RR",CIwidth)
 
   cs <- cs[-1,]
+
+  ex <- getVarLevels(model)
+  ex <- bind_rows(ex, refs_df)
+  cs <- full_join(cs, ex, by = c("Term" = "terms"))
+
   term_col <- cs[["Term"]]
   cs <- full_join(counts, cs, by = c("Variable" = "Term"))
   #adding reference levels in:
@@ -422,6 +458,7 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   ms <- summary(model)$coefficients
   ci <- exp(confint(model,level = CIwidth))
 
+  refs_df <- data.frame(terms = c(), var = c(), lvl = c())
   if (is.null(model$model)) {
     var_types <- attr(model$terms, "dataClasses")
     dat <- get(model$call[["data"]])
@@ -429,6 +466,12 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
       if (var_types[[v]] == "numeric") return(data.frame(Variable=v,n=length(na.omit(dat[[v]]))))
       if (var_types[[v]]=="factor") {
         tab <- table(dat[[v]])
+        for (lev in names(tab)) {
+          if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
+            df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
+            refs_df <<- bind_rows(refs_df, df)
+          }
+        }
         names(tab) <- paste0(v, names(tab))
         d <- data.frame(tab)
         names(d) <- c("Variable","n")
@@ -463,6 +506,12 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
       if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
       if (var_types[[v]]=="factor") {
         tab <- table(m_df[[v]])
+        for (lev in names(tab)) {
+          if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
+            df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
+            refs_df <<- bind_rows(refs_df, df)
+          }
+        }
         names(tab) <- paste0(v, names(tab))
         d <- data.frame(tab)
         names(d) <- c("Variable","n")
@@ -497,6 +546,10 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   rownames(cs) <- NULL
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
+
+  ex <- getVarLevels(model)
+  ex <- bind_rows(ex, refs_df)
+  cs <- full_join(cs, ex, by = c("Term" = "terms"))
 
   term_col <- cs[["Term"]]
   cs <- full_join(counts, cs, by = c("Variable" = "Term"))
