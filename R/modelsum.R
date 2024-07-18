@@ -1,7 +1,11 @@
 #source("autosum.R")
 
+
 modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FALSE, ...) {
   mcoeff <- coeffSum(model, CIwidth, digits, vif)
+
+  ex <- getVarLevels(model)
+  print(ex)
   if (!(whichp %in% c(FALSE, "level", "global", "both"))) {
       stop("argument whichp must be FALSE, or one of 'level', 'global', or 'both'")
   }

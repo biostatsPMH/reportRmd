@@ -241,8 +241,16 @@ crrRx<-function(f,data){
   m1<-cmprsk::crr(ff[[1]][,1],ff[[1]][,2],ff[[2]])
   m1$formula <- paste("~",covs)
   m1$terms <- covs
-  attr(m1$terms,"term.labels") <- covs
-  attr(m1$terms,"dataClasses") <- sapply(covs,function(x)class(data[[x]]))
+  covstr <- sapply(strsplit(covs,"[+]")[[1]],trimws)
+  attr(m1$terms,"term.labels") <- covstr
+  names(covstr) <- covstr
+  attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
+
+  m1$model <- data[,c(response[2],x_var)]
+  attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
+                                  "~", x_var, sep = "")
+
+
   m1$call<-as.call(list(f,data=argList$data))
   m1$data <- data
   return(m1)

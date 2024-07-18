@@ -92,16 +92,24 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
 
   var_types <- attr(model$terms,"dataClasses")
   m_df <- model$model
+  refs_df <- data.frame(terms = c(), var = c(), lvl = c())
   ss <-lapply(names(m_df)[-1],function(v){
     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
     if (var_types[[v]]=="factor") {
       tab <- table(m_df[[v]])
+      for (lev in names(tab)) {
+        if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
+          df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
+          refs_df <<- bind_rows(refs_df, df)
+        }
+      }
       names(tab) <- paste0(v, names(tab))
       d <- data.frame(tab)
       names(d) <- c("Variable","n")
       return(d)
     }
   })
+  print(refs_df)
   ss <- bind_rows(ss)
 
   cs <- data.frame(
@@ -116,10 +124,15 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   cs <- cs[-1,]
+  ex <- getVarLevels(model)
+  print(ex)
+  ex <- merge(ex, refs_df, by = "terms", sort = FALSE)
+  print(ex)
+  cs <- full_join(cs, ex, by = c("Term" = "terms"))
+  print(cs)
 
   term_col <- cs[["Term"]]
   cs <- full_join(ss, cs, by = c("Variable" = "Term"))
-  #adding reference levels in:
   i = 1
   for (var in cs[["Variable"]]) {
     if (!(var %in% term_col)) {
@@ -534,7 +547,7 @@ coeffSum.crr <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   if (is.null(model$model)) { #when autoreg is not used -- mv?
     var_types <- attr(model$terms, "dataClasses")
     dat <- get(model$call[["data"]])
-    ss <-lapply(attr(model$terms, "term.labels"),function(v){
+    ss <-lapply(attr(model$terms, "term.labels"),function(v){print(v)
       if (var_types[[v]] == "numeric") return(data.frame(Variable=v,n=length(na.omit(dat[[v]]))))
       if (var_types[[v]]=="factor") {
         tab <- table(dat[[v]])
@@ -623,7 +636,6 @@ coeffSum.crr <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
 
   for (var in setdiff(attr(model$terms, "term.labels"),cs[["Variable"]])) {
     first_t <- min(which(grepl(paste0("^", var), cs[["Variable"]])))
-    print(first_t)
     var_row <- data.frame(Variable = var)
     if (first_t == 1) {
       cs <- bind_rows(var_row, cs)
