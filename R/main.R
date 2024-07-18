@@ -244,15 +244,15 @@ crrRx<-function(f,data){
   covstr <- sapply(strsplit(covs,"[+]")[[1]],trimws)
   attr(m1$terms,"term.labels") <- covstr
   names(covstr) <- covstr
-  attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
+  attr(m1$terms,"dataClasses") <- sapply(covstr,function(x) class(data[[x]]))
 
-  m1$model <- data[,c(response[2],x_var)]
-  attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
-                                  "~", x_var, sep = "")
-
+  m1$model <- data[,c(colnames(ff[[1]])[2],covstr)]
 
   m1$call<-as.call(list(f,data=argList$data))
-  m1$data <- data
+
+  # I think we probably don't need these?
+  # attr(m1$model,"terms") <- f
+  # m1$data <- data
   return(m1)
 }
 

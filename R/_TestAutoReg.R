@@ -90,7 +90,16 @@ idf <- as.numeric(factor(pembrolizumab$id))
 model <- geepack::geeglm(orr2 ~ age+sex+cohort, family = binomial,
                          data = pembrolizumab,
                          id = idf, corstr = "independence")
-# TO DO:
-# - test all the different autoreg functions
-# - test all the coeffSum functions
-# write a function to accept data, response, covs and use the derive_type function to assign a class to the response
+
+
+crr_mod <- crrRx(f = (os_time + os_status ~ sex + age + cohort), data = pembrolizumab)
+
+pembrolizumab$os_status2 <- pembrolizumab$os_status
+pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
+response = c("os_time","os_status2")
+class(response) <-c(class(response),"rm_crr")
+crr_uv <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
+coeffSum.crr(crr_uv)
+coeffSum(crr_uv)
+
+coeffSum.crr(crr_mod)

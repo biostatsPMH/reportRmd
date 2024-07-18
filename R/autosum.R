@@ -597,6 +597,42 @@ coeffSum.crr <- function(model,CIwidth=.95,digits=2,vif = FALSE) {
   ms <- out$coef
   ci <- out$conf.int
 
+  # Calculate the number of events for binomial models
+  status <- model$model[[1]]
+  xvars <- model$model[,-1]
+  var_types <- attr(model$terms, "dataClasses")
+
+  # Clarina - this should work ------------
+  events_ss <- lapply(names(xvars),function(v){
+    if (var_types[v] == "numeric") return(data.frame(Variable=v,events=sum(status),n=nrow(xvars)))
+    if (var_types[[v]] == "factor") {
+    d1 <- data.frame(table(status,xvars[[v]]))  |>
+        dplyr::filter(status==1)   |>
+      dplyr::select(-status)
+     names(d1) <- c("Variable","events")
+     d2 <-data.frame(table(xvars[[v]]))
+     names(d2) <- c("Variable","n")
+     d <- merge(d1,d2)
+     return(d)
+  }})
+  #---------------------------
+  events <- lapply(attr(model$terms, "term.labels"),function(v){
+    if (var_types[[v]] == "numeric") return(data.frame(Variable=v,events=sum(status)))
+    if (var_types[[v]] == "factor") {
+      survs <- as.matrix(status)
+      model_data <- dat[, attr(model$terms, "term.labels")][[v]]
+      tab <- table(survs, model_data)
+      colnames(tab) <- paste0(v, colnames(tab))
+      d <- data.frame(tab) |>
+        dplyr::filter(survs==1) |>
+        dplyr::select(-survs)
+      names(d) <- c("Variable","events")
+      return(d)
+    }
+  })
+  events <- bind_rows(events)
+  counts <- merge(ss, events, sort = FALSE)
+
   if (is.null(model$model)) { #when autoreg is not used -- mv?
     var_types <- attr(model$terms, "dataClasses")
     dat <- get(model$call[["data"]])
