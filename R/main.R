@@ -241,6 +241,7 @@ crrRx<-function(f,data){
   m1<-cmprsk::crr(ff[[1]][,1],ff[[1]][,2],ff[[2]])
   m1$formula <- paste("~",covs)
   m1$terms <- covs
+  m1$coefficients <- m1$coef
   covstr <- sapply(strsplit(covs,"[+]")[[1]],trimws)
   attr(m1$terms,"term.labels") <- covstr
   names(covstr) <- covstr

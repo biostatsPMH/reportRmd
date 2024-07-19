@@ -1,5 +1,5 @@
 getVarLevels <- function(model){
-  terms<-names(model$coefficients)[-1]
+  terms<-names(model$coefficients)[!grepl("intercept",names(model$coefficients),ignore.case = T)]
   vrs<-attr(model$terms,"term.labels")
   lvls<-setdiff(names(model$coefficients),vrs)
   df <- data.frame(terms=terms)
