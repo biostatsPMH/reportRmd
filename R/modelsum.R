@@ -40,8 +40,6 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FA
            | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered"))
           & (nlevels(model$model[[mcoeff$Variable[i]]]) == 2)) {
 
-        #then v has two levels
-
         if (!(whichp == "global")) {
           p <- subset(mcoeff, var == v)[["p_value"]][2]
           mcoeff[i, "p_value"] <- p
