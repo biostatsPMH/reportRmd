@@ -33,15 +33,22 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FA
     #if whichp = FALSE, then get rid of the column later, in the next function
     }
   }
+
+  print(mcoeff)
+  if (is.null(model$model)) {
+    c <- get(model$call[["data"]])
+  }
+  else {
+    c <- model$model
+  }
   i = 1
   for (v in mcoeff$Variable) {
     if (mcoeff$Variable[i] %in% attr(model$terms, "term.labels")) {
       if (((attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "factor")
-           | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered"))
-          & (nlevels(model$model[[mcoeff$Variable[i]]]) == 2)) {
-
+             | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered")) & nlevels(c[[v]]) == 2) {
+        print(v)
         if (!(whichp == "global")) {
-          p <- subset(mcoeff, var == v)[["p_value"]][2]
+          p <- subset(mcoeff, var == v)[3,][["p_value"]]
           mcoeff[i, "p_value"] <- p
           mcoeff[(i+1):(i+2), "p_value"] <- NA
         }
