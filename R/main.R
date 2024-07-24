@@ -246,11 +246,11 @@ crrRx<-function(f,data){
   attr(m1$terms,"term.labels") <- covstr
   names(covstr) <- covstr
   attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
-#
-#   m1$model <- data[,c(response[2],x_var)]
-#   attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
-#                                   "~", x_var, sep = "")
-#
+
+  m1$model <- na.omit(data[,c(response[2],covs)])
+  attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
+                                  "~", covs, sep = "")
+
 
   m1$call<-as.call(list(f,data=argList$data))
   m1$data <- data

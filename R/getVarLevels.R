@@ -32,3 +32,5 @@ getVarLevels <- function(model){
   }
   df
 }
+
+#crr_mod <- crrRx(f = (os_time + os_status ~ sex + age + cohort), data = pembrolizumab)

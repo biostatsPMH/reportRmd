@@ -12,26 +12,30 @@ class(response) <-c(class(response),"rm_lm")
 x_var <- "sex"
 id=NULL;strata="";family=NULL;offset=NULL
 lm_fit <- autoreg(response,data=pembrolizumab,x_var)
+coeffSum(lm_fit)
 
-# Binomial
+# Binomialm_fit# Binomial
 response="orr"
 class(response) <-c(class(response),"rm_glm")
 binom_fit <- autoreg(response,data=pembrolizumab,x_var,family="binomial")
 model <- binom_fit
+coeffSum(binom_fit)
 
 # Poisson
 pembrolizumab$int_var <- rpois(n=nrow(pembrolizumab),lambda = 1)
 response="int_var"
 class(response) <-c(class(response),"rm_glm")
 pois_fit <- autoreg(response,data=pembrolizumab,x_var,family="poisson",offset=NULL)
+coeffSum(pois_fit)
 
 mv_pois_fit <-  glm(formula = int_var ~ age+cohort, family = poisson, data = pembrolizumab)
+coeffSum(mv_pois_fit)
 
 # Negative Binomial
 response="int_var"
 class(response) <-c(class(response),"rm_negbin")
 neg_fit <- autoreg(response,data=pembrolizumab,x_var,family="poisson",offset=NULL)
-neg_fit
+coeffSum(neg_fit)
 class(neg_fit)
 
 # Ordinal
@@ -39,12 +43,14 @@ pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$i
 response="ord_var"
 class(response) <-c(class(response),"rm_ordinal")
 ord_fit <- autoreg(response,data=pembrolizumab,x_var,family=NULL,offset=NULL)
+coeffSum(ord_fit)
 
 # Cox PH -
 response = c("os_time","os_status")
 class(response) <-c(class(response),"rm_coxph")
 cox_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
 
+coeffSum(cox_fit)
 
 # CRR
 pembrolizumab$os_status2 <- pembrolizumab$os_status
@@ -52,6 +58,10 @@ pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
 response = c("os_time","os_status2")
 class(response) <-c(class(response),"rm_crr")
 crr_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
+
+model <- crr_fit
+coeffSum.crr(crr_fit)
+
 
 # GEE Model - binomial  - both should work now
 response="orr"; x_var <- "sex"
