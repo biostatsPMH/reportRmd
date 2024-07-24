@@ -247,13 +247,13 @@ crrRx<-function(f,data){
   names(covstr) <- covstr
   attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
 
-  m1$model <- na.omit(data[,c(response[2],covs)])
+  m1$model <- na.omit(data[,c(colnames(ff[[1]]),covs)])
   attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
                                   "~", covs, sep = "")
 
 
   m1$call<-as.call(list(f,data=argList$data))
-  m1$data <- data
+   m1$data <- data
   return(m1)
 }
 

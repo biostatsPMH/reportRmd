@@ -1,12 +1,14 @@
+# need to add whichp
 uv_test <- function(response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
                     type = NULL, offset=NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
-                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, vif = T) {
+                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, vif = T,whichp="both") {
+
 
   # assigned_class <- derive_type(data, response, gee)
   # class(response) <- c(class(response), assigned_class)
   modelList <- c()
   for (i in 1:length(covs)) {
-    cov_model <- autoreg(response, data, x_var = cov, id, strata, family, offset, corstr)
+    cov_model <- autoreg(response, data, x_var = covs[i], id, strata, family, offset, corstr)
     modelList[[i]] <- cov_model
   }
   summaryList <- c()

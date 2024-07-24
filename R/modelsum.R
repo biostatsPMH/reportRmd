@@ -7,6 +7,7 @@ modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FA
   if (!(whichp %in% c(FALSE, "level", "global", "both"))) {
       stop("argument whichp must be FALSE, or one of 'level', 'global', or 'both'")
   }
+
   # check units - if any lwr==upr issue warning
   if (any(mcoeff$lwr==mcoeff$upr, na.rm = T)) {
     message("Zero-width confidence interval detected. Check predictor units.")

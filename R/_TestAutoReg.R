@@ -49,8 +49,8 @@ coeffSum(ord_fit)
 response = c("os_time","os_status")
 class(response) <-c(class(response),"rm_coxph")
 cox_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
-
-coeffSum(cox_fit)
+model <- cox_fit
+coeffSum(cox_fit,whichp="both") # global-p doesn't do anything yet
 
 # CRR
 pembrolizumab$os_status2 <- pembrolizumab$os_status
@@ -58,9 +58,7 @@ pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
 response = c("os_time","os_status2")
 class(response) <-c(class(response),"rm_crr")
 crr_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
-
-model <- crr_fit
-coeffSum.crr(crr_fit)
+coeffSum.crr(crr_fit,whichp = "both") # will return NA for only 1 variable, that's fine
 
 
 # GEE Model - binomial  - both should work now
