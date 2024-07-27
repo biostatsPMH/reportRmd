@@ -247,7 +247,7 @@ crrRx<-function(f,data){
   names(covstr) <- covstr
   attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
 
-  m1$model <- na.omit(data[,c(colnames(ff[[1]]),covs)])
+  m1$model <- na.omit(data[,c(colnames(ff[[1]]),covstr)])
   attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
                                   "~", covs, sep = "")
 

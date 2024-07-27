@@ -88,10 +88,20 @@ coeffSum <- function(model,CIwidth=.95,digits=2,vif=FALSE,whichp="level") {
 
 coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
   ms <- summary(model)$coefficients
-  ci <- exp(confint(model,level = CIwidth))
+  ci <- as.data.frame(exp(confint(model,level = CIwidth)))
+  names(ci) <- c("lb","ub")
+  ci$terms <- rownames(ci)
+  rownames(ci) <- NULL
+  lvls <- getVarLevels(model)
 
-  print(ms)
-  status <- model$model[[1]]
+  cs <- data.frame(
+    terms=rownames(ms),
+    est=ms[,2],
+    p_value = ms[,4]
+  ) |> dplyr::left_join(lvls)
+  rownames(cs) <- NULL
+  cs <- dplyr::left_join(cs,ci)
+
   xvars <- model$model[,-1,drop=FALSE]
   var_types <- attr(model$terms, "dataClasses")
 
@@ -111,15 +121,6 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="leve
     }})
   events_ss <- bind_rows(events_ss)
   print(events_ss)
-  cs <- data.frame(
-    Variable=rownames(ms),
-    est=ms[,2],
-    p_value = ms[,4],
-    lwr = ci[,1],
-    upr = ci[,2]
-  )
-  print(cs)
-  rownames(cs) <- NULL
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
 
@@ -149,6 +150,8 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="leve
   }
   cs <- cs[order(cs$order), ]
   return(cs)
+}
+
 
 #   ms <- summary(model)$coefficients
 #   ci <- confint(model,level=CIwidth)
@@ -314,7 +317,7 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="leve
 #     i = i+1
 #   }
 #   return(cs)
-}
+#}
 
 coeffSum.glm <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
   ms <- summary(model)$coefficients
@@ -755,6 +758,17 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level")
   return(cs)
 }
 
+
+
+# Extract data from a fitted model ---------------
+get_model_data <- function(model){
+  UseMethod("get_model_data", model)
+}
+
+get_model_data.default <- function(model){
+  return(model$model)
+}
+# may need to add other methods
 
 
 # Calculate a global p-value for categorical variables --------

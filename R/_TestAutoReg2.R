@@ -4,8 +4,10 @@ library(devtools)
 data("pembrolizumab")
 head(pembrolizumab)
 library(dplyr)
-# Linear
 
+CIwidth=.95;digits=2
+
+# Linear
 # Fitting the Models -----------------
 response = "age"
 class(response) <-c(class(response),"rm_lm")
@@ -14,9 +16,11 @@ id=NULL;strata="";family=NULL;offset=NULL
 lm_fit <- autoreg(response,data=pembrolizumab,x_var)
 coeffSum(lm_fit)
 mv_lm <- lm(pdl1 ~ age+sex+cohort,data = pembrolizumab)
-coeffSum(mv_lm) # Extra print statements
+mv_lm_int <- lm(pdl1 ~ age*sex+sex*cohort+age*l_size,data = pembrolizumab)
+model <- mv_lm_int
+coeffSum(mv_lm_int) # Extra print statements
 
-# Binomial_fit
+# Binomial_fit -------------------
 response="orr"
 class(response) <-c(class(response),"rm_glm")
 binom_fit <- autoreg(response,data=pembrolizumab,x_var,family="binomial")
@@ -24,9 +28,9 @@ model <- binom_fit
 coeffSum(binom_fit)
 mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
 rm_mvsum(mv_binom)
-coeffSum(mv_binom) # Not working
+coeffSum(mv_binom) # Not working - but Poisson is
 
-# Poisson
+# Poisson -------------------
 pembrolizumab$int_var <- rpois(n=nrow(pembrolizumab),lambda = 1)
 response="int_var"
 class(response) <-c(class(response),"rm_glm")
@@ -37,7 +41,7 @@ coeffSum(mv_pois_fit)
 
 rm_mvsum(mv_pois_fit)
 
-# Negative Binomial
+# Negative Binomial -------------------
 response="int_var"
 class(response) <-c(class(response),"rm_negbin")
 neg_fit <- autoreg(response,data=pembrolizumab,x_var,family="poisson",offset=NULL)
@@ -47,7 +51,7 @@ mv_nb <- MASS::glm.nb(int_var~age+sex+cohort,data=pembrolizumab,link=log)
 rm_mvsum(mv_nb)
 coeffSum(mv_nb)
 
-# Ordinalmv_nb# Ordinal
+# Ordinal -------------------
 pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$int_var),ordered = T)
 response="ord_var"
 class(response) <-c(class(response),"rm_ordinal")
@@ -58,7 +62,7 @@ mv_ord <- MASS::polr(ord_var ~ age+ sex+cohort, data = pembrolizumab, Hess = TRU
 coeffSum(mv_ord) # Error
 rm_mvsum(mv_ord)
 
-# Cox PH -
+# Cox PH -------------------
 response = c("os_time","os_status")
 class(response) <-c(class(response),"rm_coxph")
 cox_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
@@ -69,7 +73,7 @@ mv_cox <- survival::coxph(Surv(os_time,os_status) ~ age+sex+cohort, data = pembr
 rm_mvsum(mv_cox)
 coeffSum(mv_cox) # Doesn't work
 
-# CRR
+# CRR -------------------
 pembrolizumab$os_status2 <- pembrolizumab$os_status
 pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
 response = c("os_time","os_status2")
@@ -77,10 +81,27 @@ class(response) <-c(class(response),"rm_crr")
 crr_fit <- autoreg(response,data=pembrolizumab,x_var="sex",family=NULL,offset=NULL,id=NULL,strata = "")
 coeffSum(crr_fit,whichp = "both") # will return NA for only 1 variable, that's fine
 
-mv_crr <- crrRx(as.formula('os_time+os_status2~age+sex+cohort'),pembrolizumab)
+mv_crr <- crrRx(as.formula('os_time+os_status2~age+sex+cohort'),data=pembrolizumab)
+coeffSum(mv_crr) # funny ordering
+rm_mvsum(mv_crr,data = pembrolizumab) # This errors, but example below does not
+
+# From the crr help file - this works
+set.seed(10)
+ftime <- rexp(200)
+fstatus <- sample(0:2,200,replace=TRUE)
+cov <- matrix(runif(600),nrow=200)
+dimnames(cov)[[2]] <- c('x1','x2','x3')
+cov2 <- data.frame(cov) |>
+  dplyr::mutate(x4=cut(x3,seq(0,1,.25)))
+df <- data.frame(ftime,fstatus,cov)
+m1 <- crrRx(as.formula('ftime+fstatus~x1+x2+x3'),df)
 rm_mvsum(m1,data=df,showN = T)
+coeffSum(m1) # this works
 
-
+df2 <- data.frame(ftime,fstatus,cov2)
+m2 <- crrRx(as.formula('ftime+fstatus~x1+x2+x4'),df2)
+rm_mvsum(m2,data=df2,showN = T)
+coeffSum(m2)
 
 
 # GEE Model - binomial  - both should work now

@@ -152,6 +152,8 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 
   dt <- as.name(args$data)
 
+  xvars <- unique(xvars)
+
   for (xvar in xvars) {
     if (is.logical(data[[xvar]]) || is.character(data[[xvar]])) {
       data[[xvar]] <- as.factor(data[[xvar]])
