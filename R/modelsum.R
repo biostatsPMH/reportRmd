@@ -1,67 +1,93 @@
 #source("autosum.R")
 
-
 modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FALSE, ...) {
-  mcoeff <- coeffSum(model, CIwidth, digits, vif)
-
-  if (!(whichp %in% c(FALSE, "level", "global", "both"))) {
-      stop("argument whichp must be FALSE, or one of 'level', 'global', or 'both'")
-  }
-
-  # check units - if any lwr==upr issue warning
-  if (any(mcoeff$lwr==mcoeff$upr, na.rm = T)) {
-    message("Zero-width confidence interval detected. Check predictor units.")
-  }
-
-  terms <- mcoeff$Variable
-  if (whichp == "global" | whichp == "both") {
-    glob_p <- gp(model)
-    for (row in mcoeff$Variable) {
-      if (!(row %in% glob_p$Variable)) {
-        d <- data.frame(Variable = row, global_p = NA)
-        glob_p <- rbind(glob_p, d)
-        glob_p <- glob_p[order(match(glob_p$Variable, mcoeff$Variable)),]
-      }
+  mcoeff <- coeffSum(model,CIwidth,digits,vif,whichp)
+  for (var in unique(na.omit(mcoeff[["var"]]))) {
+    if (var %in% mcoeff[["var"]] & length(which(mcoeff[["var"]] == var)) == 3) {
+      p <- mcoeff[max(which(mcoeff[["var"]] == var)), "p_value"]
+      mcoeff[min(which(mcoeff[["var"]] == var)), "p_value"] <- p
+      mcoeff[max(which(mcoeff[["var"]] == var)), "p_value"] <- NA
     }
-
-    if (whichp == "global") {
-      mcoeff <- full_join(mcoeff, glob_p, by = "Variable")
-      mcoeff[["p_value"]] <- mcoeff[["global_p"]]
-      mcoeff[["global_p"]] <- NULL
-    }
-    else if (whichp == "both") {
-      mcoeff[["p_value"]] <- sapply(1:nrow(glob_p), function(i) {ifelse(!is.na(glob_p$global_p[i]), glob_p$global_p[i], mcoeff$p_value[i])})
-    #if whichp = FALSE, then get rid of the column later, in the next function
+  }
+  # cols_to_keep <- c()
+  # if (vif) {
+  #   cols_to_keep <- c(cols_to_keep, "VIF")
+  # }
+  # if ("events" %in% colnames(mcoeff)) {
+  #   cols_to_keep <- c(cols_to_keep, "events")
+  # }
+  # mcoeff <- mcoeff[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
+  #
+  for (col in colnames(mcoeff)) {
+    if (all(is.na(mcoeff[[col]]))) {
+      mcoeff[[col]] <- NULL
     }
   }
 
-  print(mcoeff)
-  if (is.null(model$model)) {
-    c <- get(model$call[["data"]])
-  }
-  else {
-    c <- model$model
-  }
-  i = 1
-  for (v in mcoeff$Variable) {
-    if (mcoeff$Variable[i] %in% attr(model$terms, "term.labels")) {
-      if (((attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "factor")
-             | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered")) & nlevels(c[[v]]) == 2) {
-        print(v)
-        if (!(whichp == "global")) {
-          p <- subset(mcoeff, var == v)[3,][["p_value"]]
-          mcoeff[i, "p_value"] <- p
-          mcoeff[(i+1):(i+2), "p_value"] <- NA
-        }
-        else {
-          mcoeff[(i+1):(i+2), "p_value"] <- NA
-        }
-      }
-    }
-    i = i+1
-  }
   return(mcoeff)
 }
+
+# modelsum <- function(model, digits = 2, CIwidth = 0.95, vif = FALSE, whichp = FALSE, ...) {
+#   mcoeff <- coeffSum(model, CIwidth, digits, vif)
+#
+#   if (!(whichp %in% c(FALSE, "level", "global", "both"))) {
+#       stop("argument whichp must be FALSE, or one of 'level', 'global', or 'both'")
+#   }
+#
+#   # check units - if any lwr==upr issue warning
+#   if (any(mcoeff$lwr==mcoeff$upr, na.rm = T)) {
+#     message("Zero-width confidence interval detected. Check predictor units.")
+#   }
+#
+#   terms <- mcoeff$Variable
+#   if (whichp == "global" | whichp == "both") {
+#     glob_p <- gp(model)
+#     for (row in mcoeff$Variable) {
+#       if (!(row %in% glob_p$Variable)) {
+#         d <- data.frame(Variable = row, global_p = NA)
+#         glob_p <- rbind(glob_p, d)
+#         glob_p <- glob_p[order(match(glob_p$Variable, mcoeff$Variable)),]
+#       }
+#     }
+#
+#     if (whichp == "global") {
+#       mcoeff <- full_join(mcoeff, glob_p, by = "Variable")
+#       mcoeff[["p_value"]] <- mcoeff[["global_p"]]
+#       mcoeff[["global_p"]] <- NULL
+#     }
+#     else if (whichp == "both") {
+#       mcoeff[["p_value"]] <- sapply(1:nrow(glob_p), function(i) {ifelse(!is.na(glob_p$global_p[i]), glob_p$global_p[i], mcoeff$p_value[i])})
+#     #if whichp = FALSE, then get rid of the column later, in the next function
+#     }
+#   }
+#
+#   print(mcoeff)
+#   if (is.null(model$model)) {
+#     c <- get(model$call[["data"]])
+#   }
+#   else {
+#     c <- model$model
+#   }
+#   i = 1
+#   for (v in mcoeff$Variable) {
+#     if (mcoeff$Variable[i] %in% attr(model$terms, "term.labels")) {
+#       if (((attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "factor")
+#              | (attr(model$term, "dataClasses")[[mcoeff$Variable[i]]] == "ordered")) & nlevels(c[[v]]) == 2) {
+#         print(v)
+#         if (!(whichp == "global")) {
+#           p <- subset(mcoeff, var == v)[3,][["p_value"]]
+#           mcoeff[i, "p_value"] <- p
+#           mcoeff[(i+1):(i+2), "p_value"] <- NA
+#         }
+#         else {
+#           mcoeff[(i+1):(i+2), "p_value"] <- NA
+#         }
+#       }
+#     }
+#     i = i+1
+#   }
+#   return(mcoeff)
+# }
 
 ## Previous version below
 
