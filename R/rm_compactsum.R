@@ -329,6 +329,17 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       lbl <- c(lbl, xvar)
     }
   }
+  if (!tableOnly) {
+    to_indent <- c()
+    n = 0
+    for (x in result[, 1]) {
+      n = n+1
+      if (!(x %in% xvars)) {
+        to_indent <- c(to_indent, n)
+      }
+    }
+  }
+
   if (nicenames) {
     if (typeof(args$data) == "symbol") {
     result[, 1] <- replaceLbl(args$data, lbl)
@@ -342,15 +353,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   attr(result, "description") <- generate_description(xvars, output_list)
   if (tableOnly) {
     return(result)
-  }
-  to_indent <- c()
-  n <- 0
-  for (xvar in xvars) {
-    n = n+1
-    if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
-      to_indent <- c(to_indent, n + (1:length(unique(na.omit(data[[xvar]])))))
-      n = n + length(unique(na.omit(data[[xvar]])))
-    }
   }
   nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
