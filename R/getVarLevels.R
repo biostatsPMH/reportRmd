@@ -41,26 +41,59 @@ getVarLevels <- function(model){
   df$lvl <- ifelse(df$lvl=="NA:NA",NA,df$lvl)
   df$lvl <- ifelse(df$lvl=="NA",NA,df$lvl)
   df$ord <- 1:nrow(df)
+
   # add sample size and events
+  md <- get_model_data(model)
+  if (is.null(md)){
+    warning("Model data could not be extracted, simplified summary provided")
+  } else {
+    events = get_event_counts(model)
+    if (!is.null(events)) ed <- md[events==1,] else ed <- NULL
+  }
   df$v1 <- sub(":.*","",df$var)
   df$v2 <- sub(".*:","",df$var)
   df$v2 <- ifelse(df$v1==df$v2,NA,df$v2)
-  data= get_model_data(model)
-  vcls <- sapply(na.omit(unique(c(df$v1,df$v2))), function(x) ifelse(inherits(data[[x]],"numeric"),"numeric","factor"))
+
+  vcls <- sapply(na.omit(unique(c(df$v1,df$v2))), function(x) ifelse(inherits(md[[x]],"numeric"),"numeric","factor"))
   int_terms <- unique(grep("[:]",df$var,value=T))
   freq1 <- NULL
   for (i in int_terms){
     vcl <- vcls[strsplit(i,":")[[1]]]
     if (all(vcl=="factor")){
-      ntbl <- eval(parse(text=paste("data.frame(with(data,table(",sub(":",',',i),")))")))
-      ntbl$var <- i
-      ntbl$lvl <- paste0(ntbl[,1],":",ntbl[,2])
+      if (!is.null(md)){
+        ntbl <- eval(parse(text=paste("data.frame(with(md,table(",sub(":",',',i),")))")))
+        ntbl$var <- i
+        ntbl$lvl <- paste0(ntbl[,1],":",ntbl[,2])
+        if (!is.null(ed)){
+          etbl <- eval(parse(text=paste("data.frame(with(ed,table(",sub(":",',',i),")))")))
+          etbl$var <- i
+          etbl$lvl <- paste0(ntbl[,1],":",ntbl[,2])
+          names(etbl) <- sub("Freq","Events",names(etbl))
+          ntbl <- merge(ntbl,etbl)
+        }
+      } else {ntbl <- data.frame(var=i)}
+
     } else if (any(vcl=="factor")){
-      ntbl <- eval(parse(text=paste("data.frame(with(data,table(",names(vcl)[vcl=="factor"],")))")))
-      ntbl$var <- i
-      ntbl$lvl <- ntbl[,1]
+      if (!is.null(md)){
+        ntbl <- eval(parse(text=paste("data.frame(with(md,table(",names(vcl)[vcl=="factor"],")))")))
+        ntbl$var <- i
+        ntbl$lvl <- ntbl[,1]
+        if (!is.null(ed)){
+          etbl <- eval(parse(text=paste("data.frame(with(ed,table(",names(vcl)[vcl=="factor"],")))")))
+          etbl$var <- i
+          etbl$lvl <- etbl[,1]
+          names(etbl) <- sub("Freq","Events",names(etbl))
+          ntbl <- merge(ntbl,etbl)
+        }
+      } else {ntbl <- data.frame(var=i)}
     } else{
-      ntbl <- data.frame(var=i,lvl=NA,Freq=nrow(data))
+      if (!is.null(md)){
+        ntbl <- data.frame(var=i,lvl=NA,Freq=nrow(md))
+        if (!is.null(ed)){
+          etbl <- data.frame(var=i,lvl=NA,Events=nrow(ed))
+          ntbl <- merge(ntbl,etbl)
+        }
+      } else {ntbl <- data.frame(var=i)}
     }
     freq1 <- dplyr::bind_rows(freq1,ntbl)
   }
@@ -68,33 +101,51 @@ getVarLevels <- function(model){
   for (i in setdiff(na.omit(unique(df$var)),int_terms)){
     vcl <- vcls[i]
     if (vcl=="factor"){
-      ntbl <- eval(parse(text=paste("data.frame(with(data,table(",i,")))")))
-      ntbl$var <- i
-      ntbl$lvl <- ntbl[,1]
-    } else ntbl <- data.frame(var=i,lvl=NA,Freq=nrow(data))
+      if (!is.null(md)){
+        ntbl <- eval(parse(text=paste("data.frame(with(md,table(",i,")))")))
+        ntbl$var <- i
+        ntbl$lvl <- ntbl[,1]
+        if (!is.null(ed)){
+          etbl <- eval(parse(text=paste("data.frame(with(ed,table(",i,")))")))
+          etbl$var <- i
+          etbl$lvl <- etbl[,1]
+          names(etbl) <- sub("Freq","Events",names(etbl))
+          ntbl <- merge(ntbl,etbl)
+        }
+      } else {ntbl <- data.frame(var=i)}
+    } else {
+      if (!is.null(md)){
+        ntbl <- data.frame(var=i,lvl=NA,Freq=nrow(md))
+        if (!is.null(ed)){
+          etbl <- data.frame(var=i,lvl=NA,Events=nrow(ed))
+          ntbl <- merge(ntbl,etbl)
+        }
+      } else {ntbl <- data.frame(var=i)}
+    }
     freq2 <- dplyr::bind_rows(freq2,ntbl)
   }
   freq <- dplyr::bind_rows(freq1,freq2)
   freq$n <- freq$Freq
-  freq <- freq[,c("var","lvl","n")]
+  freq <- freq[,intersect(names(freq),c("var","lvl","n","Events")),drop=FALSE]
   out <- dplyr::full_join(df,freq)
   out <- dplyr::arrange(out,ord)
   vord <- data.frame(var=na.omit(unique(out$var)),
-                                 vord=1:length(na.omit(unique(out$var))))
+                     vord=1:length(na.omit(unique(out$var))))
   out <- dplyr::full_join(out,vord)
   out$ord <- ifelse(is.na(out$ord),0,out$ord)
   out <- dplyr::arrange(out,vord,ord)
   out$ref <- out$ord==0
-  extra_lvl <- xtr_zrs(!out$ref )
-  out <- out[!extra_lvl,c("terms","var","lvl","n","ref")]
+  extra_lvl <- xtr_lvls(out$ref )
+  rtn <- out[setdiff(1:nrow(out),extra_lvl),
+             intersect(c("var","lvl","n","ref","Events","terms"),names(out))]
+  return(rtn)
 }
 
-xtr_zrs <- function(vec) {
-  # Create a logical vector where consecutive zeroes are marked
-  is_zero <- vec == 0
-  is_xtr_zero <- is_zero & c(FALSE, is_zero[-length(is_zero)])
-
-  return(is_xtr_zero & !c(FALSE, !is_xtr_zero[-length(is_xtr_zero)]))
+xtr_lvls <- function(vec){
+  nx_vec <- c(vec[-1],FALSE)
+  pr_vec <- c(FALSE,vec[-length(vec)])
+  cnst_T <- which(vec & nx_vec | vec & pr_vec)
+  return(cnst_T[c(0,diff(cnst_T))==1])
 }
 
 

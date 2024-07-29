@@ -239,24 +239,47 @@ crrRx<-function(f,data){
   covs<-removedollar(k)
   ff<-modelmatrix(f,data)
   m1<-cmprsk::crr(ff[[1]][,1],ff[[1]][,2],ff[[2]])
+  m2 <- summary(m1)
   m1$formula <- paste("~",covs)
   m1$terms <- covs
-  m1$coefficients <- m1$coef
-  covstr <- sapply(strsplit(covs,"[+]")[[1]],trimws)
+  covstr <- extract_terms(covs)
   attr(m1$terms,"term.labels") <- covstr
   names(covstr) <- covstr
   attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
 
-  m1$model <- na.omit(data[,c(colnames(ff[[1]]),covstr)])
+  vrs <- sapply(covstr, function(x){
+    strsplit(x,":")[[1]]
+  })
+  xvr <- unique(unlist(vrs))
+   m1$model <- na.omit(data[,c(colnames(ff[[1]]),intersect(names(data),xvr))])
   attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
                                   "~", covs, sep = "")
 
-
+  m1$coeffTbl <- m2$coef
+  m1$coefficients <- m1$coef
   m1$call<-as.call(list(f,data=argList$data))
-   m1$data <- data
+  # m1$data <- data
+  attr(m1,"class") <- "crrRx"
   return(m1)
 }
 
+extract_terms <- function(terms) {
+  # Initialize an empty vector to store the terms
+  ts <- c()
+  pp <- unlist(strsplit(terms, "\\+"))
+    for (part in pp) {
+    part <- trimws(part)
+    if (grepl("\\*", part)) {
+      vars <- unlist(strsplit(part, "\\*"))
+      var1 <- trimws(vars[1])
+      var2 <- trimws(vars[2])
+      ts <- c(ts, var1, var2, paste(var1, var2, sep = ":"))
+    } else {
+      ts <- c(ts, part)
+    }
+  }
+  return(ts)
+}
 
 #' Get covariate summary dataframe
 #'

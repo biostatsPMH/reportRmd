@@ -80,67 +80,33 @@ model.summary <- function(model,digits=2,CIwidth = 0.95, whichp = FALSE, ...){
   View(mcoeff)
 }
 
-# Extract model components ------------
-coeffSum <- function(model,CIwidth=.95,digits=2,vif=FALSE,whichp="level") {
-  CIwidth=CIwidth;digits=digits
-  UseMethod("coeffSum",model)
-}
+# Combind model components and variable levels and sample sizes
 
-coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
-  ms <- summary(model)$coefficients
-  ci <- as.data.frame(exp(confint(model,level = CIwidth)))
-  names(ci) <- c("lb","ub")
-  ci$terms <- rownames(ci)
-  rownames(ci) <- NULL
+m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level"){
+  m_coeff <- coeffSum(model,CIwidth,digits)
   lvls <- getVarLevels(model)
+  lvls$ord  <- 1:nrow(lvls)
 
-  cs <- data.frame(
-    terms=rownames(ms),
-    est=ms[,2],
-    p_value = ms[,4]
-  ) |> dplyr::left_join(lvls)
-  rownames(cs) <- NULL
-  cs <- dplyr::left_join(cs,ci)
-
-  status <- model$model[[1]]
-  xvars <- model$model[,-1,drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,n=nrow(xvars), var = v))
-    if (var_types[[v]] == "factor") {
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d2$Variable=paste0(v,d2$lvl)
-      print("d2 below")
-      print(d2)
-      d3 <- data.frame(Variable=v,n=nrow(xvars),var=v)
-      print("d3 below")
-      print(d3)
-      bind_rows(d3,d2)
-    }})
-  events_ss <- bind_rows(events_ss)
-  print(events_ss)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
-
-  events_ss$order <- 1:nrow(events_ss)
-  cs <- cs[-1, ]
-  cs <- merge(cs,events_ss, all= T, by = "Variable")
-  print("mereged cs below")
-  print(cs)
-
+  cs <- merge(lvls,m_coeff,all.x = T)
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
     names(VIF)[1] <- "var"
-    cs <- full_join(cs,VIF, by = join_by("Variable" == "var"))
+    cs <- full_join(cs,VIF)
   }
 
   if (whichp!="level"){
     global_p <- gp(model)
-    print(global_p)
+    #print(global_p)
     cs <- merge(cs,global_p,all = T)
+  }
+  cs <- cs[order(cs$ord),]
+  rownames(cs) <- NULL
+  # add variable header rows
+  cs$header <- NA
+  hdr_vars <- names(table(cs$var))[table(cs$var)>1]
+  for (v in hdr_vars){
+    hdr_rw <- sort(which(cs$var %in% v))[1]
+    cs <- dplyr::add_row(cs,.before = hdr_rw,var=v,header=TRUE)
   }
   for (var in unique(na.omit(cs[["var"]]))) {
     if (var %in% cs[["var"]] & length(which(cs[["var"]] == var)) == 3) {
@@ -149,527 +115,126 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="leve
       cs[max(which(cs[["var"]] == var)), "p_value"] <- NA
     }
   }
-  cs <- cs[order(cs$order), ]
   return(cs)
 }
 
-
-#   ms <- summary(model)$coefficients
-#   ci <- confint(model,level=CIwidth)
-#
-#   var_types <- attr(model$terms,"dataClasses")
-#   m_df <- model$model
-#   refs_df <- data.frame(terms = c(), var = c(), lvl = c())
-#   ss <-lapply(names(m_df)[-1],function(v){
-#     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
-#     if (var_types[[v]]=="factor") {
-#       tab <- table(m_df[[v]])
-#       for (lev in names(tab)) {
-#         if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
-#           df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
-#           refs_df <<- dplyr::bind_rows(refs_df, df)
-#         }
-#       }
-#       names(tab) <- paste0(v, names(tab))
-#       d <- data.frame(tab)
-#       names(d) <- c("Variable","n")
-#       return(d)
-#     }
-#   })
-#   ss <- dplyr::bind_rows(ss)
-#
-#   cs <- data.frame(
-#     Term=rownames(ms),
-#     est=ms[,1],
-#     p_value = ms[,4],
-#     lwr=ci[,1],
-#     upr=ci[,2]
-#   )
-#   rownames(cs) <- NULL
-#
-#   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-#   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
-#   cs <- cs[-1,]
-#   term_col <- cs[["Term"]]
-#   ex <- getVarLevels(model)
-#   ex <- dplyr::bind_rows(ex, refs_df)
-#   cs <- full_join(cs, ex, by = c("Term" = "terms"))
-#
-#   cs <- full_join(ss, cs, by = c("Variable" = "Term"))
-#   i = 1
-#   for (var in cs[["Variable"]]) {
-#     if (!(var %in% term_col)) {
-#       cs[i, "Est_CI"] <- "Reference"
-#     }
-#     i = i+1
-#   }
-#   old_cs <- cs
-#   for (v in setdiff(attr(model$terms, "term.labels"),cs[["Variable"]])) {
-#     first_t <- min(which(cs[["var"]] == v))
-#     var_row <- data.frame(Variable = v, n = sum(subset(cs, var == v)[["n"]]),
-#                           events = sum(subset(cs, var == v)[["events"]]),
-#                           var = v, lvl = "NA")
-#     if (first_t == 1) {
-#       cs <- dplyr::bind_rows(var_row, cs)
-#     }
-#     else {
-#       cs <- dplyr::bind_rows(cs[1:(first_t - 1), ], var_row, cs[- (1:(first_t - 1)), ])
-#     }
-#   }
-#   cs <- cs[, names(old_cs)]
-#
-#   if (vif) {
-#     VIF <- try(GVIF(model),silent = TRUE)
-#     if (!inherits(VIF,'try-error')) {
-#       if (nrow(VIF)>1){
-#         cs <- full_join(cs, VIF, by = c("Variable" = "Covariate"))
-#         # vifcol <- character(nrow(cs))
-#         # ind <- match(VIF$Covariate,cs$`Variable`)
-#
-#         # for (x in 1:length(ind)) vifcol[ind[x]] <- niceNum(VIF$VIF[x],digits = digits)
-#         # table <- cbind(table,VIF=vifcol)
-#       }
-#     } else warning('VIF could not be computed for the model.')
-#   }
-#
-#   return(cs)
-# }
-# coeffSum.geeglm <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
-#   ms <- summary(model)$coefficients
-#   if (grepl("log",model$family$link)){
-#     estFun <- exp
-#     ci_mult <- stats::qnorm(1 - (1 - CIwidth)/2)
-#   } else {
-#     estFun <- identity
-#     ci_mult <- stats::qt(1 - (1 - CIwidth)/2,model$df.residual)
-#   }
-#   ci <- cbind(estFun(ms[,1]-ci_mult*ms[,2]),estFun(ms[,1]+ci_mult*ms[,2]))
-#
-#   refs_df <- data.frame(terms = c(), var = c(), lvl = c())
-#   var_types <- attr(model$terms,"dataClasses")
-#   m_df <- model$model
-#   ss <-lapply(names(m_df)[-1],function(v){
-#     if (var_types[[v]]=="numeric") return(data.frame(Variable=v,n=nrow(m_df)))
-#     if (var_types[[v]]=="factor") {
-#       tab <- table(m_df[[v]])
-#       for (lev in names(tab)) {
-#         if (!(paste0(v, lev) %in% attr(model$coefficients, "names"))) {
-#           df <- data.frame(terms = paste0(v, lev), var = v, lvl = lev)
-#           refs_df <<- dplyr::bind_rows(refs_df, df)
-#         }
-#       }
-#       names(tab) <- paste0(v, names(tab))
-#       d <- data.frame(tab)
-#       names(d) <- c("Variable","n")
-#       return(d)
-#     }
-#   })
-#   ss <- dplyr::bind_rows(ss)
-#
-#   if (model$family[1]=="binomial"){
-#     events <- lapply(names(m_df)[-1],function(v){
-#       if (var_types[[v]]=="numeric") return(data.frame(Variable=v,events=sum(model$y)))
-#       if (var_types[[v]]=="factor") {
-#         tab <- table(model$y,m_df[[v]])
-#         colnames(tab) <- paste0(v, names(tab[1,]))
-#         d <- data.frame(tab) |>
-#           dplyr::filter(Var1==1) |>
-#           dplyr::select(-Var1)
-#         names(d) <- c("Variable","events")
-#         return(d)
-#       }
-#     })
-#     events <- dplyr::bind_rows(events)
-#     counts <- merge(ss, events, sort = FALSE)
-#   }
-#   else {
-#     counts <- ss
-#   }
-#   cs <- data.frame(
-#     Term=rownames(ms),
-#     est=estFun(ms[,1]),
-#     p_value = ms[,4],
-#     lwr=ci[,1],
-#     upr=ci[,2]
-#   )
-#   rownames(cs) <- NULL
-#
-#   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-#   beta <- ifelse(model$family$family=="gaussian","Estimate",
-#                  ifelse(model$family$family=="binomial","OR",
-#                         ifelse(model$family$family=="poisson","RR","GEE Estimate")))
-#   attr(cs,'estLabel') <- betaWithCI(beta,CIwidth)
-#
-#   cs <- cs[-1,]
-#   term_col <- cs[["Term"]]
-#
-#   ex <- getVarLevels(model)
-#   ex <- dplyr::bind_rows(ex, refs_df)
-#   cs <- full_join(cs, ex, by = c("Term" = "terms"))
-#
-#
-#   cs <- full_join(counts, cs, by = c("Variable" = "Term"))
-#   #adding reference levels in:
-#   i = 1
-#   for (var in cs[["Variable"]]) {
-#     if (!(var %in% term_col)) {
-#       cs[i, "Est_CI"] <- "Reference"
-#     }
-#     i = i+1
-#   }
-#   return(cs)
-#}
-
-  cs <- cs[order(cs$order), ]
-  cols_to_keep <- c()
-  if (vif) {
-    cols_to_keep <- c(cols_to_keep, "VIF")
-  }
-  cs <- cs[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
-  return(cs)
+# Extract model components ------------
+coeffSum <- function(model,CIwidth=.95,digits=2) {
+  CIwidth=CIwidth;digits=digits
+  UseMethod("coeffSum",model)
 }
 
-coeffSum.glm <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
+coeffSum.default <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
-  ci <- exp(confint(model,level = CIwidth))
-
-  status <- model$model[[1]]
-  xvars <- model$model[,-1,drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,events=sum(status),n=nrow(xvars), var = v))
-    if (var_types[[v]] == "factor") {
-      d1 <- data.frame(table(status,xvars[[v]]))  |>
-        dplyr::filter(status==1)   |>
-        dplyr::select(-status)
-      names(d1) <- c("lvl","events")
-      d1$var=v
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d <- merge(d1,d2)
-      d$Variable=paste0(v,d$lvl)
-      d3 <- data.frame(Variable=v,events=sum(status),n=nrow(xvars),var=v)
-      bind_rows(d3,d)
-    }})
-  events_ss <- bind_rows(events_ss)
-
+  ci <- as.data.frame(confint(model,level = CIwidth))
+  names(ci) <- c("lwr","upr")
+  ci$terms <- rownames(ci)
+  rownames(ci) <- NULL
   cs <- data.frame(
-    Variable=rownames(ms),
+    terms=rownames(ms),
     est=ms[,2],
-    p_value = ms[,4],
-    lwr = ci[,1],
-    upr = ci[,2]
+    p_value = ms[,4]
   )
-  rownames(cs) <- NULL
+  cs <- merge(cs,ci,all.x = T)
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
-  cs <- cs[-1,]
-  events_ss$order <- 1:nrow(events_ss)
-
-  cs <- full_join(cs,events_ss,by = "Variable")
-
-  if (vif){
-    VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- full_join(cs,VIF, by = join_by("Variable" == "var"))
+  if (inherits(model,"coxph")){
+    attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
+  } else {
+    attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   }
-
-  if (whichp!="level"){
-    global_p <- gp(model)
-    cs <- merge(cs,global_p,all = T)
-  }
-  cs <- cs[order(cs$order), ]
-  cols_to_keep <- c()
-  if (vif) {
-    cols_to_keep <- c(cols_to_keep, "VIF")
-  }
-  if ("events" %in% colnames(mcoeff)) {
-    cols_to_keep <- c(cols_to_keep, "events")
-  }
-  cs <- cs[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
-  cols_to_keep <- c()
-  if (vif) {
-    cols_to_keep <- c(cols_to_keep, "VIF")
-  }
-  cs <- cs[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
 
   return(cs)
 }
 
-coeffSum.negbin <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
-  ms <- summary(model)$coefficients
-  ci <- exp(confint(model,level = CIwidth))
-
-  status <- model$model[[1]]
-  xvars <- model$model[,-1,drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,n=nrow(xvars), var = v))
-    if (var_types[[v]] == "factor") {
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d2$Variable=paste0(v,d2$lvl)
-      d3 <- data.frame(Variable=v,n=nrow(xvars),var=v)
-      bind_rows(d3,d2)
-    }})
-  events_ss <- bind_rows(events_ss)
+coeffSum.crrRx <- function(model,CIwidth=.95,digits=2) {
+  ms <- model$coeffTbl
+  ci <- try(exp(confint(model,level = CIwidth)),silent = T)
+  if (!inherits(ci,"try-error")){
+    if (!inherits(ci,"matrix")) {
+      ci <- matrix(ci,ncol=2)
+      rownames(ci) <- rownames(ms)[1]
+    }
+    ci <- data.frame(ci)
+    names(ci) <- c("lwr","upr")
+    ci$terms <- rownames(ci)
+    rownames(ci) <- NULL
+  }   else {
+    Z_mult = qnorm(1 - (1 - CIwidth)/2)
+    ci <- data.frame(lwr=exp(ms[, 1] - Z_mult * ms[, 3]),
+                     upr=exp(ms[, 1] + Z_mult * ms[, 3]))
+    ci$terms <- rownames(ci)
+  }
   cs <- data.frame(
-    Variable=rownames(ms),
+    terms=rownames(ms),
     est=ms[,2],
-    p_value = ms[,4],
-    lwr = ci[,1],
-    upr = ci[,2]
+    p_value = ms[,4]
   )
-  rownames(cs) <- NULL
+  cs <- merge(cs,ci,all.x = T)
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
-
-  events_ss$order <- 1:nrow(events_ss)
-  cs <- cs[-1, ]
-  cs <- merge(cs,events_ss, all= T, by = "Variable")
-
-  if (vif){
-    VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- full_join(cs,VIF, by = join_by("Variable" == "var"))
-  }
-
-  if (whichp!="level"){
-    global_p <- gp(model)
-    cs <- merge(cs,global_p,all = T)
-  }
-  cs <- cs[order(cs$order), ]
-  cols_to_keep <- c()
-  if (vif) {
-    cols_to_keep <- c(cols_to_keep, "VIF")
-  }
-  cs <- cs[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
-
   return(cs)
 }
 
-coeffSum.coxph <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
+coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
-  ci <- exp(confint(model,level = CIwidth))
-
-  status <- model$model[[1]]
-  xvars <- model$model[,-1,drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  if (!is.null(model$model)) {
-    events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,events=sum(status),n=nrow(xvars), var = v))
-    if (var_types[[v]] == "factor") {
-      d1 <- data.frame(table(status,xvars[[v]]))  |>
-        dplyr::filter(status==1)   |>
-        dplyr::select(-status)
-      names(d1) <- c("lvl","events")
-      d1$var=v
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d <- merge(d1,d2)
-      d$Variable=paste0(v,d$lvl)
-      d3 <- data.frame(Variable=v,events=sum(status),n=nrow(xvars),var=v)
-      merge(d3,d,all = T)
-    }})
+  if (model$family$link %in% c("logit","log")){
+    ci <- as.data.frame(exp(confint(model,level = CIwidth)))
+  } else {
+    ci <- as.data.frame(confint(model,level = CIwidth))
   }
+  names(ci) <- c("lwr","upr")
+  ci$terms <- rownames(ci)
+  rownames(ci) <- NULL
 
   cs <- data.frame(
-    Variable=rownames(ms),
+    terms=rownames(ms),
     est=ms[,2],
-    p_value = ms[,5],
-    lwr = ci[,1],
-    upr = ci[,2]
+    p_value = ms[,4]
   )
-  rownames(cs) <- NULL
+
+  cs <- merge(cs,ci,all.x = T)
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
-
-  cs <- merge(cs,events_ss,all = T)
-
-  if (vif){
-    VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- merge(cs,VIF)
-  }
-
-  if (whichp!="level"){
-    global_p <- gp(model)
-    cs <- merge(cs,global_p,all = T)
-  }
-
-  return(cs)
-}
-
-coeffSum.crr <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
-  out <- summary(model, conf.int = CIwidth)
-  ms <- out$coef
-  ci <- out$conf.int
-
-  status <- model$model[[2]]
-  xvars <- model$model[,-(1:2),drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,events=sum(status),n=nrow(xvars)))
-    if (var_types[[v]] == "factor") {
-      d1 <- data.frame(table(status,xvars[[v]]))  |>
-        dplyr::filter(status==1)   |>
-        dplyr::select(-status)
-      names(d1) <- c("lvl","events")
-      d1$var=v
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d <- merge(d1,d2)
-      d$Variable=paste0(v,d$lvl)
-      d3 <- data.frame(Variable=v,events=sum(status),n=nrow(xvars),var=v)
-      merge(d3,d,all = T)
-    }})
-
-  cs <- data.frame(
-    Variable=rownames(ms),
-    est=ms[,1],
-    p_value = ms[,5],
-    lwr = ci[,3],
-    upr = ci[,4]
-  )
-  rownames(cs) <- NULL
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
-
-  cs <- merge(cs,events_ss,all = T)
-
-  if (vif){
-    df <- data.frame(y=stats::rnorm(nrow(model$model),0,2))
-    df <- cbind(df,xvars)
-    mvif <- lm(y~.,data=df)
-    VIF <- try(GVIF(mvif),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- merge(cs,VIF)
-  }
-
-  if (whichp!="level"){
-    global_p <- gp(model)
-    cs <- merge(cs,global_p,all = T)
+  if (model$family$link == "logit"){
+    attr(cs,'estLabel') <- betaWithCI("OR",CIwidth)
+  } else if (model$family$link == "log"){
+    attr(cs,'estLabel') <- betaWithCI("RR",CIwidth)
+  } else {
+    attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   }
   return(cs)
 }
 
-coeffSum.lme <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
-  ms <- summary(model)$tTable
-  t_mult <- qt(1 - (1 - CIwidth)/2,ms[,3])
-
-  status <- model$model[[1]]
-  xvars <- model$model[,-1,drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,n=nrow(xvars), var = v))
-    if (var_types[[v]] == "factor") {
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d2$Variable=paste0(v,d2$lvl)
-      d3 <- data.frame(Variable=v,n=nrow(xvars),var=v)
-      bind_rows(d3,d2)
-    }})
-  events_ss <- bind_rows(events_ss)
-  cs <- data.frame(
-    Term=rownames(ms),
-    est=ms[,1],
-    p_value = ms[,5],
-    lwr = ms[,1]-t_mult*ms[,2],
-    upr = ms[,1]+t_mult*ms[,2]
-  )
-  rownames(cs) <- NULL
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
-
-  events_ss$order <- 1:nrow(events_ss)
-  cs <- cs[-1, ]
-  cs <- merge(cs,events_ss, all= T, by = "Variable")
-
-  if (vif){
-    VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- full_join(cs,VIF, by = join_by("Variable" == "var"))
-  }
-
-  if (whichp!="level"){
-    global_p <- gp(model)
-    print(global_p)
-    cs <- merge(cs,global_p,all = T)
-  }
-
-  cs <- cs[order(cs$order), ]
-  cols_to_keep <- c()
-  if (vif) {
-    cols_to_keep <- c(cols_to_keep, "VIF")
-  }
-  cs <- cs[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
-  return(cs)
-}
-
-coeffSum.polr <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level") {
+coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
-  ci <- matrix(exp(confint(model,level=CIwidth)),ncol = 2)
-  print(ci)
-
-  status <- model$model[[1]]
-  xvars <- model$model[,-1,drop=FALSE]
-  var_types <- attr(model$terms, "dataClasses")
-
-  events_ss <- lapply(names(xvars),function(v){
-    if (var_types[v] == "numeric") return(data.frame(Variable=v,n=nrow(xvars), var = v))
-    if (var_types[[v]] == "factor") {
-      d2 <-data.frame(table(xvars[[v]]))
-      names(d2) <- c("lvl","n")
-      d2$var=v
-      d2$Variable=paste0(v,d2$lvl)
-      d3 <- data.frame(Variable=v,n=nrow(xvars),var=v)
-      bind_rows(d3,d2)
-    }})
-  events_ss <- bind_rows(events_ss)
+  ci <- try(exp(confint(model,level = CIwidth)),silent = T)
+  if (!inherits(ci,"try-error")){
+    if (!inherits(ci,"matrix")) {
+      ci <- matrix(ci,ncol=2)
+      rownames(ci) <- rownames(ms)[1]
+    }
+    ci <- data.frame(ci)
+    names(ci) <- c("lwr","upr")
+    ci$terms <- rownames(ci)
+    rownames(ci) <- NULL
+  }   else {
+    m <- summary(model)$coefficients
+    Z_mult = qnorm(1 - (1 - CIwidth)/2)
+    ci <- data.frame(lwr=exp(m[, 1] - Z_mult * m[, 2]),
+                     upr=exp(m[, 1] + Z_mult * m[, 2]))
+    ci$terms <- rownames(ci)
+  }
+  pvalues = stats::pnorm(abs(ms[, "Value"]/ms[,"Std. Error"]), lower.tail = FALSE) * 2
 
   cs <- data.frame(
-    Variable=rownames(ms),
-    est=exp(ms[,1]),
-    p_value = stats::pt(abs(ms[,3]),model$df.residual, lower.tail = FALSE)*2,
-    lwr=ci[,1],
-    upr=ci[,2]
+    terms=rownames(ms),
+    est=ms[,2],
+    p_value = pvalues
   )
-  rownames(cs) <- NULL
+
+  cs <- merge(cs,ci,all.x = T)
+  cs <- cs[!grepl("[|]",cs$terms),]
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  cs <- cs[cs$Variable %in% names(model$coefficients),]
   attr(cs,'estLabel') <- betaWithCI("OR",CIwidth)
-
-  events_ss$order <- 1:nrow(events_ss)
-  cs <- merge(cs,events_ss, all= T, by = "Variable")
-
-  if (vif){
-    VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- full_join(cs,VIF, by = join_by("Variable" == "var"))
-  }
-
-  if (whichp!="level"){
-    global_p <- gp(model)
-    print(global_p)
-    cs <- merge(cs,global_p,all = T)
-  }
-
-  cs <- cs[order(cs$order), ]
-  cols_to_keep <- c()
-  if (vif) {
-    cols_to_keep <- c(cols_to_keep, "VIF")
-  }
-  cs <- cs[, c("Variable", "Est_CI", "p_value", "n", cols_to_keep, "var", "lvl", "est", "lwr", "upr", "order")]
   return(cs)
 }
 
@@ -680,11 +245,58 @@ get_model_data <- function(model){
 }
 
 get_model_data.default <- function(model){
+  return(NULL)
+}
+get_model_data.lm <- function(model){
   return(model$model)
 }
+get_model_data.crrRx <- function(model){
+  return(model$model)
+}
+get_model_data.polr <- function(model){
+  return(model$model)
+}
+get_model_data.coxph <- function(model){
+  df <- try(stats::model.frame(model$call$formula,
+                               eval(parse(text = paste("data=",
+                                                       deparse(model$call$data))))), silent = TRUE)
+  if (inherits(df,'try-error')) {
+    warning ("Model data could not be extracted")
+    return(NULL)
+  }
+  return(df)
+}
+
 # may need to add other methods
 
+# Extract event counts from a fitted model ---------------
+get_event_counts <- function(model){
+  UseMethod("get_event_counts",model)
+}
 
+get_event_counts.default <- function(model){
+  return(NULL)
+}
+get_event_counts.coxph <- function(model){
+  md <- get_model_data(model)
+  y <- md[[1]]
+  if (ncol(y)==2) return(y[,2])
+  if (any(grepl("[+]",y))){
+    st <- ifelse(grepl("[+]",y),0,1)
+    return(st)
+  }
+  return(NULL)
+}
+get_event_counts.crrRx <- function(model){
+  md <- get_model_data(model)
+  if (is.null(md)) return(NULL)
+  return(md[[2]])
+}
+get_event_counts.glm <- function(model){
+  if (model$family$family=="binomial"|model$family$family=="quasibinomial"){
+    return(model$y)
+  }
+}
 # Calculate a global p-value for categorical variables --------
 gp <- function(model) {
   UseMethod("gp", model)
@@ -692,7 +304,7 @@ gp <- function(model) {
 gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test = "Chisq")
-  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
   attr(gp,"global_p") <-"LRT"
   return(gp)
@@ -702,16 +314,16 @@ gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
 gp.coxph <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="Chisq")
-  gp <- data.frame(Variable=terms,
+  gp <- data.frame(var=terms,
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
   attr(gp,"global_p") <-"LRT"
   return(gp)
 }
 
-gp.crr <- function(model,CIwidth=.95,digits=2) {
+gp.crrRx <- function(model,CIwidth=.95,digits=2) {
   terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
   terms <- sapply(terms,trimws)
-  gp_vals <- data.frame(Variable=terms,
+  gp_vals <- data.frame(var=terms,
                         global_p = NA)
   rownames(gp_vals) <- NULL
   if (length(terms)>1){
@@ -725,7 +337,7 @@ gp.crr <- function(model,CIwidth=.95,digits=2) {
       degf <- length(grep(t,names(model$coef)))
       gp <- pchisq(2*(model$loglik-m2$loglik),degf)
     } else gp <- NA
-    gp_vals$global_p[which(gp_vals$Variable==t)] <- gp
+    gp_vals$global_p[which(gp_vals$var==t)] <- gp
     attr(gp_vals,"global_p") <-"LRT"
   }}
   return(gp_vals)
@@ -734,7 +346,7 @@ gp.crr <- function(model,CIwidth=.95,digits=2) {
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="LRT")
-  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
   attr(gp,"global_p") <-"LRT"
   return(gp)
@@ -742,7 +354,7 @@ gp.glm <- function(model,CIwidth=.95,digits=2) {
 gp.lme <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(update(model,method="ML"),scope=terms,test = "Chisq")
-  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
   attr(gp,"global_p") <-"LRT"
   return(gp)
@@ -751,7 +363,7 @@ gp.lme <- function(model,CIwidth=.95,digits=2) {
 gp.polr <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- drop1(model,scope=terms,test="ChiSq")
-  gp <- data.frame(Variable=rownames(globalpvalue)[-1],
+  gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
   attr(gp,"global_p") <-"LRT"
   return(gp)
@@ -760,7 +372,7 @@ gp.polr <- function(model,CIwidth=.95,digits=2) {
 gp.gee <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   terms <- sapply(terms,trimws)
-  gp_vals <- data.frame(Variable=terms,
+  gp_vals <- data.frame(var=terms,
                         global_p = NA)
   rownames(gp_vals) <- NULL
   for (t in terms){
@@ -770,7 +382,7 @@ gp.gee <- function(model,CIwidth=.95,digits=2) {
                              Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
               silent = T)
     if (inherits(gp,"try-error")) gp <- NA
-    gp_vals$global_p[which(gp_vals$Variable==t)] <- gp
+    gp_vals$global_p[which(gp_vals$var==t)] <- gp
   }
   attr(gp_vals,"global_p") <-"Wald test"
   return(gp_vals)
