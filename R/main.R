@@ -239,24 +239,47 @@ crrRx<-function(f,data){
   covs<-removedollar(k)
   ff<-modelmatrix(f,data)
   m1<-cmprsk::crr(ff[[1]][,1],ff[[1]][,2],ff[[2]])
+  m2 <- summary(m1)
   m1$formula <- paste("~",covs)
   m1$terms <- covs
-  m1$coefficients <- m1$coef
-  covstr <- sapply(strsplit(covs,"[+]")[[1]],trimws)
+  covstr <- extract_terms(covs)
   attr(m1$terms,"term.labels") <- covstr
   names(covstr) <- covstr
   attr(m1$terms,"dataClasses") <- sapply(covstr,function(x)class(data[[x]]))
 
-  m1$model <- na.omit(data[,c(colnames(ff[[1]]),covs)])
+  vrs <- sapply(covstr, function(x){
+    strsplit(x,":")[[1]]
+  })
+  xvr <- unique(unlist(vrs))
+   m1$model <- na.omit(data[,c(colnames(ff[[1]]),intersect(names(data),xvr))])
   attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
                                   "~", covs, sep = "")
 
-
+  m1$coeffTbl <- m2$coef
+  m1$coefficients <- m1$coef
   m1$call<-as.call(list(f,data=argList$data))
-   m1$data <- data
+  # m1$data <- data
+  attr(m1,"class") <- "crrRx"
   return(m1)
 }
 
+extract_terms <- function(terms) {
+  # Initialize an empty vector to store the terms
+  ts <- c()
+  pp <- unlist(strsplit(terms, "\\+"))
+    for (part in pp) {
+    part <- trimws(part)
+    if (grepl("\\*", part)) {
+      vars <- unlist(strsplit(part, "\\*"))
+      var1 <- trimws(vars[1])
+      var2 <- trimws(vars[2])
+      ts <- c(ts, var1, var2, paste(var1, var2, sep = ":"))
+    } else {
+      ts <- c(ts, part)
+    }
+  }
+  return(ts)
+}
 
 #' Get covariate summary dataframe
 #'
@@ -5947,7 +5970,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 
       p <- cowplot::plot_grid(gA, gC, nrow = 2, ncol = 1, rel_heights = c(1,rel.height.table))
     }
-    return(p)
+    if (returns){
+      return(list(plot=gA,table=gC))
+    } else     return(p)
   }
 
   #' Additional parameters passed to ggkmcif2
@@ -5960,10 +5985,10 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #'   "logit". Only enough of the string to uniquely identify it is necessary.
   #'   The first option causes confidence intervals not to be generated. The
   #'   second causes the standard intervals curve +- k *se(curve), where k is
-  #'   determined from conf.int. The log option calculates intervals based on the
-  #'   cumulative hazard or log(survival). The log-log option bases the intervals
-  #'   on the log hazard or log(-log(survival)), and the logit option on
-  #'   log(survival/(1-survival)).
+  #'   determined from conf.int. The log option calculates intervals based on
+  #'   the cumulative hazard or log(survival). The log-log option bases the
+  #'   intervals on the log hazard or log(-log(survival)), and the logit option
+  #'   on log(survival/(1-survival)).
   #' @param table.height Relative height of risk table (0-1)
   #' @param main String corresponding to main title. When NULL uses Kaplan-Meier
   #'   Plot s, and "Cumulative Incidence Plot for CIF"
@@ -5977,18 +6002,18 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #' @param strataname.table String of the covariate name for the number at risk
   #'   table default is  nicename(cov
   #'
-  #' @param median.text boolean to specify if you want the median values added to
-  #'   the legend (or as added text if there are no covariates), for KM only
-  #' @param median.lines boolean to specify if you want the median values added as
-  #'   lines to the plot, for KM only
-  #' @param median.CI boolean to specify if you want the 95\% confidence interval
-  #'   with the median text (Only for KM)
-  #' @param set.time.text string for the text to add survival at a specified time
-  #'   (eg. year OS)
+  #' @param median.text boolean to specify if you want the median values added
+  #'   to the legend (or as added text if there are no covariates), for KM only
+  #' @param median.lines boolean to specify if you want the median values added
+  #'   as lines to the plot, for KM only
+  #' @param median.CI boolean to specify if you want the 95\% confidence
+  #'   interval with the median text (Only for KM)
+  #' @param set.time.text string for the text to add survival at a specified
+  #'   time (eg. year OS)
   #' @param set.time.line boolean to specify if you want the survival added as
   #'   lines to the plot at a specified point
-  #' @param set.time Numeric values of the specific time of interest, default is 5
-  #'   (Multiple values can be entered)
+  #' @param set.time Numeric values of the specific time of interest, default is
+  #'   5 (Multiple values can be entered)
   #' @param set.time.CI boolean to specify if you want the 95\% confidence
   #'   interval with the set time text
   #'
@@ -6005,19 +6030,19 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #' @param median.pos vector of length 2 corresponding to the median position
   #'   (Only when there are no covariates)
   #' @param median.lsize line size of the median lines
-  #' @param set.size size of the survival at a set time text (Only when there are
-  #'   no covariates)
+  #' @param set.size size of the survival at a set time text (Only when there
+  #'   are no covariates)
   #' @param set.pos  vector of length 2 corresponding to the survival at a set
   #'   point position (Only when there are no covariates)
   #' @param set.lsize line size of the survival at set points
-  #' @param ylim vector of length 2 corresponding to limits of y-axis. Default to
-  #'   NULL
+  #' @param ylim vector of length 2 corresponding to limits of y-axis. Default
+  #'   to NULL
   #' @param linetype vector of line types; default is solid for all lines
-  #' @param xlim  vector of length 2 corresponding to limits of x-axis. Default to
-  #'   NULL
-  #' @param legend.pos Can be either a string corresponding to the legend position
-  #'   ("left","top", "right", "bottom", "none") or a vector of length 2
-  #'   corresponding to the legend position (uses normalized units (ie the
+  #' @param xlim  vector of length 2 corresponding to limits of x-axis. Default
+  #'   to NULL
+  #' @param legend.pos Can be either a string corresponding to the legend
+  #'   position ("left","top", "right", "bottom", "none") or a vector of length
+  #'   2 corresponding to the legend position (uses normalized units (ie the
   #'   c(0.5,0.5) is the middle of the plot))
   #' @param pval.pos  vector of length 2 corresponding to the p-value position
   #' @param event String specifying if the event should be mapped to the colour,
@@ -6035,8 +6060,10 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #' @param median.digits Number of digits printed of the median pvalue
   #' @param set.time.digits Number of digits printed of the probability at a
   #'   specified time
-  #' @param print.n.missing Logical, should the number of missing be shown !Needs
-  #'   to be checked
+  #' @param print.n.missing Logical, should the number of missing be shown
+  #'   !Needs to be checked
+  #' @param returns Logical, if TRUE a list contain the plot and at risk table
+  #'   is returned
   #'
   #' @name ggkmcif2Parameters
   #' @keywords internal
@@ -6054,6 +6081,6 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                                  event = c("col", "linetype"), flip.CIF = FALSE,
                                  cut = NULL, eventlabs = NULL, event.name = NULL, Numbers_at_risk_text = "Number at risk",
                                  HR.digits = 2, HR.pval.digits = 3, pval.digits = 3, median.digits = 3,
-                                 set.time.digits = 3, print.n.missing = TRUE){
+                                 set.time.digits = 3, print.n.missing = TRUE,returns=FALSE){
     return(as.list(environment(), all=TRUE))
   }

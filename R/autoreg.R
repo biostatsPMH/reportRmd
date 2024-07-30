@@ -5,7 +5,13 @@ data(sysdata, envir=environment())
 derive_type <- function(data,response,gee,type,family) {
 
   if (!is.null(type)){
-    merge(data.frame(type=type),uvmodels,all.x = T)
+    if (!type %in% uvmodels$type ) stop(paste("Type must be one of ",
+                                              paste0(sort(unique(uvmodels$type)),collapse = ", ")))
+    tp_merge <- merge(data.frame(type=type,family=family,gee=gee),uvmodels,all.x = T)
+    if (nrow(tp_merge)>1) stop("Can not detect regression type, try specifying family")
+    if (is.na(tp_merge$autoreg_class)){
+      stop("Can not detect valid regression type")
+    } else (return(tp_merge$autoreg_class))
   }
   if (length(response)==2){
     status_var <- data[[response[2]]]
@@ -107,8 +113,6 @@ autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,o
   } else{
     eval(parse(text = paste('m2 <- survival::coxph(formula=as.formula(',f,'),id =',id,', data = data)')))
   }
-  # Clarina - I've just included the status and the xvar
-  m2$model <- data[,c(response[2],x_var)]
   return(m2)
 }
 
@@ -116,10 +120,6 @@ autoreg.rm_crr <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
   eval(parse(text = paste('m2 <- crrRx(',paste(paste(response,collapse = "+"),
                                                "~", x_var, sep = ""),
                           ',data = data)')))
-  # Maybe we don't need this?
-  # m2$data <- data
-  # And we just have this ?
-  # m2$model <- data[,c(response[2],x_var)]
   return(m2)
 }
 

@@ -1,0 +1,200 @@
+# Testing for getVarLevels and coeffSum ------------
+
+
+## Linear -----
+uv_lm <- lm(age~sex,data=pembrolizumab)
+coeffSum(uv_lm)
+getVarLevels(uv_lm)
+m_summary(uv_lm)
+
+auto_lm <- autoreg.rm_lm("age",data=pembrolizumab,"sex")
+coeffSum(auto_lm)
+getVarLevels(auto_lm)
+m_summary(auto_lm)
+
+mv_lm <- lm(pdl1 ~ age+sex+cohort,data = pembrolizumab)
+gp(mv_lm)
+coeffSum(mv_lm)
+getVarLevels(mv_lm)
+m_summary(mv_lm)
+mv_lm2 <- lm(pdl1 ~ age*sex+sex*cohort+age*l_size,data = pembrolizumab)
+gp(mv_lm2)
+coeffSum(mv_lm2)
+getVarLevels(mv_lm2)
+m_summary(mv_lm2)
+
+## Binomial -----
+uv_binom <- glm(formula=as.formula(orr~sex),data=pembrolizumab,family="binomial")
+coeffSum(uv_binom)
+getVarLevels(uv_binom)
+m_summary(uv_binom)
+
+auto_binom <- autoreg.rm_glm("orr",data=pembrolizumab,"sex",family="binomial")
+coeffSum(auto_binom)
+getVarLevels(auto_binom)
+m_summary(auto_binom)
+
+mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
+gp(mv_binom)
+coeffSum(mv_binom)
+getVarLevels(mv_binom)
+m_summary(mv_binom)
+
+mv_binom2 <- glm(orr~age:sex+cohort,family = 'binomial',data = pembrolizumab)
+gp(mv_binom2)
+coeffSum(mv_binom2)
+getVarLevels(mv_binom2)
+m_summary(mv_binom2)
+
+## Poisson -----
+pembrolizumab$int_var <- rpois(n=nrow(pembrolizumab),lambda = 1)
+uv_pois <- glm(formula=as.formula(int_var~age),data=pembrolizumab, family="poisson",offset=NULL)
+coeffSum(uv_pois)
+getVarLevels(uv_pois)
+m_summary(uv_pois)
+
+auto_pois <- autoreg.rm_glm("int_var",data=pembrolizumab,"age",family="poisson",offset=NULL)
+coeffSum(auto_pois)
+getVarLevels(auto_pois)
+m_summary(auto_pois)
+
+mv_pois <- glm(formula = int_var ~ age+sex+cohort, family = poisson, data = pembrolizumab)
+gp(mv_pois)
+coeffSum(mv_pois)
+getVarLevels(mv_pois)
+m_summary(mv_pois)
+
+mv_pois2 <-glm(formula = int_var ~ age+sex:cohort, family = poisson, data = pembrolizumab)
+gp(mv_pois2)
+coeffSum(mv_pois2)
+getVarLevels(mv_pois2)
+m_summary(mv_pois2)
+
+## Negative Binomial -----
+uv_negbin <- MASS::glm.nb(formula=as.formula(int_var~sex),data=pembrolizumab)
+coeffSum(uv_negbin)
+getVarLevels(uv_negbin)
+m_summary(uv_negbin)
+
+auto_negbin <- autoreg.rm_negbin("int_var",data=pembrolizumab,"sex",offset=NULL)
+coeffSum(auto_negbin)
+getVarLevels(auto_negbin)
+m_summary(auto_negbin)
+
+mv_negbin <- MASS::glm.nb(int_var~age+sex+cohort,data=pembrolizumab,link=log)
+gp(mv_negbin)
+coeffSum(mv_negbin)
+getVarLevels(mv_negbin)
+m_summary(mv_negbin)
+
+
+mv_negbin2 <- MASS::glm.nb(int_var~age:sex+cohort,data=pembrolizumab,link=log)
+gp(mv_negbin2)
+coeffSum(mv_negbin2)
+getVarLevels(mv_negbin2)
+m_summary(mv_negbin2)
+
+## Ordinal -----
+pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$int_var),ordered = T)
+
+uv_ord <- MASS::polr(formula=as.formula(ord_var~sex),data=pembrolizumab)
+coeffSum(uv_ord)
+getVarLevels(uv_ord)
+m_summary(uv_ord)
+
+auto_ord <- autoreg.rm_ordinal("ord_var",data=pembrolizumab, "sex")
+coeffSum(auto_ord)
+getVarLevels(auto_ord)
+m_summary(auto_ord)
+
+mv_ord <- MASS::polr(ord_var ~ age+ sex+cohort, data = pembrolizumab, Hess = TRUE,
+                     method = "logistic")
+gp(mv_ord)
+coeffSum(mv_ord)
+getVarLevels(mv_ord)
+m_summary(mv_ord)
+
+
+mv_ord2 <- MASS::polr(ord_var ~ age:sex+cohort, data = pembrolizumab, Hess = TRUE,
+                      method = "logistic")
+gp(mv_ord2)
+coeffSum(mv_ord2)
+getVarLevels(mv_ord2)
+m_summary(mv_ord2)
+
+## Cox PH -----
+uv_cox <- coxph(Surv(os_time, os_status) ~ sex, data = pembrolizumab)
+coeffSum(uv_cox)
+getVarLevels(uv_cox)
+m_summary(uv_cox)
+
+auto_cox <- autoreg.rm_coxph(response=c("os_time","os_status"),data=pembrolizumab,"sex",family=NULL,offset=NULL,id=NULL,strata = "")
+coeffSum(auto_cox)
+getVarLevels(auto_cox)
+m_summary(auto_cox)
+
+mv_cox <- survival::coxph(Surv(os_time,os_status) ~ age+sex+cohort, data = pembrolizumab)
+gp(mv_cox)
+coeffSum(mv_cox)
+getVarLevels(mv_cox)
+m_summary(mv_cox)
+
+mv_cox2 <- survival::coxph(Surv(os_time,os_status) ~ age:sex+cohort, data = pembrolizumab)
+gp(mv_cox2)
+coeffSum(mv_cox2)
+getVarLevels(mv_cox2)
+m_summary(mv_cox2)
+
+## CRR -----
+pembrolizumab$os_status2 <- pembrolizumab$os_status
+pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
+
+uv_crr <- crrRx(as.formula('os_time+os_status2~ cohort'),data=pembrolizumab)
+
+coeffSum(uv_crr)
+getVarLevels(uv_crr)
+m_summary(uv_crr)
+
+auto_crr <- autoreg.rm_crr(response=c("os_time","os_status2"), data=pembrolizumab, "sex")
+coeffSum(auto_crr)
+getVarLevels(auto_crr)
+m_summary(auto_crr)
+
+mv_crr <-crrRx(as.formula('os_time+os_status2~age+sex+cohort'),data=pembrolizumab)
+gp(mv_crr)
+coeffSum(mv_crr)
+getVarLevels(mv_crr)
+m_summary(mv_crr)
+
+mv_crr2 <-crrRx(as.formula('os_time+os_status2~age*sex+age:cohort'),data=pembrolizumab)
+gp(mv_crr2)
+coeffSum(mv_crr2)
+getVarLevels(mv_crr2)
+m_summary(mv_crr2)
+
+## GEE  (NEED MORE MODELS HERE) -----
+uv_gee <- geepack::geeglm(formula=as.formula(orr~sex),data=pembrolizumab)
+coeffSum(uv_gee)
+getVarLevels(uv_gee)
+m_summary(uv_gee)
+
+auto_gee <- autoreg.rm_gee("orr",data=pembrolizumab, "sex")
+coeffSum(auto_gee)
+getVarLevels(auto_gee)
+
+pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
+
+mv_gee <- geepack::geeglm(orr2 ~ age+sex+cohort, family = binomial,
+                          data = pembrolizumab,
+                          id = idf, corstr = "independence")
+gp(mv_gee)
+coeffSum(mv_gee)
+getVarLevels(mv_gee)
+mv_gee2 <- geepack::geeglm(orr2 ~ age:sex+cohort, family = binomial,
+                          data = pembrolizumab,
+                          id = idf, corstr = "independence")
+gp(mv_gee2)
+coeffSum(mv_gee2)
+getVarLevels(mv_gee2)
+
+
