@@ -5971,7 +5971,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
       p <- cowplot::plot_grid(gA, gC, nrow = 2, ncol = 1, rel_heights = c(1,rel.height.table))
     }
     if (returns){
-      return(list(plot=gA,table=gC))
+      return(list(plot=p,table=data.table))
     } else     return(p)
   }
 

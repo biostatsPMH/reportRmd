@@ -134,17 +134,9 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 }
 
 uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
-                   type = NULL, offset=NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
+                   type = NULL, offset=NULL, gee=FALSE,strata = 1, nicenames = TRUE,
                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald)
 {
-  lifecycle::deprecate_soft("0.2.0","covsum(markup)")
-  lifecycle::deprecate_soft("0.2.0","covsum(sanitize)")
-
-  if (!markup) {
-    lbld <- identity
-    addspace <- identity
-    lpvalue <- identity
-  }
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   if (!sanitize)  sanitizestr <- identity
   if (!nicenames) nicename <- identity
@@ -172,7 +164,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     if (length(response)==2 & !(type %in% c('coxph','crr')))
       stop('Response can only be of length one for non-survival models.')
     if (type == "logistic") {
-      beta <- "OR"
       if (is.null(family)) family='binomial'
     }
     else if (type == "poisson") {
@@ -182,7 +173,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
       else {
         stop('Poisson regression requires an integer response.')
       }
-      beta <- "RR"
       if (is.null(family)) family='poisson'
     }
     else if (type == "negbin") {
@@ -192,15 +182,10 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
       else {
         stop('Negative binomial regression requires an integer response.')
       }
-      beta <- "RR"
       if (!is.null(family)) message('For negative binomial regression currently only the log link is implemented.')
     }
     else if (type == "linear" | type == "boxcox") {
-      beta <- "Estimate"
       if (is.null(family)) family='gaussian'
-    }
-    else if (type == "coxph" | type == "crr") {
-      beta <- "HR"
     }
     else if (type == "ordinal") {
       if (!inherits(data[[response[1]]],c("factor","ordered"))) {
@@ -212,7 +197,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
         data[[response]] <- stats::relevel(data[[response]],
                                            ref = reflevel)
       }
-      beta <- "OR"
     }
     else {
       stop("type must be either coxph, logistic, linear, poisson, negbin, boxcox, crr, ordinal (or NULL)")
@@ -228,21 +212,17 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
       else {
         type <- "crr"
       }
-      beta <- "HR"
     } else if (length(unique(na.omit(data[[response]]))) == 2) {
       type <- "logistic"
-      beta <- "OR"
       family="binomial"
     } else if (inherits(data[[response[1]]],"ordered")) {
       type <- "ordinal"
-      beta <- "OR"
       if (!is.null(reflevel)) {
         data[[response]] <- stats::relevel(data[[response]],
                                            ref = reflevel)
       }
     } else if (inherits(data[[response[1]]],"integer")) {
       type <- "poisson"
-      beta <- "RR"
       family="poisson"
     } else {
       if (!inherits(data[[response[1]]],"numeric")) stop('Response variable must be numeric')
@@ -251,8 +231,8 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
       family='gaussian'
     }
   }
+
   if (forceWald) confint <- confint.default
-  beta = betaWithCI(beta, CIwidth)
   if (strata != "" & type != "coxph") {
     stop("strata can only be used with coxph")
   }
@@ -281,6 +261,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     if (is.null(id)) stop('The id argument must be set for gee models to indicate clusters.')
     if (is.null(corstr)) stop ('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
   }
+
   if (returnModels) modelList <- NULL
   modelList <- c()
   for (cov in covs) {

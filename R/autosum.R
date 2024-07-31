@@ -115,6 +115,8 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level"){
       cs[max(which(cs[["var"]] == var)), "p_value"] <- NA
     }
   }
+  cs$ord <- 1:nrow(cs)
+  attr(cs,'estLabel') <- attr(m_coeff,'estLabel')
   return(cs)
 }
 
@@ -142,7 +144,6 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2) {
   } else {
     attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   }
-
   return(cs)
 }
 
