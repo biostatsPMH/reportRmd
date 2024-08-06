@@ -1,104 +1,14 @@
-
-
-model.summary <- function(model,digits=2,CIwidth = 0.95, whichp = FALSE, ...){
-  mcoeff <- coeffSum(model,CIwidth,digits)
-  # check units - if any lwr==upr issue warning
-  if (any(mcoeff$lwr==mcoeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
-
-  # Basically, we want to take mcoeff and
-  terms <- attr(model$terms, "term.labels")
-  if (all(mcoeff$Term %in% terms)){
-    # No categorical variables, no need to add any reference data
-  } else {
-    # Categorical variables
-    mcoeff$order <- 1:nrow(mcoeff) # keep track of the order of the coefficients
-    cat_vars <- NULL
-    for (catVar in setdiff(terms,mcoeff$Term)){
-      vpos <- sapply(paste0(catVar,model$xlevels[[catVar]]),function(x) {
-        p = which(mcoeff$Term==x)
-        if (length(p)==0) p = NA
-        return(p)})
-      vpos <- vpos[!is.na(vpos)]
-      reg_lvls <- gsub(catVar,"",mcoeff$Term[vpos])
-      ref_lvl <- setdiff(model$xlevels[[catVar]],reg_lvls)
-
-      for (i in 2:ncol(df)) data.frame(table(df[[1]],df[,i]))
-
-      catInfo <- data.frame(Term = mcoeff$Term[vpos],
-                            Variable= catVar,
-                            var_level=reg_lvls,
-                            ref_level=ref_lvl)
-      cat_vars <- dplyr::bind_rows(cat_vars,catInfo)
-    }
-    # add to the data frame
-    mcoeff <- merge(mcoeff,cat_vars,all.x=T)
-  }
-  mcoeff$Variable[is.na(mcoeff$Variable)] <- mcoeff$Term[is.na(mcoeff$Variable)]
-
-
-  tpos <- as.numeric(factor(mcoeff$Variable))
-  vars <- sapply(tpos,function(x) terms[x])
-  # This needs to calculate "global" p-values for categorical variables
-  # works for linear models - need to test all the others!
-  # it adds the global-p-value to the dataframe
-  if (!all(mcoeff$Term==vars)){
-    mcoeff$variable <- vars
-    gobal_p <- gp(model)
-    mcoeff <- merge(mcoeff,gobal_p,all.x = TRUE,sort=FALSE)
-  }
-  mcoeff <- mcoeff[order(mcoeff$order),]
-  # return(mcoeff)
-  # From here - need to add the reference levels as rows to the table
-  for (var in unique(mcoeff$variable)) {
-    ref_row <- data.frame(var_level = mcoeff$ref_level[1], Est_CI = "Reference", Term = paste0(mcoeff$Variable[1], mcoeff$ref_level[1]), variable = mcoeff$variable[1], Variable = mcoeff$Variable[1], ref_level = mcoeff$ref_level[1])
-    mcoeff <- dplyr::bind_rows(ref_row, mcoeff)
-    subset_var <- subset(mcoeff, variable == var)
-    if (length(unique(subset_var$Term)) > 2) {
-      if (whichp == "global" | whichp == "both") {
-        var_row <- data.frame(var_level = mcoeff$Variable[1], p_value = mcoeff$global_p[1])
-      }
-      else { # whichp == "level"
-        var_row <- data.frame(var_level = mcoeff$Variable[1])
-      }
-    }
-    else { # two or less levels
-
-      non_ref <- setdiff(subset_var$var_level, mcoeff$ref_level)
-      # print(non_ref)
-      # print(which(mcoeff$var_level == non_ref))
-
-      mcoeff[which(mcoeff$var_level == non_ref), "p_value"] <- NA
-      var_row <- data.frame(var_level = mcoeff$Variable[1], p_value = as.numeric(mcoeff$global_p))
-    }
-    mcoeff <- dplyr::bind_rows(var_row, mcoeff)
-  }
-
-
-  # reference_row <- c(mcoeff$ref_level[1], "Reference", rep(NA, ncol(mcoeff) - 2))
-  # mcoeff <- dplyr::bind_rows(var_row, ref_row, mcoeff)
-  # mcoeff <- select(mcoeff, var_level, Est_CI, p_value, est, lwr, upr, global_p)
-  View(mcoeff)
-}
-
 # Combind model components and variable levels and sample sizes
 
-m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level"){
+m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for_plot = FALSE){
+
   m_coeff <- coeffSum(model,CIwidth,digits)
+  if (any(m_coeff$lwr==m_coeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
   lvls <- getVarLevels(model)
   lvls$ord  <- 1:nrow(lvls)
 
   cs <- merge(lvls,m_coeff,all.x = T)
-  if (vif){
-    VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "var"
-    cs <- full_join(cs,VIF)
-  }
 
-  if (whichp!="level"){
-    global_p <- gp(model)
-    #print(global_p)
-    cs <- merge(cs,global_p,all = T)
-  }
   cs <- cs[order(cs$ord),]
   rownames(cs) <- NULL
   # add variable header rows
@@ -115,8 +25,117 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level"){
       cs[max(which(cs[["var"]] == var)), "p_value"] <- NA
     }
   }
+  for (i in 1:nrow(cs)) {
+    if (is.na(cs[i, "terms"]) & !is.na(cs[i, "header"])) {
+      cs[i, "terms"] <- cs[i, "var"]
+    }
+    else if (is.na(cs[i, "terms"])) {
+      cs[i, "terms"] <- paste0(cs[i, "var"], cs[i, "lvl"])
+    }
+  }
+
+  if (vif){
+    VIF <- try(GVIF(model),silent = TRUE)
+    names(VIF)[1] <- "terms"
+    cs <- full_join(cs,VIF, by = join_by(terms))
+  }
+
+  if (whichp!="level"){
+    global_p <- gp(model)
+    colnames(global_p) <- c("terms", "global_p")
+    cs <- full_join(cs,global_p, by = join_by(terms))
+  }
+
+  for (i in 1:nrow(cs)) {
+    if (!is.na(cs[i, "header"])) {
+      v <- cs[i, "var"]
+      n <- sum(cs[which(cs[, "var"] == v), "n"], na.rm = T)
+      if ("Events" %in% colnames(cs)) {
+        e <- sum(cs[which(cs[, "var"] == v), "Events"], na.rm = T)
+        cs[i, c("n", "Events")] <- c(n, e)
+      }
+    }
+  }
   cs$ord <- 1:nrow(cs)
   attr(cs,'estLabel') <- attr(m_coeff,'estLabel')
+
+  if (for_plot) {
+    return(cs)
+  }
+
+  estLbl <- attr(cs, "estLabel")
+  var_col <- c()
+  for (i in 1:nrow(cs)) {
+    if (!is.na(cs[i, "ref"]) & cs[i, "ref"] == TRUE) {
+      cs[i, "Est_CI"] <- "Reference"
+    }
+    if (!is.na(cs[i, "header"])) {
+      var_col <- c(var_col, cs[i, "var"])
+    }
+    else if (length(which(cs[, "var"] == cs[i, "var"])) == 1) {
+      var_col <- c(var_col, cs[i, "var"])
+    }
+    else {
+      var_col <- c(var_col, cs[i, "lvl"])
+    }
+  }
+  cs <- cbind(data.frame(Variable = var_col), cs)
+
+  # if (for_plot) {
+  #   return(cs)
+  # }
+
+
+  if (whichp == "both") {
+    for (i in 1:nrow(cs)) {
+      if (!is.na(cs[i, "header"]) & (length(which(cs$var == cs[i, "var"])) > 3)) {
+        cs[i, "p_value"] <- cs[i, "global_p"]
+      }
+    }
+  }
+  else if (whichp == "global") {
+    cs[["p_value"]] <- cs[["global_p"]]
+  }
+
+  #
+  #   lbl <- c()
+  #   for (i in 1:nrow(mcoeff)) {
+  #     if (is.na(mcoeff[i, "lvl"])) {
+  #       lbl <- c()
+  #     }
+  #   }
+
+
+  cols_to_keep <- c("Variable", "Est_CI", "p_value", "n")
+  new_colnames <- c("Variable", estLbl, "p-value", "N")
+  if ("Events" %in% colnames(cs)) {
+    cols_to_keep <- c(cols_to_keep, "Events")
+    new_colnames <- c(new_colnames, "Event")
+  }
+  if (vif) {
+    cols_to_keep <- c(cols_to_keep, "VIF")
+    new_colnames <- c(new_colnames, "VIF")
+  }
+  # print(cols_to_keep)
+  # print(new_colnames)
+  cs <- cs[, cols_to_keep]
+  colnames(cs) <- new_colnames
+
+  # #remove any columns that only have NA values
+  # for (col in colnames(mcoeff)) {
+  #   if (all(is.na(mcoeff[[col]]))) {
+  #     mcoeff[[col]] <- NULL
+  #   }
+  # }
+
+
+  # if (nicenames) {
+  #   mcoeff[["Variable"]] <- replaceLbl(mcoeff, "Variable")
+  # }
+
+
+
+
   return(cs)
 }
 
@@ -134,41 +153,25 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2) {
   rownames(ci) <- NULL
   cs <- data.frame(
     terms=rownames(ms),
-    est=ms[,2],
+    est=ms[,1],
     p_value = ms[,4]
   )
   cs <- merge(cs,ci,all.x = T)
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
-  if (inherits(model,"coxph")){
-    attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
-  } else {
-    attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
-  }
+  attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   return(cs)
 }
 
-coeffSum.crrRx <- function(model,CIwidth=.95,digits=2) {
-  ms <- model$coeffTbl
-  ci <- try(exp(confint(model,level = CIwidth)),silent = T)
-  if (!inherits(ci,"try-error")){
-    if (!inherits(ci,"matrix")) {
-      ci <- matrix(ci,ncol=2)
-      rownames(ci) <- rownames(ms)[1]
-    }
-    ci <- data.frame(ci)
-    names(ci) <- c("lwr","upr")
-    ci$terms <- rownames(ci)
-    rownames(ci) <- NULL
-  }   else {
-    Z_mult = qnorm(1 - (1 - CIwidth)/2)
-    ci <- data.frame(lwr=exp(ms[, 1] - Z_mult * ms[, 3]),
-                     upr=exp(ms[, 1] + Z_mult * ms[, 3]))
-    ci$terms <- rownames(ci)
-  }
+coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
+  ms <- summary(model)$coefficients
+  ci <- exp(as.data.frame(confint(model,level = CIwidth)))
+  names(ci) <- c("lwr","upr")
+  ci$terms <- rownames(ci)
+  rownames(ci) <- NULL
   cs <- data.frame(
     terms=rownames(ms),
     est=ms[,2],
-    p_value = ms[,4]
+    p_value = ms[,5]
   )
   cs <- merge(cs,ci,all.x = T)
   cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
