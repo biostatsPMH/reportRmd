@@ -11,6 +11,18 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument') else covs <- unique(covs)
   if (missing(response)) stop('response is a required argument')
+
+  empty <- NULL
+  if ("" %in% c(strata, type, offset, id)) {
+    args <- list(strata = strata, type = type, offset = offset, id = id)
+    empty <- names(args)[which(args == "")]
+    for (var in empty) {
+      fun <- get(match.call()[[1]])
+      assign(var, formals(fun)[[var]])
+    }
+    warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
+  }
+
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
   if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
   if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
@@ -20,7 +32,19 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (strata==1) nm <- c(response,covs) else nm <- c(strata,response,covs)
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
+
   argList <- as.list(match.call()[-1])
+  if (!is.null(empty)) {
+    for (var in empty) {
+      print(var)
+      if (is.null(eval(as.name(var)))) {
+        argList[var] <- list(NULL)
+      }
+      else {
+        argList[[var]] <- eval(as.name(var))
+      }
+    }
+  }
 
   nomiss <- nrow(na.omit(data[,response,drop=FALSE]))
   if (nrow(data)!=nomiss) warning(paste("Cases with missing response data have been removed.\n",
@@ -50,7 +74,6 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
       covs <- setdiff(covs,v)
     }
   }
-
 
   # get the table
   tab <- do.call(uvsum2,argList)

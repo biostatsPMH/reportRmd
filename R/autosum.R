@@ -3,7 +3,6 @@
 m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
-  print(m_coeff)
   if (any(!is.na(m_coeff$lwr) & !is.na(m_coeff$upr) & (m_coeff$lwr == m_coeff$upr))) message("Zero-width confidence interval detected. Check predictor units.")
   lvls <- getVarLevels(model)
   lvls$ord  <- 1:nrow(lvls)
@@ -46,7 +45,6 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
     colnames(global_p) <- c("terms", "global_p")
     cs <- dplyr::full_join(cs,global_p, by = dplyr::join_by(terms))
   }
-
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "header"])) {
       v <- cs[i, "var"]
@@ -121,6 +119,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
     new_colnames <- c(new_colnames, "VIF")
   }
   # print(cols_to_keep)
+  # print(cs)
   # print(new_colnames)
   cs <- cs[, cols_to_keep]
   colnames(cs) <- new_colnames
