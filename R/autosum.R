@@ -37,13 +37,13 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
     names(VIF)[1] <- "terms"
-    cs <- full_join(cs,VIF, by = join_by(terms))
+    cs <- dplyr::full_join(cs,VIF, by = join_by(terms))
   }
 
   if (whichp!="level"){
     global_p <- gp(model)
     colnames(global_p) <- c("terms", "global_p")
-    cs <- full_join(cs,global_p, by = join_by(terms))
+    cs <- dplyr::full_join(cs,global_p, by = dplyr::join_by(terms))
   }
 
   for (i in 1:nrow(cs)) {
@@ -145,6 +145,60 @@ coeffSum <- function(model,CIwidth=.95,digits=2) {
   UseMethod("coeffSum",model)
 }
 
+coeffSum.lme <- function(model,CIwidth=.95,digits=2) {
+  ms <- data.frame(summary(model)$tTable)
+  pt <- 1-(1-CIwidth)/2
+  ci <- data.frame(terms=rownames(ms),
+                   lwr=ms$Value-qt(pt,df=ms$DF)*ms$Std.Error,
+                   upr=ms$Value+qt(pt,df=ms$DF)*ms$Std.Error)
+  cs <- data.frame(
+    terms=rownames(ms),
+    est=ms$Value,
+    p_value = ms$p.value
+  )
+  cs <- merge(cs,ci,all.x = T)
+  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+  attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
+  return(cs)
+}
+
+coeffSum.lmerMod <- function(model,CIwidth=.95,digits=2) {
+  stop("Method not implemented for lmer fit from lme4,\nre-fit model using lmeTest package.")
+}
+
+coeffSum.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
+  ms <- data.frame(summary(model)$coefficients)
+  pt <- 1-(1-CIwidth)/2
+  df <- sw_df(model)
+  ms$t_value <- ms$Estimate/ms$Std..Error
+  ms$p_value <- 2*pt(abs(ms$t_value),df,lower.tail=FALSE)
+  ci <- data.frame(terms=rownames(ms),
+                   lwr=ms$Estimate-qt(pt,df)*ms$Std..Error,
+                   upr=ms$Estimate+qt(pt,df)*ms$Std..Error)
+  cs <- data.frame(
+    terms=rownames(ms),
+    est=ms$Estimate,
+    p_value= ms$p_value
+  )
+  cs <- merge(cs,ci,all.x = T)
+  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+  attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
+  return(cs)
+}
+
+# this code taken from the lmerTest package to compute the Satterthwaite df
+sw_df <- function(model){
+  qform <- function(x,A){
+    sum(x * (A %*% x))
+  }
+  L <- diag(length(fixef(model)))
+  var_con <- qform(L, vcov(model))
+  grad_var_con <- vapply(model@Jac_list, function(x) qform(L,x), numeric(1L))
+  satt_denom <- qform(grad_var_con, model@vcov_varpar)
+  df <- drop(2 * var_con^2/satt_denom)
+  return(df)
+}
+
 coeffSum.default <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
   ci <- as.data.frame(confint(model,level = CIwidth))
@@ -180,9 +234,10 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
 }
 
 coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
-  ms <- summary(model)$coefficients
+  ms <- data.frame(summary(model)$coefficients)
   if (model$family$link %in% c("logit","log")){
     ci <- as.data.frame(exp(confint(model,level = CIwidth)))
+    ms$Estimate <- exp(ms$Estimate)
   } else {
     ci <- as.data.frame(confint(model,level = CIwidth))
   }
@@ -192,7 +247,7 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
 
   cs <- data.frame(
     terms=rownames(ms),
-    est=ms[,2],
+    est=ms[,1],
     p_value = ms[,4]
   )
 
@@ -254,6 +309,15 @@ get_model_data.default <- function(model){
 get_model_data.lm <- function(model){
   return(model$model)
 }
+get_model_data.lme <- function(model){
+  return(model$data)
+}
+get_model_data.lmerMod <- function(model){
+  return(model.frame(model))
+}
+get_model_data.lmerModLmerTest <- function(model){
+  return(model.frame(model))
+}
 get_model_data.crrRx <- function(model){
   return(model$model)
 }
@@ -261,9 +325,11 @@ get_model_data.polr <- function(model){
   return(model$model)
 }
 get_model_data.coxph <- function(model){
+  if (is.null(model$data)){
   df <- try(stats::model.frame(model$call$formula,
                                eval(parse(text = paste("data=",
                                                        deparse(model$call$data))))), silent = TRUE)
+  } else (df <- model$data)
   if (inherits(df,'try-error')) {
     warning ("Model data could not be extracted")
     return(NULL)
@@ -360,6 +426,22 @@ gp.lme <- function(model,CIwidth=.95,digits=2) {
   globalpvalue <- drop1(update(model,method="ML"),scope=terms,test = "Chisq")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
+  attr(gp,"global_p") <-"LRT"
+  return(gp)
+}
+gp.lmerMod <- function(model,CIwidth=.95,digits=2) {
+  terms <- attr(terms(model), "term.labels")
+  globalpvalue <- drop1(update(model),scope=terms,test = "Chisq")
+  gp <- data.frame(var=rownames(globalpvalue)[-1],
+                   global_p = globalpvalue$`Pr(Chi)`[-1])
+  attr(gp,"global_p") <-"LRT"
+  return(gp)
+}
+gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
+  terms <- attr(terms(model), "term.labels")
+  globalpvalue <- drop1(update(model),scope=terms,test = "Chisq")
+  gp <- data.frame(var=rownames(globalpvalue),
+                   global_p = globalpvalue$`Pr(>F)`)
   attr(gp,"global_p") <-"LRT"
   return(gp)
 }

@@ -113,6 +113,8 @@ autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,o
   } else{
     eval(parse(text = paste('m2 <- survival::coxph(formula=as.formula(',f,'),id =',id,', data = data)')))
   }
+  m2$data <- try(stats::model.frame(m2$call$formula,data=data), silent = TRUE)
+  if (inherits(m2$data,"try-error")) m2$data <- NULL
   return(m2)
 }
 

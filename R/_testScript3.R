@@ -172,7 +172,7 @@ coeffSum(mv_crr2)
 getVarLevels(mv_crr2)
 m_summary(mv_crr2)
 
-## GEE  (NEED MORE MODELS HERE) -----
+## GEE   -----
 uv_gee <- geepack::geeglm(formula=as.formula(orr~sex),data=pembrolizumab)
 coeffSum(uv_gee)
 getVarLevels(uv_gee)
@@ -198,3 +198,43 @@ coeffSum(mv_gee2)
 getVarLevels(mv_gee2)
 
 
+# lmer
+
+library(lme4)  # For fitting lmer models
+
+library(lmerTest)
+data(Orthodont,package="nlme")
+Orthodont$nsex <- as.numeric(Orthodont$Sex=="Male")
+Orthodont$nsexage <- with(Orthodont, nsex*age)
+ model <- lme4::lmer(distance ~ age + (age|Subject) + (0+nsex|Subject) +
+                         (0 + nsexage|Subject), data=Orthodont)
+ class(model)
+ gp(model)
+ coeffSum(model)
+ getVarLevels(model)
+ m_summary(model)
+
+ model <- lmerTest::lmer(distance ~ age + (age|Subject) + (0+nsex|Subject) +
+                       (0 + nsexage|Subject), data=Orthodont)
+ class(model)
+ gp(model)
+ coeffSum(model)
+ getVarLevels(model)
+ m_summary(model)
+
+ data("pembrolizumab")
+ rm_uvsum(response = c('os_time','os_status'),
+          covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+          data=pembrolizumab,CIwidth=.9)
+
+ rm_uvsum2(response = c('os_time','os_status'),
+          covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+          data=pembrolizumab,CIwidth=.9)
+
+ uvsum(response = 'os_status',
+          covs=c('age','sex','l_size','pdl1','tmb'),
+          data=pembrolizumab,family = binomial)
+
+ uvsum2(response = 'os_status',
+          covs=c('age','sex','l_size','pdl1','tmb'),
+          data=pembrolizumab,family = binomial)

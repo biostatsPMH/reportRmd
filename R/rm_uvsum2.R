@@ -21,12 +21,16 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   argList <- as.list(match.call()[-1])
-  # do we need this?
-  df_nm <- matchdata(argList$data)
-  whichp <- match.arg(whichp)
-  if (nrow(data)!=nrow(df)) warning(paste("Cases with missing response data have been removed.\n",
-                                          nrow(data)-nrow(df),"case(s) removed."))
 
+  nomiss <- nrow(na.omit(data[,response,drop=FALSE]))
+  if (nrow(data)!=nomiss) warning(paste("Cases with missing response data have been removed.\n",
+                                          nrow(data)-nomiss,"case(s) removed."))
+  ## TO DO - split out testing for this function,
+  ## and data changes for the uvsum2 function
+  ## need to do this, because when we run the models
+  ## we and summarise the data from the same function
+  ## that contains the changed data
+  ## -------------------------------------------------
   for (v in covs) {
     if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
     if (inherits(data[[v]],c('Date','POSIXt'))) {
@@ -49,14 +53,15 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
 
   # get the table
-  rtn <- uvsum2(response,covs,data,digits=digits,markup = FALSE,sanitize=FALSE,
-                gee=gee,id = id, offset=offset,
-                corstr = corstr,family = family,type = type,strata = strata,
-                nicenames = FALSE,showN = showN,showEvent = showEvent,
-                CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
+  tab <- do.call(uvsum2,argList)
+  # rtn <- uvsum2(response,covs,data,digits=digits,
+  #               gee=gee,id = id, offset=offset,
+  #               corstr = corstr,family = family,type = type,strata = strata,
+  #               nicenames = FALSE,showN = showN,showEvent = showEvent,
+  #               CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
 
   # If user specifies return models, don't format a table, just return a list of models
-  if (returnModels) return (rtn$models)
+  if (returnModels) return (tab$models)
 
 
   att_tab <- attributes(tab)
@@ -67,7 +72,7 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   # Add variable labels
   # may be easier to use extract_labels on data frame
 
-  # need to get bold/indent attributes!
+  # need to get bold/indent attributes
 
   argL <- list(tab=tab, digits = digits,
                to_indent=to_indent,bold_cells=bold_cells,
@@ -95,6 +100,8 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
                     type = NULL, offset=NULL, gee=FALSE,strata = 1, nicenames = TRUE,
                     showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, whichp = "level")
 {
+  argList <- as.list(match.call()[-1])
+  df_nm <- matchdata(argList$data)
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
   if (!inherits(strata,"numeric")) {
@@ -236,7 +243,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
 
   summaryList <- NULL
   summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp="level", for_plot = FALSE)
-  summaryList <- bind_rows(summaryList)
+  summaryList <- dplyr::bind_rows(summaryList)
 
   # Other stuff here!
 
