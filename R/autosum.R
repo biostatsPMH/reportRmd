@@ -3,7 +3,8 @@
 m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
-  if (any(m_coeff$lwr==m_coeff$upr)) message("Zero-width confidence interval detected. Check predictor units.")
+  print(m_coeff)
+  if (any(!is.na(m_coeff$lwr) & !is.na(m_coeff$upr) & (m_coeff$lwr == m_coeff$upr))) message("Zero-width confidence interval detected. Check predictor units.")
   lvls <- getVarLevels(model)
   lvls$ord  <- 1:nrow(lvls)
 
@@ -53,6 +54,9 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
       if ("Events" %in% colnames(cs)) {
         e <- sum(cs[which(cs[, "var"] == v), "Events"], na.rm = T)
         cs[i, c("n", "Events")] <- c(n, e)
+      }
+      else {
+        cs[i, "n"] <- n
       }
     }
   }
