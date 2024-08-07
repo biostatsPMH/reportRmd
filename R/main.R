@@ -251,7 +251,7 @@ crrRx<-function(f,data){
     strsplit(x,":")[[1]]
   })
   xvr <- unique(unlist(vrs))
-   m1$model <- na.omit(data[,c(colnames(ff[[1]]),intersect(names(data),xvr))])
+  m1$model <- na.omit(data[,c(colnames(ff[[1]]),intersect(names(data),xvr))])
   attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
                                   "~", covs, sep = "")
 
@@ -259,7 +259,7 @@ crrRx<-function(f,data){
   m1$coefficients <- m1$coef
   m1$call<-as.call(list(f,data=argList$data))
   # m1$data <- data
-  attr(m1,"class") <- "crrRx"
+  attr(m1,"class") <- c(attr(m1,"class"),"crrRx")
   return(m1)
 }
 

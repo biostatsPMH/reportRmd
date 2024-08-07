@@ -220,6 +220,35 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2) {
   return(cs)
 }
 
+coeffSum.crrRx <- function(model,CIwidth=.95,digits=2) {
+  ms <- data.frame(model$coeffTbl)
+  ci <- try(exp(confint(model,level = CIwidth)),silent = T)
+  if (!inherits(ci,"try-error")){
+    if (!inherits(ci,"matrix")) {
+      ci <- matrix(ci,ncol=2)
+      rownames(ci) <- rownames(ms)[1]
+    }
+    ci <- data.frame(ci)
+    names(ci) <- c("lwr","upr")
+    ci$terms <- rownames(ci)
+    rownames(ci) <- NULL
+  }   else {
+    Z_mult = qnorm(1 - (1 - CIwidth)/2)
+    ci <- data.frame(lwr=exp(ms[, 1] - Z_mult * ms[, 3]),
+                     upr=exp(ms[, 1] + Z_mult * ms[, 3]))
+    ci$terms <- rownames(ms)
+  }
+  cs <- data.frame(
+    terms=rownames(ms),
+    est=ms[,2],
+    p_value = ms[,5]
+  )
+  cs <- merge(cs,ci,all.x = T)
+  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+  attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
+  return(cs)
+}
+
 coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
   ci <- exp(as.data.frame(confint(model,level = CIwidth)))
@@ -452,7 +481,7 @@ gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
 
 gp.polr <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- drop1(model,scope=terms,test="ChiSq")
+  globalpvalue <- drop1(model,scope=terms,test="Chisq")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
   attr(gp,"global_p") <-"LRT"

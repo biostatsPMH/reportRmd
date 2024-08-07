@@ -238,8 +238,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   for (cov in covs) {
     modelList[[cov]] <- autoreg(response, data, cov, id, strata, family, offset, corstr)
   }
-  # Working to here
-  # Need to combine the summaries
 
   summaryList <- NULL
   summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp="level", for_plot = FALSE)

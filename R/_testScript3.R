@@ -219,3 +219,14 @@ getVarLevels(mv_gee2)
 uvsum_gee <- rm_uvsum(response="orr", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 uvsum2_gee <- uvsum2(response="orr", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
+
+uvsum2(response = c('os_time','os_status'),
+                  covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+                  data=pembrolizumab,CIwidth=.9)
+
+
+uvsum2(response = c('os_time','os_status2'),
+       covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+       data=pembrolizumab,CIwidth=.9)
+
+
