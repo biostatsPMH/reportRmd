@@ -145,6 +145,12 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (!(percentage %in% c("col", "row"))) {
     stop("percentage argument must be either 'row' or 'col'")
   }
+  for (xvar in xvars) {
+    if (length(unique(data[[xvar]])) == 1) {
+      xvars <- xvars[-which(xvars == xvar)]
+      warning(paste("xvar", xvar, "has only one unique value and will not be summarized"))
+    }
+  }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
