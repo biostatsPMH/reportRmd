@@ -34,6 +34,9 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
   argList <- as.list(match.call()[-1])
+  if (tableOnly %in% names(argList)) {
+    argList[["tableOnly"]] <- NULL
+  }
   if (!is.null(empty)) {
     for (var in empty) {
       print(var)
@@ -84,6 +87,8 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   #               CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
 
   # If user specifies return models, don't format a table, just return a list of models
+  to_indent <- attr(tab, "to_indent")
+  bold_cells <- attr(tab, "bold_cells")
   if (returnModels) return (tab$models)
 
 
@@ -98,8 +103,15 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   # need to get bold/indent attributes
 
   argL <- list(tab=tab, digits = digits,
-               to_indent=to_indent,bold_cells=bold_cells,
+               to_indent=to_indent,bold_cells=bold_cells
   )
+
+  method <- p.adjust
+  tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
+  if (!unformattedp) {
+    tab[["p-value"]] <- formatp(tab[["p-value"]])
+  }
+  print(tab)
 
   # Add attributes if returning a table
   names(tab)[1] <-covTitle
@@ -274,5 +286,9 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   if (!showEvent) {
     summaryList[["Event"]] <- NULL
   }
+  to_indent <- which(!(summaryList[["Variable"]] %in% covs))
+  bold_cells <- cbind(which(summaryList[["Variable"]] %in% covs), rep(1, length(which(summaryList[["Variable"]] %in% covs))))
+  attr(summaryList, "to_indent") <- to_indent
+  attr(summaryList, "bold_cells") <- bold_cells
   if (returnModels) return(list(summaryList,models=modelList)) else return(summaryList)
 }
