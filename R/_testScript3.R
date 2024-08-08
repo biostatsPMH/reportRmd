@@ -24,7 +24,7 @@ getVarLevels(mv_lm2)
 m_summary(mv_lm2)
 
 uvsum_lm <- rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab)
-uvsum2_lm <- uvsum2("age", covs = c("sex", "l_size"), data = pembrolizumab)
+uvsum2_lm <- rm_uvsum2("age", covs = c("sex", "l_size"), data = pembrolizumab)
 ## Binomial -----
 uv_binom <- glm(formula=as.formula(orr~sex),data=pembrolizumab,family="binomial")
 coeffSum(uv_binom)
@@ -49,7 +49,7 @@ getVarLevels(mv_binom2)
 m_summary(mv_binom2)
 
 uvsum_binom <- rm_uvsum("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
-uvsum2_binom <- uvsum2("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
+uvsum2_binom <- rm_uvsum2("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
 
 ## Poisson -----
 pembrolizumab$int_var <- rpois(n=nrow(pembrolizumab),lambda = 1)
@@ -76,7 +76,7 @@ getVarLevels(mv_pois2)
 m_summary(mv_pois2)
 
 uvsum_pois <- rm_uvsum("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "poisson",offset=NULL)
-uvsum2_pois <- uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "poisson",offset=NULL)
+uvsum2_pois <- rm_uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "poisson",offset=NULL)
 ## Negative Binomial -----
 uv_negbin <- MASS::glm.nb(formula=as.formula(int_var~sex),data=pembrolizumab)
 coeffSum(uv_negbin)
@@ -101,7 +101,7 @@ getVarLevels(mv_negbin2)
 m_summary(mv_negbin2)
 
 uvsum_negbin <- rm_uvsum("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, offset=NULL)
-uvsum2_negbin <- uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, offset=NULL)
+uvsum2_negbin <- rm_uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, offset=NULL)
 
 ## Ordinal -----
 pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$int_var),ordered = T)
@@ -132,7 +132,7 @@ getVarLevels(mv_ord2)
 m_summary(mv_ord2)
 
 uvsum_ord <- rm_uvsum("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
-uvsum2_ord <- uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
+uvsum2_ord <- rm_uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
 
 ## Cox PH -----
@@ -158,8 +158,8 @@ coeffSum(mv_cox2)
 getVarLevels(mv_cox2)
 m_summary(mv_cox2)
 
-uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
-uvsum2_cox <- uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
+uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = 1)
+uvsum2_cox <- rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = 1)
 
 ## CRR -----
 pembrolizumab$os_status2 <- pembrolizumab$os_status
@@ -189,7 +189,7 @@ getVarLevels(mv_crr2)
 m_summary(mv_crr2)
 
 uvsum_crr <- rm_uvsum(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
-uvsum2_crr <- uvsum2(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
+uvsum2_crr <- rm_uvsum2(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
 ## GEE  (NEED MORE MODELS HERE) -----
 uv_gee <- geepack::geeglm(formula=as.formula(orr~sex),data=pembrolizumab)
@@ -217,7 +217,7 @@ coeffSum(mv_gee2)
 getVarLevels(mv_gee2)
 
 uvsum_gee <- rm_uvsum(response="orr", covs = c("age", "sex", "cohort"), data = pembrolizumab)
-uvsum2_gee <- uvsum2(response="orr", covs = c("age", "sex", "cohort"), data = pembrolizumab)
+uvsum2_gee <- rm_uvsum2(response="orr", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
 
 uvsum2(response = c('os_time','os_status'),

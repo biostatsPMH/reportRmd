@@ -34,12 +34,11 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
   argList <- as.list(match.call()[-1])
-  if (tableOnly %in% names(argList)) {
+  if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }
   if (!is.null(empty)) {
     for (var in empty) {
-      print(var)
       if (is.null(eval(as.name(var)))) {
         argList[var] <- list(NULL)
       }
@@ -102,16 +101,22 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
   # need to get bold/indent attributes
 
-  argL <- list(tab=tab, digits = digits,
-               to_indent=to_indent,bold_cells=bold_cells
-  )
-
+  # formatting pval column
   method <- p.adjust
   tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
   if (!unformattedp) {
     tab[["p-value"]] <- formatp(tab[["p-value"]])
   }
-  print(tab)
+  p_col <- (which(names(tab) == "p-value"))
+  bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)))))
+  if (nrow(bold_cells) < 1) {
+    bold_cells <- NULL
+  }
+
+  argL <- list(tab=tab, digits = digits,
+               to_indent=to_indent,bold_cells=bold_cells
+  )
+
 
   # Add attributes if returning a table
   names(tab)[1] <-covTitle
