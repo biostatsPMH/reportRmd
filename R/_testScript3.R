@@ -254,21 +254,25 @@ rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
               digits = c("age" = 2, "l_size" = 1), digits.cat = 1,all.stats = F)
 
-# This gives an error
+#  So do all these
 rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
               digits = c("age" = 2, "l_size" = 1), digits.cat = 1,all.stats = T)
 
-# This just gives the mean - I think if all.stats=T is should ignore the mean
 rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", use_mean = "age",all.stats = T)
-# This doesn't give the stats descriptions
+
+
 rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", all.stats = T)
 
-# and this is actually pretty funny - but will confuse people
+rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", all.stats = T)
+
 rm_compactsum(data = pembrolizumab, xvars = c("age","l_size"), grp = "sex", all.stats = T)
 
-# this is fine
 rm_compactsum(data = pembrolizumab, xvars = c("cohort"), grp = "sex", all.stats = T)
 
-# And this gives an error again
 rm_compactsum(data = pembrolizumab, xvars = c("age","cohort"), grp = "sex", all.stats = T)
+
+# This gives the same results for me for the p-values ?
+uvsum_ord <- rm_uvsum("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
+uvsum2_ord <- rm_uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
+

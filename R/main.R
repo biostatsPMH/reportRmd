@@ -252,8 +252,8 @@ crrRx<-function(f,data){
   })
   xvr <- unique(unlist(vrs))
   m1$model <- na.omit(data[,c(colnames(ff[[1]]),intersect(names(data),xvr))])
-  attr(m1$model,"terms") <- paste(paste(response,collapse = "+"),
-                                  "~", covs, sep = "")
+  attr(m1$model,"terms") <- paste(paste(colnames(ff[[1]]),collapse = "+"),
+                                  "~", covstr, sep = "")
 
   m1$coeffTbl <- m2$coef
   m1$coefficients <- m1$coef
