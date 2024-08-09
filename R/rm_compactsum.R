@@ -20,7 +20,8 @@
 #'   be returned for continuous variables instead of median. Otherwise, can
 #'   specify for individual variables using a character vector containing the
 #'   names of covariates to return mean and sd for (if use_mean is not supplied,
-#'   all covariates will have median summaries). See examples
+#'   all covariates will have median summaries). Ignored if all.stats = TRUE.
+#'   See examples
 #' @param caption character containing table caption (default is no caption)
 #' @param tableOnly logical, if TRUE then a dataframe is returned, otherwise a
 #'   formatted printed object is returned (default is FALSE)
@@ -126,7 +127,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (length(missing_vars) > 0) {
     stop(paste0("These xvars are not in the data: '", paste0(missing_vars, collapse = "', '"), "'"))
   }
-  if (missing(use_mean)) {
+  if (missing(use_mean) | all.stats) {
     use_mean <- FALSE
   }
   if (!missing(grp)) {
@@ -328,13 +329,31 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }
+  p_col <- (which(names(result) == "p-value") - 1)
+  bold_cells <- cbind(which((result[["p-value"]] < 0.05) | result[["p-value"]] == "<0.001"), rep(p_col, length(which((result[["p-value"]] < 0.05) | result[["p-value"]] == "<0.001"))))
+  if (nrow(bold_cells) < 1) {
+    bold_cells <- NULL
+  }
   lbl <- c()
   for (xvar in xvars) {
-    if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
-      lbl <- c(lbl, xvar, levels(data[[xvar]]))
+    if (all.stats) {
+      if (inherits(data[[xvar]], "numeric")) {
+        lbl <- c(lbl, xvar, "Mean (sd)", "Median (Q1, Q3)", "Range (min, max)")
+      }
+      else if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
+        lbl <- c(lbl, xvar, levels(data[[xvar]]))
+      }
+      else {
+        lbl <- c(lbl, xvar)
+      }
     }
     else {
-      lbl <- c(lbl, xvar)
+      if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
+        lbl <- c(lbl, xvar, levels(data[[xvar]]))
+      }
+      else {
+        lbl <- c(lbl, xvar)
+      }
     }
   }
   if (!tableOnly) {
@@ -347,7 +366,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }
-
   if (nicenames) {
     if (typeof(args$data) == "symbol") {
     result[, 1] <- replaceLbl(args$data, lbl)
@@ -362,7 +380,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (tableOnly) {
     return(result)
   }
-  nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent)
+  nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
   return(nicetable)
 }
@@ -598,7 +616,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   class(xvar) <- "character"
   x_var <- data[[xvar]]
   if (all.stats) {
-    df <- data.frame(Covariate = c(xvar, "  Median (Q1, Q3)", "  Range (min, max)"))
+    df <- data.frame(Covariate = c(xvar, "  Mean (sd)", "  Median (Q1, Q3)", "  Range (min, max)"), disp = c("", "", "", ""))
     if (covTitle == "") {
       names(df$`Covariate`) <- " "
     }
@@ -607,8 +625,9 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
     bracket_iqr <- paste0("(", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), ", ", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")")
     bracket_range <- paste0("(", format(round(min(x_var, na.rm = TRUE), digits), nsmall = digits), ", ", format(round(max(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
-    df[2, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
-    df[3, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
+    df[2, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
+    df[3, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
+    df[4, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
   }
   else {
     df <- data.frame(Covariate = xvar)
@@ -628,12 +647,14 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     if (all.stats) {
       grp_med <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = T, digits = digits)
       grp_range <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = F, digits = digits, range_only = T)
+      grp_mean <- lapply(levels(group_var), mean_by_grp, data = data, xvar = xvar, grp = grp, digits = digits)
       i = 1
       for (level in levels(group_var)) {
         sub <- subset(data, group_var == level)
         title <- paste0(level, " (n=", nrow(sub), ")")
-        df[2, title] <- grp_med[i]
-        df[3, title] <- grp_range[i]
+        df[2, title] <- grp_mean[i]
+        df[3, title] <- grp_med[i]
+        df[4, title] <- grp_range[i]
         i = i+1
       }
     }
@@ -701,11 +722,11 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
-  if (iqr) {
-    attr(df, "stat_sum") <- "median (IQR)"
+  if (all.stats) {
+    attr(df, "stat_sum") <- "median (IQR) and range (min, max)"
   }
   else {
-    attr(df, "stat_sum") <- "median (min/max)"
+    attr(df, "stat_sum") <- ifelse(iqr, "median (IQR)", "median (min/max)")
   }
   return(df)
 }
