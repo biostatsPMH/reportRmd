@@ -72,6 +72,7 @@ m_summary(mv_pois)
 mv_pois2 <-glm(formula = int_var ~ age+sex:cohort, family = poisson, data = pembrolizumab)
 gp(mv_pois2)
 coeffSum(mv_pois2)
+
 getVarLevels(mv_pois2)
 m_summary(mv_pois2)
 
@@ -158,8 +159,12 @@ coeffSum(mv_cox2)
 getVarLevels(mv_cox2)
 m_summary(mv_cox2)
 
+
+#
 uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
 uvsum2_cox <- uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
+uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
+uvsum2_cox <- uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
 
 ## CRR -----
 pembrolizumab$os_status2 <- pembrolizumab$os_status
@@ -229,4 +234,41 @@ uvsum2(response = c('os_time','os_status2'),
        covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
        data=pembrolizumab,CIwidth=.9)
 
+rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id="",strata = "")
 
+
+# works fine
+data("pembrolizumab")
+rm_compactsum(data = pembrolizumab, xvars = c("age",
+                                              "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
+              digits = c("age" = 2, "l_size" = 3), digits.cat = 1)
+
+# but not if everyone is in the same groups
+pembrolizumab$change_ctdna_group2 = "changed"
+rm_compactsum(data = pembrolizumab, xvars = c("age",
+                                              "change_ctdna_group2", "l_size", "pdl1"), grp = "sex", use_mean = "age",
+              digits = c("age" = 2, "l_size" = 3), digits.cat = 1)
+
+# This looks good
+rm_compactsum(data = pembrolizumab, xvars = c("age",
+                                              "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
+              digits = c("age" = 2, "l_size" = 1), digits.cat = 1,all.stats = F)
+
+# This gives an error
+rm_compactsum(data = pembrolizumab, xvars = c("age",
+                                              "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
+              digits = c("age" = 2, "l_size" = 1), digits.cat = 1,all.stats = T)
+
+# This just gives the mean - I think if all.stats=T is should ignore the mean
+rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", use_mean = "age",all.stats = T)
+# This doesn't give the stats descriptions
+rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", all.stats = T)
+
+# and this is actually pretty funny - but will confuse people
+rm_compactsum(data = pembrolizumab, xvars = c("age","l_size"), grp = "sex", all.stats = T)
+
+# this is fine
+rm_compactsum(data = pembrolizumab, xvars = c("cohort"), grp = "sex", all.stats = T)
+
+# And this gives an error again
+rm_compactsum(data = pembrolizumab, xvars = c("age","cohort"), grp = "sex", all.stats = T)
