@@ -20,8 +20,7 @@
 #'   be returned for continuous variables instead of median. Otherwise, can
 #'   specify for individual variables using a character vector containing the
 #'   names of covariates to return mean and sd for (if use_mean is not supplied,
-#'   all covariates will have median summaries). Ignored if all.stats = TRUE.
-#'   See examples
+#'   all covariates will have median summaries). See examples
 #' @param caption character containing table caption (default is no caption)
 #' @param tableOnly logical, if TRUE then a dataframe is returned, otherwise a
 #'   formatted printed object is returned (default is FALSE)
@@ -66,10 +65,6 @@
 #'   applicable, the types of statistical tests used will be included. If
 #'   effSize = TRUE, the effect sizes for each covariate will also be mentioned.
 #'
-#' @returns The "Missing" column of the output table refers to the total missing
-#'   values for each xvar across all groups, rather than missingness within the
-#'   grp variable. If the number of missing values for all xvars specified is 0,
-#'   the "Missing" column will be removed from the table.
 #' @references Smithson, M. (2002). Noncentral Confidence Intervals for
 #'   Standardized Effect Sizes. (07/140 ed., Vol.
 #'   140). SAGE Publications. \url{https://doi.org/10.4135/9781412983761.n4}
@@ -107,11 +102,6 @@
 #' rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 #' "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 #'
-#' # To view self-generated description
-#' summary_tab <- rm_compactsum(data=pembrolizumab, xvars =
-#' c("change_ctdna_group", "orr", "age"), grp = "cohort", effSize = TRUE,
-#' show.tests = TRUE)
-#' attr(summary_tab, "description")
 #'
 #' @export
 rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.tests = FALSE, full = TRUE, percentage = "col") {
@@ -127,7 +117,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (length(missing_vars) > 0) {
     stop(paste0("These xvars are not in the data: '", paste0(missing_vars, collapse = "', '"), "'"))
   }
-  if (missing(use_mean) | all.stats) {
+  if (missing(use_mean)) {
     use_mean <- FALSE
   }
   if (!missing(grp)) {
@@ -146,33 +136,18 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (!(percentage %in% c("col", "row"))) {
     stop("percentage argument must be either 'row' or 'col'")
   }
-  for (xvar in xvars) {
-    if (length(unique(na.omit(data[[xvar]]))) == 1) {
-      xvars <- xvars[-which(xvars == xvar)]
-      print(warning(paste("xvar", xvar, "has only one unique value and will not be summarized")))
-    }
-  }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
 
   dt <- as.name(args$data)
-
-  xvars <- unique(xvars)
-
-  for (xvar in xvars) {
-    if (is.logical(data[[xvar]]) || is.character(data[[xvar]])) {
-      data[[xvar]] <- as.factor(data[[xvar]])
-      args$data <- data
-    }
-  }
   if (!missing(grp)) {
     if (!(grp %in% names(data))) {
       stop("grp is not in the data")
     }
     if (grp %in% xvars){
-      warning(paste(grp,'is the grouping variable and cannot appear as a covariate. \n',
+      warning(paste(grp,'is the grouping variable and can not appear as a covariate. \n',
                     'It is omitted from the output.'))
       xvars <- setdiff(xvars, grp)
     }
@@ -182,12 +157,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     }
     else if (is.numeric(data[[grp]]) & length(unique(data[[grp]])) > 5) {
       stop("Convert grp to a factor")
-    }
-  }
-  if (!missing(grp)) {
-    grp_missing <- length(which(is.na(data[[grp]])))
-    if (grp_missing > 0) {
-      message(paste0("There are ", grp_missing, " missing cases for grouping variable '", grp, "'."))
     }
   }
   if (!missing(grp) & (effSize | show.tests | pvalue)) {
@@ -311,11 +280,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
-  if (all(na.omit(result[["Missing"]]) == 0)) {
+  if (all(na.omit(result[["Missing"]]) == 0))
     result <- result[, -which(names(result) == "Missing")]
-  }
   if (!full) {
-    result <- result[, -grep("^Full Sample", names(result))]
+    result <- result[, -2]
   }
   if ("p-value" %in% colnames(result)) {
     if (!pvalue) {
@@ -329,41 +297,13 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }
-  p_col <- (which(names(result) == "p-value") - 1)
-  bold_cells <- cbind(which((result[["p-value"]] < 0.05) | result[["p-value"]] == "<0.001"), rep(p_col, length(which((result[["p-value"]] < 0.05) | result[["p-value"]] == "<0.001"))))
-  if (nrow(bold_cells) < 1) {
-    bold_cells <- NULL
-  }
   lbl <- c()
   for (xvar in xvars) {
-    if (all.stats) {
-      if (inherits(data[[xvar]], "numeric")) {
-        lbl <- c(lbl, xvar, "Mean (sd)", "Median (Q1, Q3)", "Range (min, max)")
-      }
-      else if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
-        lbl <- c(lbl, xvar, levels(data[[xvar]]))
-      }
-      else {
-        lbl <- c(lbl, xvar)
-      }
+    if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
+      lbl <- c(lbl, xvar, levels(data[[xvar]]))
     }
     else {
-      if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
-        lbl <- c(lbl, xvar, levels(data[[xvar]]))
-      }
-      else {
-        lbl <- c(lbl, xvar)
-      }
-    }
-  }
-  if (!tableOnly) {
-    to_indent <- c()
-    n = 0
-    for (x in result[, 1]) {
-      n = n+1
-      if (!(x %in% xvars)) {
-        to_indent <- c(to_indent, n)
-      }
+      lbl <- c(lbl, xvar)
     }
   }
   if (nicenames) {
@@ -376,11 +316,17 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   result[, 1] <- paste0(result[, 1],result$`disp`)
   result$`disp` <- NULL
+  if (covTitle != "") {
+    names(result)[1] <- covTitle
+  }
+  else {
+    names(result)[1] <- ""
+  }
   attr(result, "description") <- generate_description(xvars, output_list)
   if (tableOnly) {
     return(result)
   }
-  nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
+  nicetable <- outTable(result, caption = caption, nicenames = nicenames)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
   return(nicetable)
 }
@@ -411,7 +357,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 #'   Epsilon-squared, or Omega-squared for numeric/continuous variables
 #' @param show.tests logical indicating if the type of statistical test and
 #'   effect size (if effSize = TRUE) used should be shown in a column beside the
-#'   p-values.
+#'   p-values. Ignored if pvalue = FALSE
 #' @param percentage choice of how percentages are presented, either column
 #'   (default) or row
 #' @return A data frame is returned
@@ -439,12 +385,6 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
   class(xvar) <- "character"
   df <- data.frame(Covariate = xvar)
   df[["disp"]] <- " n (%)"
-  if (covTitle == "") {
-    names(df$`Covariate`) <- " "
-  }
-  else {
-    names(df) <- covTitle
-  }
   x_var <- data[[xvar]]
   if (percentage == "row") {
     df[, paste0("Full Sample (n=", nrow(data), ")")] <- as.character(sum(x_var, na.rm = TRUE))
@@ -531,12 +471,6 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
   class(xvar) <- "character"
   df <- data.frame(Covariate = xvar)
   df[["disp"]] <- " Mean (sd)"
-  if (covTitle == "") {
-    names(df$`Covariate`) <- " "
-  }
-  else {
-    names(df$`Covariate`) <- covTitle
-  }
   x_var <- data[[xvar]]
   df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
 
@@ -616,28 +550,15 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   class(xvar) <- "character"
   x_var <- data[[xvar]]
   if (all.stats) {
-    df <- data.frame(Covariate = c(xvar, "  Mean (sd)", "  Median (Q1, Q3)", "  Range (min, max)"), disp = c("", "", "", ""))
-    if (covTitle == "") {
-      names(df$`Covariate`) <- " "
-    }
-    else {
-      names(df$`Covariate`) <- covTitle
-    }
+    df <- data.frame(Covariate = c(xvar, "  Median (Q1, Q3)", "  Range (min, max)"))
     bracket_iqr <- paste0("(", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), ", ", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")")
     bracket_range <- paste0("(", format(round(min(x_var, na.rm = TRUE), digits), nsmall = digits), ", ", format(round(max(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
-    df[2, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
-    df[3, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
-    df[4, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
+    df[2, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
+    df[3, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
   }
   else {
     df <- data.frame(Covariate = xvar)
     df[["disp"]] <- ifelse(!iqr, " Median (Min, Max)", " Median (Q1, Q3)")
-    if (covTitle == "") {
-      names(df$`Covariate`) <- " "
-    }
-    else {
-      names(df$`Covariate`) <- covTitle
-    }
     bracket <- ifelse(!iqr, paste0("(", format(round(min(x_var, na.rm = TRUE), digits), nsmall = digits), ", ", format(round(max(x_var, na.rm = TRUE), digits), nsmall = digits), ")"), paste0("(", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), ", ", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")"))
     df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket)
   }
@@ -647,14 +568,12 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     if (all.stats) {
       grp_med <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = T, digits = digits)
       grp_range <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = F, digits = digits, range_only = T)
-      grp_mean <- lapply(levels(group_var), mean_by_grp, data = data, xvar = xvar, grp = grp, digits = digits)
       i = 1
       for (level in levels(group_var)) {
         sub <- subset(data, group_var == level)
         title <- paste0(level, " (n=", nrow(sub), ")")
-        df[2, title] <- grp_mean[i]
-        df[3, title] <- grp_med[i]
-        df[4, title] <- grp_range[i]
+        df[2, title] <- grp_med[i]
+        df[3, title] <- grp_range[i]
         i = i+1
       }
     }
@@ -722,11 +641,11 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
   }
   df[1, "Missing"] <- sum(is.na(x_var))
-  if (all.stats) {
-    attr(df, "stat_sum") <- "median (IQR) and range (min, max)"
+  if (iqr) {
+    attr(df, "stat_sum") <- "median (IQR)"
   }
   else {
-    attr(df, "stat_sum") <- ifelse(iqr, "median (IQR)", "median (min/max)")
+    attr(df, "stat_sum") <- "median (min/max)"
   }
   return(df)
 }
@@ -743,12 +662,6 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
   }
   df <- data.frame(Covariate = rows, "disp" = rep("", length(rows)))
   df[1, "disp"] <-  " n (%)"
-  if (covTitle == "") {
-    names(df$`Covariate`) <- " "
-  }
-  else {
-    names(df$`Covariate`) <- covTitle
-  }
   i = 2
   for (xvar_level in levels(x_var)) {
     xvar_subset <- subset(data, x_var == xvar_level)
@@ -838,24 +751,18 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   x_var <- data[[xvar]]
   unique_levels <- unique(x_var)
   unique_levels <- sort(unique_levels)
-  show_level <- as.character(unique_levels[2])
   binary_column <- ifelse(x_var == unique_levels[1], 0, 1)
+
   if (!missing(grp)) {
-    temp <- subset(data, select = grp)
+    temp <- data[, grp]
     temp[[xvar]] <- binary_column
   }
   else {
-    temp <- subset(data, select = xvar)
+    temp <- data[, xvar]
     temp[[xvar]] <- binary_column
   }
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  paste0(" - ", show_level, " (n (%))")
-  if (covTitle == "") {
-    names(df$`Covariate`) <- " "
-  }
-  else {
-    names(df$`Covariate`) <- covTitle
-  }
+  df[["disp"]] <-  " n (%)"
   x_var <- temp[[xvar]]
   if (percentage == "row") {
     df[, paste0("Full Sample (n=", nrow(temp), ")")] <- as.character(sum(x_var, na.rm = TRUE))
@@ -1251,13 +1158,13 @@ calc_CramerV <- function(chisq_test, CIwidth = 0.95) {
 
   bs_cramer <- function(data,indices){
     dt <- data[indices,]
-    new_chi <- chi.test.rm(dt[[1]],dt[[2]])
+    new_chi <- chi.test.rm(dt[[1]],df[[2]])
 
     chi_toCramer(new_chi)
   }
   b_cramer <- boot::boot(df,bs_cramer,R=1000)
-  b_ci <- boot::boot.ci(b_cramer,conf = CIwidth,type="perc")
-  output = c("cramer v"=cramer,lower=b_ci$perc[4],upper=b_ci$perc[5])
+  b_ci <- boot::boot.ci(b_cramer,conf = CIwidth,type="basic")
+  output = c("cramer v"=cramer,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
 
@@ -1272,8 +1179,8 @@ calc_cohenD <- function(t_test, CIwidth = 0.95) {
   }
 
   b_cohen <- boot::boot(df,bs_cohen,R=1000)
-  b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="perc")
-  output = c("cohen d"=cohen,lower=b_ci$perc[4],upper=b_ci$perc[5])
+  b_ci <- boot::boot.ci(b_cohen,conf = CIwidth,type="basic")
+  output = c("cohen d"=cohen,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
 
@@ -1287,8 +1194,8 @@ calc_WilcoxonR <- function(wilcox_test, CIwidth = 0.95) {
     wilcox_effSize(new_wilcox)
   }
   b_r <- boot::boot(df,bs_r,R=1000)
-  b_ci <- boot::boot.ci(b_r,conf = CIwidth,type="perc")
-  output = c("wilcoxon r"=r,lower=b_ci$perc[4],upper=b_ci$perc[5])
+  b_ci <- boot::boot.ci(b_r,conf = CIwidth,type="basic")
+  output = c("wilcoxon r"=r,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
 
@@ -1303,8 +1210,8 @@ calc_epsilonSq <- function(kruskal_test, CIwidth = 0.95) {
     chi_toEpsilonSq(new_kruskal)
   }
   b_epsilon <- boot::boot(df,bs_epsilon,R=1000)
-  b_ci <- boot::boot.ci(b_epsilon,conf = CIwidth,type="perc")
-  output = c("epsilon sq"=eps,lower=b_ci$perc[4],upper=b_ci$perc[5])
+  b_ci <- boot::boot.ci(b_epsilon,conf = CIwidth,type="basic")
+  output = c("epsilon sq"=eps,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
 
@@ -1319,8 +1226,8 @@ calc_omegaSq <- function(anova_test, CIwidth = 0.95){
     anova_toOmegaSq(new_summary)
   }
   b_omega <- boot::boot(anova_test$model,bs_omega,R=1000)
-  b_ci <- boot::boot.ci(b_omega,conf = CIwidth,type="perc")
-  output = c("omega squared"=omega,lower=b_ci$perc[4],upper=b_ci$perc[5])
+  b_ci <- boot::boot.ci(b_omega,conf = CIwidth,type="basic")
+  output = c("omega squared"=omega,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
 
@@ -1337,4 +1244,6 @@ format_delta <- function(x,digits=2){
   ci <- paste0(out[1], " (", out[2], ", ", out[3], ")")
   return(ci)
 }
+
+
 
