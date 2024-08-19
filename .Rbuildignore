@@ -22,3 +22,6 @@
 ^overview\.qmd$
 ^vignettes/overview_files$
 ^_delta_calculation\.R$
+^_testScript3\.R$
+^_ToDo\.R$
+^_unusedFunctions\.R$

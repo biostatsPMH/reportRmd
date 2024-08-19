@@ -33,7 +33,6 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
       cs[i, "terms"] <- paste0(cs[i, "var"], cs[i, "lvl"])
     }
   }
-
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
     names(VIF)[1] <- "terms"
@@ -60,11 +59,9 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
   }
   cs$ord <- 1:nrow(cs)
   attr(cs,'estLabel') <- attr(m_coeff,'estLabel')
-
   if (for_plot) {
     return(cs)
   }
-
   estLbl <- attr(cs, "estLabel")
   var_col <- c()
   for (i in 1:nrow(cs)) {
@@ -82,12 +79,6 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
     }
   }
   cs <- cbind(data.frame(Variable = var_col), cs)
-
-  # if (for_plot) {
-  #   return(cs)
-  # }
-
-
   if (whichp == "both") {
     for (i in 1:nrow(cs)) {
       if (!is.na(cs[i, "header"]) & (length(which(cs$var == cs[i, "var"])) > 3)) {
@@ -98,16 +89,6 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
   else if (whichp == "global") {
     cs[["p_value"]] <- cs[["global_p"]]
   }
-
-  #
-  #   lbl <- c()
-  #   for (i in 1:nrow(mcoeff)) {
-  #     if (is.na(mcoeff[i, "lvl"])) {
-  #       lbl <- c()
-  #     }
-  #   }
-
-
   cols_to_keep <- c("Variable", "Est_CI", "p_value", "n")
   new_colnames <- c("Variable", estLbl, "p-value", "N")
   if ("Events" %in% colnames(cs)) {
@@ -118,27 +99,8 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
     cols_to_keep <- c(cols_to_keep, "VIF")
     new_colnames <- c(new_colnames, "VIF")
   }
-  # print(cols_to_keep)
-  # print(cs)
-  # print(new_colnames)
   cs <- cs[, cols_to_keep]
   colnames(cs) <- new_colnames
-
-  # #remove any columns that only have NA values
-  # for (col in colnames(mcoeff)) {
-  #   if (all(is.na(mcoeff[[col]]))) {
-  #     mcoeff[[col]] <- NULL
-  #   }
-  # }
-
-
-  # if (nicenames) {
-  #   mcoeff[["Variable"]] <- replaceLbl(mcoeff, "Variable")
-  # }
-
-
-
-
   return(cs)
 }
 

@@ -113,18 +113,14 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     bold_cells <- NULL
   }
 
+  names(tab)[1] <- covTitle
   argL <- list(tab=tab, digits = digits,
                to_indent=to_indent,bold_cells=bold_cells
   )
-
-
   # Add attributes if returning a table
-  names(tab)[1] <-covTitle
   for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){
     if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
-    if (length(cap_warn)>0) message(cap_warn)
-    attr(tab,"data") <- df_nm
     attr(tab,"data call") <- deparse1(argList$data)
     attr(tab, 'to_indent') <- to_indent
     attr(tab,'bold_cells') <- bold_cells
@@ -141,7 +137,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
                     showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, whichp = "level")
 {
   argList <- as.list(match.call()[-1])
-  df_nm <- matchdata(argList$data)
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
   if (!inherits(strata,"numeric")) {

@@ -76,47 +76,61 @@ rm_mvsum2 <- function(model, data, digits=getOption("reportRmd.digits",2),covTit
   lifecycle::deprecate_soft("0.2.0","rm_mvsum2(data)")
   lifecycle::deprecate_soft("0.2.0","rm_mvsum2(chunk_label)")
   # get the table
-  tab <- mvsum(model=model,data=data,digits=digits,markup = FALSE,
-               sanitize = FALSE, nicenames = FALSE,showN=showN,showEvent=showEvent,CIwidth = CIwidth,vif=vif)
+  tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
   att_tab <- attributes(tab)
-
-  to_indent <- which(!attr(tab,"varID"))
-  to_bold_name <- which(attr(tab,"varID"))
-  bold_cells <- arrayInd(to_bold_name, dim(tab))
+  to_indent <- which(!(tab[["Variable"]] %in% attr(model$terms, "term.labels")))
+  bold_cells <- cbind(which(tab[["Variable"]] %in% attr(model$terms, "term.labels")), rep(1, length(which(tab[["Variable"]] %in% attr(model$terms, "term.labels")))))
+  attr(tab, "to_indent") <- to_indent
+  attr(tab, "bold_cells") <- bold_cells
 
 
   # perform p-value adjustment across variable-level p-values remove factor p-values
-  if ("Global p-value" %in% names(tab)){
-    if(p.adjust!='none') {
-      raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
-      raw_p[!att_tab$varID] <- NA
-      p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-      message('Global p-values were adjusted according to the ',p.adjust,' method. Factor level p-values have been removed.')
-      tab[["raw p-value"]]<-formatp(raw_p)
-    } else{
-      p_sig <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
-    }
-    tab[["p-value"]]  <- sapply(p_sig,formatp)
-    tab <- tab[,grep("Global p-value",names(tab),invert = T)]
-  } else {
-    raw_p <- tab[["p-value"]]
-    p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
-    tab[["p-value"]] <- sapply(p_sig,formatp)
+  # if ("Global p-value" %in% names(tab)){
+  #   if(p.adjust!='none') {
+  #     raw_p <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
+  #     raw_p[!att_tab$varID] <- NA
+  #     p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
+  #     message('Global p-values were adjusted according to the ',p.adjust,' method. Factor level p-values have been removed.')
+  #     tab[["raw p-value"]]<-formatp(raw_p)
+  #   } else{
+  #     p_sig <- ifelse(is.na(tab[["Global p-value"]]),tab[["p-value"]],tab[["Global p-value"]])
+  #   }
+  #   tab[["p-value"]]  <- sapply(p_sig,formatp)
+  #   tab <- tab[,grep("Global p-value",names(tab),invert = T)]
+  # } else {
+  #   raw_p <- tab[["p-value"]]
+  #   p_sig <- suppressWarnings(stats::p.adjust(raw_p,method=p.adjust))
+  #   tab[["p-value"]] <- sapply(p_sig,formatp)
+  # }
+  # to_bold_p <- which(as.numeric(tab[["p-value"]])<.05)
+
+
+  # if (length(to_bold_p)>0)  bold_cells <- rbind(bold_cells,
+  #                                               matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
+
+
+  # formatting pval column
+  method <- p.adjust
+  tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
+  if (!unformattedp) {
+    tab[["p-value"]] <- formatp(tab[["p-value"]])
   }
-  to_bold_p <- which(as.numeric(p_sig)<.05)
-
-  if (length(to_bold_p)>0)  bold_cells <- rbind(bold_cells,
-                                                matrix(cbind(to_bold_p, which(names(tab)=='p-value')),ncol=2))
-
-
-  if (nicenames){
-    attr(tab,"termnames") <- tab$Covariate
-    tab$Covariate <- replaceLbl(att_tab$data, tab$Covariate)
+  p_col <- (which(names(tab) == "p-value"))
+  bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)))))
+  if (nrow(bold_cells) < 1) {
+    bold_cells <- NULL
   }
-  names(tab)[1] <-covTitle
+
+  ##Help
+  # if (nicenames){
+  #   attr(tab,"termnames") <- tab$Variable
+  #   tab$Variable <- replaceLbl(model$data, tab$Variable)
+  # }
+
+  names(tab)[1] <- covTitle
   for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){
-    if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
+    if (names(tab)[1]=='') names(tab)[1] <- 'Covariate'
     attr(tab, 'to_indent') <- to_indent
     attr(tab,'bold_cells') <- bold_cells
     attr(tab,'dimchk') <- dim(tab)
