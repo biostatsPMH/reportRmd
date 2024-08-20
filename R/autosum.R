@@ -36,7 +36,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
     names(VIF)[1] <- "terms"
-    cs <- dplyr::full_join(cs,VIF, by = join_by(terms))
+    cs <- dplyr::full_join(cs,VIF, by = dplyr::join_by(terms))
   }
 
   if (whichp!="level"){
@@ -367,7 +367,7 @@ gp <- function(model) {
 }
 gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- drop1(model,scope=terms,test = "Chisq")
+  globalpvalue <- stats::drop1(model,scope=terms,test = "Chisq")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
   attr(gp,"global_p") <-"LRT"
@@ -377,7 +377,7 @@ gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
 
 gp.coxph <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- drop1(model,scope=terms,test="Chisq")
+  globalpvalue <- stats::drop1(model,scope=terms,test="Chisq")
   gp <- data.frame(var=terms,
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
   attr(gp,"global_p") <-"LRT"
@@ -409,7 +409,7 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
 
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- drop1(model,scope=terms,test="LRT")
+  globalpvalue <- stats::drop1(model,scope=terms,test="LRT")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
   attr(gp,"global_p") <-"LRT"
@@ -417,7 +417,7 @@ gp.glm <- function(model,CIwidth=.95,digits=2) {
 }
 gp.lme <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- drop1(update(model,method="ML"),scope=terms,test = "Chisq")
+  globalpvalue <- stats::drop1(stats::update(model,method="ML"),scope=terms,test = "Chisq")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[-1,5])
   attr(gp,"global_p") <-"LRT"
@@ -425,7 +425,7 @@ gp.lme <- function(model,CIwidth=.95,digits=2) {
 }
 gp.lmerMod <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(terms(model), "term.labels")
-  globalpvalue <- drop1(update(model),scope=terms,test = "Chisq")
+  globalpvalue <- stats::drop1(stats::update(model),scope=terms,test = "Chisq")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue$`Pr(Chi)`[-1])
   attr(gp,"global_p") <-"LRT"
@@ -433,7 +433,7 @@ gp.lmerMod <- function(model,CIwidth=.95,digits=2) {
 }
 gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(terms(model), "term.labels")
-  globalpvalue <- drop1(update(model),scope=terms,test = "Chisq")
+  globalpvalue <- stats::drop1(stats::update(model),scope=terms,test = "Chisq")
   gp <- data.frame(var=rownames(globalpvalue),
                    global_p = globalpvalue$`Pr(>F)`)
   attr(gp,"global_p") <-"LRT"
@@ -442,7 +442,7 @@ gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
 
 gp.polr <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- drop1(model,scope=terms,test="Chisq")
+  globalpvalue <- stats::drop1(model,scope=terms,test="Chisq")
   gp <- data.frame(var=rownames(globalpvalue)[-1],
                    global_p = globalpvalue[["Pr(>Chi)"]][-1])
   attr(gp,"global_p") <-"LRT"
