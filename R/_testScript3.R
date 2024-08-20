@@ -96,7 +96,7 @@ coeffSum(mv_negbin)
 getVarLevels(mv_negbin)
 m_summary(mv_negbin)
 
-mv_negbin2 <- MASS::glm.nb(int_var~age:sex+cohort,data=pembrolizumab,link=log)
+mv_negbin2 <- MASS::glm.nb(int_var~age*sex+cohort,data=pembrolizumab,link=log)
 gp(mv_negbin2)
 coeffSum(mv_negbin2)
 getVarLevels(mv_negbin2)

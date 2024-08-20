@@ -114,6 +114,10 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   }
 
   names(tab)[1] <- covTitle
+  lbl <- tab[, 1]
+  if (nicenames) {
+    tab[, 1] <- replaceLbl(argList$data, lbl)
+  }
   argL <- list(tab=tab, digits = digits,
                to_indent=to_indent,bold_cells=bold_cells
   )
