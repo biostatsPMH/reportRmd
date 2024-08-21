@@ -33,16 +33,17 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
       cs[i, "terms"] <- paste0(cs[i, "var"], cs[i, "lvl"])
     }
   }
+  terms <- NULL
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
     names(VIF)[1] <- "terms"
-    cs <- dplyr::full_join(cs,VIF, by = dplyr::join_by(terms))
+    cs <- suppressMessages(dplyr::full_join(cs,VIF, by = dplyr::join_by(terms)))
   }
 
   if (whichp!="level"){
     global_p <- gp(model)
     colnames(global_p) <- c("terms", "global_p")
-    cs <- dplyr::full_join(cs,global_p, by = dplyr::join_by(terms))
+    cs <- suppressMessages(dplyr::full_join(cs,global_p, by = dplyr::join_by(terms)))
   }
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "header"])) {
@@ -102,6 +103,33 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
   cs <- cs[, cols_to_keep]
   colnames(cs) <- new_colnames
   return(cs)
+}
+
+process_ci <- function(ci_string, digits = 2) {
+  # Check if the string contains a valid confidence interval in the format (LB, UB)
+  if (grepl("\\([-0-9.eE.NA, ]+\\)", ci_string)) {
+    # Extract the lower bound (LB) and upper bound (UB) within the parentheses
+    ci_values <- sub(".*\\(([-0-9.eE]+|NA), ([-0-9.eE]+|NA|Inf)\\).*", "\\1,\\2", ci_string)
+    ci_values <- unlist(strsplit(ci_values, ","))
+    # Convert to numeric or handle "NA" and "Inf" as needed
+    lower_bound <- ifelse(ci_values[1] == "NA", NA, suppressWarnings(as.numeric(ci_values[1])))
+    upper_bound <- ifelse(ci_values[2] %in% c("NA", "Inf"), ci_values[2], suppressWarnings(as.numeric(ci_values[2])))
+    # Apply rounding and conditions
+    if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && round(lower_bound, digits) == 0) {
+      lower_bound <- 0
+    }
+    if (upper_bound == "NA") {
+      upper_bound <- Inf
+    }
+
+    # Reconstruct the CI string with the updated bounds
+    new_ci <- paste0("(", lower_bound, ", ", upper_bound, ")")
+    updated_string <- sub("\\([-0-9.eE, NAInf ]+\\)", new_ci, ci_string)
+
+    return(updated_string)
+  } else {
+    return(ci_string)  # Return the original string if it doesn't contain a valid CI
+  }
 }
 
 # Extract model components ------------
@@ -277,7 +305,6 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
     ci$terms <- rownames(ci)
   }
   pvalues = stats::pnorm(abs(ms[, "Value"]/ms[,"Std. Error"]), lower.tail = FALSE) * 2
-
   cs <- data.frame(
     terms=rownames(ms),
     est=ms[,2],
@@ -385,6 +412,7 @@ gp.coxph <- function(model,CIwidth=.95,digits=2) {
 }
 
 gp.crrRx <- function(model,CIwidth=.95,digits=2) {
+  m2 <- NULL
   terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
   terms <- sapply(terms,trimws)
   gp_vals <- data.frame(var=terms,

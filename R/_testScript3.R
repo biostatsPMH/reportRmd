@@ -106,7 +106,7 @@ uvsum_negbin <- rm_uvsum("int_var", covs = c("age", "sex", "cohort"), data = pem
 uvsum2_negbin <- rm_uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, offset=NULL, type = "negbin")
 
 ## Ordinal -----
-pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$int_var),ordered = T)
+pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$int_var),ordered = TRUE)
 
 uv_ord <- MASS::polr(formula=as.formula(ord_var~sex),data=pembrolizumab)
 coeffSum(uv_ord)
@@ -163,16 +163,15 @@ m_summary(mv_cox2)
 
 #
 uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
-uvsum2_cox <- uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
+uvsum2_cox <- rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
 uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
-uvsum2_cox <- uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
+uvsum2_cox <- rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
 
 ## CRR -----
 pembrolizumab$os_status2 <- pembrolizumab$os_status
-pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = F)] <-2
+pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = FALSE)] <-2
 
 uv_crr <- crrRx(as.formula('os_time+os_status2~ cohort'),data=pembrolizumab)
-
 coeffSum(uv_crr)
 getVarLevels(uv_crr)
 m_summary(uv_crr)

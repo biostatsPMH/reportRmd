@@ -12,6 +12,7 @@ mterms.lmerModLmerTest <- function(model){
 }
 
 getVarLevels <- function(model){
+  ord <- NULL
   nt <- function(str) length(strsplit(str,":")[[1]])-1
   vrs<-try(attr(model$terms,"term.labels"),silent = T)
   if (inherits(vrs,"try-error"))  vrs<-try(attr(terms(model),"term.labels"))
@@ -142,11 +143,11 @@ getVarLevels <- function(model){
   freq <- dplyr::bind_rows(freq1,freq2)
   freq$n <- freq$Freq
   freq <- freq[,intersect(names(freq),c("var","lvl","n","Events")),drop=FALSE]
-  out <- dplyr::full_join(df,freq)
+  out <- suppressMessages(dplyr::full_join(df,freq))
   out <- dplyr::arrange(out,ord)
   vord <- data.frame(var=na.omit(unique(out$var)),
                      vord=1:length(na.omit(unique(out$var))))
-  out <- dplyr::full_join(out,vord)
+  out <- suppressMessages(dplyr::full_join(out,vord))
   out$ord <- ifelse(is.na(out$ord),0,out$ord)
   out <- dplyr::arrange(out,vord,ord)
   out$ref <- out$ord==0

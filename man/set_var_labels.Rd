@@ -22,6 +22,7 @@ changed. To remove a label set the label to NA.
 \examples{
 # set labels using name-label pairs
 # and return labelled data frame
+data("ctDNA")
 ctDNA |> set_var_labels(
    ctdna_status="detectable ctDNA",
   cohort="A cohort label")
