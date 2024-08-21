@@ -8,6 +8,7 @@
 #' @export
 #' @examples
 #' # Set a few variable labels for ctDNA
+#' data("ctDNA")
 #' ctDNA <- ctDNA |> set_var_labels(
 #'    ctdna_status="detectable ctDNA",
 #'   cohort="A cohort label")
@@ -35,6 +36,7 @@ clear_labels <- function(data){
 #' @export
 #' @examples
 #' # Set a few variable labels for ctDNA
+#' data("ctDNA")
 #' ctDNA <- ctDNA |> set_var_labels(
 #'    ctdna_status="detectable ctDNA",
 #'   cohort="A cohort label")
@@ -108,6 +110,7 @@ set_var_labels = function (data, ...) {
 #'   [extract_labels()] for creating a data frame of all variable labels,
 #'   [clear_labels()] for removing variable labels
 #' @examples
+#' data("ctDNA")
 #' # create data frame with labels
 #' lbls <- data.frame(c1=c('cohort','size_change'),
 #' c2=c('Cancer cohort','Change in tumour size'))

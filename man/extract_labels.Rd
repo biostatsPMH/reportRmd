@@ -21,6 +21,7 @@ concatenated and returned as a single string separated by sep
 }
 \examples{
 # Set a few variable labels for ctDNA
+data("ctDNA")
 ctDNA <- ctDNA |> set_var_labels(
    ctdna_status="detectable ctDNA",
   cohort="A cohort label")
