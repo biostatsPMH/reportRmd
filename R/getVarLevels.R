@@ -7,8 +7,10 @@ mterms.default <- function(model){
 }
 
 mterms.lmerModLmerTest <- function(model){
-  names(fixef(model))[!grepl("intercept",
-                              names(fixef(model)),ignore.case = T)]
+  if (requireNamespace("nlme", quietly = TRUE)) {
+  names(nlme::fixef(model))[!grepl("intercept",
+                              names(nlme::fixef(model)),ignore.case = T)]
+  } else stop("Summarising mixed effects models requires the nlme package be installed")
 }
 
 getVarLevels <- function(model){

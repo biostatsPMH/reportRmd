@@ -5271,13 +5271,15 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #' @param xlab String corresponding to xlabel. By default is "Time"
   #' @param ylab String corresponding to ylabel. When NULL uses "Survival
   #' @param col vector of colours
-  #' @param times Numeric vector of times for the x-axis
-  #'   probability" for KM cuves, and "Probability of an event" for CIF
+  #' @param times Numeric vector of times for the x-axis probability" for KM
+  #'   cuves, and "Probability of an event" for CIF
   #' @param type string indicating he type of univariate model to fit. The
   #'   function will try and guess what type you want based on your response. If
   #'   you want to override this you can manually specify the type. Options
   #'   include "KM", and ,"CIF"
   #' @param plot.event  Which event(s) to plot (1,2, or c(1,2))
+  #' @param returns boolean indicating if a list with the objects should be
+  #'   returned. Default is FALSE and plot will be printed
   #' @param ... for additional plotting arguments see \link{ggkmcif2Parameters}
   #'
   #' @name ggkmcif2
@@ -5311,13 +5313,13 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   #' ggkmcif2(c('os_time','os_status'),'sex',data = pembrolizumab, type = 'KM',
   #' HR=TRUE, HR_pval = TRUE, conf.curves = TRUE,conf.type='log-log',
   #' set.time.CI = TRUE, censor.marks=TRUE)
-  #' @return ggplot object; if table = F then only curves are output;
-  #' if table = T then curves and risk table are output together
+  #' @return ggplot object; if table = F then only curves are output; if table =
+  #'   T then curves and risk table are output together
   #' @export
   ggkmcif2 <- function (response, cov = NULL, data,  pval = TRUE,
                         conf.curves = FALSE,
                         table = TRUE,   xlab = "Time", ylab = NULL, col = NULL,
-                        times = NULL, type = NULL, plot.event = 1,...)
+                        times = NULL, type = NULL, plot.event = 1,returns=FALSE,...)
   {
     mainArgs <- as.list(match.call(expand.dots = TRUE)[-1])
     toAdd <- mainArgs[setdiff(names(mainArgs),ls())]

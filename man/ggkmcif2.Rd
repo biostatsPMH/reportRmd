@@ -17,6 +17,7 @@ ggkmcif2(
   times = NULL,
   type = NULL,
   plot.event = 1,
+  returns = FALSE,
   ...
 )
 }
@@ -40,8 +41,8 @@ test for KM and Gray's test for CIF)}
 
 \item{col}{vector of colours}
 
-\item{times}{Numeric vector of times for the x-axis
-probability" for KM cuves, and "Probability of an event" for CIF}
+\item{times}{Numeric vector of times for the x-axis probability" for KM
+cuves, and "Probability of an event" for CIF}
 
 \item{type}{string indicating he type of univariate model to fit. The
 function will try and guess what type you want based on your response. If
@@ -50,11 +51,14 @@ include "KM", and ,"CIF"}
 
 \item{plot.event}{Which event(s) to plot (1,2, or c(1,2))}
 
+\item{returns}{boolean indicating if a list with the objects should be
+returned. Default is FALSE and plot will be printed}
+
 \item{...}{for additional plotting arguments see \link{ggkmcif2Parameters}}
 }
 \value{
-ggplot object; if table = F then only curves are output;
-if table = T then curves and risk table are output together
+ggplot object; if table = F then only curves are output; if table =
+T then curves and risk table are output together
 }
 \description{
 This function will plot a KM or CIF curve with option to add the number at

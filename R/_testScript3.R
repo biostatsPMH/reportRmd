@@ -276,3 +276,51 @@ rm_compactsum(data = pembrolizumab, xvars = c("age","cohort"), grp = "sex", all.
 uvsum_ord <- rm_uvsum("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 uvsum2_ord <- rm_uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
+mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
+# This is performing regular CI (shouldn't!!)
+rm_mvsum(mv_binom)
+exp(confint.default(mv_binom))
+# This is performing Profile Likelihood CI - which is what we want
+rm_mvsum2(mv_binom)
+exp(confint(mv_binom))
+
+mv_binom2 <- glm(orr~age:sex+cohort,family = 'binomial',data = pembrolizumab)
+# This is performing regular CI (shouldn't!!)
+rm_mvsum(mv_binom2)
+exp(confint.default(mv_binom2))
+# This is performing Profile Likelihood CI - which is what we want
+rm_mvsum2(mv_binom2)
+exp(confint(mv_binom2))
+
+mv_lm2 <- lm(pdl1 ~ age*sex+sex*cohort+age*l_size,data = pembrolizumab)
+rm_mvsum(mv_lm2)
+
+
+rm_mvsum(model)
+rm_mvsum2(model)
+
+
+# GEE Models
+# Note - these don't work with factors for responses like regular glm, response variable has to be numeric
+mv_gee <- geepack::geeglm(os_status ~ age+sex+cohort,
+                          family = binomial,
+                          data = pembrolizumab,
+                          id = pembrolizumab$id, corstr = "independence")
+
+rm_mvsum(mv_gee)
+rm_mvsum2(mv_gee)
+model <- mv_gee
+
+
+## LM GEE fitting
+## To do: add models for binomial & poisson and test against rm_mvsum
+mv_lm_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
+                             id=pembrolizumab$id, # always need to specify for gee models
+                             family = gaussian)
+rm_mvsum2(mv_lm_gee)
+
+# geeglm will fail if the interactions are too complex
+mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
+                              id=pembrolizumab$id,
+                              family = gaussian)
+rm_mvsum2(mv_lm2_gee)

@@ -20,6 +20,7 @@ Description: Streamlined statistical reporting in 'Rmarkdown' environments.
     logistic and ordinal regression and bivariate comparison plots.
 License: MIT + file LICENSE
 Suggests: 
+    nlme,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

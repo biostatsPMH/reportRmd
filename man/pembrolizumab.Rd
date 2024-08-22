@@ -30,7 +30,7 @@ A data frame with 94 rows and 15 variables:
 \url{https://www.nature.com/articles/s43018-020-0096-5}
 }
 \usage{
-pembrolizumab
+data('pembrolizumab')
 }
 \description{
 Survival data

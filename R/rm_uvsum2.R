@@ -267,7 +267,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     if (is.null(corstr)) stop ('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
   }
   # Assign the class to response --------
-  data(sysdata, envir=environment())
+  data("uvmodels", envir=environment())
 
   tp_merge <- merge(data.frame(type=type,family=ifelse(is.null(family),NA,family),gee=gee),uvmodels,all.x = T)
   if (nrow(tp_merge)>1) stop("Can not detect regression type, try specifying family")

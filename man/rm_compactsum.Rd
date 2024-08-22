@@ -100,11 +100,6 @@ output table and the type of statistical summary for each covariate. When
 applicable, the types of statistical tests used will be included. If
 effSize = TRUE, the effect sizes for each covariate will also be mentioned.
 }
-
-The "Missing" column of the output table refers to the total missing
-values for each xvar across all groups, rather than missingness within the
-grp variable. If the number of missing values for all xvars specified is 0,
-the "Missing" column will be removed from the table.
 }
 \description{
 Returns a data frame corresponding to a descriptive table.
@@ -134,11 +129,6 @@ effSize = TRUE, show.tests = TRUE)
 rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 
-# To view self-generated description
-summary_tab <- rm_compactsum(data=pembrolizumab, xvars =
-c("change_ctdna_group", "orr", "age"), grp = "cohort", effSize = TRUE,
-show.tests = TRUE)
-attr(summary_tab, "description")
 
 }
 \references{
