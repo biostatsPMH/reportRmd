@@ -297,15 +297,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }
-  lbl <- c()
-  for (xvar in xvars) {
-    if (inherits(data[[xvar]],"factor") & length(unique(na.omit(data[[xvar]]))) > 2) {
-      lbl <- c(lbl, xvar, levels(data[[xvar]]))
-    }
-    else {
-      lbl <- c(lbl, xvar)
-    }
-  }
+  lbl <- result[, 1]
   if (nicenames) {
     if (typeof(args$data) == "symbol") {
     result[, 1] <- replaceLbl(args$data, lbl)

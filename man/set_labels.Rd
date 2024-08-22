@@ -25,6 +25,7 @@ If no label is provided then the existing label will not be changed. To
 remove a label set the label to NA.
 }
 \examples{
+data("ctDNA")
 # create data frame with labels
 lbls <- data.frame(c1=c('cohort','size_change'),
 c2=c('Cancer cohort','Change in tumour size'))

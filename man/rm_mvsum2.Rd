@@ -88,6 +88,11 @@ test is used.
 If the variance inflation factor is requested (VIF=T) then a generalised VIF
 will be calculated in the same manner as the car package.
 
+If the MASS package is loaded, profile likelihood confidence intervals will be
+calculated; otherwise Wald confidence intervals will be calculated.
+Users should look for the message "Waiting for profiling to be done...", which
+indicates that profile likelihoods are calculated.
+
 The number of decimals places to display the statistics can be changed with
 digits, but this will not change the display of p-values. If more significant
 digits are required for p-values then use tableOnly=TRUE and format as

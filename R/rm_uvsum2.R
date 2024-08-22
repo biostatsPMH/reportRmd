@@ -107,6 +107,10 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (!unformattedp) {
     tab[["p-value"]] <- formatp(tab[["p-value"]])
   }
+
+  # changing UB to Inf, LB to 0
+  tab[, 2] <- sapply(tab[, 2], process_ci)
+
   p_col <- (which(names(tab) == "p-value"))
   bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)))))
   if (nrow(bold_cells) < 1) {
@@ -114,6 +118,10 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   }
 
   names(tab)[1] <- covTitle
+  lbl <- tab[, 1]
+  if (nicenames) {
+    tab[, 1] <- replaceLbl(argList$data, lbl)
+  }
   argL <- list(tab=tab, digits = digits,
                to_indent=to_indent,bold_cells=bold_cells
   )

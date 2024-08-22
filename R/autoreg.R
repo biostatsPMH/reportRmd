@@ -8,6 +8,7 @@ autoreg <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NUL
 }
 
 autoreg.rm_default <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   eval(parse(text = paste('m2 <- lm(',
                           paste(response, "~",x_var, sep = ""),
                           ',data = data)')))
@@ -15,6 +16,7 @@ autoreg.rm_default <- function(response,data,x_var,id=NULL,strata="",family=NULL
 }
 
 autoreg.rm_lm <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   eval(parse(text = paste('m2 <- lm(',
                           paste(response, "~",x_var, sep = ""),
                           ',data = data)')))
@@ -22,6 +24,7 @@ autoreg.rm_lm <- function(response,data,x_var,id=NULL,strata="",family=NULL,offs
 }
 
 autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   if (all(data[[response[2]]]==0)) stop('No events observed, can\'t fit a Cox model.')
   if (all(data[[response[2]]]==1)) stop(paste('All participants with non-missing',x_var,'experienced the event. \nConsider continuous regression.'))
   f <- paste(paste("survival::Surv(",
@@ -40,6 +43,7 @@ autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,o
 }
 
 autoreg.rm_crr <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   eval(parse(text = paste('m2 <- crrRx(',paste(paste(response,collapse = "+"),
                                                "~", x_var, sep = ""),
                           ',data = data)')))
@@ -47,6 +51,7 @@ autoreg.rm_crr <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
 }
 
 autoreg.rm_glm <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   eval(parse(text = paste("m2 <- glm(",paste(response, "~",x_var, sep = ""),
                           ",family = ",family,",",
                           ifelse(is.null(offset),"",paste("offset=",offset,",")),
@@ -55,6 +60,7 @@ autoreg.rm_glm <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
 }
 
 autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   idf <- as.numeric(as.factor(data[[id]]))
   class(response) <- "character"
   if (inherits(data[[response]],"factor")) data[[response]] <- as.numeric(data[[response]])-1
@@ -67,6 +73,7 @@ autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NU
 
 
 autoreg.rm_negbin <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   f <- paste(response, "~",x_var,
              ifelse(is.null(offset),"",paste0("+offset(",offset,")")),
              sep = "")
@@ -76,6 +83,7 @@ autoreg.rm_negbin <-function(response,data,x_var,id=NULL,strata="",family=NULL,o
   return(m2)
 }
 autoreg.rm_boxcox <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   eval(parse(text = paste('m2 <- boxcoxfitRx(',
                           paste(response,"~", x_var, sep = ""),
                           ',data = data)')))
@@ -84,6 +92,7 @@ autoreg.rm_boxcox <-function(response,data,x_var,id=NULL,strata="",family=NULL,o
 }
 
 autoreg.rm_ordinal <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  m2 <- NULL
   eval(parse(text = paste('m2 = MASS::polr(data = data,',
                           paste(response,"~", x_var, sep = ""),
                           ',method = "logistic",Hess = TRUE)')))
