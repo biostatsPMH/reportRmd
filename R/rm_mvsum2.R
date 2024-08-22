@@ -80,6 +80,9 @@ rm_mvsum2 <- function(model, data, digits=getOption("reportRmd.digits",2),covTit
 
   lifecycle::deprecate_soft("0.2.0","rm_mvsum2(data)")
   lifecycle::deprecate_soft("0.2.0","rm_mvsum2(chunk_label)")
+  if (any(is.na(model$coefficients))) stop(paste0('rm_mvsum2 cannot run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
+                                                  paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
+                                                  "\nPlease re-fit a valid model prior to reporting. Do you need to run droplevels?"))
   # get the table
   tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
   att_tab <- attributes(tab)
