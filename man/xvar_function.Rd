@@ -54,7 +54,7 @@ Epsilon-squared, or Omega-squared for numeric/continuous variables}
 
 \item{show.tests}{logical indicating if the type of statistical test and
 effect size (if effSize = TRUE) used should be shown in a column beside the
-p-values.}
+p-values. Ignored if pvalue = FALSE}
 
 \item{percentage}{choice of how percentages are presented, either column
 (default) or row}

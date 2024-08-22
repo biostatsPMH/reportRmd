@@ -1,5 +1,5 @@
 # Allow access to the uvmodels internal data object
-# data(sysdata, envir=environment())
+data(sysdata, envir=environment())
 
 # Fitting Functions ---------------------------
 # default is linear
