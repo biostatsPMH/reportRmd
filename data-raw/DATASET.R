@@ -63,6 +63,7 @@ for (f in grep('_var',sheets,value=T)){
   # cat("#' ",name,'\n')
   # cat("#' ",'\n')
 
+  cat("#' @usage data('",name,"')\n",sep="")
   cat("#' @format A data frame with ",nrow(datafile)," rows and ",ncol(datafile)," variables:\n",sep="")
   cat("#' \\describe{ \n",sep="")
   for (i in 1:nrow(var_info)){
@@ -90,6 +91,21 @@ for (f in grep('_var',sheets,value=T)){
 
 
 # Package System Data --------------------
-
 uvmodels <- readxl::read_excel('data-raw/uvmodels.xlsx')
-save(uvmodels,file="data/sysdata.rda")
+usethis::use_data(uvmodels,internal = TRUE)
+
+## add documentation
+sink('R/data.R',append = TRUE)
+cat("#'  Aligning models and parameters \n")
+cat("#'\n")
+cat("#' @format A data frame with 16 rows and 5 variables:\n")
+cat("#' \\describe{\n")
+cat("#'   \\item{type}{model type}\n")
+cat("#'   \\item{family}{model linking family}\n")
+cat("#'   \\item{gee}{boolean indicating if gee are used}\n")
+cat("#'   \\item{autoreg_class}{class of model fit}\n")
+cat("#'   \\item{beta}{description of output parameter}\n")
+cat("#' }\n")
+cat("#' @source internal\n")
+cat('"uvmodels"\n\n')
+sink()

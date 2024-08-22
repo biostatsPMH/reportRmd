@@ -21,7 +21,7 @@ A data frame with 270 rows and 6 variables:
 \url{https://www.nature.com/articles/s43018-020-0096-5}
 }
 \usage{
-testData
+data('testData')
 }
 \description{
 Funky ctDNA data

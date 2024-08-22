@@ -184,7 +184,9 @@ sw_df <- function(model){
   qform <- function(x,A){
     sum(x * (A %*% x))
   }
-  L <- diag(length(fixef(model)))
+  if (requireNamespace("nlme", quietly = TRUE)) {
+    L <- diag(length(nlme::fixef(model)))
+  } else stop("Summarising mixed effects models requires the nlme package be installed")
   var_con <- qform(L, vcov(model))
   grad_var_con <- vapply(model@Jac_list, function(x) qform(L,x), numeric(1L))
   satt_denom <- qform(grad_var_con, model@vcov_varpar)
@@ -258,7 +260,10 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
 coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
   ms <- data.frame(summary(model)$coefficients)
   if (model$family$link %in% c("logit","log")){
-    ci <- as.data.frame(exp(confint(model,level = CIwidth)))
+    ci <- suppressMessages(try(as.data.frame(exp(confint(model,level = CIwidth))),silent=TRUE))
+    if (inherits(ci,"try-error")){
+      ci <- as.data.frame(exp(confint.default(model,level = CIwidth)))
+    } else message("Waiting for profiling to be done...")
     ms$Estimate <- exp(ms$Estimate)
   } else {
     ci <- as.data.frame(confint(model,level = CIwidth))
@@ -307,7 +312,7 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
   pvalues = stats::pnorm(abs(ms[, "Value"]/ms[,"Std. Error"]), lower.tail = FALSE) * 2
   cs <- data.frame(
     terms=rownames(ms),
-    est=ms[,2],
+    est=exp(ms[,1]),
     p_value = pvalues
   )
 
