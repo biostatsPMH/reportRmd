@@ -187,6 +187,8 @@ sw_df <- function(model){
   if (requireNamespace("nlme", quietly = TRUE)) {
     L <- diag(length(nlme::fixef(model)))
   } else stop("Summarising mixed effects models requires the nlme package be installed")
+
+
   var_con <- qform(L, vcov(model))
   grad_var_con <- vapply(model@Jac_list, function(x) qform(L,x), numeric(1L))
   satt_denom <- qform(grad_var_con, model@vcov_varpar)
@@ -266,8 +268,10 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
     } else message("Waiting for profiling to be done...")
     ms$Estimate <- exp(ms$Estimate)
   } else {
-    ci <- as.data.frame(confint(model,level = CIwidth))
-  }
+    ci <- suppressMessages(try(as.data.frame(confint(model,level = CIwidth)),silent = TRUE))
+    if (inherits(ci,"try-error")){
+      ci <- as.data.frame(confint.default(model,level = CIwidth))
+    }}
   names(ci) <- c("lwr","upr")
   ci$terms <- rownames(ci)
   rownames(ci) <- NULL

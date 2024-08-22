@@ -310,3 +310,17 @@ mv_gee <- geepack::geeglm(os_status ~ age+sex+cohort,
 rm_mvsum(mv_gee)
 rm_mvsum2(mv_gee)
 model <- mv_gee
+
+
+## LM GEE fitting
+## To do: add models for binomial & poisson and test against rm_mvsum
+mv_lm_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
+                             id=pembrolizumab$id, # always need to specify for gee models
+                             family = gaussian)
+rm_mvsum2(mv_lm_gee)
+
+# geeglm will fail if the interactions are too complex
+mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
+                              id=pembrolizumab$id,
+                              family = gaussian)
+rm_mvsum2(mv_lm2_gee)
