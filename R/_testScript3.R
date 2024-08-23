@@ -332,7 +332,7 @@ mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
 rm_mvsum(mv_lm2_gee)
 rm_mvsum2(mv_lm2_gee)
 
-## Binomial
+## Poisson
 mv_pois_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
                              id=pembrolizumab$id, # always need to specify for gee models
                              family = "poisson")
@@ -344,3 +344,20 @@ mv_pois2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizuma
                               family = "poisson")
 rm_mvsum(mv_pois2_gee)
 rm_mvsum2(mv_pois2_gee)
+
+## Binomial
+pembrolizumab$binary <- rbinom(nrow(pembrolizumab), 1, 0.5)
+mv_binom_gee <- geepack::geeglm(binary ~ age+sex+cohort,data = pembrolizumab,
+                               id=pembrolizumab$id, # always need to specify for gee models
+                               family = "binomial")
+rm_mvsum(mv_binom_gee)
+rm_mvsum2(mv_binom_gee)
+
+mv_binom2_gee <- geepack::geeglm(binary ~ age*sex+cohort+l_size,data = pembrolizumab,
+                                id=pembrolizumab$id,
+                                family = "binomial")
+# mv_binom2_gee <- geepack::geeglm(orr~age:sex+cohort,data = pembrolizumab,
+#                                  id=pembrolizumab$id,
+#                                  family = "binomial")
+rm_mvsum(mv_binom2_gee)
+rm_mvsum2(mv_binom2_gee)

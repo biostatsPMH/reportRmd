@@ -111,18 +111,26 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     stop("xvars is a required argument")
   if (!inherits(data, "data.frame"))
     stop("data must be supplied as a data frame.")
-  if (!inherits(xvars, "character"))
-    stop("xvars must be supplied as a character vector or string indicating variables in data")
-  missing_vars = setdiff(xvars, names(data))
+  if (!missing(grp)) {
+    grouping_var <- tidyselect::eval_select(expr = enquo(grp), data = data[unique(names(data))],
+                                            allow_rename = FALSE)
+    grouping_var <- names(grouping_var)
+  }
+  else {
+    grouping_var <- NULL
+  }
+  if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
+
+  x_vars <- tidyselect::eval_select(expr = enquo(xvars), data = data[unique(names(data))],
+                                    allow_rename = FALSE)
+  x_vars <- names(x_vars)
+
+  missing_vars = setdiff(x_vars, names(data))
   if (length(missing_vars) > 0) {
     stop(paste0("These xvars are not in the data: '", paste0(missing_vars, collapse = "', '"), "'"))
   }
   if (missing(use_mean)) {
     use_mean <- FALSE
-  }
-  if (!missing(grp)) {
-    if (!inherits(grp, "character") | length(grp) > 1)
-      stop("grp must be supplied as a string indicating a variable in data")
   }
   if (!((is.logical(use_mean) & length(use_mean) == 1) | (is.character(use_mean) & length(use_mean) > 0))) {
     stop("use_mean must be a character vector or a logical")
@@ -137,10 +145,19 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     stop("percentage argument must be either 'row' or 'col'")
   }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
+  if (!all(sapply(argList$xvars[-1], is.character))) {
+    argList$xvars <- x_vars
+  }
+  if (!is.character(argList$grp)) {
+    argList$grp <- grouping_var
+  }
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
-
+  if (!is.null(grouping_var)) {
+    grp <- grouping_var
+  }
+  xvars <- x_vars
   dt <- as.name(args$data)
   if (!missing(grp)) {
     if (!(grp %in% names(data))) {
@@ -300,7 +317,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   lbl <- result[, 1]
   if (nicenames) {
     if (typeof(args$data) == "symbol") {
-    result[, 1] <- replaceLbl(args$data, lbl)
+      result[, 1] <- replaceLbl(args$data, lbl)
     }
     else {
       result[, 1] <- replaceLbl(dt, lbl)
