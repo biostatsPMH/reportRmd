@@ -317,10 +317,30 @@ model <- mv_gee
 mv_lm_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
                              id=pembrolizumab$id, # always need to specify for gee models
                              family = gaussian)
+rm_mvsum(mv_lm_gee)
 rm_mvsum2(mv_lm_gee)
+
+uv_lm_gee <- rm_uvsum("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
+                             id=pembrolizumab$id, # always need to specify for gee models
+                             family = gaussian)
+
 
 # geeglm will fail if the interactions are too complex
 mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
                               id=pembrolizumab$id,
                               family = gaussian)
+rm_mvsum(mv_lm2_gee)
 rm_mvsum2(mv_lm2_gee)
+
+## Binomial
+mv_pois_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
+                             id=pembrolizumab$id, # always need to specify for gee models
+                             family = "poisson")
+rm_mvsum(mv_pois_gee)
+rm_mvsum2(mv_pois_gee)
+
+mv_pois2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
+                              id=pembrolizumab$id,
+                              family = "poisson")
+rm_mvsum(mv_pois2_gee)
+rm_mvsum2(mv_pois2_gee)
