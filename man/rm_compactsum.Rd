@@ -112,6 +112,9 @@ will be used for numerical variables. Otherwise, ANOVA (mean) or kruskal-
 wallis tests will be used. The statistical test used can be displayed by
 specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 or xvars with less than 2 counts in any level will not be shown.
+
+tidyselect can only be used for xvars and grp variables. Additional
+arguments must be passed in using characters
 }
 \examples{
 data("pembrolizumab")
@@ -129,6 +132,9 @@ effSize = TRUE, show.tests = TRUE)
 rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 
+# Using tidyselect
+pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
+effSize = TRUE)
 
 }
 \references{

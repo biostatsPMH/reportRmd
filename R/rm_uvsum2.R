@@ -1,3 +1,122 @@
+#'Output several univariate models nicely in a single table
+#'
+#'A table with the model parameters from running separate univariate models on
+#'each covariate. For factors with more than two levels a Global p-value is
+#'returned.
+#'
+#'Global p-values are likelihood ratio tests for lm, glm and polr models. For
+#'lme models an attempt is made to re-fit the model using ML and if,successful
+#'LRT is used to obtain a global p-value. For coxph models the model is re-run
+#'without robust variances with and without each variable and a LRT is
+#'presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
+#'Wald global p-values are returned.
+#'
+#'The number of decimals places to display the statistics can be changed with
+#'digits, but this will not change the display of p-values. If more significant
+#'digits are required for p-values then use tableOnly=TRUE and format as
+#'desired.
+#'
+#'tidyselect can only be used for response and covs variables. Additional
+#'arguments must be passed in using characters
+#'
+#'@param response string vector with name of response
+#'@param covs character vector with the names of columns to fit univariate
+#'  models to
+#'@param data dataframe containing data
+#'@param digits number of digits to round estimates and CI to. Does not affect
+#'  p-values.
+#'@param covTitle character with the names of the covariate (predictor) column.
+#'  The default is to leave this empty for output or, for table only output to
+#'  use the column name 'Covariate'.
+#'@param caption character containing table caption (default is no caption)
+#'@param tableOnly boolean indicating if unformatted table should be returned
+#'@param removeInf boolean indicating if infinite estimates should be removed
+#'  from the table
+#'@param p.adjust p-adjustments to be performed (Global p-values only)
+#'@param unformattedp boolean indicating if you would like the p-value to be
+#'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
+#'  in conjunction with the digits argument.
+#'@param whichp string indicating whether you want to display p-values for
+#'  levels within categorical data ("levels"), global p values ("global"), or
+#'  both ("both"). Irrelevant for continuous predictors.
+#'@param chunk_label only used if output is to Word to allow cross-referencing
+#'@param  gee boolean indicating if gee models should be fit to account for
+#'  correlated observations. If TRUE then the id argument must specify the
+#'  column in the data which indicates the correlated clusters.
+#'@param id character vector which identifies clusters. Only used for geeglm
+#'@param corstr character string specifying the correlation structure. Only used
+#'  for geeglm. The following are permitted: '"independence"', '"exchangeable"',
+#'  '"ar1"', '"unstructured"' and '"userdefined"'
+#'@param family description of the error distribution and link function to be
+#'  used in the model. Only used for geeglm
+#'@param type string indicating the type of univariate model to fit. The
+#'  function will try and guess what type you want based on your response. If
+#'  you want to override this you can manually specify the type. Options include
+#'  "linear", "logistic", "poisson",coxph", "crr", "boxcox", "ordinal", "geeglm"
+#'@param offset string specifying the offset term to be used for Poisson or
+#'  negative binomial regression. Example: offset="log(follow_up)"
+#'@param strata character vector of covariates to stratify by. Only used for
+#'  coxph and crr
+#'@param nicenames boolean indicating if you want to replace . and _ in strings
+#'  with a space
+#'@param showN boolean indicating if you want to show sample sizes
+#'@param showEvent boolean indicating if you want to show number of events. Only
+#'  available for logistic.
+#'@param CIwidth width of confidence interval, default is 0.95
+#'@param reflevel manual specification of the reference level. Only used for
+#'  ordinal regression This will allow you to see which model is not fitting if
+#'  the function throws an error
+#'@param returnModels boolean indicating if a list of fitted models should be
+#'  returned. If this is TRUE then the models will be returned, but the output
+#'  will be suppressed. In addition to the model elements a data element will be
+#'  appended to each model so that the fitted data can be examined, if
+#'  necessary. See Details
+#'@param fontsize PDF/HTML output only, manually set the table fontsize
+#'@param forceWald boolean indicating if Wald confidence intervals should be
+#'  used instead of profile likelihood. This is not recommended, but can speed
+#'  up computations. To use throughout a document use
+#'  options(reportRmd.forceWald=TRUE)
+#'@seealso
+#'\code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
+#'\code{\link{coxph}}, \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
+#'@return A character vector of the table source code, unless tableOnly=TRUE in
+#'  which case a data frame is returned
+#'@export
+#' @examples
+#' # Examples are for demonstration and are not meaningful
+#' # Coxph model with 90% CI
+#' data("pembrolizumab")
+#' rm_uvsum2(response = c('os_time','os_status'),
+#' covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+#' data=pembrolizumab,CIwidth=.9)
+#'
+#' # Linear model with default 95% CI
+#' rm_uvsum2(response = 'baseline_ctdna',
+#' covs=c('age','sex','l_size','pdl1','tmb'),
+#' data=pembrolizumab)
+#'
+#' # Logistic model with default 95% CI
+#' rm_uvsum2(response = 'os_status',
+#' covs=c('age','sex','l_size','pdl1','tmb'),
+#' data=pembrolizumab,family = binomial)
+
+#' # Poisson models returned as model list
+#' mList <- rm_uvsum2(response = 'baseline_ctdna',
+#' covs=c('age','sex','l_size','pdl1','tmb'),
+#' data=pembrolizumab, returnModels=TRUE)
+#' #'
+#' # GEE on correlated outcomes
+#' data("ctDNA")
+#' rm_uvsum2(response = 'size_change',
+#' covs=c('time','ctdna_status'),
+#' gee=TRUE,
+#' id='id', corstr="exchangeable",
+#' family=gaussian("identity"),
+#' data=ctDNA,showN=TRUE)
+#'
+#' # Using tidyselect
+#' pembrolizumab |> rm_uvsum2(response = sex,
+#' covs = c(age, cohort))
 rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits",2), covTitle='',caption=NULL,
                       tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
                       whichp=c("levels","global","both"),
@@ -7,11 +126,16 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
                       strata = 1,
                       nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
                       reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
+  response_var <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
+                                          allow_rename = FALSE)
+  response_var <- names(response_var)
 
+  x_vars <- tidyselect::eval_select(expr = enquo(covs), data = data[unique(names(data))],
+                                    allow_rename = FALSE)
+  x_vars <- names(x_vars)
   if (missing(data)) stop('data is a required argument')
-  if (missing(covs)) stop('covs is a required argument') else covs <- unique(covs)
+  if (missing(covs)) stop('covs is a required argument') else covs <- unique(x_vars)
   if (missing(response)) stop('response is a required argument')
-
   empty <- NULL
   if ("" %in% c(strata, type, offset, id)) {
     args <- list(strata = strata, type = type, offset = offset, id = id)
@@ -23,9 +147,11 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
   }
 
+  response <- response_var
+  covs <- x_vars
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
   if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
-  if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
+  # if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
   missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))
@@ -34,6 +160,12 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
   argList <- as.list(match.call()[-1])
+  if (!all(sapply(argList$covs[-1], is.character))) {
+    argList$covs <- x_vars
+  }
+  if (!is.character(argList$response)) {
+    argList$response <- response_var
+  }
   if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }

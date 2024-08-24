@@ -10,7 +10,8 @@
 #' specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 #' or xvars with less than 2 counts in any level will not be shown.
 #'
-#'
+#' tidyselect can only be used for xvars and grp variables. Additional
+#' arguments must be passed in using characters
 #'
 #' @param data dataframe containing data
 #' @param xvars character vector with the names of covariates to include in
@@ -102,6 +103,9 @@
 #' rm_compactsum(data = pembrolizumab, xvars = c("l_size",
 #' "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 #'
+#' # Using tidyselect
+#' pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
+#' effSize = TRUE)
 #'
 #' @export
 rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = FALSE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.tests = FALSE, full = TRUE, percentage = "col") {
@@ -770,8 +774,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp <- data[, xvar]
     temp[[xvar]] <- binary_column
   }
-  df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  " n (%)"
+  df <- data.frame(Covariate = paste(xvar, "-", unique_levels[2]))
+  df[["disp"]] <-  " (n (%))"
   x_var <- temp[[xvar]]
   if (percentage == "row") {
     df[, paste0("Full Sample (n=", nrow(temp), ")")] <- as.character(sum(x_var, na.rm = TRUE))
