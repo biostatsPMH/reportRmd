@@ -1,6 +1,6 @@
 # Combind model components and variable levels and sample sizes
 
-m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for_plot = FALSE){
+m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
   if (any(!is.na(m_coeff$lwr) & !is.na(m_coeff$upr) & (m_coeff$lwr == m_coeff$upr))) message("Zero-width confidence interval detected. Check predictor units.")
@@ -40,7 +40,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="level", for
     cs <- suppressMessages(dplyr::full_join(cs,VIF, by = dplyr::join_by(terms)))
   }
 
-  if (whichp!="level"){
+  if (whichp!="levels"){
     global_p <- gp(model)
     colnames(global_p) <- c("terms", "global_p")
     cs <- suppressMessages(dplyr::full_join(cs,global_p, by = dplyr::join_by(terms)))
@@ -424,13 +424,14 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
   m2 <- NULL
   terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
   terms <- sapply(terms,trimws)
+  terms <- attr(model$terms,"term.labels")
   gp_vals <- data.frame(var=terms,
                         global_p = NA)
   rownames(gp_vals) <- NULL
   if (length(terms)>1){
   for (t in terms){
-    x <- ifelse(length(setdiff(terms,t))>0,setdiff(terms,t),1)
-    eval(parse(text = paste('m2 <-try(crrRx(',paste(paste(setdiff(names(model$model),terms),collapse = "+"),
+    if (length(setdiff(terms,t))>0) x <- setdiff(terms,t) else x <- "1"
+    eval(parse(text = paste('m2 <-try(crrRx(',paste(paste(names(model$model)[1:2],collapse = "+"),
                                                     "~", x, sep = ""),
                             ',data = model$model))')))
 
