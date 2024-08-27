@@ -129,11 +129,10 @@ rm_mvsum2 <- function(model, data, digits=getOption("reportRmd.digits",2),covTit
     bold_cells <- NULL
   }
 
-  ##Help
-  # if (nicenames){
-  #   attr(tab,"termnames") <- tab$Variable
-  #   tab$Variable <- replaceLbl(model$data, tab$Variable)
-  # }
+  if (nicenames){
+    attr(tab,"termnames") <- tab$Variable
+    tab$Variable <- replaceLbl(model$call[["data"]], tab$Variable)
+  }
 
   names(tab)[1] <- covTitle
   for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
