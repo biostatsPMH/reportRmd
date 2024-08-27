@@ -207,7 +207,7 @@ coeffSum(auto_gee)
 getVarLevels(auto_gee)
 
 pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
-
+idf <- pembrolizumab$id
 mv_gee <- geepack::geeglm(orr2 ~ age+sex+cohort, family = binomial,
                           data = pembrolizumab,
                           id = idf, corstr = "independence")
