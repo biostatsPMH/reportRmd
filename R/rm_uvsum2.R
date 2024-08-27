@@ -137,6 +137,8 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (missing(covs)) stop('covs is a required argument') else covs <- unique(x_vars)
   if (missing(response)) stop('response is a required argument')
   empty <- NULL
+
+  if (is.null(strata) | is.na(strata)) strata <- 1
   if ("" %in% c(strata, type, offset, id)) {
     args <- list(strata = strata, type = type, offset = offset, id = id)
     empty <- names(args)[which(args == "")]

@@ -3227,6 +3227,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
   if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
   if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
+  if (is.null(strata) | is.na(strata) | strata=="") strata <- 1
   missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))

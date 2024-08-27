@@ -26,6 +26,11 @@ m_summary(mv_lm2)
 
 uvsum_lm <- rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab)
 uvsum2_lm <- rm_uvsum2("age", covs = c("sex", "l_size"), data = pembrolizumab)
+
+rm_mvsum(mv_lm, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_lm, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_lm2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_lm2, showN = T, showEvent = T, vif = T, whichp = "both")
 ## Binomial -----
 uv_binom <- glm(formula=as.formula(orr~sex),data=pembrolizumab,family="binomial")
 coeffSum(uv_binom)
@@ -52,6 +57,10 @@ m_summary(mv_binom2)
 uvsum_binom <- rm_uvsum("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
 uvsum2_binom <- rm_uvsum2("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
 
+rm_mvsum(mv_binom, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_binom, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "both")
 ## Poisson -----
 pembrolizumab$int_var <- rpois(n=nrow(pembrolizumab),lambda = 1)
 uv_pois <- glm(formula=as.formula(int_var~age),data=pembrolizumab, family="poisson",offset=NULL)
@@ -79,6 +88,12 @@ m_summary(mv_pois2)
 
 uvsum_pois <- rm_uvsum("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "poisson",offset=NULL)
 uvsum2_pois <- rm_uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "poisson",offset=NULL)
+
+rm_mvsum(mv_pois, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_pois, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_pois2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_pois2, showN = T, showEvent = T, vif = T, whichp = "both")
+
 ## Negative Binomial -----
 uv_negbin <- MASS::glm.nb(formula=as.formula(int_var~sex),data=pembrolizumab)
 coeffSum(uv_negbin)
@@ -104,6 +119,11 @@ m_summary(mv_negbin2)
 
 uvsum_negbin <- rm_uvsum("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, offset=NULL, type = "negbin")
 uvsum2_negbin <- rm_uvsum2("int_var", covs = c("age", "sex", "cohort"), data = pembrolizumab, offset=NULL, type = "negbin")
+
+rm_mvsum(mv_negbin, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_negbin, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_negbin2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_negbin2, showN = T, showEvent = T, vif = T, whichp = "both")
 
 ## Ordinal -----
 pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$int_var),ordered = TRUE)
@@ -136,6 +156,10 @@ m_summary(mv_ord2)
 uvsum_ord <- rm_uvsum("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 uvsum2_ord <- rm_uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
+rm_mvsum(mv_ord, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_ord, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_ord2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_ord2, showN = T, showEvent = T, vif = T, whichp = "both")
 
 ## Cox PH -----
 uv_cox <- coxph(Surv(os_time, os_status) ~ sex, data = pembrolizumab)
@@ -167,6 +191,11 @@ uvsum2_cox <- rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex"
 uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
 uvsum2_cox <- rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
 
+rm_mvsum(mv_cox, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_cox, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_cox2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_cox2, showN = T, showEvent = T, vif = T, whichp = "both")
+
 ## CRR -----
 pembrolizumab$os_status2 <- pembrolizumab$os_status
 pembrolizumab$os_status2[sample(1:nrow(pembrolizumab),10,replace = FALSE)] <-2
@@ -197,6 +226,11 @@ rm_mvsum2(mv_crr2,whichp = "both")
 
 uvsum_crr <- rm_uvsum(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
 uvsum2_crr <- rm_uvsum2(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
+
+rm_mvsum(mv_crr, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_crr, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum(mv_crr2, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_crr2, showN = T, showEvent = T, vif = T, whichp = "both")
 
 ## GEE  (NEED MORE MODELS HERE) -----
 uv_gee <- geepack::geeglm(formula=as.formula(orr~sex),data=pembrolizumab)
@@ -237,6 +271,64 @@ uvsum2(response = c('os_time','os_status2'),
        data=pembrolizumab,CIwidth=.9)
 
 rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id="",strata = "")
+## LM GEE fitting
+## To do: add models for binomial & poisson and test against rm_mvsum
+mv_lm_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
+                             id=pembrolizumab$id, # always need to specify for gee models
+                             family = gaussian)
+rm_mvsum(mv_lm_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_lm_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+uv_lm_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
+                       id=pembrolizumab$id, # always need to specify for gee models
+                       family = gaussian, type = "gee")
+
+
+# geeglm will fail if the interactions are too complex
+mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
+                              id=pembrolizumab$id,
+                              family = gaussian)
+rm_mvsum(mv_lm2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_lm2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+
+## Poisson
+mv_pois_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
+                               id=pembrolizumab$id, # always need to specify for gee models
+                               family = "poisson")
+rm_mvsum(mv_pois_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_pois_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+uv_pois_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
+                         id=pembrolizumab$id, # always need to specify for gee models
+                         family = poisson, type = "gee")
+
+mv_pois2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
+                                id=pembrolizumab$id,
+                                family = "poisson")
+rm_mvsum(mv_pois2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_pois2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+## Binomial
+pembrolizumab$binary <- rbinom(nrow(pembrolizumab), 1, 0.5)
+mv_binom_gee <- geepack::geeglm(binary ~ age+sex+cohort,data = pembrolizumab,
+                                id=pembrolizumab$id, # always need to specify for gee models
+                                family = "binomial")
+rm_mvsum(mv_binom_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_binom_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+uv_binom_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
+                          id=pembrolizumab$id, # always need to specify for gee models
+                          family = binomial, type = "gee")
+
+mv_binom2_gee <- geepack::geeglm(binary ~ age*sex+cohort+l_size,data = pembrolizumab,
+                                 id=pembrolizumab$id,
+                                 family = "binomial")
+# mv_binom2_gee <- geepack::geeglm(orr~age:sex+cohort,data = pembrolizumab,
+#                                  id=pembrolizumab$id,
+#                                  family = "binomial")
+rm_mvsum(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
 
 
 # works fine
@@ -273,10 +365,6 @@ rm_compactsum(data = pembrolizumab, xvars = c("age","l_size"), grp = "sex", all.
 rm_compactsum(data = pembrolizumab, xvars = c("cohort"), grp = "sex", all.stats = T)
 
 rm_compactsum(data = pembrolizumab, xvars = c("age","cohort"), grp = "sex", all.stats = T)
-
-# This gives the same results for me for the p-values ?
-uvsum_ord <- rm_uvsum("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
-uvsum2_ord <- rm_uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
 mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
 # This is performing regular CI (shouldn't!!)
@@ -317,61 +405,3 @@ rm_mvsum2(mv_gee)
 model <- mv_gee
 
 
-## LM GEE fitting
-## To do: add models for binomial & poisson and test against rm_mvsum
-mv_lm_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
-                             id=pembrolizumab$id, # always need to specify for gee models
-                             family = gaussian)
-rm_mvsum(mv_lm_gee)
-rm_mvsum2(mv_lm_gee)
-
-uv_lm_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
-                             id=pembrolizumab$id, # always need to specify for gee models
-                             family = gaussian, type = "gee")
-
-
-# geeglm will fail if the interactions are too complex
-mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
-                              id=pembrolizumab$id,
-                              family = gaussian)
-rm_mvsum(mv_lm2_gee)
-rm_mvsum2(mv_lm2_gee)
-
-
-## Poisson
-mv_pois_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
-                             id=pembrolizumab$id, # always need to specify for gee models
-                             family = "poisson")
-rm_mvsum(mv_pois_gee)
-rm_mvsum2(mv_pois_gee)
-
-uv_pois_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
-                      id=pembrolizumab$id, # always need to specify for gee models
-                      family = poisson, type = "gee")
-
-mv_pois2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
-                              id=pembrolizumab$id,
-                              family = "poisson")
-rm_mvsum(mv_pois2_gee)
-rm_mvsum2(mv_pois2_gee)
-
-## Binomial
-pembrolizumab$binary <- rbinom(nrow(pembrolizumab), 1, 0.5)
-mv_binom_gee <- geepack::geeglm(binary ~ age+sex+cohort,data = pembrolizumab,
-                               id=pembrolizumab$id, # always need to specify for gee models
-                               family = "binomial")
-rm_mvsum(mv_binom_gee)
-rm_mvsum2(mv_binom_gee)
-
-uv_binom_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
-                        id=pembrolizumab$id, # always need to specify for gee models
-                        family = binomial, type = "gee")
-
-mv_binom2_gee <- geepack::geeglm(binary ~ age*sex+cohort+l_size,data = pembrolizumab,
-                                id=pembrolizumab$id,
-                                family = "binomial")
-# mv_binom2_gee <- geepack::geeglm(orr~age:sex+cohort,data = pembrolizumab,
-#                                  id=pembrolizumab$id,
-#                                  family = "binomial")
-rm_mvsum(mv_binom2_gee)
-rm_mvsum2(mv_binom2_gee)
