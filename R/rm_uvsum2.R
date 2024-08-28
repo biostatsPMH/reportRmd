@@ -136,14 +136,14 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument') else covs <- unique(x_vars)
   if (missing(response)) stop('response is a required argument')
-  empty <- NULL
+  fun <- get(match.call()[[1]])
+  argList <- as.list(match.call()[-1])
 
-  if (is.null(strata) | is.na(strata)) strata <- 1
+  empty <- NULL
   if ("" %in% c(strata, type, offset, id)) {
     args <- list(strata = strata, type = type, offset = offset, id = id)
     empty <- names(args)[which(args == "")]
     for (var in empty) {
-      fun <- get(match.call()[[1]])
       assign(var, formals(fun)[[var]])
     }
     warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
@@ -157,11 +157,18 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))
-  if (strata==1) nm <- c(response,covs) else nm <- c(strata,response,covs)
+  if (is.null(strata)) {
+    strata <- formals(fun)[["strata"]]
+    argList[["strata"]] <- formals(fun)[["strata"]]
+  }
+  if (is.na(strata)) {
+    strata <- formals(fun)[["strata"]]
+    argList[["strata"]] <- formals(fun)[["strata"]]
+  }
+  if (strata==1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
-  argList <- as.list(match.call()[-1])
   if (!all(sapply(argList$covs[-1], is.character))) {
     argList$covs <- x_vars
   }
@@ -185,12 +192,6 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   nomiss <- nrow(na.omit(data[,response,drop=FALSE]))
   if (nrow(data)!=nomiss) warning(paste("Cases with missing response data have been removed.\n",
                                           nrow(data)-nomiss,"case(s) removed."))
-  ## TO DO - split out testing for this function,
-  ## and data changes for the uvsum2 function
-  ## need to do this, because when we run the models
-  ## we and summarise the data from the same function
-  ## that contains the changed data
-  ## -------------------------------------------------
   for (v in covs) {
     if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
     if (inherits(data[[v]],c('Date','POSIXt'))) {
@@ -210,32 +211,18 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
       covs <- setdiff(covs,v)
     }
   }
+  if (is.null(strata))
+  if (is.na(strata)) assign(argList[["strata"]], formals(fun)[["strata"]])
+
 
   # get the table
   tab <- do.call(uvsum2,argList)
-  # rtn <- uvsum2(response,covs,data,digits=digits,
-  #               gee=gee,id = id, offset=offset,
-  #               corstr = corstr,family = family,type = type,strata = strata,
-  #               nicenames = FALSE,showN = showN,showEvent = showEvent,
-  #               CIwidth = CIwidth,reflevel=reflevel,returnModels=returnModels,forceWald = forceWald)
-
   # If user specifies return models, don't format a table, just return a list of models
   to_indent <- attr(tab, "to_indent")
   bold_cells <- attr(tab, "bold_cells")
   if (returnModels) return (tab$models)
-
-
   att_tab <- attributes(tab)
 
-
-  # Adjust / format pvalues based on unformattedp, p.adjust
-
-  # Add variable labels
-  # may be easier to use extract_labels on data frame
-
-  # need to get bold/indent attributes
-
-  # formatting pval column
   method <- p.adjust
   tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
   if (!unformattedp) {
