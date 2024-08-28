@@ -139,6 +139,17 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   fun <- get(match.call()[[1]])
   argList <- as.list(match.call()[-1])
 
+  # checks for id and type
+  if (!is.null(id) & (length(id) != 1)) {
+    stop('id should be specified as a variable name')
+  }
+  # don't need the following check? will be ignored on line 160?
+  # else if (!(id %in% names(data))) {
+  #   stop(paste0('id argument "', id, '" is not in ', match.call()[["data"]]))
+  # }
+  if (type == "gee") {
+    stop('type == "gee" is not a valid argument; specify gee = TRUE instead')
+  }
   empty <- NULL
   if ("" %in% c(strata, type, offset, id)) {
     args <- list(strata = strata, type = type, offset = offset, id = id)

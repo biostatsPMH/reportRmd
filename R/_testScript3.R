@@ -1,6 +1,6 @@
 
 # Testing for getVarLevels and coeffSum ------------
-
+data("pembrolizumab")
 
 ## Linear -----
 uv_lm <- lm(age~sex,data=pembrolizumab)
@@ -280,7 +280,7 @@ rm_mvsum(mv_lm_gee, showN = T, showEvent = T, vif = T, whichp = "both")
 rm_mvsum2(mv_lm_gee, showN = T, showEvent = T, vif = T, whichp = "both")
 
 uv_lm_gee <- rm_uvsum2("pdl1", covs = c("age", "sex", "cohort"),data = pembrolizumab,
-                       id=pembrolizumab$id, # always need to specify for gee models
+                       id=pembrolizumab$id,
                        family = gaussian, type = "gee")
 
 

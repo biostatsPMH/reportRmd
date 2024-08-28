@@ -1,5 +1,50 @@
-# Combind model components and variable levels and sample sizes
-
+#'Output a table for multivariate or univariate regression models
+#'
+#'A dataframe corresponding to a univariate or multivariate regression
+#'table. If for_plot = TRUE, estimates and confidence interval bounds will
+#'also be displayed separately for easy plotting.
+#'
+#'Global p-values are likelihood ratio tests for lm, glm and polr models. For
+#'lme models an attempt is made to re-fit the model using ML and if,successful
+#'LRT is used to obtain a global p-value. For coxph models the model is re-run
+#'without robust variances with and without each variable and a LRT is
+#'presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
+#'Wald global p-values are returned. For negative binomial models a deviance
+#'test is used.
+#'
+#'If the variance inflation factor is requested (VIF=T) then a generalised VIF
+#'will be calculated in the same manner as the car package.
+#'
+#'If the MASS package is loaded, profile likelihood confidence intervals will be
+#'calculated; otherwise Wald confidence intervals will be calculated.
+#'Users should look for the message "Waiting for profiling to be done...", which
+#'indicates that profile likelihoods are calculated.
+#'
+#'The number of decimals places to display the statistics can be changed with
+#'digits, but this will not change the display of p-values. If more significant
+#'digits are required for p-values then use tableOnly=TRUE and format as
+#'desired.
+#'@param model model fit
+#'@param CIwidth width for confidence intervals, defaults to 0.95
+#'@param digits number of digits to round estimates to, does not affect p-values
+#'@param vif boolean indicating if the variance inflation factor should be
+#'  included. See details
+#'@param whichp string indicating whether you want to display p-values for
+#'  levels within categorical data ("levels"), global p values ("global"), or
+#'  both ("both"). Irrelevant for continuous predictors. When for_plot = TRUE,
+#'  global p values will be displayed in a separate column from p vlaues.
+#'  If whichp = "levels", global p values will not be included in the outputted
+#'  table.
+#'@param for_plot boolean indicating whether or not the function will be used
+#'  for plotting. Default is FALSE
+#'@export
+#'@examples
+#' data("pembrolizumab")
+#' uv_lm <- lm(age~sex,data=pembrolizumab)
+#' m_summary(uv_lm, digits = 3, for_plot = FALSE)
+#'
+#' mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
+#' m_summary(mv_binom, whichp = "both", for_plot = TRUE)
 m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
