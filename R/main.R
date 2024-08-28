@@ -1459,7 +1459,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     betanames <- attributes(summary(model)$coef)$dimnames[[1]]
     ss_data <- try(stats::model.frame(model$call$formula, eval(parse(text = paste("data=",
                                                                                   deparse(model$call$data))))), silent = TRUE)
-    if (inherits(ss_data,'try-error') & type == "crr") ss_data <- try(model$data)
+    if (inherits(ss_data,'try-error') & type == "crr") ss_data <- try(model$model)
   }
   else {
     stop("type must be either polr, coxph, glm, lm, geeglm, crr, lme, negbin (or NULL)")
@@ -1561,9 +1561,6 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     } else if (type=='coxph') {
       m_data <- data
       names(m_data)[1] <- 'y'
-      # m_full <- try(survival::coxph(y~.,data = m_data,robust=FALSE),silent=TRUE)
-      # m_small <- try(survival::coxph(y~.,data = m_data[,-which(names(m_data)==oldcovname)],robust=FALSE),silent=TRUE)
-      # gp_aov <- try(anova(m_small,m_full),silent = T)
       m_full <- try(stats::update(model,as.formula('y ~ . '),data=m_data),silent=TRUE)
       m_small <- try(stats::update(model,paste0('y ~ . -',oldcovname),data=m_data),silent=TRUE)
       gp_aov <- try(anova(m_small,m_full),silent = T)
@@ -1634,7 +1631,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
       pvalues <- c(sapply(m[covariateindex, 5], lpvalue))
     }
     if (length(betaname[[1]]) == 1) {
-      if (!is.factor(data[, oldcovname])) {
+      if (!inherits(data[[oldcovname]],"factor")) {
         title <- c(covariatename, hazardratio,pvalues, globalpvalue)
       }     else if (length(levelnames) == 1) {
         title <- c(covariatename, "", pvalues,globalpvalue)
@@ -1720,6 +1717,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     colnames(out) <- NULL
     return(list(out, nrow(out)))
   })
+
   table <- lapply(out, function(x) {
     return(x[[1]])
   })
@@ -3227,7 +3225,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
   if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
   if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
-  if (is.null(strata) | is.na(strata) | strata=="") strata <- 1
+  if (!missing(id)) if (!is.null(id)) if(!inherits(id,"character") | length(id)>1) stop("id must be specified as a character referring to a variable name, id='varname'")
+  if (is.null(strata)) strata <- 1
+  if ( is.na(strata) | strata=="") strata <- 1
   missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))

@@ -36,14 +36,21 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
   terms <- NULL
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
-    names(VIF)[1] <- "terms"
-    cs <- suppressMessages(dplyr::full_join(cs,VIF, by = dplyr::join_by(terms)))
+    if (!inherits(VIF,"try-error")){
+      names(VIF)[1] <- "terms"
+      cs <- suppressMessages(dplyr::full_join(cs,VIF, by = dplyr::join_by(terms)))
+    } else {
+      message("Variance inflation factor can not be calculated")
+      vif <- FALSE
+    }
   }
 
   if (whichp!="levels"){
     global_p <- gp(model)
-    colnames(global_p) <- c("terms", "global_p")
-    cs <- suppressMessages(dplyr::full_join(cs,global_p, by = dplyr::join_by(terms)))
+    if (!all(is.na(global_p))){
+      colnames(global_p) <- c("terms", "global_p")
+      cs <- suppressMessages(dplyr::full_join(cs,global_p, by = dplyr::join_by(terms)))
+    }
   }
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "header"])) {
@@ -80,6 +87,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
     }
   }
   cs <- cbind(data.frame(Variable = var_col), cs)
+  #! Clarina: If all the global p-values were NA, then they weren't merged in, so no global_p column (I added this on line 50)
   if (whichp == "both") {
     for (i in 1:nrow(cs)) {
       if (!is.na(cs[i, "header"]) & (length(which(cs$var == cs[i, "var"])) > 3)) {
@@ -356,9 +364,9 @@ get_model_data.polr <- function(model){
 }
 get_model_data.coxph <- function(model){
   if (is.null(model$data)){
-  df <- try(stats::model.frame(model$call$formula,
-                               eval(parse(text = paste("data=",
-                                                       deparse(model$call$data))))), silent = TRUE)
+    df <- try(stats::model.frame(model$call$formula,
+                                 eval(parse(text = paste("data=",
+                                                         deparse(model$call$data))))), silent = TRUE)
   } else (df <- model$data)
   if (inherits(df,'try-error')) {
     warning ("Model data could not be extracted")
@@ -401,22 +409,35 @@ get_event_counts.glm <- function(model){
 gp <- function(model) {
   UseMethod("gp", model)
 }
+
 gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- stats::drop1(model,scope=terms,test = "Chisq")
-  gp <- data.frame(var=rownames(globalpvalue)[-1],
-                   global_p = globalpvalue[-1,5])
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(model,scope=terms,test = "Chisq"),
+                      silent=T)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue[-1,5])
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
 
 
 gp.coxph <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- stats::drop1(model,scope=terms,test="Chisq")
-  gp <- data.frame(var=terms,
-                   global_p = globalpvalue[["Pr(>Chi)"]][-1])
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(model,scope=terms,test = "Chisq"),
+                      silent=TRUE)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=terms,
+                     global_p = globalpvalue[["Pr(>Chi)"]][-1])
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
 
@@ -429,65 +450,93 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
                         global_p = NA)
   rownames(gp_vals) <- NULL
   if (length(terms)>1){
-  for (t in terms){
-    if (length(setdiff(terms,t))>0) x <- setdiff(terms,t) else x <- "1"
-    eval(parse(text = paste('m2 <-try(crrRx(',paste(paste(names(model$model)[1:2],collapse = "+"),
-                                                    "~", x, sep = ""),
-                            ',data = model$model))')))
+    for (t in terms){
+      if (length(setdiff(terms,t))>0) x <- setdiff(terms,t) else x <- "1"
+      eval(parse(text = paste('m2 <-try(crrRx(',paste(paste(names(model$model)[1:2],collapse = "+"),
+                                                      "~", x, sep = ""),
+                              ',data = model$model))')))
 
-    if (!inherits(m2,"try-error")) {
-      degf <- length(grep(t,names(model$coef)))
-      gp <- pchisq(2*(model$loglik-m2$loglik),degf)
-    } else gp <- NA
-    gp_vals$global_p[which(gp_vals$var==t)] <- gp
-    attr(gp_vals,"global_p") <-"LRT"
-  }}
+      if (!inherits(m2,"try-error")) {
+        degf <- length(grep(t,names(model$coef)))
+        gp <- pchisq(2*(model$loglik-m2$loglik),degf)
+      } else gp <- NA
+      gp_vals$global_p[which(gp_vals$var==t)] <- gp
+      attr(gp_vals,"global_p") <-"LRT"
+    }}
   return(gp_vals)
 }
 
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- stats::drop1(model,scope=terms,test="LRT")
-  gp <- data.frame(var=rownames(globalpvalue)[-1],
-                   global_p = globalpvalue[-1,5])
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(model,scope=terms,test="LRT"),silent = TRUE)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue[-1,5])
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
 gp.lme <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- stats::drop1(stats::update(model,method="ML"),scope=terms,test = "Chisq")
-  gp <- data.frame(var=rownames(globalpvalue)[-1],
-                   global_p = globalpvalue[-1,5])
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(stats::update(model,method="ML"),scope=terms,test = "Chisq"),silent = TRUE)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue[-1,5])
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
+
 gp.lmerMod <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(terms(model), "term.labels")
-  globalpvalue <- stats::drop1(stats::update(model),scope=terms,test = "Chisq")
-  gp <- data.frame(var=rownames(globalpvalue)[-1],
-                   global_p = globalpvalue$`Pr(Chi)`[-1])
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(stats::update(model),scope=terms,test = "Chisq"),silent = TRUE)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue$`Pr(Chi)`[-1])
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
 gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(terms(model), "term.labels")
-  globalpvalue <- stats::drop1(stats::update(model),scope=terms,test = "Chisq")
-  gp <- data.frame(var=rownames(globalpvalue),
-                   global_p = globalpvalue$`Pr(>F)`)
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(stats::update(model),scope=terms,test = "Chisq"),silent = TRUE)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=rownames(globalpvalue),
+                     global_p = globalpvalue$`Pr(>F)`)
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
 
 gp.polr <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
-  globalpvalue <- stats::drop1(model,scope=terms,test="Chisq")
-  gp <- data.frame(var=rownames(globalpvalue)[-1],
-                   global_p = globalpvalue[["Pr(>Chi)"]][-1])
-  attr(gp,"global_p") <-"LRT"
+  globalpvalue <- try(stats::drop1(model,scope=terms,test="Chisq"),silent = TRUE)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+
+    gp <- data.frame(var=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue[["Pr(>Chi)"]][-1])
+    attr(gp,"global_p") <-"LRT"
+  }
   return(gp)
 }
 
-gp.gee <- function(model,CIwidth=.95,digits=2) {
+
+gp.geeglm <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   terms <- sapply(terms,trimws)
   gp_vals <- data.frame(var=terms,

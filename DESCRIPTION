@@ -49,7 +49,7 @@ Imports:
     stats,
     survival,
     tidyselect
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'rm_mvsum2.R'
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'rm_mvsum2.R' 
 Depends: 
     R (>= 4.2)
 LazyData: no
