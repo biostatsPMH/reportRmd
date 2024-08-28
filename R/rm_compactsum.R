@@ -251,7 +251,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 
   output_list <- NULL
   for (xvar in xvars) {
-    if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) == 2) {
+    if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) <= 2) {
       class(xvar) <- c(class(xvar),"rm_two_level")
     }
     else if (inherits(data[[xvar]],"factor")) {
@@ -774,9 +774,16 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   class(xvar) <- "character"
   temp <- data.frame()
   x_var <- data[[xvar]]
-  unique_levels <- unique(x_var)
-  unique_levels <- sort(unique_levels)
-  binary_column <- ifelse(x_var == unique_levels[1], 0, 1)
+  if (length(unique(na.omit(data[[xvar]]))) == 2) {
+    unique_levels <- unique(x_var)
+    unique_levels <- sort(unique_levels)
+    binary_column <- ifelse(x_var == unique_levels[1], 0, 1)
+    level_shown <- unique_levels[2]
+  }
+  else { # only one unique value in x_var
+    level_shown <- unique(x_var)[1]
+    binary_column <- ifelse(x_var == level_shown, 1, 0)
+  }
 
   if (!missing(grp)) {
     temp <- data[, grp]
@@ -787,7 +794,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp[[xvar]] <- binary_column
   }
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  paste("-", unique_levels[2], "(n (%))")
+  df[["disp"]] <-  paste("-", level_shown, "(n (%))")
   x_var <- temp[[xvar]]
   if (percentage == "row") {
     df[, paste0("Full Sample (n=", nrow(temp), ")")] <- as.character(sum(x_var, na.rm = TRUE))
