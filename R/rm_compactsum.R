@@ -123,6 +123,9 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   else {
     grouping_var <- NULL
   }
+  if (all.stats) {
+    use_mean <- FALSE
+  }
   if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
 
   x_vars <- tidyselect::eval_select(expr = enquo(xvars), data = data[unique(names(data))],
@@ -318,6 +321,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }
+  to_indent <- which(!(result[, 1] %in% names(data)))
+  bold_cells <- cbind(which(result[, 1] %in% names(data)), rep(1, length(which(result[, 1] %in% names(data)))))
+  p_col <- which(names(result) == "p-value") - 1
+  bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", result[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", result[["p-value"]])) < 0.05)))))
   lbl <- result[, 1]
   if (nicenames) {
     if (typeof(args$data) == "symbol") {
@@ -339,7 +346,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (tableOnly) {
     return(result)
   }
-  nicetable <- outTable(result, caption = caption, nicenames = nicenames)
+  nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
   return(nicetable)
 }
@@ -563,11 +570,14 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   class(xvar) <- "character"
   x_var <- data[[xvar]]
   if (all.stats) {
-    df <- data.frame(Covariate = c(xvar, "  Median (Q1, Q3)", "  Range (min, max)"))
+    df <- data.frame(Covariate = c(xvar, "  Mean (sd)", "  Median (Q1, Q3)", "  Range (min, max)"))
+    df[["disp"]] <- ""
+    display_mean <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), "(", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
     bracket_iqr <- paste0("(", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), ", ", format(round(stats::quantile(x_var, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")")
     bracket_range <- paste0("(", format(round(min(x_var, na.rm = TRUE), digits), nsmall = digits), ", ", format(round(max(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
-    df[2, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
-    df[3, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
+    df[2, paste0("Full Sample (n=", nrow(data), ")")] <- display_mean
+    df[3, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
+    df[4, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
   }
   else {
     df <- data.frame(Covariate = xvar)
@@ -579,14 +589,16 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   if (!missing(grp)) {
     group_var <- data[[grp]]
     if (all.stats) {
+      grp_mean <- lapply(as.list(levels(group_var)), mean_by_grp, data = data, xvar = xvar, grp = grp, digits = digits)
       grp_med <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = T, digits = digits)
       grp_range <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = F, digits = digits, range_only = T)
       i = 1
       for (level in levels(group_var)) {
         sub <- subset(data, group_var == level)
         title <- paste0(level, " (n=", nrow(sub), ")")
-        df[2, title] <- grp_med[i]
-        df[3, title] <- grp_range[i]
+        df[2, title] <- grp_mean[i]
+        df[3, title] <- grp_med[i]
+        df[4, title] <- grp_range[i]
         i = i+1
       }
     }
@@ -774,8 +786,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp <- data[, xvar]
     temp[[xvar]] <- binary_column
   }
-  df <- data.frame(Covariate = paste(xvar, "-", unique_levels[2]))
-  df[["disp"]] <-  " (n (%))"
+  df <- data.frame(Covariate = xvar)
+  df[["disp"]] <-  paste("-", unique_levels[2], "(n (%))")
   x_var <- temp[[xvar]]
   if (percentage == "row") {
     df[, paste0("Full Sample (n=", nrow(temp), ")")] <- as.character(sum(x_var, na.rm = TRUE))

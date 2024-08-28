@@ -353,18 +353,17 @@ rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
               digits = c("age" = 2, "l_size" = 1), digits.cat = 1,all.stats = T)
 
+## These two should be the same?
 rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", use_mean = "age",all.stats = T)
-
-
 rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", all.stats = T)
-
-rm_compactsum(data = pembrolizumab, xvars = c("age"), grp = "sex", all.stats = T)
+##
 
 rm_compactsum(data = pembrolizumab, xvars = c("age","l_size"), grp = "sex", all.stats = T)
 
 rm_compactsum(data = pembrolizumab, xvars = c("cohort"), grp = "sex", all.stats = T)
 
 rm_compactsum(data = pembrolizumab, xvars = c("age","cohort"), grp = "sex", all.stats = T)
+## All the rm_compactsum calls above should work okay now
 
 mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
 # This is performing regular CI (shouldn't!!)
