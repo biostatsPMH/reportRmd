@@ -37,7 +37,7 @@
 #'  table.
 #'@param for_plot boolean indicating whether or not the function will be used
 #'  for plotting. Default is FALSE
-#'@export
+#'@keywords internal
 #'@examples
 #' data("pembrolizumab")
 #' uv_lm <- lm(age~sex,data=pembrolizumab)
@@ -63,13 +63,13 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
     hdr_rw <- sort(which(cs$var %in% v))[1]
     cs <- dplyr::add_row(cs,.before = hdr_rw,var=v,header=TRUE)
   }
-  for (var in unique(na.omit(cs[["var"]]))) {
-    if (var %in% cs[["var"]] & length(which(cs[["var"]] == var)) == 3) {
-      p <- cs[max(which(cs[["var"]] == var)), "p_value"]
-      cs[min(which(cs[["var"]] == var)), "p_value"] <- p
-      cs[max(which(cs[["var"]] == var)), "p_value"] <- NA
-    }
-  }
+  # for (var in unique(na.omit(cs[["var"]]))) {
+  #   if (var %in% cs[["var"]] & length(which(cs[["var"]] == var)) == 3) {
+  #     p <- cs[max(which(cs[["var"]] == var)), "p_value"]
+  #     cs[min(which(cs[["var"]] == var)), "p_value"] <- p
+  #     cs[max(which(cs[["var"]] == var)), "p_value"] <- NA
+  #   }
+  # }
   for (i in 1:nrow(cs)) {
     if (is.na(cs[i, "terms"]) & !is.na(cs[i, "header"])) {
       cs[i, "terms"] <- cs[i, "var"]
@@ -135,7 +135,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
   #! Clarina: If all the global p-values were NA, then they weren't merged in, so no global_p column (I added this on line 50)
   if (whichp == "both") {
     for (i in 1:nrow(cs)) {
-      if (!is.na(cs[i, "header"]) & (length(which(cs$var == cs[i, "var"])) > 3)) {
+      if (!is.na(cs[i, "header"])) {
         cs[i, "p_value"] <- cs[i, "global_p"]
       }
     }
@@ -165,15 +165,23 @@ process_ci <- function(ci_string, digits = 2) {
     ci_values <- sub(".*\\(([-0-9.eE]+|NA), ([-0-9.eE]+|NA|Inf)\\).*", "\\1,\\2", ci_string)
     ci_values <- unlist(strsplit(ci_values, ","))
     # Convert to numeric or handle "NA" and "Inf" as needed
-    lower_bound <- ifelse(ci_values[1] == "NA", NA, suppressWarnings(as.numeric(ci_values[1])))
-    upper_bound <- ifelse(ci_values[2] %in% c("NA", "Inf"), ci_values[2], suppressWarnings(as.numeric(ci_values[2])))
+    lower_bound <- ifelse(ci_values[1] == "NA", NA, suppressWarnings(format(as.numeric(ci_values[1]), nsmall = digits)))
+    upper_bound <- ifelse(ci_values[2] %in% c("NA", "Inf"), ci_values[2], suppressWarnings(format(as.numeric(ci_values[2]), nsmall = digits)))
     # Apply rounding and conditions
-    if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && round(lower_bound, digits) == 0) {
+    if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && round(as.numeric(lower_bound), digits) == 0) {
       lower_bound <- 0
     }
+    # else if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && as.numeric(lower_bound) < 0.000001) {
+    #   print(as.numeric(lower_bound))
+    #   lower_bound <- 0
+    # }
+
     if (upper_bound == "NA") {
       upper_bound <- Inf
     }
+    # else if (grepl("^[-]?\\d*\\.?\\d+$", upper_bound) && as.numeric(upper_bound) > 10000000) {
+    #   upper_bound <- Inf
+    # }
 
     # Reconstruct the CI string with the updated bounds
     new_ci <- paste0("(", lower_bound, ", ", upper_bound, ")")

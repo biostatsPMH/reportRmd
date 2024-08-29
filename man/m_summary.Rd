@@ -68,3 +68,4 @@ m_summary(uv_lm, digits = 3, for_plot = FALSE)
 mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
 m_summary(mv_binom, whichp = "both", for_plot = TRUE)
 }
+\keyword{internal}
