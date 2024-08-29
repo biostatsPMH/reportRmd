@@ -147,8 +147,8 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   # else if (!(id %in% names(data))) {
   #   stop(paste0('id argument "', id, '" is not in ', match.call()[["data"]]))
   # }
-  if (type == "gee") {
-    stop('type == "gee" is not a valid argument; specify gee = TRUE instead')
+  if (length(type) == 1) {
+    if (type == "gee") stop('type == "gee" is not a valid argument; specify gee = TRUE instead')
   }
   empty <- NULL
   if ("" %in% c(strata, type, offset, id)) {
