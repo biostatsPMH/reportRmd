@@ -254,7 +254,8 @@ hbld<-function(strings){sapply(strings,function(x){
 #'@keywords helper
 rmds <- function(s){
   sapply(s,function(x){
-    # gsub("^[$]",'',x)
+#    gsub("[$]",'<span style="display: inline">&#36</span>',x)
+    x <- gsub("<0.001",'&lt;0.001',x)
     gsub("[$]",'<span style="display: inline">&#36</span>',x)
   })
 }

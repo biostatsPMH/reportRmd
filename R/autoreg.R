@@ -69,20 +69,6 @@ autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NU
   return(m2)
 }
 
-# # Revisions for gee package
-# autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NULL, corstr = "independence"){
-#   m2 <- NULL
-#   # sort by id col
-#   data <- data[order(data[[id]]),]
-#   idf <- as.numeric(as.factor(data[[id]]))
-#   class(response) <- "character"
-#   if (inherits(data[[response]],"factor")) data[[response]] <- as.numeric(data[[response]])-1
-#   eval(parse(text = paste0("m2 <- suppressMessages(gee::gee(",paste(response, "~",x_var, sep = ""),
-#                            ",family = ",family,",",
-#                            ifelse(is.null(offset),"",paste("offset=",offset,",")),
-#                            "data = data, id = idf, corstr = '",corstr,"'))")))
-#   return(m2)
-# }
 
 autoreg.rm_negbin <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   m2 <- NULL

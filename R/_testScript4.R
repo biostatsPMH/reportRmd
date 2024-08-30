@@ -1,6 +1,6 @@
 
 # Testing for getVarLevels and coeffSum ------------
-
+data("pembrolizumab")
 
 ## Linear -----
 uv_lm <- lm(age~sex,data=pembrolizumab)
@@ -449,4 +449,33 @@ data=warpbreaks[sample(1:nrow(warpbreaks)),]
 x_var="tension"
 id="wool"
 strata="";family="gaussian";offset=NULL; corstr = "independence"
+
+test <- rm_compactsum(data = pembrolizumab, xvars = c("age",
+                                              "change_ctdna_group2", "l_size", "pdl1"), grp = "sex", use_mean = "age",
+              digits = c("age" = 2, "l_size" = 3), digits.cat = 1,tableOnly = T)
+test[1,1] <-"**age** Mean (sd)"
+test
+outTable(test)
+
+
+rm_mvsum(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "both",table=T)
+rm_mvsum2(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "both")
+coeffSum(mv_binom2)
+gp(mv_binom2)
+
+
+rm_uvsum2(response = c('os_time','os_status'),covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+          data=pembrolizumab,CIwidth=.9)
+
+row.names=NULL;to_indent=numeric(0);bold_headers=TRUE;
+rows_bold=numeric(0);bold_cells=NULL;caption=NULL;digits=getOption("reportRmd.digits",2);
+applyAttributes=TRUE;keep.rownames=FALSE; nicenames=TRUE;format=NULL
+
+tab <- rm_mvsum2(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "global",tableOnly = T)
+
+
+out <- rm_mvsum2(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "global")
+rm_mvsum2(mv_binom2, showN = T, showEvent = T, vif = T, whichp = "levels")
+m_summary(mv_binom2, whichp = "global")
+
 

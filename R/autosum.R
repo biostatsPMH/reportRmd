@@ -48,6 +48,8 @@
 m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
+  m_coeff$Est_CI <- apply(m_coeff[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   if (any(!is.na(m_coeff$lwr) & !is.na(m_coeff$upr) & (m_coeff$lwr == m_coeff$upr))) message("Zero-width confidence interval detected. Check predictor units.")
   lvls <- getVarLevels(model)
   lvls$ord  <- 1:nrow(lvls)
@@ -211,7 +213,7 @@ coeffSum.lme <- function(model,CIwidth=.95,digits=2) {
     p_value = ms$p.value
   )
   cs <- merge(cs,ci,all.x = T)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   return(cs)
 }
@@ -235,7 +237,7 @@ coeffSum.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
     p_value= ms$p_value
   )
   cs <- merge(cs,ci,all.x = T)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   return(cs)
 }
@@ -269,7 +271,7 @@ coeffSum.default <- function(model,CIwidth=.95,digits=2) {
     p_value = ms[,4]
   )
   cs <- merge(cs,ci,all.x = T)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
   return(cs)
 }
@@ -298,7 +300,7 @@ coeffSum.crrRx <- function(model,CIwidth=.95,digits=2) {
     p_value = ms[,5]
   )
   cs <- merge(cs,ci,all.x = T)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
   return(cs)
 }
@@ -315,7 +317,7 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
     p_value = ms[,5]
   )
   cs <- merge(cs,ci,all.x = T)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
   return(cs)
 }
@@ -344,7 +346,7 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
   )
 
   cs <- merge(cs,ci,all.x = T)
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   if (model$family$link == "logit"){
     attr(cs,'estLabel') <- betaWithCI("OR",CIwidth)
   } else if (model$family$link == "log"){
@@ -383,7 +385,7 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
 
   cs <- merge(cs,ci,all.x = T)
   cs <- cs[!grepl("[|]",cs$terms),]
-  cs$Est_CI <- apply(cs[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
+
   attr(cs,'estLabel') <- betaWithCI("OR",CIwidth)
   return(cs)
 }
