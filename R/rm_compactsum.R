@@ -794,7 +794,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     temp[[xvar]] <- binary_column
   }
   df <- data.frame(Covariate = xvar)
-  df[["disp"]] <-  paste("-", level_shown, "(n (%))")
+  df[["disp"]] <-  paste(" -", level_shown, "(n (%))")
   x_var <- temp[[xvar]]
   if (percentage == "row") {
     df[, paste0("Full Sample (n=", nrow(temp), ")")] <- as.character(sum(x_var, na.rm = TRUE))
