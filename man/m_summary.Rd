@@ -61,11 +61,11 @@ digits are required for p-values then use tableOnly=TRUE and format as
 desired.
 }
 \examples{
-data("pembrolizumab")
+\dontrun{data("pembrolizumab")
 uv_lm <- lm(age~sex,data=pembrolizumab)
 m_summary(uv_lm, digits = 3, for_plot = FALSE)
 
 mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
-m_summary(mv_binom, whichp = "both", for_plot = TRUE)
+m_summary(mv_binom, whichp = "both", for_plot = TRUE)}
 }
 \keyword{internal}

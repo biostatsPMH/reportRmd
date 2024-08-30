@@ -39,12 +39,12 @@
 #'  for plotting. Default is FALSE
 #'@keywords internal
 #'@examples
-#' data("pembrolizumab")
+#' \dontrun{data("pembrolizumab")
 #' uv_lm <- lm(age~sex,data=pembrolizumab)
 #' m_summary(uv_lm, digits = 3, for_plot = FALSE)
 #'
 #' mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
-#' m_summary(mv_binom, whichp = "both", for_plot = TRUE)
+#' m_summary(mv_binom, whichp = "both", for_plot = TRUE)}
 m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
