@@ -404,3 +404,11 @@ rm_mvsum2(mv_gee)
 model <- mv_gee
 
 
+rm_mvsum2(mv_cox2,whichp = "both")
+rm_mvsum2(mv_binom2,whichp = "both")
+rm_mvsum(mv_binom2,whichp = "both",tableOnly = T)
+
+rm_mvsum(mv_ord,whichp = "both",tableOnly = T)
+rm_mvsum2(mv_ord,whichp = "both")
+gp(mv_ord)
+m_summary(mv_ord)

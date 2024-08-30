@@ -65,13 +65,6 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
     hdr_rw <- sort(which(cs$var %in% v))[1]
     cs <- dplyr::add_row(cs,.before = hdr_rw,var=v,header=TRUE)
   }
-  # for (var in unique(na.omit(cs[["var"]]))) {
-  #   if (var %in% cs[["var"]] & length(which(cs[["var"]] == var)) == 3) {
-  #     p <- cs[max(which(cs[["var"]] == var)), "p_value"]
-  #     cs[min(which(cs[["var"]] == var)), "p_value"] <- p
-  #     cs[max(which(cs[["var"]] == var)), "p_value"] <- NA
-  #   }
-  # }
   for (i in 1:nrow(cs)) {
     if (is.na(cs[i, "terms"]) & !is.na(cs[i, "header"])) {
       cs[i, "terms"] <- cs[i, "var"]
@@ -134,16 +127,19 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
     }
   }
   cs <- cbind(data.frame(Variable = var_col), cs)
-  #! Clarina: If all the global p-values were NA, then they weren't merged in, so no global_p column (I added this on line 50)
-  if (whichp == "both") {
+  if (whichp == "both" & ("global_p" %in% names(cs))) {
     for (i in 1:nrow(cs)) {
       if (!is.na(cs[i, "header"])) {
         cs[i, "p_value"] <- cs[i, "global_p"]
       }
     }
   }
-  else if (whichp == "global") {
-    cs[["p_value"]] <- cs[["global_p"]]
+  else if (whichp == "global" ) {
+    if ("global_p" %in% names(cs)){
+      cs[["p_value"]] <- cs[["global_p"]]
+    } else {
+      cs[["p_value"]] <- NA
+    }
   }
   cols_to_keep <- c("Variable", "Est_CI", "p_value", "n")
   new_colnames <- c("Variable", estLbl, "p-value", "N")
@@ -173,17 +169,10 @@ process_ci <- function(ci_string, digits = 2) {
     if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && round(as.numeric(lower_bound), digits) == 0) {
       lower_bound <- 0
     }
-    # else if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && as.numeric(lower_bound) < 0.000001) {
-    #   print(as.numeric(lower_bound))
-    #   lower_bound <- 0
-    # }
 
     if (upper_bound == "NA") {
       upper_bound <- Inf
     }
-    # else if (grepl("^[-]?\\d*\\.?\\d+$", upper_bound) && as.numeric(upper_bound) > 10000000) {
-    #   upper_bound <- Inf
-    # }
 
     # Reconstruct the CI string with the updated bounds
     new_ci <- paste0("(", lower_bound, ", ", upper_bound, ")")
@@ -466,6 +455,8 @@ gp <- function(model) {
 }
 
 gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
+  data <- model$model
+  model <- update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test = "Chisq"),
                       silent=T)
@@ -522,6 +513,8 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
 }
 
 gp.glm <- function(model,CIwidth=.95,digits=2) {
+  data <- model$model
+  model <- update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test="LRT"),silent = TRUE)
   if (inherits(globalpvalue,"try-error")) {
@@ -576,6 +569,8 @@ gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
 }
 
 gp.polr <- function(model,CIwidth=.95,digits=2) {
+  data <- model$model
+  model <- update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test="Chisq"),silent = TRUE)
   if (inherits(globalpvalue,"try-error")) {
