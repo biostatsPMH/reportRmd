@@ -7,11 +7,11 @@ Authors@R: c(
     person(given="Ryan",family="Del Bel",email = "rdelbel@gmail.com",role="aut"),
     person(given="Osvaldo",family="Espin-Garcia",email = "osvaldo.espin-garcia@uhn.ca",role="aut"),
     person(given="Katherine",family="Lajkosz",email="Katherine.Lajkosz@uhn.ca",role="aut",comment=c(ORCID="0000-0003-3760-5401")),
-    person(given="Clarina", family="Ong",email = "clarinaongo@gmail.com",role="aut"))
+    person(given="Clarina", family="Ong",email = "clarinaongo@gmail.com",role="aut")),
     person(given="Tyler",family="Pittman",email="tyler.pittman@uhn.ca",role="aut",comment=c(ORCID="0000-0002-5013-6980")),
     person(given="Anna",family="Santiago",email= "Anna.Santiago@uhn.ca",role="aut",comment=c(ORCID="0000-0002-0932-2386")),
     person(given="Yanning",family="Wang",email = "21yw15@queensu.ca",role="ctr"),    
-    person(given="Jessica",family="Weiss",email = "jessica.weiss@uhn.ca",role="aut"),    
+    person(given="Jessica",family="Weiss",email = "jessica.weiss@uhn.ca",role="aut")   
     person(given="Wei", family="Xu",email = "wei.xu@uhn.ca",role="aut"),
 Description: Streamlined statistical reporting in 'Rmarkdown' environments. 
     Facilitates the automated reporting of descriptive statistics, multiple 
