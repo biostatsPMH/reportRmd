@@ -123,6 +123,10 @@ rm_mvsum2 <- function(model, data, digits=getOption("reportRmd.digits",2),covTit
   if (!unformattedp) {
     tab[["p-value"]] <- formatp(tab[["p-value"]])
   }
+
+  # changing UB to Inf, LB to 0
+  tab[, 2] <- sapply(tab[, 2], process_ci)
+
   p_col <- (which(names(tab) == "p-value"))
   bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)))))
   if (nrow(bold_cells) < 1) {

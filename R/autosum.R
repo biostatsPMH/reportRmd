@@ -166,12 +166,19 @@ process_ci <- function(ci_string, digits = 2) {
     lower_bound <- ifelse(ci_values[1] == "NA", NA, suppressWarnings(format(as.numeric(ci_values[1]), nsmall = digits)))
     upper_bound <- ifelse(ci_values[2] %in% c("NA", "Inf"), ci_values[2], suppressWarnings(format(as.numeric(ci_values[2]), nsmall = digits)))
     # Apply rounding and conditions
-    if (!is.na(lower_bound) && grepl("^[-]?\\d*\\.?\\d+$", lower_bound) && round(as.numeric(lower_bound), digits) == 0) {
-      lower_bound <- 0
+    if (!is.na(lower_bound)) {
+      if (round(as.numeric(lower_bound), digits) == 0) lower_bound <- 0
+      else if (abs(as.numeric(lower_bound)) < 0.000001) lower_bound <- 0
+      else if (lower_bound < -10000000) lower_bound <- -Inf
     }
-
     if (upper_bound == "NA") {
       upper_bound <- Inf
+    }
+    else if (as.numeric(upper_bound) > 10000000) {
+      upper_bound <- Inf
+    }
+    else if (abs(as.numeric(upper_bound)) < 0.000001) {
+      upper_bound <- 0
     }
 
     # Reconstruct the CI string with the updated bounds
@@ -598,7 +605,10 @@ gp.geeglm <- function(model,CIwidth=.95,digits=2) {
                              Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
                              Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
               silent = T)
-    if (inherits(gp,"try-error")) gp <- NA
+    if (inherits(globalpvalue,"try-error")) {
+      message("Global p values could not be evaluated.")
+      gp <- NA
+    }
     gp_vals$global_p[which(gp_vals$var==t)] <- gp
   }
   attr(gp_vals,"global_p") <-"Wald test"
