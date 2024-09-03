@@ -155,6 +155,7 @@ getVarLevels(mv_cox)
 m_summary(mv_cox)
 
 mv_cox2 <- survival::coxph(Surv(os_time,os_status) ~ age:sex+cohort, data = pembrolizumab)
+model <- survival::coxph(Surv(os_time,os_status) ~ age:sex+cohort, data = pembrolizumab)
 gp(mv_cox2)
 coeffSum(mv_cox2)
 getVarLevels(mv_cox2)
@@ -354,3 +355,18 @@ rm_mvsum2(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
 lung[,"sex",drop=FALSE]
 pembrolizumab[,"sex"]
 
+
+# THIS GIVES AN ERROR
+pembrolizumab$Counts <- rpois(nrow(pembrolizumab),lambda = 3)
+pembrolizumab$length_followup <- rnorm(nrow(pembrolizumab),mean = 72,sd=3)
+
+rm_uvsum2(data=pembrolizumab, response='Counts', type='negbin',
+         covs=c('age','cohort'),offset = "log(length_followup)")
+
+
+
+model <- MASS::glm.nb(Counts ~ age + offset(log(length_followup)), link = log,
+             data = pembrolizumab)
+rm_mvsum(model)
+rm_mvsum2(model)
+names(model$model)

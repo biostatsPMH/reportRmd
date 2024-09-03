@@ -313,7 +313,19 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
     p_value = ms[,5]
   )
   cs <- merge(cs,ci,all.x = T)
-
+  # test for PH assumption
+  zph <- try(survival::cox.zph(model),silent = T)
+  if (!inherits(zph,"try-error")){
+    if (any(zph$table[,"p"]<.05)){
+      zph_var <- setdiff(rownames(zph$table)[which(zph$table[,"p"]<.05)],"GLOBAL")
+      global_zph <- which(rownames(zph$table)=="GLOBAL")
+      if (length(global_zph)>0){
+        if (zph$table[global_zph,"p"]<.05) warning("Cox PH assumption may be violated.")
+      }
+      if (length(zph_var)>0) warning(paste("Warning Cox PH assumption may be violated for these variables:",
+                    paste(setdiff(zph_var),"GLOBAL"),collapse=","))
+    }
+  }
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
   return(cs)
 }

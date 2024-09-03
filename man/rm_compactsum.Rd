@@ -116,6 +116,12 @@ wallis tests will be used. The statistical test used can be displayed by
 specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 or xvars with less than 2 counts in any level will not be shown.
 
+Effect sizes are calculated as Cohen d for between group differences if the
+variable is summarised with the mean, otherwise Wilcoxon R if summarised with
+a median. Cramer's V is used for categorical variables, omega is used for
+differences in means among more than two groups and epsilon for differences in
+medians among more than two groups.
+
 tidyselect can only be used for xvars and grp variables. Additional arguments
 must be passed in using characters
 }

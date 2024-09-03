@@ -76,7 +76,7 @@ show.tests=TRUE)
 
 ## Including Effect Sizes
 
-Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer's V for categorical variables.
+Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Omega for ANOVA, Epsilon for Kruskal Wallis test, and Cramer's V for categorical variables.
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
@@ -225,8 +225,25 @@ If the response is integer, poisson regression will be run (or specified with `t
 
 ```{r }
 pembrolizumab$Counts <- rpois(nrow(pembrolizumab),lambda = 3)
-rm_uvsum(data=pembrolizumab, response='Counts',
-covs=c('age','cohort'))
+rm_uvsum(data=pembrolizumab, response='Counts',covs=c('age','cohort'))
+```
+
+offset terms can be specified as well, but must correspond to a variable in the data set 
+
+```{r}
+pembrolizumab$length_followup <- rnorm(nrow(pembrolizumab),mean = 72,sd=3)
+pembrolizumab$log_length_followup <- log(pembrolizumab$length_followup)
+rm_uvsum(data=pembrolizumab, response='Counts',covs=c('age','cohort'),
+         offset = "log_length_followup")
+```
+
+## Negative Binomial Regression
+To run negative binomial regression instead specify  `type = 'negbin'`
+
+```{r }
+rm_uvsum(data=pembrolizumab, response='Counts', type='negbin',
+         covs=c('age','cohort'),
+         offset = "log_length_followup")
 ```
 
 ## Survival Analysis
@@ -624,6 +641,23 @@ ggsave('images/forestuvmvlin.png', scale = 0.5)
 ```
 
 ![](images/forestuvmvlin.png){width=100%}
+
+\newpage
+# Miscellaneous Functions
+
+## excelCol
+To identify the number of a column given the Excel column header
+```{r}
+excelCol(G,AB,Az)
+
+```
+
+## excelColLetters
+To identify the Excel header given a columns number
+
+```{r}
+excelColLetters(c(7,28,52))
+```
 
 \newpage
 
