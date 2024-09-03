@@ -463,7 +463,7 @@ gp <- function(model) {
 
 gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   data <- model$model
-  model <- update(model,data=data)
+  model <- stats::update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test = "Chisq"),
                       silent=T)
@@ -521,7 +521,7 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
 
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   data <- model$model
-  model <- update(model,data=data)
+  model <- stats::update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test="LRT"),silent = TRUE)
   if (inherits(globalpvalue,"try-error")) {
@@ -561,6 +561,7 @@ gp.lmerMod <- function(model,CIwidth=.95,digits=2) {
   }
   return(gp)
 }
+
 gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(terms(model), "term.labels")
   globalpvalue <- try(stats::drop1(stats::update(model),scope=terms,test = "Chisq"),silent = TRUE)
@@ -577,7 +578,7 @@ gp.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
 
 gp.polr <- function(model,CIwidth=.95,digits=2) {
   data <- model$model
-  model <- update(model,data=data)
+  model <- stats::update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test="Chisq"),silent = TRUE)
   if (inherits(globalpvalue,"try-error")) {
@@ -599,18 +600,20 @@ gp.geeglm <- function(model,CIwidth=.95,digits=2) {
   gp_vals <- data.frame(var=terms,
                         global_p = NA)
   rownames(gp_vals) <- NULL
+  msg <- FALSE
   for (t in terms){
     covariateindex <- grep(paste0("^",t),names(model$coefficients))
     gp <- try(aod::wald.test(b = model$coefficients[covariateindex],
                              Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
                              Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
               silent = T)
-    if (inherits(globalpvalue,"try-error")) {
-      message("Global p values could not be evaluated.")
+    if (inherits(gp,"try-error")) {
+      msg <- TRUE
       gp <- NA
     }
     gp_vals$global_p[which(gp_vals$var==t)] <- gp
   }
+  if (msg) message("Global p values could not be evaluated.")
   attr(gp_vals,"global_p") <-"Wald test"
   return(gp_vals)
 }

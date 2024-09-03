@@ -11,7 +11,7 @@ xvar_function(
   covTitle = "",
   digits = 1,
   digits.cat = 0,
-  iqr = FALSE,
+  iqr = TRUE,
   all.stats = FALSE,
   pvalue = TRUE,
   effSize = FALSE,

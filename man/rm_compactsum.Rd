@@ -15,12 +15,13 @@ rm_compactsum(
   digits = 1,
   digits.cat = 0,
   nicenames = TRUE,
-  iqr = FALSE,
+  iqr = TRUE,
   all.stats = FALSE,
   pvalue = TRUE,
   effSize = FALSE,
   p.adjust = "none",
   unformattedp = FALSE,
+  show.sumstats = FALSE,
   show.tests = FALSE,
   full = TRUE,
   percentage = "col"
@@ -29,16 +30,15 @@ rm_compactsum(
 \arguments{
 \item{data}{dataframe containing data}
 
-\item{xvars}{character vector with the names of covariates to include in
-table}
+\item{xvars}{character vector with the names of covariates to include in table}
 
 \item{grp}{character with the name of the grouping variable}
 
-\item{use_mean}{logical indicating whether mean and standard deviation will
-be returned for continuous variables instead of median. Otherwise, can
-specify for individual variables using a character vector containing the
-names of covariates to return mean and sd for (if use_mean is not supplied,
-all covariates will have median summaries). See examples}
+\item{use_mean}{logical indicating whether mean and standard deviation will be
+returned for continuous variables instead of median. Otherwise, can specify
+for individual variables using a character vector containing the names of
+covariates to return mean and sd for (if use_mean is not supplied, all
+covariates will have median summaries). See examples}
 
 \item{caption}{character containing table caption (default is no caption)}
 
@@ -52,8 +52,8 @@ use the column name 'Covariate'}
 \item{digits}{numeric specifying the number of digits for summarizing mean
 data. Otherwise, can specify for individual covariates using a vector of
 digits where each element is named using the covariate name. If a covariate
-is not in the vector the default will be used for it (default is 1).
-See examples}
+is not in the vector the default will be used for it (default is 1). See
+examples}
 
 \item{digits.cat}{numeric specifying the numer of digits for the proportions
 when summarizing categorical data (default is 0)}
@@ -62,7 +62,7 @@ when summarizing categorical data (default is 0)}
 .  with a space}
 
 \item{iqr}{logical indicating if you want to display the interquartile range
-(Q1, Q3) as opposed to (min, max) in the summary for continuous variables}
+(Q1-Q3) as opposed to (min-max) in the summary for continuous variables}
 
 \item{all.stats}{logical indicating if all summary statistics (Q1, Q3 + min,
 max on a separate line) should be displayed. Overrides iqr}
@@ -79,6 +79,9 @@ Epsilon-squared, or Omega-squared for numeric/continuous variables}
 \item{unformattedp}{logical indicating if you would like the p-value to be
 returned unformatted (ie. not rounded or prefixed with '<'). Best used with
 tableOnly = T and outTable function. See examples}
+
+\item{show.sumstats}{logical indicating if the type of statistical summary
+(mean, median, etc) used should be shown.}
 
 \item{show.tests}{logical indicating if the type of statistical test and
 effect size (if effSize = TRUE) used should be shown in a column beside the
@@ -97,8 +100,8 @@ attribute:
 \itemize{
 \item "description", which describes what is included in the
 output table and the type of statistical summary for each covariate. When
-applicable, the types of statistical tests used will be included. If
-effSize = TRUE, the effect sizes for each covariate will also be mentioned.
+applicable, the types of statistical tests used will be included. If effSize
+= TRUE, the effect sizes for each covariate will also be mentioned.
 }
 }
 \description{
@@ -113,8 +116,8 @@ wallis tests will be used. The statistical test used can be displayed by
 specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 or xvars with less than 2 counts in any level will not be shown.
 
-tidyselect can only be used for xvars and grp variables. Additional
-arguments must be passed in using characters
+tidyselect can only be used for xvars and grp variables. Additional arguments
+must be passed in using characters
 }
 \examples{
 data("pembrolizumab")
@@ -122,6 +125,10 @@ rm_compactsum(data = pembrolizumab, xvars = c("age",
 "change_ctdna_group", "l_size", "pdl1"), grp = "sex", use_mean = "age",
 digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
 show.tests = TRUE)
+
+# Include the summary statistic in the variable column
+rm_compactsum(data = pembrolizumab, xvars = c("age",
+"change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
 
 # To show effect sizes
 rm_compactsum(data = pembrolizumab, xvars = c("age",
@@ -139,8 +146,8 @@ effSize = TRUE)
 }
 \references{
 Smithson, M. (2002). Noncentral Confidence Intervals for
-Standardized Effect Sizes. (07/140 ed., Vol.
-140). SAGE Publications. \url{https://doi.org/10.4135/9781412983761.n4}
+Standardized Effect Sizes. (07/140 ed., Vol. 140). SAGE Publications.
+\url{https://doi.org/10.4135/9781412983761.n4}
 
 Steiger, J. H. (2004). Beyond the F Test: Effect Size Confidence
 Intervals and Tests of Close Fit in the Analysis of Variance and Contrast
@@ -152,8 +159,8 @@ Proceedings of the National Academy of Sciences - PNAS, 21(9), 554–559.
 \url{https://doi.org/10.1073/pnas.21.9.554}
 
 Okada, K. (2013). Is Omega Squared Less Biased? A Comparison of
-Three Major Effect Size Indices in One-Way ANOVA. Behavior Research
-Methods, 40(2), 129-147.
+Three Major Effect Size Indices in One-Way ANOVA. Behavior Research Methods,
+40(2), 129-147.
 
 Breslow, N. (1970). A generalized Kruskal-Wallis test for
 comparing K samples subject to unequal patterns of censorship. Biometrika,

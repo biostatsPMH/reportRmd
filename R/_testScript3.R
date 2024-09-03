@@ -197,26 +197,36 @@ uvsum_crr <- rm_uvsum(response=c("os_time","os_status2"), covs = c("age", "sex",
 uvsum2_crr <- rm_uvsum2(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
 
 ## GEE  (NEED MORE MODELS HERE) -----
-uv_gee <- geepack::geeglm(formula=as.formula(orr~sex),data=pembrolizumab)
+pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
+uv_gee <- geepack::geeglm(formula=as.formula(orr2~sex),data=pembrolizumab,id=pembrolizumab$id)
 coeffSum(uv_gee)
 getVarLevels(uv_gee)
 m_summary(uv_gee)
 
-auto_gee <- autoreg.rm_gee("orr",data=pembrolizumab, "sex")
+auto_gee <- autoreg.rm_gee("orr",data=pembrolizumab, "sex",id="id")
 coeffSum(auto_gee)
 getVarLevels(auto_gee)
 
-pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
 
 mv_gee <- geepack::geeglm(orr2 ~ age+sex+cohort, family = binomial,
                           data = pembrolizumab,
-                          id = idf, corstr = "independence")
+                          id = pembrolizumab$id, corstr = "independence")
+mv_gee_glm <- glm(orr2 ~ age+sex+cohort, family = binomial,
+                          data = pembrolizumab)
+rm_mvsum2(mv_gee,vif=T)
+rm_mvsum2(mv_gee_glm,vif=T)
+
+mv_gee <- geepack::geeglm(orr2 ~ age+sex+cohort, family = binomial,
+                          data = pembrolizumab,
+                          id = 1:nrow(pembrolizumab), corstr = "independence")
+rm_mvsum2(mv_gee,vif=T)
+
 gp(mv_gee)
 coeffSum(mv_gee)
 getVarLevels(mv_gee)
 mv_gee2 <- geepack::geeglm(orr2 ~ age:sex+cohort, family = binomial,
                           data = pembrolizumab,
-                          id = idf, corstr = "independence")
+                          id = pembrolizumab$id, corstr = "independence")
 gp(mv_gee2)
 coeffSum(mv_gee2)
 getVarLevels(mv_gee2)
@@ -327,5 +337,15 @@ rm_mvsum2(mv_lm2_gee)
 
 data("pembrolizumab")
 
-pembrolizumab |>
-  rm_tidycompact(xvars = c(pdl1,age,change_ctdna_group),grp="sex")
+tab <- pembrolizumab |>
+  rm_compactsum(xvars = c(pdl1,age,change_ctdna_group),grp="sex")
+
+attributes(tab)
+rm_mvsum(mv_lm2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_lm2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+
+mv_binom2_gee <- geepack::geeglm(orr2~age:sex+cohort,family = 'binomial',data = pembrolizumab,id=1:nrow(pembrolizumab))
+
+rm_mvsum(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+rm_mvsum2(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
