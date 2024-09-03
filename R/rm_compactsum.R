@@ -10,6 +10,12 @@
 #'specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 #'or xvars with less than 2 counts in any level will not be shown.
 #'
+#'Effect sizes are calculated as Cohen d for between group differences if the
+#'variable is summarised with the mean, otherwise Wilcoxon R if summarised with
+#'a median. Cramer's V is used for categorical variables, omega is used for
+#'differences in means among more than two groups and epsilon for differences in
+#'medians among more than two groups.
+#'
 #'tidyselect can only be used for xvars and grp variables. Additional arguments
 #'must be passed in using characters
 #'
@@ -785,6 +791,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   class(xvar) <- "character"
   temp <- data.frame()
   x_var <- data[[xvar]]
+
   if (length(unique(na.omit(data[[xvar]]))) == 2) {
     unique_levels <- unique(x_var)
     unique_levels <- sort(unique_levels)
@@ -797,11 +804,11 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   }
 
   if (!missing(grp)) {
-    temp <- data[, grp]
+    temp <- data[, grp,drop=FALSE]
     temp[[xvar]] <- binary_column
   }
   else {
-    temp <- data[, xvar]
+    temp <- data[, xvar,drop=FALSE]
     temp[[xvar]] <- binary_column
   }
   df <- data.frame(Covariate = xvar)

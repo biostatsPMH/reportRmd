@@ -349,3 +349,8 @@ mv_binom2_gee <- geepack::geeglm(orr2~age:sex+cohort,family = 'binomial',data = 
 
 rm_mvsum(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
 rm_mvsum2(mv_binom2_gee, showN = T, showEvent = T, vif = T, whichp = "both")
+
+
+lung[,"sex",drop=FALSE]
+pembrolizumab[,"sex"]
+
