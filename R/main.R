@@ -4817,7 +4817,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     if (inherits(mtbl, "matrix")) {
       m_CI <- apply(mtbl[, grep("median|LCL|UCL", colnames(mtbl))],
                     1, function(x) psthr(x, y = digits))
-      m_CI <- gsub("NA","NE",m_CI)
+      m_CI <- gsub("NA","Not Estimable",m_CI)
       lr <- survival::survdiff(as.formula(paste0("survival::Surv(",
                                                  time, ",", status, ") ~", paste0(group, collapse = "+"))),
                                data = data)
@@ -4844,7 +4844,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     else {
       m_CI <- psthr(mtbl[grep("median|LCL|UCL", names(mtbl))],
                     y = digits)
-      m_CI <- gsub("NA","NE",m_CI)
+      m_CI <- gsub("NA","Not Estimable",m_CI)
       nt <- paste0(mtbl["events"], "/", mtbl["n.start"])
       w <- cbind(nt, m_CI, w)
       tab <- data.frame(w)

@@ -38,7 +38,7 @@
 #'  digits where each element is named using the covariate name. If a covariate
 #'  is not in the vector the default will be used for it (default is 1). See
 #'  examples
-#'@param digits.cat numeric specifying the numer of digits for the proportions
+#'@param digits.cat numeric specifying the number of digits for the proportions
 #'  when summarizing categorical data (default is 0)
 #'@param nicenames logical indicating if you want to replace . and _ in strings
 #'  .  with a space
@@ -1157,6 +1157,13 @@ anova_toOmegaSq <- function(anova_summary){
   return(num/den)
 }
 
+anova_toEpsilonSq <- function(anova_summary){
+  tbl <- anova_summary[[1]]
+  num <- tbl[1,2]-tbl[1,1]*tbl[2,3]
+  den <- tbl[1,2]+tbl[2,2]
+  return(num/den)
+}
+
 chi_toCramer <- function(chisq_test){
   obs <- chisq_test$observed
   V = sqrt(chisq_test$statistic/(sum(obs)*(min(dim(obs))-1)))
@@ -1305,7 +1312,7 @@ mean_by_grp <- function(grp_level, data, xvar, grp, digits = 1) {
   new_xvar <- subset_grp[[xvar]]
 
   if (all(is.na((subset_grp[[xvar]])))) {
-    return("NE")
+    return("NA")
   }
   return(paste0(format(round(mean(new_xvar, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(new_xvar, na.rm = TRUE), digits), nsmall = digits), ")"))
 }
@@ -1316,7 +1323,7 @@ median_by_grp <- function(grp_level, data, xvar, grp, iqr = FALSE, digits = 1, r
   subset_grp <- subset(data, group_var == grp_level)
   new_xvar <- subset_grp[[xvar]]
   if (all(is.na((subset_grp[[xvar]])))) {
-    return("NE")
+    return("NA")
   }
   if (iqr) {
     bracket <- paste0("(", format(round(stats::quantile(new_xvar, na.rm = TRUE, prob = 0.25), digits), nsmall = digits), "-", format(round(stats::quantile(new_xvar, na.rm = TRUE, prob = 0.75), digits), nsmall = digits), ")")
@@ -1352,7 +1359,7 @@ categ_xvar_helper <- function(xvar_level, data, xvar, grp, digits.cat = 0, perce
       to_return[2, grp_level] <- paste0(nrow(subset_xvar_grp), " (", ifelse((nrow(subset_grp) - missing_grp) == 0, 0, format(round((100*nrow(subset_xvar_grp) / (nrow(subset_grp) - missing_grp)), digits.cat), nsmall = digits.cat)), r_brckt)
     }
     if (all(is.na((subset_grp[[xvar]])))) {
-      to_return[2, grp_level] <- "NE"
+      to_return[2, grp_level] <- "NA"
     }
   }
   to_return[1, "Full Sample"] <- paste0("Full Sample (n=", nrow(data), ")" )
@@ -1371,7 +1378,7 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
   group_var <- data[[grp]]
   subset_grp <- subset(data, group_var == grp_level)
   if (all(is.na((subset_grp[[xvar]])))) {
-    return("NE")
+    return("NA")
   }
   num_missing <- sum(is.na(subset_grp[[xvar]]))
   if (percentage == "row") {

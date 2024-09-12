@@ -313,20 +313,15 @@ kruskal.test.rm <- function(xvar,grp){
 
 # Conversion Functions  ----------------------------------------------------------------
 
-# First you need to write the conversion functions - these should just convert a statistic to an effect size
-# # I don't think this is correct actually
-# FtoOmegaSq <- function(Fstat,nu1,nu2){
-#   n=nu1+nu2+1
-#   k=nu1+1
-#   omegaSq=(Fstat-1)/(Fstat+((n-k+1)/(k-1)))
-#   # omega squared must be in the range 0,1
-#   omegaSq[omegaSq<0] <- 0
-#   omegaSq[omegaSq>1] <- 1
-#   return(omegaSq)
-# }
 
 # From Okada2013
 anova_toOmegaSq <- function(anova_summary){
+  tbl <- anova_summary[[1]]
+  num <- tbl[1,2]-tbl[1,1]*tbl[2,3]
+  den <- tbl[1,2]+tbl[2,2]+tbl[2,3]
+  return(num/den)
+}
+anova_toEpsilonSq <- function(anova_summary){
   tbl <- anova_summary[[1]]
   num <- tbl[1,2]-tbl[1,1]*tbl[2,3]
   den <- tbl[1,2]+tbl[2,2]+tbl[2,3]
@@ -552,29 +547,5 @@ calc_omegaSq <- function(anova_test, CIwidth = 0.95){
   return(output)
 }
 
-# calc_omegaSq <- function(anova_test){
-#   summary_anova <- summary(anova_test)
-#   # First calculate the effect size
-#   omega <- anova_toOmegaSq(summary_anova)
-#   # then the delta CI  - this is the CI on the non-central F, not the CI on omega
-#   delta_ci <- delta_CI(anova_test)
-#   # then, we need to also transform the delta_ci to the effect size scale
-#   eff_ci <- lambda_toOmegaSq(delta_ci,sum(summary_anova[[1]]$Df)+1)
-#   eff_ci[eff_ci<0] <-0
-#   # return the effect size, lower bound, upper bound
-#   output = c("omega squared"=omega,lower=eff_ci[1],upper=eff_ci[2])
-#   return(output)
-# }
-
-pstprn <- reportRmd:::pstprn # already in the package
-# we need to re-write to make it handle zeros a little better
-psthr <- function (x, y = 2)
-{
-  x <- sapply(x, function(x) {
-    ifelse(abs(x) >0 && (abs(x) < 0.01 || abs(x) > 1000), format(x, scientific = TRUE,
-                                                                 digits = y), format(round(x, y), nsmall = y))
-  })
-  pstprn(x)
-}
 
 
