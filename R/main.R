@@ -2700,7 +2700,6 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
                      rows_bold=numeric(0),bold_cells=NULL,caption=NULL,digits=getOption("reportRmd.digits",2),align,
                      applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label,format=NULL){
-
   # strip tibble aspects
   tab=as.data.frame(tab)
   if (!is.null(row.names)) {
@@ -2708,6 +2707,15 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
     names(tab)[1] <- row.names
   }
   rownames(tab) <- NULL
+  if (!is.null(bold_cells)) {
+    if (nrow(bold_cells)==0){
+      bold_cells <- NULL
+    } else {
+      if (max(bold_cells[,1])>nrow(bold_cells) | max(bold_cells[,2])>ncol(bold_cells)){
+        message("Cell bolding incorrectly specified, no cells will be bolded")
+        bold_cells <- NULL
+      }
+    }}
 
   # define column alignment
   if (missing(align)){

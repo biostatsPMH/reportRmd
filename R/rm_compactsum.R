@@ -320,7 +320,9 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (!full) {
     result <- result[, -2]
   }
+
   if ("p-value" %in% colnames(result)) {
+    small_p <- which(result$`p-value`<.05)
     if (!pvalue) {
       result <- result[, -which(names(result) == "p-value")]
     }
@@ -332,11 +334,9 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }
+  lbl <- result[, 1]
   to_indent <- which(!(result[, 1] %in% names(data)))
   bold_cells <- cbind(which(result[, 1] %in% names(data)), rep(1, length(which(result[, 1] %in% names(data)))))
-  p_col <- which(names(result) == "p-value") - 1
-  bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", result[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", result[["p-value"]])) < 0.05)))))
-  lbl <- result[, 1]
   if (nicenames) {
     if (typeof(args$data) == "symbol") {
       result[, 1] <- replaceLbl(args$data, lbl)
@@ -360,6 +360,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   attr(result, "description") <- generate_description(xvars, output_list)
   if (tableOnly) {
     return(result)
+  }
+  if ("p-value" %in% colnames(result)) {
+    p_col <- which(names(result) == "p-value")
+    bold_cells <- rbind(bold_cells, cbind(small_p, rep(p_col, length(small_p))))
   }
   nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
