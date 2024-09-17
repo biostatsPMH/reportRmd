@@ -2711,7 +2711,7 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
     if (nrow(bold_cells)==0){
       bold_cells <- NULL
     } else {
-      if (max(bold_cells[,1])>nrow(bold_cells) | max(bold_cells[,2])>ncol(bold_cells)){
+      if (max(bold_cells[,1])>nrow(tab) | max(bold_cells[,2])>ncol(tab)){
         message("Cell bolding incorrectly specified, no cells will be bolded")
         bold_cells <- NULL
       }

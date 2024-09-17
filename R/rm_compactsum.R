@@ -487,10 +487,10 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
           attr(df, "eff_size") <- "Cramer's V"
         }
         if (show.tests & pvalue) {
-          df[1, "pTest"] <- "Fisher Exact"
+          df[1, "pTest"] <- fisher_test$p_type
         }
         if (pvalue) {
-          attr(df, "stat_test") <- "Fisher's Exact Test"
+          attr(df, "stat_test") <- fisher_test$stat_test
         }
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
@@ -881,10 +881,10 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
           attr(df, "eff_size") <- "Cramer's V"
         }
         if (show.tests & pvalue) {
-          df[1, "pTest"] <- "Fisher Exact"
+          df[1, "pTest"] <- fisher_test$p_type
         }
         if (pvalue) {
-          attr(df, "stat_test") <- "Fisher's Exact Test"
+          attr(df, "stat_test") <- fisher_test$stat_test
         }
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
@@ -1085,7 +1085,16 @@ uncorrectedChi <- function(x) {
 
 fisher.test.rm <- function(x,...){
   chi.out <- suppressWarnings(stats::chisq.test(x,...))
-  rtn <- stats::fisher.test(x,...)
+  rtn <- try(stats::fisher.test(x,...),silent=T)
+  if (inherits(rtn,"try-error")){
+    message("Using MC sim. Use set.seed() prior to function for reproducible results.")
+    rtn <- fisher.test(x, simulate.p.value = T)
+    rtn$p_type <- "MC sim"
+    rtn$stat_test <- "Fisher's Exact Test with Monte Carlo simulation"
+  } else {
+    rtn$p_type <- "Fisher Exact"
+    rtn$stat_test <- "Fisher's Exact Test"
+  }
   rtn$observed <- chi.out$observed
   rtn$statistic <- chi.out$statistic
   rtn$parameter <- chi.out$parameter
