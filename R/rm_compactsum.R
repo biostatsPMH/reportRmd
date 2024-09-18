@@ -176,7 +176,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     grp <- grouping_var
   }
   xvars <- x_vars
-  dt <- as.name(args$data)
+  dt <- try(as.name(args$data),silent = T)
+  if (inherits(dt,"try-error")) {
+    dt <- eval(args$data)
+  }
   if (!missing(grp)) {
     if (!(grp %in% names(data))) {
       stop("grp is not in the data")
@@ -223,7 +226,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     if (!is.logical(use_mean)) {
       for (xvar in use_mean) {
         if (!(xvar %in% names(data))) {
-          stop(paste0("variable '", xvar, "' in use_mean is not in data '", dt, "'"))
+          stop(paste0("variable '", xvar, "' in use_mean is not in data."))
         }
         if (!(xvar %in% xvars)) {
           stop(paste0("variable '", xvar, "' in use_mean is not in xvars"))
@@ -242,7 +245,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     if (length(digits) > 1) {
       for (xvar in names(digits)) {
         if (!(xvar %in% names(data))) {
-          stop(paste0("variable '", xvar, "' in digits is not in data '", dt, "'"))
+          stop(paste0("variable '", xvar, "' in digits is not in data."))
         }
         if (!(xvar %in% xvars)) {
           stop(paste0("variable '", xvar, "' in digits is not in xvars"))
@@ -1094,7 +1097,7 @@ fisher.test.rm <- function(x,...){
   rtn <- try(stats::fisher.test(x,...),silent=T)
   if (inherits(rtn,"try-error")){
     message("Using MC sim. Use set.seed() prior to function for reproducible results.")
-    rtn <- fisher.test(x, simulate.p.value = T)
+    rtn <- stats::fisher.test(x, simulate.p.value = T)
     rtn$p_type <- "MC sim"
     rtn$stat_test <- "Fisher's Exact Test with Monte Carlo simulation"
   } else {

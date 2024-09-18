@@ -1,7 +1,8 @@
 
 # Testing for getVarLevels and coeffSum ------------
 
-
+data("pembrolizumab")
+devtools::load_all()
 ## Linear -----
 uv_lm <- lm(age~sex,data=pembrolizumab)
 coeffSum(uv_lm)

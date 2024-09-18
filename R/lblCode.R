@@ -148,10 +148,15 @@ set_labels <- function(data,names_labels){
 
 # return variable labels associated with variables
 replaceLbl <- function(data_arg,cv){
-  if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
-  if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
+#  if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
   if (!inherits(cv,'character')) stop('variable name must be specified as a character string.')
-  lbl <- extract_labels(get0(dn))
+  if (inherits(data_arg,"data.frame")){
+    lbl <- extract_labels(data_arg)
+  } else {
+    if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
+    if (is.null(get0(dn))) stop("Could not extract labels from data. Try running with nicenames=F, or use the function directly on a data.frame (without manipulation)")
+    lbl <- extract_labels(get0(dn))
+  }
   vl <- data.frame(variable=cv,ord=1:length(cv))
   if (!is.null(lbl)){
     cvnew <- merge(vl,lbl,all.x=T)
