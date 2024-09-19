@@ -362,6 +362,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   attr(result, "description") <- generate_description(xvars, output_list)
   if (tableOnly) {
+    if (names(result)[1]=="") names(result)[1] <- "Covariate"
     return(result)
   }
   if ("p-value" %in% colnames(result)) {
