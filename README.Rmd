@@ -45,9 +45,8 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## New Features
 
-- Survival curves have been improved and now return ggplots
-- Variable labels will now be automatically output in tables
-
+- new compact summary table function rm_compactsum
+- main functions are now pipeable
 
 ## Documentation
 
@@ -60,9 +59,18 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 ```{r example}
 library(reportRmd)
 data("pembrolizumab")
+
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
+
+```
+
+### Compact Table 
+
+```{r}
+pembrolizumab |> rm_compactsum( grp = 'sex',
+xvars=c('age','pdl1','change_ctdna_group'))
 
 ```
 

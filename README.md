@@ -41,8 +41,8 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## New Features
 
-- Survival curves have been improved and now return ggplots
-- Variable labels will now be automatically output in tables
+- new compact summary table function rm_compactsum
+- main functions are now pipeable
 
 ## Documentation
 
@@ -55,6 +55,7 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 ``` r
 library(reportRmd)
 data("pembrolizumab")
+
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
@@ -276,6 +277,101 @@ Missing
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+
+### Compact Table
+
+``` r
+pembrolizumab |> rm_compactsum( grp = 'sex',
+xvars=c('age','pdl1','change_ctdna_group'))
+#> Descriptive statistics were calculated as median (IQR) for age and pdl1 and counts (%) for change_ctdna_group. Between group comparisons were made using Wilcoxon rank sum test for age and pdl1 and chi-square test for change_ctdna_group.
+```
+
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Full Sample (n=94)
+</th>
+<th style="text-align:right;">
+Female (n=58)
+</th>
+<th style="text-align:right;">
+Male (n=36)
+</th>
+<th style="text-align:right;">
+p-value
+</th>
+<th style="text-align:right;">
+Missing
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">age</span>
+</td>
+<td style="text-align:right;">
+59.1 (49.5-68.7)
+</td>
+<td style="text-align:right;">
+56.6 (45.8-67.8)
+</td>
+<td style="text-align:right;">
+61.2 (52.0-69.4)
+</td>
+<td style="text-align:right;">
+0.30
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">pdl1</span>
+</td>
+<td style="text-align:right;">
+0.0 (0.0-10.0)
+</td>
+<td style="text-align:right;">
+0.5 (0.0-13.8)
+</td>
+<td style="text-align:right;">
+0.0 (0.0-4.5)
+</td>
+<td style="text-align:right;">
+0.76
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">change ctdna group - Increase from
+baseline</span>
+</td>
+<td style="text-align:right;">
+40 (55%)
+</td>
+<td style="text-align:right;">
+21 (52%)
+</td>
+<td style="text-align:right;">
+19 (58%)
+</td>
+<td style="text-align:right;">
+0.84
+</td>
+<td style="text-align:right;">
+21
 </td>
 </tr>
 </tbody>
@@ -631,9 +727,6 @@ N
 <th style="text-align:right;">
 Event
 </th>
-<th style="text-align:right;">
-VIF
-</th>
 </tr>
 </thead>
 <tbody>
@@ -653,9 +746,6 @@ VIF
 <td style="text-align:right;">
 58
 </td>
-<td style="text-align:right;">
-1.00
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -672,8 +762,6 @@ Reference
 <td style="text-align:right;">
 19
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -689,8 +777,6 @@ Increase from baseline
 </td>
 <td style="text-align:right;">
 39
-</td>
-<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -709,9 +795,6 @@ Increase from baseline
 <td style="text-align:right;">
 58
 </td>
-<td style="text-align:right;">
-1.18
-</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -720,16 +803,12 @@ Increase from baseline
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;">0.004</span>
 </td>
 <td style="text-align:right;">
 73
 </td>
 <td style="text-align:right;">
 58
-</td>
-<td style="text-align:right;">
-1.04
 </td>
 </tr>
 <tr>
@@ -746,8 +825,6 @@ Reference
 </td>
 <td style="text-align:right;">
 11
-</td>
-<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -766,8 +843,6 @@ B
 <td style="text-align:right;">
 11
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -784,8 +859,6 @@ C
 </td>
 <td style="text-align:right;">
 10
-</td>
-<td style="text-align:right;">
 </td>
 </tr>
 <tr>
@@ -804,8 +877,6 @@ D
 <td style="text-align:right;">
 3
 </td>
-<td style="text-align:right;">
-</td>
 </tr>
 <tr>
 <td style="text-align:left;padding-left: 2em;" indentlevel="1">
@@ -822,8 +893,6 @@ E
 </td>
 <td style="text-align:right;">
 23
-</td>
-<td style="text-align:right;">
 </td>
 </tr>
 </tbody>
@@ -1034,7 +1103,7 @@ A
 12/16
 </td>
 <td style="text-align:right;">
-8.30 (4.24, NA)
+8.30 (4.24, Not Estimable)
 </td>
 <td style="text-align:right;">
 0.38 (0.20, 0.71)
@@ -1068,7 +1137,7 @@ C
 12/18
 </td>
 <td style="text-align:right;">
-17.56 (7.95, NA)
+17.56 (7.95, Not Estimable)
 </td>
 <td style="text-align:right;">
 0.61 (0.42, 0.88)
@@ -1085,7 +1154,7 @@ D
 4/12
 </td>
 <td style="text-align:right;">
-NA (6.44, NA)
+Not Estimable (6.44, Not Estimable)
 </td>
 <td style="text-align:right;">
 0.67 (0.45, 0.99)
@@ -1102,7 +1171,7 @@ E
 20/30
 </td>
 <td style="text-align:right;">
-14.26 (9.69, NA)
+14.26 (9.69, Not Estimable)
 </td>
 <td style="text-align:right;">
 0.63 (0.48, 0.83)
@@ -1263,7 +1332,7 @@ cov='cohort',
 data=pembrolizumab)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 ### Plotting odds ratios
 
@@ -1280,7 +1349,7 @@ forestplot2(glm_fit)
 #> ℹ Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -1295,4 +1364,4 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
