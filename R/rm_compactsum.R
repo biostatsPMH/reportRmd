@@ -163,6 +163,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     stop("percentage argument must be either 'row' or 'col'")
   }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
+  if (inherits(argList$xvars,"name")) argList$xvars <- eval(argList$xvars)
   if (!all(sapply(argList$xvars[-1], is.character))) {
     argList$xvars <- x_vars
   }
@@ -371,7 +372,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
-  cat(attr(nicetable, "description"))
+  # Display text in the console
+  if (interactive()) {
+    cat(attr(nicetable, "description"))
+  }
   return(nicetable)
 }
 
