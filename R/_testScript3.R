@@ -371,3 +371,15 @@ model <- MASS::glm.nb(Counts ~ age + offset(log(length_followup)), link = log,
 rm_mvsum(model)
 rm_mvsum2(model)
 names(model$model)
+
+
+# Sep 2024 Errors from Katherine
+data("pembrolizumab")
+rm_compactsum(
+  data = pembrolizumab,
+  xvars = "age")
+rm_compactsum(
+  data = pembrolizumab,
+  xvars = "age",
+  all.stats = T
+)

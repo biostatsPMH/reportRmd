@@ -163,7 +163,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     stop("percentage argument must be either 'row' or 'col'")
   }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
-  if (inherits(argList$xvars,"name")) argList$xvars <- eval(argList$xvars)
   if (!all(sapply(argList$xvars[-1], is.character))) {
     argList$xvars <- x_vars
   }
@@ -372,10 +371,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
   attr(nicetable, "description") <- generate_description(xvars, output_list)
-  # Display text in the console
-  if (interactive()) {
-    cat(attr(nicetable, "description"))
-  }
+  cat(attr(nicetable, "description"))
   return(nicetable)
 }
 
@@ -599,11 +595,11 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   if (all.stats) {
     df <- data.frame(Covariate = c(xvar, "  Mean (sd)", "  Median (Q1-Q3)", "  Range (min-max)"))
     df[["disp"]] <- ""
-    display_mean <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), "(", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
+    display_mean <- paste0(format(round(mean(x_var, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(x_var, na.rm = TRUE), digits), nsmall = digits), ")")
     x_iqr <- stats::quantile(x_var, na.rm = TRUE, prob = c(0.25,0.75))
-    bracket_iqr <- paste0("(", format(round(x_iqr[1], digits), nsmall = digits), "-", ifelse(x_iqr[2]<0,"(",""),format(round(x_iqr[2], digits), nsmall = digits), ifelse(x_iqr[2]<0,")",""), ")")
+    bracket_iqr <- paste0("(", format(round(x_iqr[1], digits), nsmall = digits), "-", ifelse(x_iqr[2]<0," (",""),format(round(x_iqr[2], digits), nsmall = digits), ifelse(x_iqr[2]<0,")",""), ")")
     x_rng <- range(x_var, na.rm = TRUE)
-    bracket_range <- paste0("(", format(round(x_rng[1], digits), nsmall = digits), "-", ifelse(x_rng[2]<0,"(",""), format(round(x_rng[2], digits), nsmall = digits), ifelse(x_rng[2]<0,")",""), ")")
+    bracket_range <- paste0("(", format(round(x_rng[1], digits), nsmall = digits), "-", ifelse(x_rng[2]<0," (",""), format(round(x_rng[2], digits), nsmall = digits), ifelse(x_rng[2]<0,")",""), ")")
     df[2, paste0("Full Sample (n=", nrow(data), ")")] <- display_mean
     df[3, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(format(round(median(x_var, na.rm = TRUE), digits), nsmall = digits), " ", bracket_iqr)
     df[4, paste0("Full Sample (n=", nrow(data), ")")] <- bracket_range
