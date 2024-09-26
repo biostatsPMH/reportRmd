@@ -320,10 +320,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   result <-dplyr::bind_rows(output_list)
   if (all(na.omit(result[["Missing"]]) == 0))
     result <- result[, -which(names(result) == "Missing")]
-  if (!full) {
-    result <- result[, -2]
-  }
-
   if ("p-value" %in% colnames(result)) {
     small_p <- which(result$`p-value`<.05)
     if (!pvalue) {
@@ -359,6 +355,10 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   else {
     names(result)[1] <- ""
+  }
+  if (!full) {
+    print(names(result))
+    result <- result[, -2]
   }
   attr(result, "description") <- generate_description(xvars, output_list)
   if (tableOnly) {

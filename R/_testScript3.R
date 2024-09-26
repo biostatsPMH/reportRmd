@@ -383,3 +383,9 @@ rm_compactsum(
   xvars = "age",
   all.stats = T
 )
+
+rm_compactsum(
+  data = pembrolizumab,
+  grp = "sex",
+  xvars = "age",
+  all.stats = T,full=FALSE)
