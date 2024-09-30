@@ -373,8 +373,10 @@ rm_mvsum2(model)
 names(model$model)
 
 
-# Sep 2024 Errors from Katherine
+# Sep 2024 Errors from Katherine --------------
 data("pembrolizumab")
+pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
+                                effSize = TRUE)
 rm_compactsum(
   data = pembrolizumab,
   xvars = "age")
@@ -389,3 +391,65 @@ rm_compactsum(
   grp = "sex",
   xvars = "age",
   all.stats = T,full=FALSE)
+
+
+library(survival)
+#library(reportRmd)
+library(dplyr)
+data(pbc)
+
+pbc |>
+  rm_compactsum( grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+pbc |>
+  rm_compactsum( grp = "trt", xvars = c("sex"), pvalue = T,show.tests = T)
+
+pbc |>
+  rm_compactsum( grp = "trt", xvars = c("age"), pvalue = T,show.tests = T)
+
+xvar_function.rm_median("age",data=pbc,grp="trt")
+xvar_function.rm_median("age",data=try,grp="trt")
+xvar_function.rm_two_level("sex",data=try,grp="trt")
+
+try$trt <- factor(try$trt)
+
+try <- select(pbc, trt, sex, age)
+
+length(unique(pbc$trt))
+length(unique(try$trt))
+length(levels(pbc$trt))
+length(levels(try$trt))
+
+rm_compactsum(data = try, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+try |> rm_compactsum( grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+try2 <- select(pbc, age, sex, trt) #change order of selected variables
+rm_compactsum(data = try2, grp = "trt", xvars = c("sex","age"), pvalue = T)
+
+# Works, but funny NAs
+try <- select(pbc, trt, sex, age)
+rm_compactsum(data = try, grp = "trt", xvars = c("sex","age"),
+                             pvalue = T,show.tests = T)
+rm_compactsum(data = try, grp = "trt", xvars = c("sex","age"),
+              pvalue = T,show.tests = T,use_mean = T)
+
+ rm_compactsum(data = try, grp = "trt", xvars = c("sex","age"),
+                             pvalue = T,show.tests = T)
+
+# Doesn't Work
+try2 <- select(pbc, everything())
+argList_try2 <-rm_compactsum(data = try2, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+
+# Also Doesn't Work !!
+try3 <- select(pbc, age, trt, sex)
+# uses median for age
+rm_compactsum(data = try3, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+rm_compactsum(data = try3, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+
+rm_uvsum2(response = c('os_time','os_status'),
+           covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+           data=pembrolizumab,CIwidth=.9)

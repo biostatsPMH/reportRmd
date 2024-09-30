@@ -26,7 +26,7 @@
 #'  returned for continuous variables instead of median. Otherwise, can specify
 #'  for individual variables using a character vector containing the names of
 #'  covariates to return mean and sd for (if use_mean is not supplied, all
-#'  covariates will have median summaries). See examples
+#'  covariates will have median summaries). See examples.
 #'@param caption character containing table caption (default is no caption)
 #'@param tableOnly logical, if TRUE then a dataframe is returned, otherwise a
 #'  formatted printed object is returned (default is FALSE)
@@ -122,10 +122,14 @@
 rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.sumstats =FALSE,show.tests = FALSE, full = TRUE, percentage = "col") {
   if (missing(data))
     stop("data is a required argument")
-  if (missing(xvars))
-    stop("xvars is a required argument")
   if (!inherits(data, "data.frame"))
     stop("data must be supplied as a data frame.")
+  if (missing(xvars))
+    stop("xvars is a required argument")
+
+  x_vars <- tidyselect::eval_select(expr = enquo(xvars), data = data[unique(names(data))],
+                                    allow_rename = FALSE)
+  x_vars <- names(x_vars)
   if (!missing(grp)) {
     grouping_var <- tidyselect::eval_select(expr = enquo(grp), data = data[unique(names(data))],
                                             allow_rename = FALSE)
@@ -139,187 +143,99 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
 
-  x_vars <- tidyselect::eval_select(expr = enquo(xvars), data = data[unique(names(data))],
-                                    allow_rename = FALSE)
-  x_vars <- names(x_vars)
-
-  missing_vars = setdiff(x_vars, names(data))
+  missing_vars = setdiff(c(grouping_var,x_vars), names(data))
   if (length(missing_vars) > 0) {
     stop(paste0("These xvars are not in the data: '", paste0(missing_vars, collapse = "', '"), "'"))
   }
-  if (missing(use_mean)) {
-    use_mean <- FALSE
-  }
-  if (!((is.logical(use_mean) & length(use_mean) == 1) | (is.character(use_mean) & length(use_mean) > 0))) {
-    stop("use_mean must be a character vector or a logical")
-  }
-  if (!is.numeric(digits)) {
-    stop("digits must be a single numeric or a vector of digits")
-  }
-  if (!(is.numeric(digits.cat) & length(digits.cat) == 1)) {
-    stop("digits.cat must be a single numeric")
-  }
-  if (!(percentage %in% c("col", "row"))) {
-    stop("percentage argument must be either 'row' or 'col'")
-  }
-  argList <- as.list(match.call(expand.dots = TRUE)[-1])
-  if (!all(sapply(argList$xvars[-1], is.character))) {
-    argList$xvars <- x_vars
-  }
-  if (!is.character(argList$grp)) {
-    argList$grp <- grouping_var
-  }
-  argsToPass <- intersect(names(formals(xvar_function)), names(argList))
-  argsToPass <- setdiff(argsToPass,"xvars")
-  args <- argList[argsToPass]
-  if (!is.null(grouping_var)) {
-    grp <- grouping_var
-  }
-  xvars <- x_vars
-  dt <- try(as.name(args$data),silent = T)
-  if (inherits(dt,"try-error")) {
-    dt <- eval(args$data)
-  }
   if (!missing(grp)) {
-    if (!(grp %in% names(data))) {
+    if (!(grouping_var %in% names(data))) {
       stop("grp is not in the data")
     }
-    if (grp %in% xvars){
-      warning(paste(grp,'is the grouping variable and can not appear as a covariate. \n',
+    if (grouping_var %in% x_vars){
+      warning(paste(grouping_var,'is the grouping variable and can not appear as a covariate. \n',
                     'It is omitted from the output.'))
-      xvars <- setdiff(xvars, grp)
+      x_vars <- setdiff(x_vars, grouping_var)
     }
-    if (is.logical(data[[grp]]) | is.character(data[[grp]]) | (is.numeric(data[[grp]]) & length(unique(data[[grp]])) <= 5)) {
-      data[[grp]] <- as.factor(data[[grp]])
-      args$data <- data
-    }
-    else if (is.numeric(data[[grp]]) & length(unique(data[[grp]])) > 5) {
-      stop("Convert grp to a factor")
-    }
+    data[[grouping_var]] <- factor(data[[grouping_var]])
   }
   if (!missing(grp) & (effSize | show.tests | pvalue)) {
-    grp_tab <- table(data[[grp]])
+    grp_tab <- table(data[[grouping_var]])
     if (any(grp_tab < 2)) {
-      warning("Small counts in '", grp, "'. No statistical tests or effect size will be reported.")
+      warning("Small counts in '", grouping_var, "'. No statistical tests or effect size will be reported.")
       args$effSize = FALSE
       args$pvalue = FALSE
       args$show.tests = FALSE
     }
     else if (any(grp_tab < 5)) {
-      warning("Small sample size in '", grp, "' group may lead to unstable effect sizes.")
+      warning("Small sample size in '", grouping_var, "' group may lead to unstable effect sizes.")
     }
   }
+
+  if (missing(use_mean)) {
+    use_mean <- FALSE
+  } else {
+    if (!inherits(use_mean,"logical")){
+      if (!all(use_mean %in% names(data))){
+        stop("use_mean must be logical or a character vector of variables in data")
+      }
+      if (!all(use_mean %in% x_vars)){
+        stop("use_mean must be logical or a character vector of variables specified in x_vars")
+      }
+      for (xvar in use_mean){
+        if (!is.numeric(data[[xvar]]))
+          stop(paste0("use_mean can only be specified for numeric columns. Variable ",xvar," is not numeric."))
+      }
+    }
+  }
+  if (!is.numeric(digits)) {
+    stop("digits must be a single numeric or a vector of digits")
+  }
+  if (length(digits)>1){
+    if (!all(names(digits) %in% names(data)))
+      stop(paste("The following variables were specified in digits but are not found in the data:", setdiff(names(digits),names(data))))
+  }
+  if (!(is.numeric(digits.cat) & length(digits.cat) == 1)) {
+    stop("digits.cat must be a single numeric value")
+  }
+  if (!(percentage %in% c("col", "row"))) {
+    stop("percentage argument must be either 'row' or 'col'")
+  }
+
+  data <- dplyr::select(data, dplyr::all_of(c(grouping_var,x_vars)))
+  argList <- as.list(match.call(expand.dots = TRUE)[-1])
+  argsToPass <- intersect(names(formals(xvar_function)), names(argList))
+  argsToPass <- setdiff(argsToPass,"xvars")
+  args <- argList[argsToPass]
+  xvars <- x_vars
+
   for (xvar in xvars) {
     if (inherits(data[[xvar]], "Date") || inherits(data[[xvar]], "POSIXt")) {
       xvars <- setdiff(xvars, xvar)
-      warning(paste("date variable", xvar, "will be ignored"))
+      warning(paste("date variable", xvar, "will be ignored. \nrm_covsum can be used to summarise date variables."))
     }
-  }
-  for (xvar in xvars) {
     if (is.character(data[[xvar]]) | is.logical(data[[xvar]])) {
       data[[xvar]] <- as.factor(data[[xvar]])
-      args$data <- data
     }
   }
-  ignored_xvars <- c()
-  if (!(missing(use_mean))) {
-    if (!is.logical(use_mean)) {
-      for (xvar in use_mean) {
-        if (!(xvar %in% names(data))) {
-          stop(paste0("variable '", xvar, "' in use_mean is not in data."))
-        }
-        if (!(xvar %in% xvars)) {
-          stop(paste0("variable '", xvar, "' in use_mean is not in xvars"))
-        }
-        if (is.factor(data[[xvar]]) | is_binary(data[[xvar]]) | grepl(class(data[[xvar]]),"factor")) {
-          ignored_xvars <- c(ignored_xvars, xvar)
-        }
-      }
-      if (length(ignored_xvars) > 0) {
-        warning(paste("use_mean will be ignored for non-numerical xvars:", paste0(ignored_xvars, collapse = ", ")))
-      }
-    }
-  }
-  ignored_xvars <- c()
-  if (!(missing(digits))) {
-    if (length(digits) > 1) {
-      for (xvar in names(digits)) {
-        if (!(xvar %in% names(data))) {
-          stop(paste0("variable '", xvar, "' in digits is not in data."))
-        }
-        if (!(xvar %in% xvars)) {
-          stop(paste0("variable '", xvar, "' in digits is not in xvars"))
-        }
-        if (is.factor(data[[xvar]]) | is_binary(data[[xvar]]) | grepl(class(data[[xvar]]),"factor")) {
-          ignored_xvars <- c(ignored_xvars, xvar)
-        }
-      }
-      if (length(ignored_xvars) > 0) {
-        warning(paste("digits will be ignored for non-numerical xvars:", paste0(ignored_xvars, collapse = ", ")))
-      }
-    }
-  }
+  args$grp <- grouping_var
+  args$data <- data
   if (tableOnly) {
-    args$covTitle <- "Covariate"
+    if (covTitle=="") args$covTitle <- "Covariate"
+
   }
 
   output_list <- NULL
   for (xvar in xvars) {
-    if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) <= 2) {
-      class(xvar) <- c(class(xvar),"rm_two_level")
-    }
-    else if (inherits(data[[xvar]],"factor")) {
-      class(xvar) <- c(class(xvar),"rm_categorical")
-    }
-    else if (is.numeric(data[[xvar]]) && is_binary(data[[xvar]])) {
-      class(xvar) <- c(class(xvar), "rm_binary")
-    }
-    else if (is.numeric(data[[xvar]])) {
-      if (identical(use_mean, FALSE)) {
-        class(xvar) <- c(class(xvar),"rm_median")
-      }
-      else {
-        if (grepl(class(use_mean), "character")) {
-          if (xvar %in% use_mean) {
-            class(xvar) <- c(class(xvar),"rm_mean")
-          }
-          else {
-            class(xvar) <- c(class(xvar),"rm_median")
-          }
-        }
-        else if (grepl(class(use_mean), "logical")) {
-          if (identical(use_mean, TRUE)) {
-            class(xvar) <- c(class(xvar),"rm_mean")
-          }
-          else {
-            class(xvar) <- c(class(xvar),"rm_median")
-          }
-        }
-        else {
-          stop("use_mean must be a logical or character vector")
-        }
-      }
-    }
-    else {
-      stop("xvar must be binary, numeric, or categorical")
-    }
-    if (length(names(digits)) >= 1) {
-      if (xvar %in% names(digits)) {
-        args$digits = digits[[xvar]]
-      }
-      else {
-        args$digits = 1
-      }
-    }
-    else if (length(digits) == 1 && is.numeric(digits)) {
-      args$digits = digits
-    }
+    class(xvar) <- c(class(xvar),assign_method(data,xvar,use_mean))
+    args$digits <- assign_digits(xvar,digits)
     args$xvar = xvar
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
+
   if (all(na.omit(result[["Missing"]]) == 0))
     result <- result[, -which(names(result) == "Missing")]
+
   if ("p-value" %in% colnames(result)) {
     small_p <- which(result$`p-value`<.05)
     if (!pvalue) {
@@ -337,12 +253,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   to_indent <- which(!(result[, 1] %in% names(data)))
   bold_cells <- cbind(which(result[, 1] %in% names(data)), rep(1, length(which(result[, 1] %in% names(data)))))
   if (nicenames) {
-    if (typeof(args$data) == "symbol") {
-      result[, 1] <- replaceLbl(args$data, lbl)
-    }
-    else {
-      result[, 1] <- replaceLbl(dt, lbl)
-    }
+    result[, 1] <- replaceLbl(args$data, lbl)
   }
   if ("ref" %in% names(result)) {
     result[, 1] <- paste0(result[, 1],ifelse(is.na(result$`ref`),"",result$`ref`))
@@ -357,7 +268,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     names(result)[1] <- ""
   }
   if (!full) {
-    print(names(result))
     result <- result[, -2]
   }
   attr(result, "description") <- generate_description(xvars, output_list)
@@ -643,7 +553,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
         i = i+1
       }
     }
-    no_na_data <- na.omit(data.frame(x_var = data[[xvar]], group_var = data[[grp]]))
+    no_na_data <- na.omit(data.frame(x_var = x_var, group_var = group_var))
     if (length(unique(na.omit(group_var))) < 2 | length(unique(no_na_data$group_var)) < 2) {
       df[1, "Missing"] <- sum(is.na(x_var))
       return(df)
@@ -656,7 +566,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
       show.tests <- FALSE
     }
     if (pvalue | effSize | show.tests) {
-      if (length(unique(group_var)) == 2) {
+      if (length(na.omit(unique(group_var))) == 2) {
         wilcox_test <- wilcox.test.rm(x_var, group_var)
         df[1, "p-value"] <- wilcox_test$p.value
         if (effSize) {
@@ -675,7 +585,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
           df[1, "effStat"] <- "Wilcoxon r"
         }
       }
-      else if (length(levels(group_var)) > 2) {
+      else if (length(na.omit(unique(group_var))) > 2) {
         kruskal_test <- kruskal.test.rm(x_var, group_var)
         df[1, "p-value"] <- kruskal_test$p.value
         if (effSize) {
@@ -876,7 +786,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
           df[1, "pTest"] <- "ChiSq"
         }
         if (pvalue) {
-        attr(df, "stat_test") <- "chi-square test"
+          attr(df, "stat_test") <- "chi-square test"
         }
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
@@ -907,6 +817,53 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
   return(df)
 }
 
+assign_method <- function(data,xvar,use_mean){
+  if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) <= 2) {
+    return("rm_two_level")
+  }
+  else if (inherits(data[[xvar]],"factor")) {
+    return("rm_categorical")
+  }
+  else if (is.numeric(data[[xvar]]) && is_binary(data[[xvar]])) {
+    return( "rm_binary")
+  }
+  else if (is.numeric(data[[xvar]])) {
+    if (identical(use_mean, FALSE)) {
+      return("rm_median")
+    }
+    else {
+      if (grepl(class(use_mean), "character")) {
+        if (xvar %in% use_mean) {
+          return("rm_mean")
+        }
+        else {
+          return("rm_median")
+        }
+      }
+      else if (grepl(class(use_mean), "logical")) {
+        if (identical(use_mean, TRUE)) {
+          return("rm_mean")
+        }
+        else {
+          return("rm_median")
+        }
+      }
+      else {
+        stop("use_mean must be a logical or character vector")
+      }
+    }
+  }
+  else {
+    stop("xvar must be binary, numeric, or categorical")
+  }
+}
+
+assign_digits <- function(xvar,digits){
+  if (length(digits)==1) return(digits)
+  if (xvar %in% names(digits)) return(digits[[xvar]])
+  # otherwise default to 1
+  return(1)
+}
 delta_CI <- function(htest,CIwidth=0.95){
   # determine what test result is being passed in
   if (inherits(htest,"aov")){

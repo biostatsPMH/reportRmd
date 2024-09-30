@@ -128,14 +128,17 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
                       reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
   response_var <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
                                           allow_rename = FALSE)
-  response_var <- names(response_var)
-
+  response <- names(response_var)
   x_vars <- tidyselect::eval_select(expr = enquo(covs), data = data[unique(names(data))],
                                     allow_rename = FALSE)
   x_vars <- names(x_vars)
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument') else covs <- unique(x_vars)
   if (missing(response)) stop('response is a required argument')
+
+  if (!all(response %in% names(data))) stop("response is not a variable in data")
+  if (!all(covs %in% names(data))) stop(paste("The following covs not found in data:",setdiff(covs,names(data))))
+
   fun <- get(match.call()[[1]])
   argList <- as.list(match.call()[-1])
 
@@ -160,8 +163,6 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
   }
 
-  response <- response_var
-  covs <- x_vars
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
   if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
   # if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
@@ -180,12 +181,14 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
-  if (!all(sapply(argList$covs[-1], is.character))) {
-    argList$covs <- x_vars
-  }
-  if (!is.character(argList$response)) {
-    argList$response <- response_var
-  }
+  argList$covs <- x_vars
+  argList$response <- response
+  # if (!all(sapply(argList$covs[-1], is.character))) {
+  #   argList$covs <- x_vars
+  # }
+  # if (!is.character(argList$response)) {
+  #   argList$response <- response_var
+  # }
   if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }
@@ -212,7 +215,7 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
     df <- na.omit(data[,c(response,v)])
     if (v %in% response){
-      warning(paste(v,'is the response and can not appear in the covariate.\n',
+      warning(paste(v,'is the response and can not appear in the covariate list.\n',
                     'It is omitted from the output.'))
       covs <- setdiff(covs,v)
     }
