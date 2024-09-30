@@ -421,8 +421,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp="level", for_plot = FALSE)
   summaryList <- dplyr::bind_rows(summaryList)
 
-  # Other stuff here!
-
   if (!showN) {
     summaryList[["N"]] <- NULL
   }
@@ -435,3 +433,4 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   attr(summaryList, "bold_cells") <- bold_cells
   if (returnModels) return(list(summaryList,models=modelList)) else return(summaryList)
 }
+

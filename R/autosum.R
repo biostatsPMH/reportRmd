@@ -107,10 +107,12 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
   }
   cs$ord <- 1:nrow(cs)
   attr(cs,'estLabel') <- attr(m_coeff,'estLabel')
+  estLbl <- attr(cs, "estLabel")
+  varIDs <- unique(cs[,"var"])
+
   if (for_plot) {
     return(cs)
   }
-  estLbl <- attr(cs, "estLabel")
   var_col <- c()
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "ref"]) & cs[i, "ref"] == TRUE) {
@@ -153,6 +155,8 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
   }
   cs <- cs[, cols_to_keep]
   colnames(cs) <- new_colnames
+  attr(cs, "estLabel") <- estLbl
+  attr(cs, "covs") <- varIDs
   return(cs)
 }
 
@@ -319,11 +323,11 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
     if (any(zph$table[,"p"]<.05)){
       zph_var <- setdiff(rownames(zph$table)[which(zph$table[,"p"]<.05)],"GLOBAL")
       global_zph <- which(rownames(zph$table)=="GLOBAL")
-      if (length(global_zph)>0){
-        if (zph$table[global_zph,"p"]<.05) warning("Cox PH assumption may be violated.")
+      if (length(global_zph)>0 & nrow(zph$table)>2){
+        if (zph$table[global_zph,"p"]<.05) warning("Global Cox PH assumption may be violated.")
       }
       if (length(zph_var)>0) warning(paste("Warning Cox PH assumption may be violated for these variables:",
-                    paste(setdiff(zph_var),"GLOBAL"),collapse=","))
+                                           paste(setdiff(zph_var,"GLOBAL"),collapse=",")))
     }
   }
   attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)

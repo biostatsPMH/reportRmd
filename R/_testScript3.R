@@ -140,6 +140,7 @@ uvsum2_ord <- rm_uvsum2("ord_var", covs = c("age", "sex", "cohort"), data = pemb
 
 ## Cox PH -----
 uv_cox <- coxph(Surv(os_time, os_status) ~ sex, data = pembrolizumab)
+zph <- try(survival::cox.zph(uv_cox),silent = T)
 coeffSum(uv_cox)
 getVarLevels(uv_cox)
 m_summary(uv_cox)
@@ -453,3 +454,49 @@ rm_compactsum(data = try3, grp = "trt", xvars = c("sex","age"), pvalue = T,show.
 rm_uvsum2(response = c('os_time','os_status'),
            covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
            data=pembrolizumab,CIwidth=.9)
+
+
+rm_compactsum(data = try, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+try <- select(pbc, trt, sex, age)
+try |> rm_compactsum( grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+try2 <- select(pbc, age, sex, trt) #change order of selected variables
+rm_compactsum(data = try2, grp = "trt", xvars = c("sex","age"), pvalue = T)
+
+try3 <- select(pbc, everything())
+rm_compactsum(data = try3, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
+
+
+load("../../rmdTest.rda")
+rm_uvsum2(data=s4_data_nact,
+          response = c('OS_time','OS_status'),
+          covs = c('Treatment_Group','Age','BRCA','ECOG'),
+          showN = T,showEvent = T,
+          tableOnly = T)
+
+
+uvTab <- rm_uvsum(data=s4_data_nact,
+                   response = c('OS_time','OS_status'),
+                   covs = c('Treatment_Group','Age','BRCA','ECOG'),
+                   showN = T,showEvent = T,
+                   tableOnly = T)
+uvTab2 <- rm_uvsum2(data=s4_data_nact,
+                  response = c('OS_time','OS_status'),
+                  covs = c('Treatment_Group','Age','BRCA','ECOG'),
+                  showN = T,showEvent = T,
+                  tableOnly = T)
+c_fit <- coxph(Surv(OS_time,OS_status)~Treatment_Group+Age+ECOG,
+               data = s4_data_nact )
+mvTab <- rm_mvsum(c_fit,showN = T,tableOnly = T)
+mvTab2 <- rm_mvsum2(c_fit,showN = T,tableOnly = T)
+
+rm_uv_mv(uvTab,mvTab)
+
+rm_uv_mv(uvTab2,mvTab2)
+
+attributes(uvTab)
+attributes(uvTab2)
+
+attributes(mvTab)
+attributes(mvTab2)
