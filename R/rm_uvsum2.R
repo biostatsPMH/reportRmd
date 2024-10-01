@@ -117,7 +117,8 @@
 #' # Using tidyselect
 #' pembrolizumab |> rm_uvsum2(response = sex,
 #' covs = c(age, cohort))
-rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits",2), covTitle='',caption=NULL,
+rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits",2),
+                      covTitle='',caption=NULL,
                       tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
                       whichp=c("levels","global","both"),
                       chunk_label,
@@ -192,6 +193,7 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }
+  if ("caption" %in% names(argList)) argList[["caption"]] <- NULL
   if (!is.null(empty)) {
     for (var in empty) {
       if (is.null(eval(as.name(var)))) {
@@ -258,8 +260,10 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     tab[, 1] <- replaceLbl(argList$data, lbl)
   }
   argL <- list(tab=tab, digits = digits,
-               to_indent=to_indent,bold_cells=bold_cells
-  )
+               to_indent=to_indent,bold_cells=bold_cells,
+               caption=caption)
+
+
   # Add attributes if returning a table
   for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
   if (tableOnly){
@@ -270,7 +274,6 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     attr(tab,'dimchk') <- dim(tab)
     return(tab)
   }
-
   do.call(outTable, argL)
 
 }

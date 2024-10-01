@@ -409,17 +409,12 @@ pbc |>
   rm_compactsum( grp = "trt", xvars = c("age"), pvalue = T,show.tests = T)
 
 xvar_function.rm_median("age",data=pbc,grp="trt")
+try <- select(pbc, trt, sex, age)
 xvar_function.rm_median("age",data=try,grp="trt")
 xvar_function.rm_two_level("sex",data=try,grp="trt")
 
 try$trt <- factor(try$trt)
 
-try <- select(pbc, trt, sex, age)
-
-length(unique(pbc$trt))
-length(unique(try$trt))
-length(levels(pbc$trt))
-length(levels(try$trt))
 
 rm_compactsum(data = try, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
 
@@ -450,7 +445,7 @@ rm_compactsum(data = try3, grp = "trt", xvars = c("sex","age"), pvalue = T,show.
 
 rm_compactsum(data = try3, grp = "trt", xvars = c("sex","age"), pvalue = T,show.tests = T)
 
-
+data("pembrolizumab")
 rm_uvsum2(response = c('os_time','os_status'),
            covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
            data=pembrolizumab,CIwidth=.9)
@@ -500,3 +495,6 @@ attributes(uvTab2)
 
 attributes(mvTab)
 attributes(mvTab2)
+
+
+# HTML Scroll Box

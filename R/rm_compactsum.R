@@ -365,11 +365,11 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    if (any(no_na_tab < 2)) {
-      effSize <- FALSE
-      pvalue <- FALSE
-      show.tests <- FALSE
-    }
+    # if (any(no_na_tab < 2)) {
+    #   effSize <- FALSE
+    #   pvalue <- FALSE
+    #   show.tests <- FALSE
+    # }
     if (pvalue | effSize | show.tests) {
       if (!any(chi.test.rm(cont_table)$expected < 5)) {
         chisq_test <- chi.test.rm(cont_table)
@@ -442,13 +442,13 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    if (any(no_na_tab < 2)) {
-      effSize <- FALSE
-      pvalue <- FALSE
-      show.tests <- FALSE
-    }
+    # if (any(no_na_tab < 2)) {
+    #   effSize <- FALSE
+    #   pvalue <- FALSE
+    #   show.tests <- FALSE
+    # }
     if (pvalue | effSize | show.tests) {
-      if (length(levels(group_var)) == 2) {
+      if (length(unique(no_na_data$group_var)) == 2) {
         t_test <- t.test.rm(x_var, group_var)
         df[, "p-value"] <- t_test$p.value
         N <- nrow(data)
@@ -468,7 +468,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
           df[, "effStat"] <- "Cohen's d"
         }
       }
-      else if (length(levels(group_var)) > 2) {
+      else if (length(unique(no_na_data$group_var)) > 2) {
         anova_test <- stats::aov(x_var ~ group_var)
         df[, "p-value"] <- summary(anova_test)[[1]][["Pr(>F)"]][1]
         if (effSize) {
@@ -486,6 +486,8 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
         if (show.tests & effSize) {
           df[, "effStat"] <- "Omega Sq"
         }
+      } else { # fewer than two groups, no comparisons
+        if (interactive()) message(paste("Only one group with non-missing data for",xvar,"no statistical tests performed."))
       }
     }
   }
@@ -558,13 +560,8 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    if (any(no_na_tab < 2)) {
-      effSize <- FALSE
-      pvalue <- FALSE
-      show.tests <- FALSE
-    }
     if (pvalue | effSize | show.tests) {
-      if (length(na.omit(unique(group_var))) == 2) {
+      if (length(unique(no_na_data$group_var)) == 2) {
         wilcox_test <- wilcox.test.rm(x_var, group_var)
         df[1, "p-value"] <- wilcox_test$p.value
         if (effSize) {
@@ -583,7 +580,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
           df[1, "effStat"] <- "Wilcoxon r"
         }
       }
-      else if (length(na.omit(unique(group_var))) > 2) {
+      else if (length(unique(no_na_data$group_var)) > 2) {
         kruskal_test <- kruskal.test.rm(x_var, group_var)
         df[1, "p-value"] <- kruskal_test$p.value
         if (effSize) {
@@ -601,6 +598,8 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Epsilon sq"
         }
+      } else { # fewer than two groups, no comparisons
+        if (interactive()) message(paste("Only one group with non-missing data for",xvar,"no statistical tests performed."))
       }
     }
   }
@@ -626,6 +625,7 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
   }
   df <- data.frame(Covariate = rows, "disp" = rep("", length(rows)))
   df[1, "disp"] <-  " n (%)"
+  attr(df, "stat_sum") <- "counts (%)"
   i = 2
   for (xvar_level in levels(x_var)) {
     xvar_subset <- subset(data, x_var == xvar_level)
@@ -650,15 +650,16 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
     cont_table <- cont_table[rowSums(cont_table) > 0, colSums(cont_table) > 0]
     if (is.null(dim(cont_table)) | min(dim(cont_table)) < 2) {
       df[1, "Missing"] <- sum(is.na(x_var))
+      if (interactive()) message(paste("Only non-missing data for one group, no statistical test for",xvar,"performed."))
       return(df)
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    if (any(no_na_tab < 2)) {
-      effSize <- FALSE
-      pvalue <- FALSE
-      show.tests <- FALSE
-    }
+    # if (any(no_na_tab < 2)) {
+    #   effSize <- FALSE
+    #   pvalue <- FALSE
+    #   show.tests <- FALSE
+    # }
     if (pvalue | effSize | show.tests) {
       if (!any(chi.test.rm(cont_table)$expected < 5)) {
         chisq_test <- chi.test.rm(cont_table)
@@ -679,7 +680,6 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-
       else if (any(chi.test.rm(cont_table)$expected < 5)) {
         fisher_test <- fisher.test.rm(cont_table)
         df[1, "p-value"] <- fisher_test$p.value
@@ -700,9 +700,7 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
       }
     }
   }
-  attr(df, "stat_sum") <- "counts (%)"
   df[1, "Missing"] <- sum(is.na(x_var))
-
   return(df)
 }
 
