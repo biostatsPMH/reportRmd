@@ -279,10 +279,8 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     p_col <- which(names(result) == "p-value")
     bold_cells <- rbind(bold_cells, cbind(small_p, rep(p_col, length(small_p))))
   }
-  nicetable <- outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
-  attr(nicetable, "description") <- generate_description(xvars, output_list)
-  cat(attr(nicetable, "description"))
-  return(nicetable)
+  if (interactive()) cat(attr(result, "description"))
+  outTable(result, caption = caption, nicenames = nicenames, to_indent = to_indent, bold_cells = bold_cells)
 }
 
 #' Create a summary table for an individual covariate
@@ -694,7 +692,7 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
           df[1, "pTest"] <- "Fisher Exact"
         }
         if (pvalue) {
-          attr(df, "stat_test") <- "Fisher's Exact Test"
+          attr(df, "stat_test") <- "Fisher's exact test"
         }
         if (show.tests & effSize) {
           df[1, "effStat"] <- "Cramer's V"
@@ -1057,10 +1055,10 @@ fisher.test.rm <- function(x,...){
     message("Using MC sim. Use set.seed() prior to function for reproducible results.")
     rtn <- stats::fisher.test(x, simulate.p.value = T)
     rtn$p_type <- "MC sim"
-    rtn$stat_test <- "Fisher's Exact Test with Monte Carlo simulation"
+    rtn$stat_test <- "Fisher's exact test with Monte Carlo simulation"
   } else {
     rtn$p_type <- "Fisher Exact"
-    rtn$stat_test <- "Fisher's Exact Test"
+    rtn$stat_test <- "Fisher's exact test"
   }
   rtn$observed <- chi.out$observed
   rtn$statistic <- chi.out$statistic
