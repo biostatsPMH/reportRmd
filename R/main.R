@@ -2799,23 +2799,18 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
       if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
       for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
     }
-    if (nrow(tab)>30){
-      kout <- knitr::kable(tab, format = out_fmt,
-                           escape = FALSE,
-                           booktabs=TRUE,
-                           longtable=TRUE,
-                           linesep='',
-                           caption=caption,
-                           align =alignSpec)
-      kout <- kableExtra::kable_styling(kout,latex_options = c('repeat_header'))
+    long_table <- ifelse(nrow(tab)>30, TRUE,FALSE)
+    kout <- knitr::kable(tab, format = out_fmt,
+                         escape = FALSE,
+                         booktabs=TRUE,
+                         longtable=long_table,
+                         linesep='',
+                         caption=caption,
+                         align =alignSpec)
+    if (out_fmt=="html"){
+     kout <- kableExtra::kable_styling(kout,fixed_thead = TRUE)
     } else {
-      kout <- knitr::kable(tab, format = out_fmt,
-                           escape = FALSE,
-                           booktabs=TRUE,
-                           longtable=FALSE,
-                           linesep='',
-                           caption=caption,
-                           align = alignSpec)
+      kout <- kableExtra::kable_styling(kout,latex_options = c('repeat_header'))
     }
     kout <- kableExtra::add_indent(kout,positions = to_indent)
     if (!missing(fontsize)){
@@ -3136,7 +3131,8 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #'@param tableOnly boolean indicating if unformatted table should be returned
 #'@param removeInf boolean indicating if infinite estimates should be removed
 #'  from the table
-#'@param p.adjust p-adjustments to be performed (Global p-values only)
+#'@param p.adjust p-adjustments to be performed (Global p-values only). Uses the
+#'  [p.adjust] function from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'  in conjunction with the digits argument.
@@ -3397,8 +3393,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 #'  both ("both"). Irrelevant for continuous predictors.
 #' @param caption table caption
   #' @param tableOnly boolean indicating if unformatted table should be returned
-  #' @param p.adjust p-adjustments to be performed (Global p-values only)
-  #' @param unformattedp boolean indicating if you would like the p-value to be
+#'@param p.adjust p-adjustments to be performed (Global p-values only). Uses the
+#'  [p.adjust] function from base R
+#' @param unformattedp boolean indicating if you would like the p-value to be
   #'   returned unformatted (ie not rounded or prefixed with '<'). Should be used
   #'   in conjuction with the digits argument.
   #' @param nicenames boolean indicating if you want to replace . and _ in strings

@@ -54,7 +54,8 @@ both ("both"). Irrelevant for continuous predictors.}
 
 \item{tableOnly}{boolean indicating if unformatted table should be returned}
 
-\item{p.adjust}{p-adjustments to be performed (Global p-values only)}
+\item{p.adjust}{p-adjustments to be performed (Global p-values only). Uses the
+\link{p.adjust} function from base R}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformatted (ie not rounded or prefixed with '<'). Should be used
@@ -89,8 +90,8 @@ If the variance inflation factor is requested (VIF=T) then a generalised VIF
 will be calculated in the same manner as the car package.
 
 If the MASS package is loaded, profile likelihood confidence intervals will be
-calculated; otherwise Wald confidence intervals will be calculated.
-Users should look for the message "Waiting for profiling to be done...", which
+calculated; otherwise Wald confidence intervals will be calculated. Users
+should look for the message "Waiting for profiling to be done...", which
 indicates that profile likelihoods are calculated.
 
 The number of decimals places to display the statistics can be changed with
