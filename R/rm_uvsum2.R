@@ -32,7 +32,8 @@
 #'@param tableOnly boolean indicating if unformatted table should be returned
 #'@param removeInf boolean indicating if infinite estimates should be removed
 #'  from the table
-#'@param p.adjust p-adjustments to be performed (Global p-values only)
+#'@param p.adjust p-adjustments to be performed. Uses the
+#'  [p.adjust] function from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'  in conjunction with the digits argument.

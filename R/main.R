@@ -2974,7 +2974,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #'   table. Can only be obtained if pvalue is also requested. Effect sizes
 #'   calculated include Cramer's V for categorical variables, Cohen's d,
 #'   Wilcoxon r, or Eta-squared for numeric/continuous variables.
-#' @param p.adjust p-adjustments to be performed
+#' @param p.adjust p-adjustments to be performed. Uses the
+#'  [p.adjust] function from base R
 #' @param unformattedp boolean indicating if you would like the p-value to be
 #'   returned unformatted (ie not rounded or prefixed with '<'). Best used with
 #'   tableOnly = T and outTable function. See examples.
@@ -3131,7 +3132,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 #'@param tableOnly boolean indicating if unformatted table should be returned
 #'@param removeInf boolean indicating if infinite estimates should be removed
 #'  from the table
-#'@param p.adjust p-adjustments to be performed (Global p-values only). Uses the
+#' @param p.adjust p-adjustments to be performed. Uses the
 #'  [p.adjust] function from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
@@ -3393,7 +3394,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 #'  both ("both"). Irrelevant for continuous predictors.
 #' @param caption table caption
   #' @param tableOnly boolean indicating if unformatted table should be returned
-#'@param p.adjust p-adjustments to be performed (Global p-values only). Uses the
+#' @param p.adjust p-adjustments to be performed. Uses the
 #'  [p.adjust] function from base R
 #' @param unformattedp boolean indicating if you would like the p-value to be
   #'   returned unformatted (ie not rounded or prefixed with '<'). Should be used

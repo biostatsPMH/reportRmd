@@ -55,7 +55,7 @@ both ("both"). Irrelevant for continuous predictors.}
 
 \item{tableOnly}{boolean indicating if unformatted table should be returned}
 
-\item{p.adjust}{p-adjustments to be performed (Global p-values only). Uses the
+\item{p.adjust}{p-adjustments to be performed. Uses the
 \link{p.adjust} function from base R}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
