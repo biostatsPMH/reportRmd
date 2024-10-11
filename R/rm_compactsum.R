@@ -202,6 +202,12 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
 
   data <- dplyr::select(data, dplyr::all_of(c(grouping_var,x_vars)))
+
+  if (!missing(grp) ) {
+    n_na <- sum(is.na(data[[grouping_var]]))
+    if (n_na>0) message(paste("There are",n_na,"observations missing",grouping_var,"\nThese will be removed from the data."))
+    data <- data[!is.na(data[[grouping_var]]),]
+  }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
@@ -220,9 +226,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   args$grp <- grouping_var
   args$data <- data
   if (tableOnly) {
-    if (covTitle=="") args$covTitle <- "Covariate"
-
-  }
+    if (covTitle=="") args$covTitle <- "Covariate"  }
 
   output_list <- NULL
   for (xvar in xvars) {
@@ -271,6 +275,11 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     result <- result[, -2]
   }
   attr(result, "description") <- generate_description(xvars, output_list)
+  if (!missing(grp)){
+    if (n_na>0) {
+      attr(result, "description") <- paste(n_na,"entries were missing data on",grouping_var,"and were removed prior to analysis.",attr(result, "description"))
+    }
+  }
   if (tableOnly) {
     if (names(result)[1]=="") names(result)[1] <- "Covariate"
     return(result)

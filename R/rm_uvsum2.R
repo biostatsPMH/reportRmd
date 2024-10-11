@@ -231,6 +231,8 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (is.null(strata))
   if (is.na(strata)) assign(argList[["strata"]], formals(fun)[["strata"]])
 
+  # remove arguments not used by uvsum2
+  argList$unformattedp <- NULL
 
   # get the table
   tab <- do.call(uvsum2,argList)
