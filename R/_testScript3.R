@@ -498,3 +498,47 @@ attributes(mvTab2)
 
 
 # HTML Scroll Box
+data("pembrolizumab")
+
+pembrolizumab |>
+  rm_compactsum(grp=sex,
+                xvars=c(age,cohort,change_ctdna_group,pdl1))
+pembrolizumab$sex[sample(1:90,18)] <- NA
+
+x[[3]]$data |>
+  rm_compactsum(grp=sex,
+                xvars=c(age,cohort,change_ctdna_group,pdl1),pvalue=F)
+
+
+args <-x[[3]]
+args
+class(args$xvar) <- "rm_median"
+do.call(xvar_function,args) # works
+do.call(xvar_function,list(xvar=args$xvar,data=args$data,grp=args$grp)) #doesn't work
+
+
+xvar_function(xvar=args$xvar,data=args$data,grp=args$grp)
+
+xvar=args$xvar
+data=args$data
+grp=args$grp
+xvar_function(xvar,data,grp)
+
+
+
+df <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Whittle/PretermBirth/test_out.csv")
+df$Age = as.numeric(df$Age)
+data=df;response="term"
+covs=c("Age","BMI","Ethnicity")
+data |> rm_uvsum2(response=response,covs=covs)
+m <- data |> rm_uvsum2(response=term,covs=c(Age,BMI,Ethnicity),returnModels = T)
+m_summary(m[[2]])
+                     # ,Education_Level,Smoking,Substance_use,
+                     #        Pregestational_diabetes,Thyroid_disorder,Auto_immune_disease,Chronic_hypertension,
+                     #        Gravida,Para,GA_at_recurrence_of_PPROM,GA_at_delivery_index_pregnancy,
+                     #        More_than_1_previous_PPROM,Prior_Term_Pregnancy,
+                     #        Placenta_pathology_from_index_pregnancy,ASA,Progesterone,ATB_suppression,Antepartum_bleed,Ureaplasma_Mycoplasma_at_12_14_weeks,
+                     #        Positive_BV_swab,Positive_G_C_swab,Positive_Trichomonas,Need_for_cerclage,GA_at_cerclage,
+                     #        Cervical_length_at_cerclage,Type_of_cerclage,
+                     #        CL_at_16_weeks,CL_at_20_weeks,CL_at_24_weeks))
+

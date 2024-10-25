@@ -206,6 +206,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (!missing(grp) ) {
     n_na <- sum(is.na(data[[grouping_var]]))
     if (n_na>0) message(paste("There are",n_na,"observations missing",grouping_var,"\nThese will be removed from the data."))
+    miss_data <- data
     data <- data[!is.na(data[[grouping_var]]),]
   }
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
@@ -236,6 +237,25 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
+
+  if (!missing(grp) ) {
+    if (n_na>0){
+      output_list <- NULL
+      miss_data[[grouping_var]] <- ifelse(is.na(miss_data[[grouping_var]]),"Missing","Discard")
+      args$pvalue = FALSE
+      args$data <- miss_data
+
+      for (xvar in xvars) {
+        class(xvar) <- assign_method(data,xvar,use_mean)
+        args$digits <- assign_digits(xvar,digits)
+        args$xvar = xvar
+        output_list[[xvar]] <- do.call(xvar_function, args)
+      }
+      miss_col <-dplyr::bind_rows(output_list)
+      out <- do.call(xvar_function, args)
+#      return(list(result,miss_col,args,out))
+    }
+  }
 
   if (all(na.omit(result[["Missing"]]) == 0))
     result <- result[, -which(names(result) == "Missing")]
@@ -352,6 +372,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
   else {
     df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(sum(x_var, na.rm = TRUE), " (", format(round((100*sum(x_var, na.rm = TRUE) / (nrow(data) - sum(is.na(x_var)))), digits.cat), nsmall = digits.cat), "%)")
   }
+
 
   if (!missing(grp)) {
     group_var <- data[[grp]]

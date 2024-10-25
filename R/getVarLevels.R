@@ -72,7 +72,7 @@ getVarLevels <- function(model){
   df$v2 <- sub(".*:","",df$var)
   df$v2 <- ifelse(df$v1==df$v2,NA,df$v2)
 
-  vcls <- sapply(na.omit(unique(c(df$v1,df$v2))), function(x) ifelse(inherits(md[[x]],"numeric"),"numeric","factor"))
+  vcls <- sapply(na.omit(unique(c(df$v1,df$v2))), function(x) ifelse(is.numeric(md[[x]]),"numeric","factor"))
   int_terms <- unique(grep("[:]",df$var,value=T))
   freq1 <- NULL
   for (i in int_terms){
