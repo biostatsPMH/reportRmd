@@ -534,3 +534,37 @@ drop1.default <- function (object, scope, scale = 0, test = c("none", "Chisq"),
   attr(aod, "heading") <- head
   aod
 }
+
+# HIV data error
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-Personal/UofT HIV in Motion_NIH/combined_dataset.rda")
+
+rm_compactsum(data=combined_df,
+              xvars =c('Age', 'Sex', 'Gender', 'YearHIVDx', 'ARVS', 'CD4C', 'Aerobic_Exercise', 'Strength_Exercise', 'ExStatus', 'ExDays', 'MOS_EIS', 'MOS_TANGS', 'MOS_AFFS', 'MOS_PSI', 'MOS_Total', 'PHQ8_TOTAL','Pain', 'Mental_Health', 'Admin_Mode'),
+              grp = "Study",pvalue=F)
+
+
+xvars =c('Age', 'Sex', 'Gender', 'YearHIVDx', 'ARVS', 'CD4C', 'Aerobic_Exercise', 'Strength_Exercise', 'ExStatus', 'ExDays', 'MOS_EIS', 'MOS_TANGS', 'MOS_AFFS', 'MOS_PSI', 'MOS_Total', 'PHQ8_TOTAL','Pain', 'Mental_Health', 'Admin_Mode')
+
+for (v in xvars){
+  print(v)
+  rm_compactsum(data=combined_df,
+                xvars = v,
+                grp = "Study",pvalue=F)
+}
+
+data <- combined_df
+xvar <- "ARVS"
+x = combined_df$ARVS
+attributes(x) <- NULL
+as.character(x)
+is_binary <- function(x) {
+  attributes(x) <- NULL
+  all(unique(na.omit(x)) %in% c(0, 1))
+}
+
+
+lbl <- attr(data[[xvar]],"labels")
+attributes(data[[xvar]]) <- NULL
+newx <- factor(data[[xvar]],levels=lbl,labels=names(lbl))
+
+table(newx,data[[xvar]])

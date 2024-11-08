@@ -17,7 +17,11 @@
 #'desired.
 #'
 #'tidyselect can only be used for response and covs variables. Additional
-#'arguments must be passed in using characters
+#'arguments must be passed in using characters.
+#'
+#'To return an unformatted data frame use tableOnly=T and for_plot=T, this is
+#'useful for plotting, but the p.adjust, showN and showEvent arguments are all
+#'ignored.
 #'
 #'@param response string vector with name of response
 #'@param covs character vector with the names of columns to fit univariate
@@ -29,11 +33,16 @@
 #'  The default is to leave this empty for output or, for table only output to
 #'  use the column name 'Covariate'.
 #'@param caption character containing table caption (default is no caption)
-#'@param tableOnly boolean indicating if unformatted table should be returned
+#'@param tableOnly boolean indicating if a data frame should be returned,
+#'  Default is FALSE, to output a kable table
+#'@param for_plot boolean indicating if columns for plotting the point
+#'  estimates, and bounds of CI should be returned for plotting. This argument
+#'  will be ignored unless tableOnly=TRUE. No formatting or adjustments will be
+#'  performed, the p.adjust, showN and showEvent arguments will all be ignored.
 #'@param removeInf boolean indicating if infinite estimates should be removed
 #'  from the table
-#'@param p.adjust p-adjustments to be performed. Uses the
-#'  [p.adjust] function from base R
+#'@param p.adjust p-adjustments to be performed. Uses the [p.adjust] function
+#'  from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'  in conjunction with the digits argument.
@@ -120,7 +129,8 @@
 #' covs = c(age, cohort))
 rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits",2),
                       covTitle='',caption=NULL,
-                      tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
+                      tableOnly=FALSE,for_plot=FALSE,
+                      removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
                       whichp=c("levels","global","both"),
                       chunk_label,
                       gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
@@ -141,7 +151,10 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (!all(response %in% names(data))) stop("response is not a variable in data")
   if (!all(covs %in% names(data))) stop(paste("The following covs not found in data:",setdiff(covs,names(data))))
 
-  fun <- get(match.call()[[1]])
+  if (nrow(data)==0) stop("data is an empty data frame")
+
+  if (p.adjust!="none" & for_plot & !tableOnly) stop("p-adjustments will not be performed if for_plot=T. Please re-run without the p.adjust argument.")
+
   argList <- as.list(match.call()[-1])
 
   # checks for id and type
@@ -160,7 +173,7 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     args <- list(strata = strata, type = type, offset = offset, id = id)
     empty <- names(args)[which(args == "")]
     for (var in empty) {
-      assign(var, formals(fun)[[var]])
+      assign(var, formals()[[var]])
     }
     warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
   }
@@ -172,12 +185,12 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))
   if (is.null(strata)) {
-    strata <- formals(fun)[["strata"]]
-    argList[["strata"]] <- formals(fun)[["strata"]]
+    strata <- formals()[["strata"]]
+    argList[["strata"]] <- formals()[["strata"]]
   }
   if (is.na(strata)) {
-    strata <- formals(fun)[["strata"]]
-    argList[["strata"]] <- formals(fun)[["strata"]]
+    strata <- formals()[["strata"]]
+    argList[["strata"]] <- formals()[["strata"]]
   }
   if (strata==1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
@@ -185,12 +198,6 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
   argList$covs <- x_vars
   argList$response <- response
-  # if (!all(sapply(argList$covs[-1], is.character))) {
-  #   argList$covs <- x_vars
-  # }
-  # if (!is.character(argList$response)) {
-  #   argList$response <- response_var
-  # }
   if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }
@@ -229,17 +236,22 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
     }
   }
   if (is.null(strata))
-  if (is.na(strata)) assign(argList[["strata"]], formals(fun)[["strata"]])
+  if (is.na(strata)) assign(argList[["strata"]], formals()[["strata"]])
 
   # remove arguments not used by uvsum2
-  argList$unformattedp <- NULL
+  rm_args <- setdiff(names(argList),names(formals(uvsum2)))
+  argList[intersect(names(argList),rm_args)] <- NULL
+
+  if (!tableOnly) argList$for_plot <- FALSE
 
   # get the table
   tab <- do.call(uvsum2,argList)
-  # If user specifies return models, don't format a table, just return a list of models
+
+  if (returnModels) return (tab$models)
+  if (for_plot) return(tab)
+
   to_indent <- attr(tab, "to_indent")
   bold_cells <- attr(tab, "bold_cells")
-  if (returnModels) return (tab$models)
   att_tab <- attributes(tab)
 
   method <- p.adjust
@@ -283,7 +295,7 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
 uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
                     type = NULL, offset=NULL, gee=FALSE,strata = 1, nicenames = TRUE,
-                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, whichp = "level")
+                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, whichp = "level",for_plot=FALSE)
 {
   argList <- as.list(match.call()[-1])
   if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
@@ -424,7 +436,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   }
 
   summaryList <- NULL
-  summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp="level", for_plot = FALSE)
+  summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp=whichp, for_plot = for_plot)
   summaryList <- dplyr::bind_rows(summaryList)
 
   if (!showN) {

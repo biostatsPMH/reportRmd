@@ -12,6 +12,7 @@ rm_uvsum2(
   covTitle = "",
   caption = NULL,
   tableOnly = FALSE,
+  for_plot = FALSE,
   removeInf = FALSE,
   p.adjust = "none",
   unformattedp = FALSE,
@@ -51,13 +52,19 @@ use the column name 'Covariate'.}
 
 \item{caption}{character containing table caption (default is no caption)}
 
-\item{tableOnly}{boolean indicating if unformatted table should be returned}
+\item{tableOnly}{boolean indicating if a data frame should be returned,
+Default is FALSE, to output a kable table}
+
+\item{for_plot}{boolean indicating if columns for plotting the point
+estimates, and bounds of CI should be returned for plotting. This argument
+will be ignored unless tableOnly=TRUE. No formatting or adjustments will be
+performed, the p.adjust, showN and showEvent arguments will all be ignored.}
 
 \item{removeInf}{boolean indicating if infinite estimates should be removed
 from the table}
 
-\item{p.adjust}{p-adjustments to be performed. Uses the
-\link{p.adjust} function from base R}
+\item{p.adjust}{p-adjustments to be performed. Uses the \link{p.adjust} function
+from base R}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformatted (ie not rounded or prefixed with '<'). Should be used
@@ -143,7 +150,11 @@ digits are required for p-values then use tableOnly=TRUE and format as
 desired.
 
 tidyselect can only be used for response and covs variables. Additional
-arguments must be passed in using characters
+arguments must be passed in using characters.
+
+To return an unformatted data frame use tableOnly=T and for_plot=T, this is
+useful for plotting, but the p.adjust, showN and showEvent arguments are all
+ignored.
 }
 \examples{
 # Examples are for demonstration and are not meaningful

@@ -527,11 +527,23 @@ xvar_function(xvar,data,grp)
 
 
 df <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Whittle/PretermBirth/test_out.csv")
-df$Age = as.numeric(df$Age)
 data=df;response="term"
 covs=c("Age","BMI","Ethnicity")
-data |> rm_uvsum2(response=response,covs=covs)
-m <- data |> rm_uvsum2(response=term,covs=c(Age,BMI,Ethnicity),returnModels = T)
+x <- data |> rm_uvsum2(response=term,covs=covs)
+
+df2 <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Whittle/PretermBirth/test_out2.csv")
+data=df2; response="term"
+covs=c("Age","BMI")
+argList <- df2 |> reportRmd::rm_uvsum2(response="term",
+                     covs=c("Age","BMI",
+                            "Pregestational_diabetes","Thyroid_disorder","Auto_immune_disease","Chronic_hypertension",
+                            "Gravida","Para","GA_at_delivery_index_pregnancy",
+                            "More_than_1_previous_PPROM","Prior_Term_Pregnancy",
+                            "PPIP_Normal","PPIP_Chorio",
+                            "ASA","Progesterone","ATB_suppression","Antepartum_bleed","Ureaplasma_Mycoplasma_at_12_14_weeks",
+                            "Positive_BV_swab","Positive_Trichomonas","Need_for_cerclage"),tableOnly = T,for_plot = T,p.adjust = "holm")
+View(argList)
+data |> rm_uvsum2(response=term,covs=c(Age,BMI,Ethnicity))
 m_summary(m[[2]])
                      # ,Education_Level,Smoking,Substance_use,
                      #        Pregestational_diabetes,Thyroid_disorder,Auto_immune_disease,Chronic_hypertension,
