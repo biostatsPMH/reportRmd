@@ -270,13 +270,13 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     result <- result[, -which(names(result) == "Missing")]
 
   if ("p-value" %in% colnames(result)) {
-    small_p <- which(result$`p-value`<.05)
     if (!pvalue) {
       result <- result[, -which(names(result) == "p-value")]
     }
     else {
       method <- p.adjust
       result[["p-value"]] <- p.adjust(result[["p-value"]], method = method)
+      small_p <- which(result$`p-value`<.05)
       if (!unformattedp) {
         result[["p-value"]] <- formatp(result[["p-value"]])
       }
