@@ -383,6 +383,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                                                collapse = csep())))
   }
   for (v in c(maincov, covs)) {
+    if (inherits(data[[v]], "difftime"))
+      data[[v]] <- as.numeric(data[[v]])
     if (inherits(data[[v]], "logical"))
       data[[v]] <- factor(data[[v]])
     if (inherits(data[[v]], "character"))
@@ -697,7 +699,8 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
           n <- sum(table(subdata[[cov]]))
           missing <- N - n
         }
-        sumCov <- round(summary(subdata[[cov]]), digits)
+        sumCov <- try(round(summary(subdata[[cov]]), digits))
+
         if (sumCov[4] == "NaN") {
           meansd <- ""
           mmm <- ""

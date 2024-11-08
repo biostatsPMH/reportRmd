@@ -220,6 +220,9 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       xvars <- setdiff(xvars, xvar)
       warning(paste("date variable", xvar, "will be ignored. \nrm_covsum can be used to summarise date variables."))
     }
+    if (inherits(data[[xvar]],"difftime")){
+      data[[xvar]] <- as.numeric(data[[xvar]])
+    }
     if (is.character(data[[xvar]]) | is.logical(data[[xvar]])) {
       data[[xvar]] <- as.factor(data[[xvar]])
     }
@@ -242,6 +245,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
   result <-dplyr::bind_rows(output_list)
+  if (nrow(result)==0) return()
 
   if (!missing(grp) ) {
     if (n_na>0){

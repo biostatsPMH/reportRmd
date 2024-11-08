@@ -554,3 +554,25 @@ m_summary(m[[2]])
                      #        Cervical_length_at_cerclage,Type_of_cerclage,
                      #        CL_at_16_weeks,CL_at_20_weeks,CL_at_24_weeks))
 
+
+
+# Oct 2024 error from Katrina
+
+
+
+dt <- data.frame(id=1:3,
+                 start_date = as.Date(c("2024-01-01","2024-01-02","2024-01-03")),
+                 end_date = as.Date(c("2024-01-03","2024-01-05","2024-01-10")))
+
+dt$total_time <- dt$end_date - dt$start_date
+attributes(dt$total_time)
+ # fix this
+rm_covsum(data=dt, covs="total_time") # Error in round(summary(subdata[[cov]]), digits): non-numeric argument to mathematical function
+rm_compactsum(data=dt, xvars="total_time") # Error in round(summary(subdata[[cov]]), digits): non-numeric argument to mathematical function
+
+rm_covsum(data=dt, covs="start_date") # handled nicely
+rm_compactsum(data=dt, xvars="start_date") # Error in round(summary(subdata[[cov]]), digits): non-numeric argument to mathematical function
+
+
+summary(dt$start_date)
+summary(as.numeric(dt$total_time) )
