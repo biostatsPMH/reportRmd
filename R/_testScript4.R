@@ -534,3 +534,66 @@ drop1.default <- function (object, scope, scale = 0, test = c("none", "Chisq"),
   attr(aod, "heading") <- head
   aod
 }
+
+# HIV data error
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-Personal/UofT HIV in Motion_NIH/combined_dataset.rda")
+
+rm_compactsum(data=combined_df,
+              xvars =c('Age', 'Sex', 'Gender', 'YearHIVDx', 'ARVS', 'CD4C', 'Aerobic_Exercise', 'Strength_Exercise', 'ExStatus', 'ExDays', 'MOS_EIS', 'MOS_TANGS', 'MOS_AFFS', 'MOS_PSI', 'MOS_Total', 'PHQ8_TOTAL','Pain', 'Mental_Health', 'Admin_Mode'),
+              grp = "Study",pvalue=F)
+
+
+xvars =c('Age', 'Sex', 'Gender', 'YearHIVDx', 'ARVS', 'CD4C', 'Aerobic_Exercise', 'Strength_Exercise', 'ExStatus', 'ExDays', 'MOS_EIS', 'MOS_TANGS', 'MOS_AFFS', 'MOS_PSI', 'MOS_Total', 'PHQ8_TOTAL','Pain', 'Mental_Health', 'Admin_Mode')
+
+for (v in xvars){
+  print(v)
+  rm_compactsum(data=combined_df,
+                xvars = v,
+                grp = "Study",pvalue=F)
+}
+
+data <- combined_df
+xvar <- "ARVS"
+x = combined_df$ARVS
+attributes(x) <- NULL
+as.character(x)
+is_binary <- function(x) {
+  attributes(x) <- NULL
+  all(unique(na.omit(x)) %in% c(0, 1))
+}
+
+
+lbl <- attr(data[[xvar]],"labels")
+attributes(data[[xvar]]) <- NULL
+newx <- factor(data[[xvar]],levels=lbl,labels=names(lbl))
+
+table(newx,data[[xvar]])
+
+
+all_pred <- c("Age","BMI",
+              "Pregestational_diabetes","Thyroid_disorder","Chronic_hypertension",
+              "Gravida","Para","GA_at_delivery_index_pregnancy",
+              "More_than_1_previous_PPROM","Prior_Term_Pregnancy",
+              "PPIP_Normal","PPIP_Chorio","PPIP_MVM_FVM",
+              "ASA","Progesterone","ATB_suppression","Antepartum_bleed",
+              "Ureaplasma_Mycoplasma_at_12_14_weeks","Ureaplasma_Mycoplasma_at_16_18_weeks",
+              "Negative_UU_after_treatment","persistance_UU_after_treatment",
+              "Positive_BV_swab","Need_for_cerclage",
+              "cx_short_16","cx_short_20","cx_short_24",
+              "CL_at_16_weeks","CL_at_20_weeks","CL_at_24_weeks")
+
+pred_vars <- c("Age","BMI",
+               "Pregestational_diabetes","Thyroid_disorder","Chronic_hypertension",
+               "Gravida","Para","GA_at_delivery_index_pregnancy",
+               "More_than_1_previous_PPROM","Prior_Term_Pregnancy",
+               "PPIP_Normal","PPIP_Chorio","PPIP_MVM_FVM",
+               "ASA","Progesterone","ATB_suppression","Antepartum_bleed",
+               "Ureaplasma_Mycoplasma_at_12_14_weeks","Ureaplasma_Mycoplasma_at_16_18_weeks",
+               "Negative_UU_after_treatment","persistance_UU_after_treatment",
+               "Positive_BV_swab","Need_for_cerclage")
+
+load(file="test_ws.rda")
+
+rm_uvsum2(data=df_g1,response="Second_PPROM",
+                                      covs=pred_vars,
+                                      showEvent = F,tableOnly = T)

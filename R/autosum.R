@@ -173,7 +173,7 @@ process_ci <- function(ci_string, digits = 2) {
     if (!is.na(lower_bound)) {
       if (round(as.numeric(lower_bound), digits) == 0) lower_bound <- 0
       else if (abs(as.numeric(lower_bound)) < 0.000001) lower_bound <- 0
-      else if (lower_bound < -10000000) lower_bound <- -Inf
+      # else if (lower_bound < -10000000) lower_bound <- -Inf
     }
     if (upper_bound == "NA") {
       upper_bound <- Inf

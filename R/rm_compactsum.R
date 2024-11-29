@@ -223,6 +223,11 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     if (is.character(data[[xvar]]) | is.logical(data[[xvar]])) {
       data[[xvar]] <- as.factor(data[[xvar]])
     }
+    if (inherits(data[[xvar]],"haven_labelled")){
+      lbl <- attr(data[[xvar]],"labels")
+      attributes(data[[xvar]]) <- NULL
+      newx <- factor(data[[xvar]],levels=lbl,labels=names(lbl))
+    }
   }
   args$grp <- grouping_var
   args$data <- data
@@ -1398,7 +1403,10 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
   return(paste0(sum(subset_grp[[xvar]], na.rm = TRUE), bracket))
 }
 
-is_binary <- function(x) all(unique(na.omit(x)) %in% c(0, 1))
+is_binary <- function(x) {
+  attributes(x) <- NULL
+  all(unique(na.omit(x)) %in% c(0, 1))
+}
 
 format_strings <- function(variables) {
   if (length(variables) == 1) {

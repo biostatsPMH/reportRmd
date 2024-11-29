@@ -527,11 +527,10 @@ xvar_function(xvar,data,grp)
 
 
 df <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Whittle/PretermBirth/test_out.csv")
-df$Age = as.numeric(df$Age)
 data=df;response="term"
 covs=c("Age","BMI","Ethnicity")
-data |> rm_uvsum2(response=response,covs=covs)
-m <- data |> rm_uvsum2(response=term,covs=c(Age,BMI,Ethnicity),returnModels = T)
+data |> rm_uvsum2(response=term,covs=covs)
+data |> rm_uvsum2(response=term,covs=c(Age,BMI,Ethnicity))
 m_summary(m[[2]])
                      # ,Education_Level,Smoking,Substance_use,
                      #        Pregestational_diabetes,Thyroid_disorder,Auto_immune_disease,Chronic_hypertension,
