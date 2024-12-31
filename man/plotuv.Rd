@@ -18,7 +18,8 @@ plotuv(
   bpThreshold = 20,
   mixed = TRUE,
   violin = FALSE,
-  position = c("dodge", "stack", "fill")
+  position = c("dodge", "stack", "fill"),
+  use_labels = TRUE
 )
 }
 \arguments{
@@ -60,14 +61,17 @@ bpThreshold and mixed.}
 
 \item{position}{for categorical variables how should barplots be presented.
 Default is "dodge" IF stack is TRUE then n will not be shown.}
+
+\item{use_labels}{boolean, default is true if the variables have label
+attributes this will be shown in the plot instead of the variable names, or
+if there are no labels then tidy versions of the variable names will be
+used. If use_labels=FALSE the variable names will be used.}
 }
 \value{
 a list containing plots for each variable in covs
-
-a plot object
 }
 \description{
-This function is designed to accompany \code{\link{uvsum}} as a means of
+This function is designed to accompany \code{\link{rm_uvsum}} as a means of
 visualising the results, and uses similar syntax.
 }
 \details{
@@ -78,6 +82,9 @@ For a numeric predictor: If 20+ observations available boxplot, otherwise
 dotplot with median line For a categorical predictor barplot Response
 variables are shown on the ordinate (y-axis) and covariates on the abscissa
 (x-axis)
+
+Variable names are replaced by their labels if available, or by tidy versions
+if not. Set use_labels=FALSE to use the variable names.
 }
 \examples{
 ## Run multiple univariate analyses on the pembrolizumab dataset to predict cbr and
@@ -89,6 +96,8 @@ plotuv(data=pembrolizumab,  response='cbr',
 covs=c('age','sex','l_size','baseline_ctdna'),showN=TRUE)
 }
 \seealso{
-\code{\link{ggplot}} and \code{\link{ggarrange}}
+\code{\link[ggplot2:ggplot]{ggplot2::ggplot}} and
+\code{\link[ggpubr:ggarrange]{ggpubr::ggarrange}}
+\code{\link{replace_plot_labels}}
 }
 \keyword{plot}

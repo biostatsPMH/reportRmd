@@ -20,7 +20,7 @@ A data frame with 270 rows and 5 variables:
 \url{https://www.nature.com/articles/s43018-020-0096-5}
 }
 \usage{
-ctDNA
+data('ctDNA')
 }
 \description{
 Tumour size change over time

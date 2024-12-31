@@ -8,6 +8,7 @@
 #' @export
 #' @examples
 #' # Set a few variable labels for ctDNA
+#' data("ctDNA")
 #' ctDNA <- ctDNA |> set_var_labels(
 #'    ctdna_status="detectable ctDNA",
 #'   cohort="A cohort label")
@@ -35,6 +36,7 @@ clear_labels <- function(data){
 #' @export
 #' @examples
 #' # Set a few variable labels for ctDNA
+#' data("ctDNA")
 #' ctDNA <- ctDNA |> set_var_labels(
 #'    ctdna_status="detectable ctDNA",
 #'   cohort="A cohort label")
@@ -66,6 +68,7 @@ extract_labels <- function(data,sep="_"){
 #' @examples
 #' # set labels using name-label pairs
 #' # and return labelled data frame
+#' data("ctDNA")
 #' ctDNA |> set_var_labels(
 #'    ctdna_status="detectable ctDNA",
 #'   cohort="A cohort label")
@@ -107,6 +110,7 @@ set_var_labels = function (data, ...) {
 #'   [extract_labels()] for creating a data frame of all variable labels,
 #'   [clear_labels()] for removing variable labels
 #' @examples
+#' data("ctDNA")
 #' # create data frame with labels
 #' lbls <- data.frame(c1=c('cohort','size_change'),
 #' c2=c('Cancer cohort','Change in tumour size'))
@@ -132,7 +136,7 @@ set_labels <- function(data,names_labels){
   v_lbls$index <- varIndx
   tryCatch({
     varNIndx <- which(!names(data) %in% names_labels[[1]])
-    v_Nlbls <- cbind.data.frame(colnames(data)[varNIndx], colnames(data)[varNIndx])
+    v_Nlbls <- cbind.data.frame(colnames(data)[varNIndx], gsub("_|[.]"," ",colnames(data)[varNIndx]))
     colnames(v_Nlbls) <- c("var", "label")
     v_Nlbls$index <- varNIndx
     v_lbls <- rbind(v_lbls, v_Nlbls)
@@ -144,10 +148,15 @@ set_labels <- function(data,names_labels){
 
 # return variable labels associated with variables
 replaceLbl <- function(data_arg,cv){
-  if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
-  if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
+#  if (!inherits(dn,'character')) stop('data table must be specified as a character string.')
   if (!inherits(cv,'character')) stop('variable name must be specified as a character string.')
-  lbl <- extract_labels(get0(dn))
+  if (inherits(data_arg,"data.frame")){
+    lbl <- extract_labels(data_arg)
+  } else {
+    if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
+    if (is.null(get0(dn))) stop("Could not extract labels from data. Try running with nicenames=F, or use the function directly on a data.frame (without manipulation)")
+    lbl <- extract_labels(get0(dn))
+  }
   vl <- data.frame(variable=cv,ord=1:length(cv))
   if (!is.null(lbl)){
     cvnew <- merge(vl,lbl,all.x=T)
@@ -161,4 +170,81 @@ replaceLbl <- function(data_arg,cv){
   return(cvnew$label)
 }
 
+#' Replace variable names with labels in ggplot
+#'
+#' If the data stored in a ggplot object has variable labels then this will
+#' replace the variable names with the variable labels. If no labels are set
+#' then the variable names will be tidied and a nicer version used.
+#'
+#' @param plot output from a call to ggplot2
+#' @export
+#' @seealso [set_var_labels()] for setting individual variable labels,
+#'   [set_labels()] for setting variable labels using a data frame,
+#'   [extract_labels()] for creating a data frame of all variable labels,
+#'   [clear_labels()] for removing variable labels
+#' @examples
+#' \dontrun{
+#' data("pembrolizumab")
+#' p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+#' geom_boxplot()
+#' replace_plot_labels(p)
+#' pembrolizumab <- set_var_labels(pembrolizumab,
+#' change_ctdna_group="Change in ctDNA group")
+#' p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+#' geom_boxplot()
+#' replace_plot_labels(p)
+#' # Can also be used with a pipe, but expression needs to be wrapped in a brace
+#' (ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+#' geom_boxplot()) |> replace_plot_labels()
+#'}
+#'@export
+#'@importFrom ggplot2 ggplot xlab ylab labs
+#'@importFrom rlang as_name sym
+replace_plot_labels <- function(plot) {
+  if (!inherits(plot, "ggplot")) {
+    stop("plot must be a ggplot object")
+  }
+
+  # extract data
+  data <- plot$data
+
+  get_string <- function(mapping){
+    if (inherits(mapping, "quosure")) {
+      var_name <- rlang::quo_name(mapping)
+    } else var_name <- rlang::as_name(mapping)
+    return(var_name)
+  }
+
+  get_label <- function(var_name) {
+    label <- attr(data[[var_name]], "label")
+    if (is.null(label)) nicename(var_name) else label
+  }
+
+  # Replace axis labels
+  x_mapping <- plot$mapping$x
+  if (!is.null(x_mapping)) {
+    x_var <- get_string(x_mapping)
+    plot <- plot + xlab(get_label(x_var))
+  }
+
+  y_mapping <- plot$mapping$y
+  if (!is.null(y_mapping)) {
+    y_var <- get_string(y_mapping)
+    plot <- plot + ylab(get_label(y_var))
+  }
+
+  # Replace legend labels
+  aes_list <- NULL
+  for (aesthetic in c("colour", "color", "fill", "size", "shape", "linetype", "linewidth","alpha")) {
+    aes_mapping <- plot$mapping[[aesthetic]]
+    if (!is.null(aes_mapping))  {
+      var_name <- get_string(aes_mapping)
+      aes_list[[aesthetic]] <- get_label(var_name)
+    }
+  }
+  if (!is.null(aes_list)) {
+    plot <- plot +  do.call(labs, aes_list)
+  }
+  return(plot)
+}
 

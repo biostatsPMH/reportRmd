@@ -2,6 +2,7 @@
 #'  
 #'  Survival status and ctDNA levels for patients receiving pembrolizumab 
 #'  
+#' @usage data('pembrolizumab')
 #' @format A data frame with 94 rows and 15 variables:
 #' \describe{ 
 #'   \item{id}{Patient ID}
@@ -28,6 +29,7 @@
 #'  
 #'  Longitudinal changes in tumour size since baseline for patients by changes in ctDNA status (clearance, decrease or increase) since baseline. 
 #'  
+#' @usage data('ctDNA')
 #' @format A data frame with 270 rows and 5 variables:
 #' \describe{ 
 #'   \item{id}{Patient ID}
@@ -44,6 +46,7 @@
 #'  
 #'  There is a weird factor with all one level, the cohort variable contains a cohort level (and Cohort A) and for one cohort all the size changes are missing 
 #'  
+#' @usage data('testData')
 #' @format A data frame with 270 rows and 6 variables:
 #' \describe{ 
 #'   \item{id}{Patient ID}
@@ -56,4 +59,17 @@
 #' @source \url{https://www.nature.com/articles/s43018-020-0096-5} 
 "testData" 
 
+
+#'  Aligning models and parameters 
+#'
+#' @format A data frame with 16 rows and 5 variables:
+#' \describe{
+#'   \item{type}{model type}
+#'   \item{family}{model linking family}
+#'   \item{gee}{boolean indicating if gee are used}
+#'   \item{autoreg_class}{class of model fit}
+#'   \item{beta}{description of output parameter}
+#' }
+#' @source internal
+"uvmodels"
 

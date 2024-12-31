@@ -51,7 +51,7 @@ descriptions (useful for displaying years with data provided in months)}
 returned unformatted (ie not rounded or prefixed with '<'). Should be used
 in conjunction with the digits argument.}
 
-\item{conf.type}{type of confidence interval see \code{\link{survfit}} for
+\item{conf.type}{type of confidence interval see \code{\link[survival:survfit]{survival::survfit}} for
 details. Default is 'log'.}
 
 \item{na.action}{default is to omit missing values, but can be set to throw
@@ -114,5 +114,5 @@ group=c('sex','change_ctdna_group'),survtimes=c(12,24),survtimeunit='mo')
 
 }
 \seealso{
-\code{\link{survfit}}
+\code{\link[survival:survfit]{survival::survfit}}
 }
