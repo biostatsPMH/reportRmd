@@ -1,6 +1,6 @@
 #'Output several univariate models nicely in a single table
 #'
-#'A table with the model parameters from running separate univariate models on
+#' #'A table with the model parameters from running separate univariate models on
 #'each covariate. For factors with more than two levels a Global p-value is
 #'returned.
 #'
@@ -32,8 +32,8 @@
 #'@param tableOnly boolean indicating if unformatted table should be returned
 #'@param removeInf boolean indicating if infinite estimates should be removed
 #'  from the table
-#'@param p.adjust p-adjustments to be performed. Uses the
-#'  [p.adjust] function from base R
+#'@param p.adjust p-adjustments to be performed. Uses the [p.adjust] function
+#'  from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'  in conjunction with the digits argument.
@@ -73,13 +73,16 @@
 #'  appended to each model so that the fitted data can be examined, if
 #'  necessary. See Details
 #'@param fontsize PDF/HTML output only, manually set the table fontsize
-#'@param forceWald boolean indicating if Wald confidence intervals should be
-#'  used instead of profile likelihood. This is not recommended, but can speed
-#'  up computations. To use throughout a document use
-#'  options(reportRmd.forceWald=TRUE)
+#'@param forceWald `r lifecycle::badge("deprecated")` `forceWald = TRUE` is no
+#'  longer supported; this function will always use profile likelihoods as per
+#'  the inclusion of the MASS confidence intervals into base from from R 4.4.0
 #'@seealso
-#'\code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},
-#'\code{\link{coxph}}, \code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}}
+#'\code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},
+#'\code{\link[cmprsk:crr]{cmprsk::crr}},
+#'\code{\link[survival:coxph]{survival::coxph}},
+#'\code{\link[nlme:lme]{nlme::lme}},
+#'\code{\link[geepack:geeglm]{geepack::geeglm}},
+#'\code{\link[MASS:glm.nb]{MASS::glm.nb}}
 #'@return A character vector of the table source code, unless tableOnly=TRUE in
 #'  which case a data frame is returned
 #'@export
@@ -87,28 +90,28 @@
 #' # Examples are for demonstration and are not meaningful
 #' # Coxph model with 90% CI
 #' data("pembrolizumab")
-#' rm_uvsum2(response = c('os_time','os_status'),
+#' rm_uvsum(response = c('os_time','os_status'),
 #' covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
 #' data=pembrolizumab,CIwidth=.9)
 #'
 #' # Linear model with default 95% CI
-#' rm_uvsum2(response = 'baseline_ctdna',
+#' rm_uvsum(response = 'baseline_ctdna',
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab)
 #'
 #' # Logistic model with default 95% CI
-#' rm_uvsum2(response = 'os_status',
+#' rm_uvsum(response = 'os_status',
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab,family = binomial)
 
 #' # Poisson models returned as model list
-#' mList <- rm_uvsum2(response = 'baseline_ctdna',
+#' mList <- rm_uvsum(response = 'baseline_ctdna',
 #' covs=c('age','sex','l_size','pdl1','tmb'),
 #' data=pembrolizumab, returnModels=TRUE)
 #' #'
 #' # GEE on correlated outcomes
 #' data("ctDNA")
-#' rm_uvsum2(response = 'size_change',
+#' rm_uvsum(response = 'size_change',
 #' covs=c('time','ctdna_status'),
 #' gee=TRUE,
 #' id='id', corstr="exchangeable",
@@ -116,9 +119,9 @@
 #' data=ctDNA,showN=TRUE)
 #'
 #' # Using tidyselect
-#' pembrolizumab |> rm_uvsum2(response = sex,
+#' pembrolizumab |> rm_uvsum(response = sex,
 #' covs = c(age, cohort))
-rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits",2),
+rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits",2),
                       covTitle='',caption=NULL,
                       tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
                       whichp=c("levels","global","both"),
@@ -127,7 +130,8 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
                       offset=NULL,
                       strata = 1,
                       nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
-                      reflevel=NULL,returnModels=FALSE,fontsize,forceWald){
+                      reflevel=NULL,returnModels=FALSE,fontsize,
+                     forceWald = FALSE){
   response_var <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
                                           allow_rename = FALSE)
   response <- names(response_var)
@@ -143,15 +147,11 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
   fun <- get(match.call()[[1]])
   argList <- as.list(match.call()[-1])
-
+  whichp <- match.arg(whichp)
   # checks for id and type
   if (!is.null(id) & (length(id) != 1)) {
     stop('id should be specified as a variable name')
   }
-  # don't need the following check? will be ignored on line 160?
-  # else if (!(id %in% names(data))) {
-  #   stop(paste0('id argument "', id, '" is not in ', match.call()[["data"]]))
-  # }
   if (length(type) == 1) {
     if (type == "gee") stop('type == "gee" is not a valid argument; specify gee = TRUE instead')
   }
@@ -181,16 +181,9 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
   }
   if (strata==1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
-  if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
 
   argList$covs <- x_vars
   argList$response <- response
-  # if (!all(sapply(argList$covs[-1], is.character))) {
-  #   argList$covs <- x_vars
-  # }
-  # if (!is.character(argList$response)) {
-  #   argList$response <- response_var
-  # }
   if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }
@@ -233,7 +226,8 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
   # remove arguments not used by uvsum2
   argList$unformattedp <- NULL
-
+  argList$p.adjust <- NULL
+  argList$data <- eval(data)
   # get the table
   tab <- do.call(uvsum2,argList)
   # If user specifies return models, don't format a table, just return a list of models
@@ -283,10 +277,9 @@ rm_uvsum2 <- function(response, covs , data , digits=getOption("reportRmd.digits
 
 uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
                     type = NULL, offset=NULL, gee=FALSE,strata = 1, nicenames = TRUE,
-                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald, whichp = "level")
+                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE, whichp="levels")
 {
   argList <- as.list(match.call()[-1])
-  if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
   if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
   if (!inherits(strata,"numeric")) {
     strataVar = strata
@@ -306,8 +299,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   }
   # Set family if user specifies type
   if (!is.null(type)) {
-    if (length(response)==1 & (type %in% c('coxph','crr')))
-      stop('Please specify two variables in the response for survival models. \nExample: response=c("time","status")')
     if (length(response)==2 & !(type %in% c('coxph','crr')))
       stop('Response can only be of length one for non-survival models.')
     if (type == "logistic") {
@@ -345,6 +336,11 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
                                            ref = reflevel)
       }
     }
+    else if (type %in% c("coxph", "crr")) {
+      if (length(response)==1 )
+        stop('Please specify two variables in the response for survival models. \nExample: response=c("time","status")')
+
+    }
     else {
       stop("type must be either coxph, logistic, linear, poisson, negbin, boxcox, crr, ordinal (or NULL)")
     }
@@ -378,7 +374,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     }
   }
   # Do some more model checking --------
-  if (forceWald) confint <- confint.default
   if (strata != "" & type != "coxph") {
     stop("strata can only be used with coxph")
   }
@@ -417,14 +412,13 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
                "family =",family, "and gee=",gee))
   }
   class(response) <- tp_merge$autoreg_class
-  if (returnModels) modelList <- NULL
   modelList <- NULL
   for (cov in covs) {
     modelList[[cov]] <- autoreg(response, data, cov, id, strata, family, offset, corstr)
   }
 
   summaryList <- NULL
-  summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp="level", for_plot = FALSE)
+  summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp=whichp, for_plot = FALSE)
   summaryList <- dplyr::bind_rows(summaryList)
 
   if (!showN) {

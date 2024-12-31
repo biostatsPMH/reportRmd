@@ -11,21 +11,19 @@
 #'Wald global p-values are returned. For negative binomial models a deviance
 #'test is used.
 #'
-#'If the variance inflation factor is requested (VIF=T) then a generalised VIF
-#'will be calculated in the same manner as the car package.
+#'If the variance inflation factor is requested (VIF=T, default) then a
+#'generalised VIF will be calculated in the same manner as the car package.
 #'
-#'If the MASS package is loaded, profile likelihood confidence intervals will be
-#'calculated; otherwise Wald confidence intervals will be calculated. Users
-#'should look for the message "Waiting for profiling to be done...", which
-#'indicates that profile likelihoods are calculated.
+#'As of R 4.4.0 profile likelihood confidence intervals will be calculated
+#'automatically and there is no longer an option to force Wald tests.
 #'
 #'The number of decimals places to display the statistics can be changed with
 #'digits, but this will not change the display of p-values. If more significant
 #'digits are required for p-values then use tableOnly=TRUE and format as
 #'desired.
 #'@param model model fit
-#'@param data data that model was fit on (an attempt will be made to extract
-#'  this from the model)
+#'@param data `r lifecycle::badge("deprecated")` data is no longer required as
+#'  it is extracted from the model. This argument will be removed in the future
 #'@param digits number of digits to round estimates to, does not affect p-values
 #'@param covTitle character with the names of the covariate (predictor) column.
 #'  The default is to leave this empty for output or, for table only output to
@@ -42,8 +40,8 @@
 #'  both ("both"). Irrelevant for continuous predictors.
 #'@param caption table caption
 #'@param tableOnly boolean indicating if unformatted table should be returned
-#'@param p.adjust p-adjustments to be performed. Uses the
-#'  [p.adjust] function from base R
+#'@param p.adjust p-adjustments to be performed. Uses the [p.adjust] function
+#'  from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
 #'  in conjuction with the digits argument.
@@ -73,19 +71,27 @@
 #' require(survival)
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
-rm_mvsum2 <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=FALSE,
+rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
                      whichp=c("levels","global","both"),
                      caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,chunk_label, fontsize){
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   whichp <- match.arg(whichp)
 
-  if (!missing(data)) lifecycle::deprecate_soft("0.2.0","rm_mvsum2(data)")
-  if (!missing(chunk_label)) lifecycle::deprecate_soft("0.2.0","rm_mvsum2(chunk_label)")
-  if (any(is.na(model$coefficients))) stop(paste0('rm_mvsum2 cannot run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
+  if (!missing(data)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(data)")
+  if (!missing(chunk_label)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(chunk_label)")
+  if (any(is.na(model$coefficients))) stop(paste0('rm_mvsum cannot run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
                                                   paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
                                                   "\nPlease re-fit a valid model prior to reporting. Do you need to run droplevels?"))
   # get the table
   tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
+  if (!showN) {
+    rmc <- which(names(tab)=="N")
+    if (length(rmc)>0) tab <- tab[,-rmc ]
+  }
+  if (!showEvent) {
+    rmc <- which(names(tab)=="Event")
+    if (length(rmc)>0) tab <- tab[,-rmc ]
+  }
   att_tab <- attributes(tab)
   to_indent <- which(!(tab[["Variable"]] %in% attr(model$terms, "term.labels")))
   bold_cells <- cbind(which(tab[["Variable"]] %in% attr(model$terms, "term.labels")), rep(1, length(which(tab[["Variable"]] %in% attr(model$terms, "term.labels")))))

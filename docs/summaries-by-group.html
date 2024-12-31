@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>2.1 Summaries By Group | reportRmd Package</title>
   <meta name="description" content="2.1 Summaries By Group | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.39 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.41.2 and GitBook 2.6.7" />
 
   <meta property="og:title" content="2.1 Summaries By Group | reportRmd Package" />
   <meta property="og:type" content="book" />
@@ -68,7 +68,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -166,11 +166,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="4.1" data-path="simple-linear-regression.html"><a href="simple-linear-regression.html"><i class="fa fa-check"></i><b>4.1</b> Simple Linear Regression</a></li>
 <li class="chapter" data-level="4.2" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>4.2</b> Logistic Regression</a></li>
 <li class="chapter" data-level="4.3" data-path="poisson-regression.html"><a href="poisson-regression.html"><i class="fa fa-check"></i><b>4.3</b> Poisson Regression</a></li>
-<li class="chapter" data-level="4.4" data-path="survival-analysis.html"><a href="survival-analysis.html"><i class="fa fa-check"></i><b>4.4</b> Survival Analysis</a></li>
-<li class="chapter" data-level="4.5" data-path="competing-risk.html"><a href="competing-risk.html"><i class="fa fa-check"></i><b>4.5</b> Competing Risk</a></li>
-<li class="chapter" data-level="4.6" data-path="gee-models.html"><a href="gee-models.html"><i class="fa fa-check"></i><b>4.6</b> GEE Models</a></li>
-<li class="chapter" data-level="4.7" data-path="returning-model-objects.html"><a href="returning-model-objects.html"><i class="fa fa-check"></i><b>4.7</b> Returning Model Objects</a></li>
-<li class="chapter" data-level="4.8" data-path="adjusting-p-values.html"><a href="adjusting-p-values.html"><i class="fa fa-check"></i><b>4.8</b> Adjusting p-values</a></li>
+<li class="chapter" data-level="4.4" data-path="negative-binomial-regression.html"><a href="negative-binomial-regression.html"><i class="fa fa-check"></i><b>4.4</b> Negative Binomial Regression</a></li>
+<li class="chapter" data-level="4.5" data-path="survival-analysis.html"><a href="survival-analysis.html"><i class="fa fa-check"></i><b>4.5</b> Survival Analysis</a></li>
+<li class="chapter" data-level="4.6" data-path="competing-risk.html"><a href="competing-risk.html"><i class="fa fa-check"></i><b>4.6</b> Competing Risk</a></li>
+<li class="chapter" data-level="4.7" data-path="gee-models.html"><a href="gee-models.html"><i class="fa fa-check"></i><b>4.7</b> GEE Models</a></li>
+<li class="chapter" data-level="4.8" data-path="returning-model-objects.html"><a href="returning-model-objects.html"><i class="fa fa-check"></i><b>4.8</b> Returning Model Objects</a></li>
+<li class="chapter" data-level="4.9" data-path="adjusting-p-values.html"><a href="adjusting-p-values.html"><i class="fa fa-check"></i><b>4.9</b> Adjusting p-values</a></li>
 </ul></li>
 <li class="chapter" data-level="5" data-path="multivariable-analysis.html"><a href="multivariable-analysis.html"><i class="fa fa-check"></i><b>5</b> Multivariable analysis</a></li>
 <li class="chapter" data-level="6" data-path="combining-univariate-and-multivariable-models.html"><a href="combining-univariate-and-multivariable-models.html"><i class="fa fa-check"></i><b>6</b> Combining univariate and multivariable models</a></li>
@@ -189,7 +190,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="12.1.1" data-path="worked-example.html"><a href="worked-example.html#sec-set_labels"><i class="fa fa-check"></i><b>12.1.1</b> set_labels</a></li>
 <li class="chapter" data-level="12.1.2" data-path="worked-example.html"><a href="worked-example.html#sec-set_var_labels"><i class="fa fa-check"></i><b>12.1.2</b> set_var_labels</a></li>
 <li class="chapter" data-level="12.1.3" data-path="worked-example.html"><a href="worked-example.html#sec-extract_labels"><i class="fa fa-check"></i><b>12.1.3</b> extract_labels</a></li>
-<li class="chapter" data-level="12.1.4" data-path="worked-example.html"><a href="worked-example.html#sec-clear_labels"><i class="fa fa-check"></i><b>12.1.4</b> clear_labels</a></li>
+<li class="chapter" data-level="12.1.4" data-path="worked-example.html"><a href="worked-example.html#sec-replace_plot_labels"><i class="fa fa-check"></i><b>12.1.4</b> replace_plot_labels</a></li>
+<li class="chapter" data-level="12.1.5" data-path="worked-example.html"><a href="worked-example.html#sec-clear_labels"><i class="fa fa-check"></i><b>12.1.5</b> clear_labels</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="13" data-path="plotting-functions.html"><a href="plotting-functions.html"><i class="fa fa-check"></i><b>13</b> Plotting Functions</a>
@@ -199,12 +201,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="13.3" data-path="forest-plots.html"><a href="forest-plots.html"><i class="fa fa-check"></i><b>13.3</b> Forest Plots</a></li>
 <li class="chapter" data-level="13.4" data-path="combining-univariable-and-multivariable-models-into-a-single-plot.html"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html"><i class="fa fa-check"></i><b>13.4</b> Combining univariable and multivariable models into a single plot</a></li>
 </ul></li>
-<li class="chapter" data-level="14" data-path="options.html"><a href="options.html"><i class="fa fa-check"></i><b>14</b> Options</a></li>
-<li class="chapter" data-level="15" data-path="pdf-output.html"><a href="pdf-output.html"><i class="fa fa-check"></i><b>15</b> PDF Output</a></li>
-<li class="chapter" data-level="16" data-path="data-sets.html"><a href="data-sets.html"><i class="fa fa-check"></i><b>16</b> Data Sets</a>
+<li class="chapter" data-level="14" data-path="miscellaneous-functions.html"><a href="miscellaneous-functions.html"><i class="fa fa-check"></i><b>14</b> Miscellaneous Functions</a>
 <ul>
-<li class="chapter" data-level="16.1" data-path="pembrolizumab.html"><a href="pembrolizumab.html"><i class="fa fa-check"></i><b>16.1</b> pembrolizumab</a></li>
-<li class="chapter" data-level="16.2" data-path="ctdna.html"><a href="ctdna.html"><i class="fa fa-check"></i><b>16.2</b> ctDNA</a></li>
+<li class="chapter" data-level="14.1" data-path="excelcol.html"><a href="excelcol.html"><i class="fa fa-check"></i><b>14.1</b> excelCol</a></li>
+<li class="chapter" data-level="14.2" data-path="excelcolletters.html"><a href="excelcolletters.html"><i class="fa fa-check"></i><b>14.2</b> excelColLetters</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="options.html"><a href="options.html"><i class="fa fa-check"></i><b>15</b> Options</a></li>
+<li class="chapter" data-level="16" data-path="pdf-output.html"><a href="pdf-output.html"><i class="fa fa-check"></i><b>16</b> PDF Output</a></li>
+<li class="chapter" data-level="17" data-path="data-sets.html"><a href="data-sets.html"><i class="fa fa-check"></i><b>17</b> Data Sets</a>
+<ul>
+<li class="chapter" data-level="17.1" data-path="pembrolizumab.html"><a href="pembrolizumab.html"><i class="fa fa-check"></i><b>17.1</b> pembrolizumab</a></li>
+<li class="chapter" data-level="17.2" data-path="ctdna.html"><a href="ctdna.html"><i class="fa fa-check"></i><b>17.2</b> ctDNA</a></li>
 </ul></li>
 </ul>
 
@@ -228,21 +235,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>This will produce summary statistics by Sex</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="summaries-by-group.html#cb4-1" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">maincov =</span> <span class="st">&#39;sex&#39;</span>,</span>
 <span id="cb4-2"><a href="summaries-by-group.html#cb4-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>))</span></code></pre></div>
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Full Sample (n=94)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Female (n=58)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Male (n=36)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p-value
 </th>
 </tr>

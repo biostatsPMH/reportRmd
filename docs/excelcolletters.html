@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>2.4 Parametric vs Non-parametric Comparisons | reportRmd Package</title>
-  <meta name="description" content="2.4 Parametric vs Non-parametric Comparisons | reportRmd Package" />
+  <title>14.2 excelColLetters | reportRmd Package</title>
+  <meta name="description" content="14.2 excelColLetters | reportRmd Package" />
   <meta name="generator" content="bookdown 0.41.2 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="2.4 Parametric vs Non-parametric Comparisons | reportRmd Package" />
+  <meta property="og:title" content="14.2 excelColLetters | reportRmd Package" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="2.4 Parametric vs Non-parametric Comparisons | reportRmd Package" />
+  <meta name="twitter:title" content="14.2 excelColLetters | reportRmd Package" />
   
   
   
@@ -28,8 +28,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="including-effect-sizes.html"/>
-<link rel="next" href="row-vs-column-summaries.html"/>
+<link rel="prev" href="excelcol.html"/>
+<link rel="next" href="options.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -230,189 +230,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="parametric-vs-non-parametric-comparisons" class="section level2 hasAnchor" number="2.4">
-<h2><span class="header-section-number">2.4</span> Parametric vs Non-parametric Comparisons<a href="parametric-vs-non-parametric-comparisons.html#parametric-vs-non-parametric-comparisons" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Group comparisons are non-parametric by default, specify <code>testcont='ANOVA'</code> for t-tests/ANOVA</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="parametric-vs-non-parametric-comparisons.html#cb7-1" tabindex="-1"></a><span class="fu">rm_covsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">maincov =</span> <span class="st">&#39;sex&#39;</span>,</span>
-<span id="cb7-2"><a href="parametric-vs-non-parametric-comparisons.html#cb7-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;pdl1&#39;</span>),</span>
-<span id="cb7-3"><a href="parametric-vs-non-parametric-comparisons.html#cb7-3" tabindex="-1"></a><span class="at">testcont=</span><span class="st">&#39;ANOVA&#39;</span>,</span>
-<span id="cb7-4"><a href="parametric-vs-non-parametric-comparisons.html#cb7-4" tabindex="-1"></a><span class="at">show.tests=</span><span class="cn">TRUE</span>, <span class="at">effSize=</span><span class="cn">TRUE</span>)</span></code></pre></div>
-<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Female (n=58)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Male (n=36)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-p-value
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Effect Size
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-StatTest
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">age</span>
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-0.39
-</td>
-<td style="text-align:right;">
-0.18
-</td>
-<td style="text-align:right;">
-t-test, Cohen’s d
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Mean (sd)
-</td>
-<td style="text-align:right;">
-57.9 (12.8)
-</td>
-<td style="text-align:right;">
-56.9 (12.6)
-</td>
-<td style="text-align:right;">
-59.3 (13.1)
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Median (Min,Max)
-</td>
-<td style="text-align:right;">
-59.1 (21.1, 81.8)
-</td>
-<td style="text-align:right;">
-56.6 (34.1, 78.2)
-</td>
-<td style="text-align:right;">
-61.2 (21.1, 81.8)
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">pdl1</span>
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-0.63
-</td>
-<td style="text-align:right;">
-0.100
-</td>
-<td style="text-align:right;">
-t-test, Cohen’s d
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Mean (sd)
-</td>
-<td style="text-align:right;">
-13.9 (29.2)
-</td>
-<td style="text-align:right;">
-15.0 (30.5)
-</td>
-<td style="text-align:right;">
-12.1 (27.3)
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Median (Min,Max)
-</td>
-<td style="text-align:right;">
-0 (0, 100)
-</td>
-<td style="text-align:right;">
-0.5 (0.0, 100.0)
-</td>
-<td style="text-align:right;">
-0 (0, 100)
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Missing
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-</tbody>
-</table>
+<div id="excelcolletters" class="section level2 hasAnchor" number="14.2">
+<h2><span class="header-section-number">14.2</span> excelColLetters<a href="excelcolletters.html#excelcolletters" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>To identify the Excel header given a columns number</p>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="excelcolletters.html#cb61-1" tabindex="-1"></a><span class="fu">excelColLetters</span>(<span class="fu">c</span>(<span class="dv">7</span>,<span class="dv">28</span>,<span class="dv">52</span>))</span></code></pre></div>
+<pre><code>##    7   28   52 
+##  &quot;G&quot; &quot;AB&quot; &quot;AZ&quot;</code></pre>
+<div style="page-break-after: always;"></div>
 </div>
+<!-- </div> -->
             </section>
 
           </div>
         </div>
       </div>
-<a href="including-effect-sizes.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="row-vs-column-summaries.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="excelcol.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="options.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

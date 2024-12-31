@@ -113,7 +113,7 @@ are re-ordered so that the ids appear sequentially and proper estimates are
 given.
 }
 \seealso{
-\code{\link{lm}},\code{\link{glm}},\code{\link{crr}},\code{\link{coxph}},
-\code{\link{lme}},\code{\link{geeglm}},\code{\link{polr}},\code{\link{glm.nb}}
+\code{\link{lm}},\code{\link{glm}},\code{\link[cmprsk:crr]{cmprsk::crr}},\code{\link[survival:coxph]{survival::coxph}},
+\code{\link[nlme:lme]{nlme::lme}},\code{\link[geepack:geeglm]{geepack::geeglm}},\code{\link[MASS:polr]{MASS::polr}},\code{\link[MASS:glm.nb]{MASS::glm.nb}}
 }
 \keyword{dataframe}

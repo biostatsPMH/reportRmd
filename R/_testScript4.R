@@ -41,8 +41,10 @@ mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
 gp(mv_binom)
 coeffSum(mv_binom)
 getVarLevels(mv_binom)
-m_summary(mv_binom)
-
+m_summary(mv_binom,forceWald = F)
+m_summary(mv_binom,forceWald = T)
+tab <- m_summary(mv_binom)
+rm_mvsum(mv_binom,showN=F,showEvent=F)
 mv_binom2 <- glm(orr~age:sex+cohort,family = 'binomial',data = pembrolizumab)
 gp(mv_binom2)
 coeffSum(mv_binom2)
@@ -50,6 +52,8 @@ getVarLevels(mv_binom2)
 m_summary(mv_binom2)
 
 uvsum_binom <- rm_uvsum("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
+rm_uvsum("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial",forceWald = T)
+
 uvsum2_binom <- rm_uvsum2("orr", covs = c("age", "sex", "cohort"), data = pembrolizumab, family = "binomial")
 
 ## Poisson -----
@@ -223,7 +227,13 @@ rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), d
 # works fine
 data("pembrolizumab")
 rm_compactsum(data = pembrolizumab, xvars = c("age",
-                                              "change_ctdna_group", "l_size", "pdl1","cohort"), grp = "sex", use_mean = "age",
+                                              "change_ctdna_group", "l_size", "pdl1","cohort"),
+              grp = "sex", use_mean = "age",
+              digits = c("age" = 2, "l_size" = 3), digits.cat = 1)
+
+rm_compactsum(data = pembrolizumab, xvars = c("age",
+                                              "change_ctdna_group", "l_size", "pdl1","cohort"),
+              grp = "sex", use_mean = T, percentage = "col",
               digits = c("age" = 2, "l_size" = 3), digits.cat = 1)
 
 # but not if everyone is in the same groups
@@ -597,3 +607,59 @@ load(file="test_ws.rda")
 rm_uvsum2(data=df_g1,response="Second_PPROM",
                                       covs=pred_vars,
                                       showEvent = F,tableOnly = T)
+
+# Test plots ---------
+ data("pembrolizumab")
+ p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+ geom_boxplot()
+ replace_plot_labels(p)
+ pembrolizumab <- set_var_labels(pembrolizumab,
+ change_ctdna_group="Change in ctDNA group")
+ p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+ geom_boxplot()
+ replace_plot_labels(p)
+ # Can also be used with a pipe, but expression needs to be wrapped in a brace
+ (ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+ geom_boxplot()) |> replace_plot_labels()
+
+ p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+   geom_boxplot() +
+   facet_wrap(~sex)
+ replace_plot_labels(p)
+
+
+ # Test uv mv ----------
+  require(survival)
+  data("pembrolizumab")
+  uvTab <- rm_uvsum2(response = c('os_time','os_status'),
+  covs=c('age','sex','baseline_ctdna','l_size','change_ctdna_group'),
+  data=pembrolizumab,tableOnly=TRUE)
+  mv_surv_fit <- coxph(Surv(os_time,os_status)~age+sex+
+  baseline_ctdna+l_size+change_ctdna_group, data=pembrolizumab)
+  mvTab <- rm_mvsum2(mv_surv_fit,tableOnly = TRUE)
+  rm_uv_mv(uvTab,mvTab)
+
+  # linear model
+  uvtab<-rm_uvsum(response = 'baseline_ctdna',
+  covs=c('age','sex','l_size','pdl1','tmb'),
+  data=pembrolizumab,tableOnly=TRUE)
+  # pdl1 not included in model
+  lm_fit=lm(baseline_ctdna~age+sex+l_size+tmb,data=pembrolizumab)
+  mvtab<-rm_mvsum(lm_fit,tableOnly = TRUE)
+  rm_uv_mv(uvtab,mvtab)
+
+  #logistic model
+  uvtab<-rm_uvsum(response = 'os_status',
+  covs=c('age','sex','l_size','pdl1','tmb'),
+  data=pembrolizumab,family = binomial,tableOnly=TRUE)
+  logis_fit<-glm(os_status~age+sex+l_size+pdl1+tmb,data = pembrolizumab,family = 'binomial')
+  mvtab<-rm_mvsum(logis_fit,tableOnly = TRUE)
+  rm_uv_mv(uvtab,mvtab,tableOnly=TRUE)
+
+
+call_str <- deparse(model$call)
+call_str_vc <- as.character(model$call)
+
+# Count the number of commas
+num_commas <- length(unlist(gregexpr(",", call_str)))
+offset_str <- call_str_vc[num_commas+2]

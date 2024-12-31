@@ -36,13 +36,13 @@ included in the output table, default is FALSE}
 
 \item{digits}{the number of digits in the survival rate}
 
-\item{showCols}{character vector indicating which of the optional columns to
-display, defaults to c('N','Observed','Expected')}
+\item{showCols}{character vector indicating which of the optional columns
+to display, defaults to c('N','Observed','Expected')}
 
 \item{CIwidth}{width of the median survival estimates, default is 95\%}
 
-\item{conf.type}{type of confidence interval see \code{\link{survfit}} for
-details. Default is 'log'.}
+\item{conf.type}{type of confidence interval see
+\code{\link[survival:survfit]{survival::survfit}} for details. Default is 'log'.}
 
 \item{caption}{table caption}
 
@@ -57,9 +57,9 @@ which case a data frame is returned
 \description{
 This is a wrapper function around the survdiff function to display overall
 event rates and group-specific rates along with the log-rank test of a
-difference in survival between groups in a single table suitable for markdown
-output. Median survival times are included by default but can be removed
-setting median=FALSE
+difference in survival between groups in a single table suitable for
+markdown output. Median survival times are included by default but can be
+removed setting median=FALSE
 }
 \examples{
 #' # Differences between sex
@@ -75,5 +75,5 @@ rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 covs=c('sex','cohort'),digits=1)
 }
 \seealso{
-\code{\link{survdiff}}
+\code{\link[survival:survdiff]{survival::survdiff}}
 }

@@ -48,3 +48,8 @@ pembrolizumab
 ctdna
 styles
 multivariable-model-forest-plot
+sec-replace_plot_labels
+negative-binomial-regression
+miscellaneous-functions
+excelcol
+excelcolletters

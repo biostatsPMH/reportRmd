@@ -26,6 +26,9 @@ output:
       info: no
 ---
 
+
+# Overview
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,message = F,warning = F)
 library(reportRmd)
@@ -35,21 +38,21 @@ if (! file.exists('docs/.nojekyll')) file.create('docs/.nojekyll')
 suppressWarnings(library(kableExtra))
 ```
 
-# Overview
-reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models. 
-
-**A word of caution:**
-
-The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit. 
-
-<!--
-## Styles
-Currently `html_pretty` supports three page themes, `cayman` (the default),
-`tactile`, and `architect`. And there are also two syntax highlight styles:
-`github` to mimic the syntax highlight on Github, and `vignette` that is used by
-`html_vignette`. If no highlight parameter is given, the default style created
-by Pandoc will be used.
+<!-- As of Dec 2024 we are maintaining the documentation in a separate file. 
+This is to ensure that the documentation is consistent between the vignette and the online documentation on github.
+The index.Rmd file generates the online documentation. The vignettes/reportRmd.Rmd file generates the vignette documentation.
 -->
+
+<!--Please copy and paste the contents below into reportRmd.rmd to update the vignette. -->
+
+reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models.
+
+A word of caution:
+
+The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit.
+
+
+\newpage
 
 # Summary statistics 
 
@@ -95,7 +98,7 @@ show.tests=TRUE)
 
 ## Including Effect Sizes
 
-Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Eta squared for Kruskal Wallis test and ANOVA, and Cramer's V for categorical variables.
+Effect sizes can be added with `effSize = TRUE`. Effect size measures include the Wilcoxon r for Wilcoxon rank-sum test, Cohen's d for t-test, Omega for ANOVA, Epsilon for Kruskal Wallis test, and Cramer's V for categorical variables.
 
 ```{r}
 rm_covsum(data=pembrolizumab, maincov = 'sex',
@@ -244,8 +247,25 @@ If the response is integer, poisson regression will be run (or specified with `t
 
 ```{r }
 pembrolizumab$Counts <- rpois(nrow(pembrolizumab),lambda = 3)
-rm_uvsum(data=pembrolizumab, response='Counts',
-covs=c('age','cohort'))
+rm_uvsum(data=pembrolizumab, response='Counts',covs=c('age','cohort'))
+```
+
+offset terms can be specified as well, but must correspond to a variable in the data set 
+
+```{r}
+pembrolizumab$length_followup <- rnorm(nrow(pembrolizumab),mean = 72,sd=3)
+pembrolizumab$log_length_followup <- log(pembrolizumab$length_followup)
+rm_uvsum(data=pembrolizumab, response='Counts',covs=c('age','cohort'),
+         offset = "log_length_followup")
+```
+
+## Negative Binomial Regression
+To run negative binomial regression instead specify  `type = 'negbin'`
+
+```{r }
+rm_uvsum(data=pembrolizumab, response='Counts', type='negbin',
+         covs=c('age','cohort'),
+         offset = "log_length_followup")
 ```
 
 ## Survival Analysis
@@ -429,7 +449,7 @@ rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 
 # Working with Labels
 
-New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
+New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet all plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
 
 Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the default). Variable labels are set using the `label` attribute of individual variables (assigned using `reportRmd` or another package like `haven`).
 
@@ -488,6 +508,20 @@ var_labels <- extract_labels(ctDNA)
 var_labels
 ```
 
+
+\newpage
+
+### replace_plot_labels {#sec-replace_plot_labels}
+
+This function will accept a ggplot plot and replace the variable names (x-axis, y-axis and legend) with the variable labels. This is useful for more professional looking plots.
+
+```{r}
+library(ggplot2)
+p <- ggplot(data=ctDNA,aes(x=ctdna_status,y=size_change,colour=cohort))+
+  geom_point()
+replace_plot_labels(p)
+```
+
 ### clear_labels {#sec-clear_labels}
 Or clear them all
 
@@ -499,11 +533,11 @@ ctDNA <- clear_labels(ctDNA)
 
 # Plotting Functions
 
-![](images/ggkmcif_sm.png){width=100%}
+![](images/ggkmcif_sm.png){width=100%}{width=100%}
 
 ## Plotting bivariate relationships
 
-These plots are designed for quick inspection of many variables, not for publication. This is the plotting version of rm_uvsum
+These plots are designed for quick inspection of many variables, not for publication. This is the plotting version of rm_uvsum. As of 0.1.1 the variable names will be replaced by variable labels if they exist.
 
 ```{r, eval=FALSE,echo=TRUE}
 plotuv(data=pembrolizumab, response='orr',
@@ -513,16 +547,23 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 ```{r, eval=FALSE,echo=FALSE}
 plotuv(data=pembrolizumab, response='orr',
 covs=c('age','cohort','pdl1','change_ctdna_group'))
-ggsave('images/plotuv.png',width = 5,height = 4,dpi = 300)
+ggsave('images/plotuv.png',scale = 0.5,dpi = 300)
 ```
 
 ![](images/plotuv.png){width=100%}
 
 The plotuv function can also be used without a response variable to display summary of variables
 
-```{r}
+```{r, eval=FALSE,echo=TRUE}
 plotuv(data = pembrolizumab, covs=c('age','cohort','pdl1','change_ctdna_group'), showN = T)
 ```
+
+```{r, eval=FALSE,echo=FALSE}
+plotuv(data = pembrolizumab, covs=c('age','cohort','pdl1','change_ctdna_group'), showN = T)
+ggsave('images/plotuv_nores.png',scale = 0.5,dpi = 300)
+```
+
+![](images/plotuv_nores.png){width=100%}
 
 \newpage
 
@@ -544,7 +585,7 @@ p <- ggkmcif2(response = c('os_time','os_status'),
 cov='cohort',
 data=pembrolizumab,returns = T)
 plot(p[[1]])
-ggsave('images/ggkmcif_sm.png',width = 4,height = 2.5)
+ggsave('images/ggkmcif_sm.png',scale = 0.5)
 ```
 
 ![](images/ggkmcif.png){width=100%}
@@ -552,7 +593,7 @@ ggsave('images/ggkmcif_sm.png',width = 4,height = 2.5)
 
 ## Forest Plots
 
-Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0
+Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0. Variable labels are not yet incorporated into the forest plots.
 
 This will default to a log scale, but can be set to linear using `logScale=FALSE`
 
@@ -564,7 +605,7 @@ data=pembrolizumab, family='binomial')
 ```{r, eval=F,echo=FALSE}
 forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
 data=pembrolizumab, family='binomial')
-ggsave('images/forestuv.png',width = 5,height = 1.5)
+ggsave('images/forestuv.png', scale = 0.5)
 ```
 
 ![](images/forestuv.png){width=100%}
@@ -582,7 +623,7 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
 forestplotMV(glm_fit)
-ggsave('images/forestmv.png',width = 4,height = 1.5)
+ggsave('images/forestmv.png', scale = 0.5)
 ```
 
 ![](images/forestmv.png){width=100%}
@@ -603,7 +644,7 @@ UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
  MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
  data=pembrolizumab,family = 'binomial'))
  forestplotUVMV(UVp, MVp)
-ggsave('images/forestuvmv.png',width = 5,height = 2)
+ggsave('images/forestuvmv.png', scale = 0.5)
 ```
 
 ![](images/forestuvmv.png){width=100%}
@@ -632,10 +673,27 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1,
 mvFP <- forestplotMV(glm_fit)
 
 forestplotUVMV(uvFP,mvFP,showN=F,showEvent=F,colours=c("orange","black","blue"),logScale=F)
-ggsave('images/forestuvmvlin.png',width = 5,height = 2)
+ggsave('images/forestuvmvlin.png', scale = 0.5)
 ```
 
 ![](images/forestuvmvlin.png){width=100%}
+
+\newpage
+# Miscellaneous Functions
+
+## excelCol
+To identify the number of a column given the Excel column header
+```{r}
+excelCol(G,AB,Az)
+
+```
+
+## excelColLetters
+To identify the Excel header given a columns number
+
+```{r}
+excelColLetters(c(7,28,52))
+```
 
 \newpage
 

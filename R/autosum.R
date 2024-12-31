@@ -15,10 +15,7 @@
 #'If the variance inflation factor is requested (VIF=T) then a generalised VIF
 #'will be calculated in the same manner as the car package.
 #'
-#'If the MASS package is loaded, profile likelihood confidence intervals will be
-#'calculated; otherwise Wald confidence intervals will be calculated.
-#'Users should look for the message "Waiting for profiling to be done...", which
-#'indicates that profile likelihoods are calculated.
+#' As of R 4.4.0 the likelihood profiles are included in base R.
 #'
 #'The number of decimals places to display the statistics can be changed with
 #'digits, but this will not change the display of p-values. If more significant
@@ -45,7 +42,8 @@
 #'
 #' mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
 #' m_summary(mv_binom, whichp = "both", for_plot = TRUE)}
-m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", for_plot = FALSE){
+m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
+                      for_plot = FALSE){
 
   m_coeff <- coeffSum(model,CIwidth,digits)
   m_coeff$Est_CI <- apply(m_coeff[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
@@ -78,6 +76,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
     VIF <- try(GVIF(model),silent = TRUE)
     if (!inherits(VIF,"try-error")){
       names(VIF)[1] <- "terms"
+      VIF$VIF <- round(VIF$VIF,digits)
       cs <- suppressMessages(dplyr::full_join(cs,VIF, by = dplyr::join_by(terms)))
     } else {
       message("Variance inflation factor can not be calculated")
@@ -92,6 +91,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
       cs <- suppressMessages(dplyr::full_join(cs,global_p, by = dplyr::join_by(terms)))
     }
   }
+
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "header"])) {
       v <- cs[i, "var"]
@@ -143,8 +143,10 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels", fo
       cs[["p_value"]] <- NA
     }
   }
-  cols_to_keep <- c("Variable", "Est_CI", "p_value", "n")
-  new_colnames <- c("Variable", estLbl, "p-value", "N")
+  cols_to_keep <- na.omit(c("Variable", "Est_CI", "p_value",
+                    ifelse("global_p" %in% names(cs),"global_p",NA), "n"))
+  new_colnames <- na.omit(c("Variable", estLbl, "p-value",
+                    ifelse("global_p" %in% names(cs),"Global p-value",NA),"N"))
   if ("Events" %in% colnames(cs)) {
     cols_to_keep <- c(cols_to_keep, "Events")
     new_colnames <- c(new_colnames, "Event")
@@ -340,7 +342,7 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
     ci <- suppressMessages(try(as.data.frame(exp(confint(model,level = CIwidth))),silent=TRUE))
     if (inherits(ci,"try-error")){
       ci <- as.data.frame(exp(confint.default(model,level = CIwidth)))
-    } else message("Waiting for profiling to be done...")
+    }
     ms$Estimate <- exp(ms$Estimate)
   } else {
     ci <- suppressMessages(try(as.data.frame(confint(model,level = CIwidth)),silent = TRUE))
@@ -477,7 +479,7 @@ gp <- function(model) {
   UseMethod("gp", model)
 }
 
-gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
+gp.default <- function(model,CIwidth=.95,digits=2) { # lm
   data <- model$model
   model <- stats::update(model,data=data)
   terms <- attr(model$terms, "term.labels")
@@ -494,6 +496,28 @@ gp.default <- function(model,CIwidth=.95,digits=2) { # lm, negbin
   return(gp)
 }
 
+gp.negbin <- function(model,CIwidth=.95,digits=2) { # lm, negbin
+  data <- model$model
+  if (any(grepl("offset\\(",names(data)))){
+    call_str_vc <- as.character(model$call)
+    offset_term <- grep("offset\\(",call_str_vc,value=T)
+    offset_str <- gsub("[)]","",gsub(".*offset\\(","",offset_term))
+    names(data)[grep("offset\\(",names(data))] <- offset_str
+  }
+  model <- stats::update(model,data=data)
+  terms <- attr(model$terms, "term.labels")
+  globalpvalue <- try(stats::drop1(model,scope=terms,test = "Chisq"),
+                      silent=T)
+  if (inherits(globalpvalue,"try-error")) {
+    message("Global p values could not be evaluated.")
+    gp <- NA
+  } else {
+    gp <- data.frame(var=rownames(globalpvalue)[-1],
+                     global_p = globalpvalue[-1,5])
+    attr(gp,"global_p") <-"LRT"
+  }
+  return(gp)
+}
 
 gp.coxph <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
@@ -537,6 +561,15 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
 
 gp.glm <- function(model,CIwidth=.95,digits=2) {
   data <- model$model
+  if ("(offset)" %in% names(data)){
+    call_str <- paste(deparse(model$call),collapse="")
+    call_str_vc <- as.character(model$call)
+
+    # Count the number of commas
+    num_commas <- length(unlist(gregexpr(",", call_str)))
+    offset_str <- call_str_vc[num_commas+2]
+    names(data)[which(names(data)=="(offset)")] <- offset_str
+  }
   model <- stats::update(model,data=data)
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(model,scope=terms,test="LRT"),silent = TRUE)
@@ -550,6 +583,7 @@ gp.glm <- function(model,CIwidth=.95,digits=2) {
   }
   return(gp)
 }
+
 gp.lme <- function(model,CIwidth=.95,digits=2) {
   terms <- attr(model$terms, "term.labels")
   globalpvalue <- try(stats::drop1(stats::update(model,method="ML"),scope=terms,test = "Chisq"),silent = TRUE)

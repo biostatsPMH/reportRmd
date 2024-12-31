@@ -170,4 +170,81 @@ replaceLbl <- function(data_arg,cv){
   return(cvnew$label)
 }
 
+#' Replace variable names with labels in ggplot
+#'
+#' If the data stored in a ggplot object has variable labels then this will
+#' replace the variable names with the variable labels. If no labels are set
+#' then the variable names will be tidied and a nicer version used.
+#'
+#' @param plot output from a call to ggplot2
+#' @export
+#' @seealso [set_var_labels()] for setting individual variable labels,
+#'   [set_labels()] for setting variable labels using a data frame,
+#'   [extract_labels()] for creating a data frame of all variable labels,
+#'   [clear_labels()] for removing variable labels
+#' @examples
+#' \dontrun{
+#' data("pembrolizumab")
+#' p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+#' geom_boxplot()
+#' replace_plot_labels(p)
+#' pembrolizumab <- set_var_labels(pembrolizumab,
+#' change_ctdna_group="Change in ctDNA group")
+#' p <- ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+#' geom_boxplot()
+#' replace_plot_labels(p)
+#' # Can also be used with a pipe, but expression needs to be wrapped in a brace
+#' (ggplot(pembrolizumab,aes(x=change_ctdna_group,y=baseline_ctdna)) +
+#' geom_boxplot()) |> replace_plot_labels()
+#'}
+#'@export
+#'@importFrom ggplot2 ggplot xlab ylab labs
+#'@importFrom rlang as_name sym
+replace_plot_labels <- function(plot) {
+  if (!inherits(plot, "ggplot")) {
+    stop("plot must be a ggplot object")
+  }
+
+  # extract data
+  data <- plot$data
+
+  get_string <- function(mapping){
+    if (inherits(mapping, "quosure")) {
+      var_name <- rlang::quo_name(mapping)
+    } else var_name <- rlang::as_name(mapping)
+    return(var_name)
+  }
+
+  get_label <- function(var_name) {
+    label <- attr(data[[var_name]], "label")
+    if (is.null(label)) nicename(var_name) else label
+  }
+
+  # Replace axis labels
+  x_mapping <- plot$mapping$x
+  if (!is.null(x_mapping)) {
+    x_var <- get_string(x_mapping)
+    plot <- plot + xlab(get_label(x_var))
+  }
+
+  y_mapping <- plot$mapping$y
+  if (!is.null(y_mapping)) {
+    y_var <- get_string(y_mapping)
+    plot <- plot + ylab(get_label(y_var))
+  }
+
+  # Replace legend labels
+  aes_list <- NULL
+  for (aesthetic in c("colour", "color", "fill", "size", "shape", "linetype", "linewidth","alpha")) {
+    aes_mapping <- plot$mapping[[aesthetic]]
+    if (!is.null(aes_mapping))  {
+      var_name <- get_string(aes_mapping)
+      aes_list[[aesthetic]] <- get_label(var_name)
+    }
+  }
+  if (!is.null(aes_list)) {
+    plot <- plot +  do.call(labs, aes_list)
+  }
+  return(plot)
+}
 

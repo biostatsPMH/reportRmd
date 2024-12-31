@@ -45,8 +45,9 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## New Features
 
-- new compact summary table function rm_compactsum
+- new compact summary table function `rm_compactsum`
 - main functions are now pipeable
+- new function to use variable labels in ggplots `replace_plot_labels`
 
 ## Documentation
 

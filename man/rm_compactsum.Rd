@@ -38,7 +38,7 @@ rm_compactsum(
 returned for continuous variables instead of median. Otherwise, can specify
 for individual variables using a character vector containing the names of
 covariates to return mean and sd for (if use_mean is not supplied, all
-covariates will have median summaries). See examples}
+covariates will have median summaries). See examples.}
 
 \item{caption}{character containing table caption (default is no caption)}
 

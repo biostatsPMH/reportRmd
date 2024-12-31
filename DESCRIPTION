@@ -1,7 +1,7 @@
 Package: reportRmd
 Title: Tidy Presentation of Clinical Reporting
-Version: 0.1.0
-Date: 2023-11-10
+Version: 0.1.1
+Date: 2024-12-30
 Authors@R: c(
     person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut"),comment=c(ORCID="0000-0002-8431-5143")),
     person(given="Ryan",family="Del Bel",email = "rdelbel@gmail.com",role="aut"),

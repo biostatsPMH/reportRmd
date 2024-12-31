@@ -7,15 +7,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Overview
-
-reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models.
-
-A word of caution:
-
-The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit.
-
 <!--
+DO NOT KNIT - to generate the vignette, use the following command:
+devtools::build_vignettes()
+
 ## Styles
 Currently `html_pretty` supports three page themes, `cayman` (the default),
 `tactile`, and `architect`. And there are also two syntax highlight styles:
@@ -29,6 +24,15 @@ library(reportRmd)
 # knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
+
+# Overview
+
+reportRmd is a package designed to facilitate the reporting of common statistical outputs easily in RMarkdown documents. The package supports pdf, html and word output without any changes to the body of the report. The main features are Table 1 style summaries, combining multiple univariate regression models into a single table, tidy multivariable model output and combining univariate and multivariable regressions into a single table. Single table summaries of median survival times and survival probabilities are also provided. A highly customisable survival curve function, based on ggplot2 can be used to create publication-quality plots. Visualisation plots are also available for bivariate relationships and logistic regression models.
+
+A word of caution:
+
+The reportRmd package is designed to facilitate statistical reporting and does not provide any checks regarding the suitability of the models fit.
+
 
 \newpage
 
@@ -244,6 +248,7 @@ To run negative binomial regression instead specify  `type = 'negbin'`
 rm_uvsum(data=pembrolizumab, response='Counts', type='negbin',
          covs=c('age','cohort'),
          offset = "log_length_followup")
+
 ```
 
 ## Survival Analysis
@@ -251,7 +256,8 @@ If two response variables are specified and then survival analysis is run (speci
 
 ```{r }
 rm_uvsum(data=pembrolizumab, response=c('os_time','os_status'),
-covs=c('age','pdl1','change_ctdna_group'))
+covs=c('age','pdl1','change_ctdna_group'),whichp = "levels")
+
 ```
 
 ## Competing Risk
@@ -427,7 +433,7 @@ rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
 
 # Working with Labels
 
-New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
+New in version 0.1.0 is the ability to incorporate variable labels into summary tables (but not yet all plots). If variables contain a `label` attribute this will be displayed automatically, to disable this set `nicenames=F`
 
 Variable labels will be shown in the `nicenames` argument is set to `TRUE` (the default). Variable labels are set using the `label` attribute of individual variables (assigned using `reportRmd` or another package like `haven`).
 
@@ -486,6 +492,20 @@ var_labels <- extract_labels(ctDNA)
 var_labels
 ```
 
+
+\newpage
+
+### replace_plot_labels {#sec-replace_plot_labels}
+
+This function will accept a ggplot plot and replace the variable names (x-axis, y-axis and legend) with the variable labels. This is useful for more professional looking plots.
+
+```{r}
+library(ggplot2)
+p <- ggplot(data=ctDNA,aes(x=ctdna_status,y=size_change,colour=cohort))+
+  geom_point()
+replace_plot_labels(p)
+```
+
 ### clear_labels {#sec-clear_labels}
 Or clear them all
 
@@ -501,7 +521,7 @@ ctDNA <- clear_labels(ctDNA)
 
 ## Plotting bivariate relationships
 
-These plots are designed for quick inspection of many variables, not for publication. This is the plotting version of rm_uvsum
+These plots are designed for quick inspection of many variables, not for publication. This is the plotting version of rm_uvsum. As of 0.1.1 the variable names will be replaced by variable labels if they exist.
 
 ```{r, eval=FALSE,echo=TRUE}
 plotuv(data=pembrolizumab, response='orr',
@@ -557,7 +577,7 @@ ggsave('images/ggkmcif_sm.png',scale = 0.5)
 
 ## Forest Plots
 
-Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0
+Similar to `rm_uvsum` and `rm_mvsum`, forest plots can be created from univariate or multivariable models. forestplot2 is deprecated from version 0.1.0. Variable labels are not yet incorporated into the forest plots.
 
 This will default to a log scale, but can be set to linear using `logScale=FALSE`
 
@@ -726,3 +746,4 @@ A data frame with 270 rows and 5 variables:
 - **ctdna_status** Change in ctDNA since baseline
 - **time** Number of weeks on treatment
 - **size_change** Percentage change in tumour measurement
+
