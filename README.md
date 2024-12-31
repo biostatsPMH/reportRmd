@@ -41,8 +41,9 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## New Features
 
-- new compact summary table function rm_compactsum
+- new compact summary table function `rm_compactsum`
 - main functions are now pipeable
+- new function to use variable labels in ggplots `replace_plot_labels`
 
 ## Documentation
 
@@ -61,24 +62,24 @@ covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Full Sample (n=94)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Female (n=58)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Male (n=36)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p-value
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 StatTest
 </th>
 </tr>
@@ -287,27 +288,26 @@ Missing
 ``` r
 pembrolizumab |> rm_compactsum( grp = 'sex',
 xvars=c('age','pdl1','change_ctdna_group'))
-#> Descriptive statistics were calculated as median (IQR) for age and pdl1 and counts (%) for change_ctdna_group. Between group comparisons were made using Wilcoxon rank sum test for age and pdl1 and chi-square test for change_ctdna_group.
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Full Sample (n=94)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Female (n=58)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Male (n=36)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p-value
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Missing
 </th>
 </tr>
@@ -391,21 +391,21 @@ rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'))
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Full Sample (n=94)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Female (n=58)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Male (n=36)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p-value
 </th>
 </tr>
@@ -595,21 +595,21 @@ covs=c('age','pdl1','change_ctdna_group'))
 #> Waiting for profiling to be done...
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 OR(95%CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p-value
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 N
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Event
 </th>
 </tr>
@@ -710,21 +710,21 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
 rm_mvsum(glm_fit,showN=T)
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 OR(95%CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p-value
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 N
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Event
 </th>
 </tr>
@@ -916,21 +916,21 @@ mvsumTable <- rm_mvsum(glm_fit,tableOnly = TRUE)
 rm_uv_mv(uvsumTable,mvsumTable)
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Unadjusted OR(95%CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Adjusted OR(95%CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p (adj)
 </th>
 </tr>
@@ -1074,22 +1074,22 @@ tests between groups
  survtimeunit='yr')
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 Group
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Events/Total
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Median (95%CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 1yr (95% CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 2yr (95% CI)
 </th>
 </tr>
@@ -1222,19 +1222,19 @@ eventtimes=c(1825,3650),eventtimeunit='day')
 #> 106 observations with missing data were removed.
 ```
 
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 Strata
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Event/Total
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 1825day (95% CI)
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 3650day (95% CI)
 </th>
 </tr>
@@ -1339,14 +1339,8 @@ data=pembrolizumab)
 ``` r
 require(ggplot2)
 #> Loading required package: ggplot2
-forestplot2(glm_fit)
-#> Warning: `forestplot2()` was deprecated in reportRmd 0.1.0.
-#> ℹ Please use `forestplotUV()` instead.
-#> This warning is displayed once every 8 hours.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
-#> Warning: Vectorized input to `element_text()` is not officially supported.
-#> ℹ Results may be unexpected or may change in future versions of ggplot2.
+forestplotMV(glm_fit)
+#> Warning in forestplotMV(glm_fit): NAs introduced by coercion
 ```
 
 <img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
@@ -1365,3 +1359,21 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 ```
 
 <img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+
+### Replacing variable names with labels in ggplot
+
+``` r
+data("mtcars")
+mtcars <- mtcars |> 
+  dplyr::mutate(cyl = as.factor(cyl)) |>
+  set_labels(data.frame(var=c("hp","mpg","cyl"),
+                        label=c('Horsepower',
+                                'Miles per gallon',
+                                'Number of cylinders'))) 
+p <- mtcars |> 
+ggplot(aes(x=hp, y=mpg, color=cyl, shape=cyl)) +
+    geom_point()
+replace_plot_labels(p)
+```
+
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
