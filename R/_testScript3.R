@@ -529,7 +529,20 @@ xvar_function(xvar,data,grp)
 df <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Whittle/PretermBirth/test_out.csv")
 data=df;response="term"
 covs=c("Age","BMI","Ethnicity")
-data |> rm_uvsum2(response=term,covs=covs)
+x <- data |> rm_uvsum2(response=term,covs=covs)
+
+df2 <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Whittle/PretermBirth/test_out2.csv")
+data=df2; response="term"
+covs=c("Age","BMI")
+argList <- df2 |> reportRmd::rm_uvsum2(response="term",
+                     covs=c("Age","BMI",
+                            "Pregestational_diabetes","Thyroid_disorder","Auto_immune_disease","Chronic_hypertension",
+                            "Gravida","Para","GA_at_delivery_index_pregnancy",
+                            "More_than_1_previous_PPROM","Prior_Term_Pregnancy",
+                            "PPIP_Normal","PPIP_Chorio",
+                            "ASA","Progesterone","ATB_suppression","Antepartum_bleed","Ureaplasma_Mycoplasma_at_12_14_weeks",
+                            "Positive_BV_swab","Positive_Trichomonas","Need_for_cerclage"),tableOnly = T,for_plot = T,p.adjust = "holm")
+View(argList)
 data |> rm_uvsum2(response=term,covs=c(Age,BMI,Ethnicity))
 m_summary(m[[2]])
                      # ,Education_Level,Smoking,Substance_use,
@@ -541,3 +554,25 @@ m_summary(m[[2]])
                      #        Cervical_length_at_cerclage,Type_of_cerclage,
                      #        CL_at_16_weeks,CL_at_20_weeks,CL_at_24_weeks))
 
+
+
+# Oct 2024 error from Katrina
+
+
+
+dt <- data.frame(id=1:3,
+                 start_date = as.Date(c("2024-01-01","2024-01-02","2024-01-03")),
+                 end_date = as.Date(c("2024-01-03","2024-01-05","2024-01-10")))
+
+dt$total_time <- dt$end_date - dt$start_date
+attributes(dt$total_time)
+ # fix this
+rm_covsum(data=dt, covs="total_time") # Error in round(summary(subdata[[cov]]), digits): non-numeric argument to mathematical function
+rm_compactsum(data=dt, xvars="total_time") # Error in round(summary(subdata[[cov]]), digits): non-numeric argument to mathematical function
+
+rm_covsum(data=dt, covs="start_date") # handled nicely
+rm_compactsum(data=dt, xvars="start_date") # Error in round(summary(subdata[[cov]]), digits): non-numeric argument to mathematical function
+
+
+summary(dt$start_date)
+summary(as.numeric(dt$total_time) )
