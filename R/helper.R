@@ -219,8 +219,8 @@ sanitize <- function(str) {
 
 #'Sanitizes strings to not break LaTeX
 #'
-#'Strings with special charaters will break LaTeX if returned 'asis' by knitr.
-#'This happens every time we use one of the main reportRx functions. We first
+#'Strings with special characters will break LaTeX if returned 'asis' by knitr.
+#'This happens every time we use one of the main reportRmd functions. We first
 #'sanitize our strings with this function to stop LaTeX from breaking.
 #'
 #'@param str a vector of strings to sanitize

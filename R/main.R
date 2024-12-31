@@ -3324,7 +3324,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   #' @param times Numeric vector of times for the x-axis
   #' @param xlab String corresponding to xlabel. By default is "Time"
   #' @param ylab String corresponding to ylabel. When NULL uses "Survival
-  #'   probability" for KM cuves, and "Probability of an event" for CIF
+  #'   probability" for KM curves, and "Probability of an event" for CIF
   #' @param main String corresponding to main title. When NULL uses Kaplan-Meier
   #'   Plot s, and "Cumulative Incidence Plot for CIF"
   #'

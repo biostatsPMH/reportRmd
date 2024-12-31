@@ -153,16 +153,16 @@ effSize = TRUE)
 \references{
 Smithson, M. (2002). Noncentral Confidence Intervals for
 Standardized Effect Sizes. (07/140 ed., Vol. 140). SAGE Publications.
-\url{https://doi.org/10.4135/9781412983761.n4}
+\doi{10.4135/9781412983761.n4}
 
 Steiger, J. H. (2004). Beyond the F Test: Effect Size Confidence
 Intervals and Tests of Close Fit in the Analysis of Variance and Contrast
 Analysis. Psychological Methods, 9(2), 164–182.
-\url{https://doi.org/10.1037/1082-989X.9.2.164}
+\doi{10.1037/1082-989X.9.2.164}
 
 Kelley, T. L. (1935). An Unbiased Correlation Ratio Measure.
 Proceedings of the National Academy of Sciences - PNAS, 21(9), 554–559.
-\url{https://doi.org/10.1073/pnas.21.9.554}
+\doi{10.1073/pnas.21.9.554}
 
 Okada, K. (2013). Is Omega Squared Less Biased? A Comparison of
 Three Major Effect Size Indices in One-Way ANOVA. Behavior Research Methods,
@@ -175,5 +175,5 @@ comparing K samples subject to unequal patterns of censorship. Biometrika,
 FRITZ, C. O., MORRIS, P. E., & RICHLER, J. J. (2012). Effect Size
 Estimates: Current Use, Calculations, and Interpretation. Journal of
 Experimental Psychology. General, 141(1), 2–18.
-\url{https://doi.org/10.1037/a0024338}
+\doi{10.1037/a0024338}
 }

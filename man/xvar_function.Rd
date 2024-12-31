@@ -36,7 +36,7 @@ digits where each element is named using the covariate name. If a covariate
 is not in the vector the default will be used for it (default is 1).
 See examples}
 
-\item{digits.cat}{numeric specifying the numer of digits for the proportions
+\item{digits.cat}{numeric specifying the number of digits for the proportions
 when summarizing categorical data (default is 0)}
 
 \item{iqr}{logical indicating if you want to display the interquartile range

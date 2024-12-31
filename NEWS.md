@@ -10,11 +10,11 @@
 ## Minor improvements and fixes
 
 - removed ability to force Wald confidence intervals, confidence intervals now computed by the updated confint in base R
-- rm_mvsum and rm_uvsum have been updated in the backend to enable easier extendability to different model types
+- rm_mvsum and rm_uvsum have been updated in the backend to enable easier extendibility to different model types
 - bug fix in nestTable so variables order properly with repeat level names
 - numerous bug fixes in formatting of tables, especially with duplicated variable and level names
-- added automated testing of the poroportional hazards assumption when reporting coxph models
-- bug fix for computing gloabl p-values in models with offset terms
+- added automated testing of the proportional hazards assumption when reporting coxph models
+- bug fix for computing global p-values in models with offset terms
 - documentation updates
 
 

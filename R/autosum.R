@@ -29,7 +29,7 @@
 #'@param whichp string indicating whether you want to display p-values for
 #'  levels within categorical data ("levels"), global p values ("global"), or
 #'  both ("both"). Irrelevant for continuous predictors. When for_plot = TRUE,
-#'  global p values will be displayed in a separate column from p vlaues.
+#'  global p values will be displayed in a separate column from p values.
 #'  If whichp = "levels", global p values will not be included in the outputted
 #'  table.
 #'@param for_plot boolean indicating whether or not the function will be used
@@ -475,7 +475,7 @@ get_event_counts.glm <- function(model){
   }
 }
 # Calculate a global p-value for categorical variables --------
-gp <- function(model) {
+gp <- function(model,CIwidth=.95,digits=2) {
   UseMethod("gp", model)
 }
 

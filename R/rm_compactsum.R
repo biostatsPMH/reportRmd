@@ -75,14 +75,14 @@
 #'
 #'@references Smithson, M. (2002). Noncentral Confidence Intervals for
 #'  Standardized Effect Sizes. (07/140 ed., Vol. 140). SAGE Publications.
-#'  \url{https://doi.org/10.4135/9781412983761.n4}
+#'  \doi{10.4135/9781412983761.n4}
 #'@references Steiger, J. H. (2004). Beyond the F Test: Effect Size Confidence
 #'  Intervals and Tests of Close Fit in the Analysis of Variance and Contrast
 #'  Analysis. Psychological Methods, 9(2), 164–182.
-#'  \url{https://doi.org/10.1037/1082-989X.9.2.164}
+#'  \doi{10.1037/1082-989X.9.2.164}
 #'@references Kelley, T. L. (1935). An Unbiased Correlation Ratio Measure.
 #'  Proceedings of the National Academy of Sciences - PNAS, 21(9), 554–559.
-#'  \url{https://doi.org/10.1073/pnas.21.9.554}
+#'  \doi{10.1073/pnas.21.9.554}
 #'@references Okada, K. (2013). Is Omega Squared Less Biased? A Comparison of
 #'  Three Major Effect Size Indices in One-Way ANOVA. Behavior Research Methods,
 #'  40(2), 129-147.
@@ -92,7 +92,7 @@
 #'@references FRITZ, C. O., MORRIS, P. E., & RICHLER, J. J. (2012). Effect Size
 #'  Estimates: Current Use, Calculations, and Interpretation. Journal of
 #'  Experimental Psychology. General, 141(1), 2–18.
-#'  \url{https://doi.org/10.1037/a0024338}
+#'  \doi{10.1037/a0024338}
 #'
 #' @examples
 #' data("pembrolizumab")
@@ -334,7 +334,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 #'   digits where each element is named using the covariate name. If a covariate
 #'   is not in the vector the default will be used for it (default is 1).
 #'   See examples
-#' @param digits.cat numeric specifying the numer of digits for the proportions
+#' @param digits.cat numeric specifying the number of digits for the proportions
 #'   when summarizing categorical data (default is 0)
 #' @param iqr logical indicating if you want to display the interquartile range
 #'   (Q1, Q3) as opposed to (min, max) in the summary for continuous variables

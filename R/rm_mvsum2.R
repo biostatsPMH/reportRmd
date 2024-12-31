@@ -44,7 +44,7 @@
 #'  from base R
 #'@param unformattedp boolean indicating if you would like the p-value to be
 #'  returned unformatted (ie not rounded or prefixed with '<'). Should be used
-#'  in conjuction with the digits argument.
+#'  in conjunction with the digits argument.
 #'@param nicenames boolean indicating if you want to replace . and _ in strings
 #'  with a space
 #'@param chunk_label Deprecated, previously used in Word to allow
