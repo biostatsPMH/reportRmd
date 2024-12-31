@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>5 Combining univariate and multivariable models | reportRmd Package</title>
-  <meta name="description" content="5 Combining univariate and multivariable models | reportRmd Package" />
-  <meta name="generator" content="bookdown 0.30 and GitBook 2.6.7" />
+  <title>6 Combining univariate and multivariable models | reportRmd Package</title>
+  <meta name="description" content="6 Combining univariate and multivariable models | reportRmd Package" />
+  <meta name="generator" content="bookdown 0.41.2 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="5 Combining univariate and multivariable models | reportRmd Package" />
+  <meta property="og:title" content="6 Combining univariate and multivariable models | reportRmd Package" />
   <meta property="og:type" content="book" />
   
   
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="5 Combining univariate and multivariable models | reportRmd Package" />
+  <meta name="twitter:title" content="6 Combining univariate and multivariable models | reportRmd Package" />
   
   
   
@@ -52,11 +52,13 @@
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
 <script src="libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
 
 
 <style type="text/css">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -66,7 +68,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -92,7 +94,7 @@ code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code span.at { color: #7d9029; } /* Attribute */
 code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
+code span.bu { color: #008000; } /* BuiltIn */
 code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
 code span.ch { color: #4070a0; } /* Char */
 code span.cn { color: #880000; } /* Constant */
@@ -105,7 +107,7 @@ code span.er { color: #ff0000; font-weight: bold; } /* Error */
 code span.ex { } /* Extension */
 code span.fl { color: #40a070; } /* Float */
 code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
+code span.im { color: #008000; font-weight: bold; } /* Import */
 code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 code span.kw { color: #007020; font-weight: bold; } /* Keyword */
 code span.op { color: #666666; } /* Operator */
@@ -119,6 +121,10 @@ code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
 
 </head>
 
@@ -145,38 +151,67 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="2.4" data-path="parametric-vs-non-parametric-comparisons.html"><a href="parametric-vs-non-parametric-comparisons.html"><i class="fa fa-check"></i><b>2.4</b> Parametric vs Non-parametric Comparisons</a></li>
 <li class="chapter" data-level="2.5" data-path="row-vs-column-summaries.html"><a href="row-vs-column-summaries.html"><i class="fa fa-check"></i><b>2.5</b> Row vs Column Summaries</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>3</b> Univariate regression</a>
+<li class="chapter" data-level="3" data-path="compact-summary-statistics.html"><a href="compact-summary-statistics.html"><i class="fa fa-check"></i><b>3</b> Compact summary statistics</a>
 <ul>
-<li class="chapter" data-level="3.1" data-path="simple-linear-regression.html"><a href="simple-linear-regression.html"><i class="fa fa-check"></i><b>3.1</b> Simple Linear Regression</a></li>
-<li class="chapter" data-level="3.2" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>3.2</b> Logistic Regression</a></li>
-<li class="chapter" data-level="3.3" data-path="poisson-regression.html"><a href="poisson-regression.html"><i class="fa fa-check"></i><b>3.3</b> Poisson Regression</a></li>
-<li class="chapter" data-level="3.4" data-path="survival-analysis.html"><a href="survival-analysis.html"><i class="fa fa-check"></i><b>3.4</b> Survival Analysis</a></li>
-<li class="chapter" data-level="3.5" data-path="competing-risk.html"><a href="competing-risk.html"><i class="fa fa-check"></i><b>3.5</b> Competing Risk</a></li>
-<li class="chapter" data-level="3.6" data-path="gee-models.html"><a href="gee-models.html"><i class="fa fa-check"></i><b>3.6</b> GEE Models</a></li>
-<li class="chapter" data-level="3.7" data-path="returning-model-objects.html"><a href="returning-model-objects.html"><i class="fa fa-check"></i><b>3.7</b> Returning Model Objects</a></li>
-<li class="chapter" data-level="3.8" data-path="adjusting-p-values.html"><a href="adjusting-p-values.html"><i class="fa fa-check"></i><b>3.8</b> Adjusting p-values</a></li>
+<li class="chapter" data-level="3.1" data-path="summaries-by-group-1.html"><a href="summaries-by-group-1.html"><i class="fa fa-check"></i><b>3.1</b> Summaries By Group</a></li>
+<li class="chapter" data-level="3.2" data-path="showing-statistical-tests-1.html"><a href="showing-statistical-tests-1.html"><i class="fa fa-check"></i><b>3.2</b> Showing Statistical Tests</a></li>
+<li class="chapter" data-level="3.3" data-path="including-effect-sizes-1.html"><a href="including-effect-sizes-1.html"><i class="fa fa-check"></i><b>3.3</b> Including Effect Sizes</a></li>
+<li class="chapter" data-level="3.4" data-path="using-mean-summary-statistic-instead-of-median.html"><a href="using-mean-summary-statistic-instead-of-median.html"><i class="fa fa-check"></i><b>3.4</b> Using Mean Summary Statistic Instead of Median</a></li>
+<li class="chapter" data-level="3.5" data-path="custom-digits-argument.html"><a href="custom-digits-argument.html"><i class="fa fa-check"></i><b>3.5</b> Custom Digits Argument</a></li>
+<li class="chapter" data-level="3.6" data-path="row-vs-column-summaries-1.html"><a href="row-vs-column-summaries-1.html"><i class="fa fa-check"></i><b>3.6</b> Row vs Column Summaries</a></li>
+<li class="chapter" data-level="3.7" data-path="viewing-the-self-generated-description.html"><a href="viewing-the-self-generated-description.html"><i class="fa fa-check"></i><b>3.7</b> Viewing the Self-Generated Description</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="multivariable-analysis.html"><a href="multivariable-analysis.html"><i class="fa fa-check"></i><b>4</b> Multivariable analysis</a></li>
-<li class="chapter" data-level="5" data-path="combining-univariate-and-multivariable-models.html"><a href="combining-univariate-and-multivariable-models.html"><i class="fa fa-check"></i><b>5</b> Combining univariate and multivariable models</a></li>
-<li class="chapter" data-level="6" data-path="changing-the-output.html"><a href="changing-the-output.html"><i class="fa fa-check"></i><b>6</b> Changing the output</a></li>
-<li class="chapter" data-level="7" data-path="combining-tables.html"><a href="combining-tables.html"><i class="fa fa-check"></i><b>7</b> Combining tables</a></li>
-<li class="chapter" data-level="8" data-path="simple-survival-summaries.html"><a href="simple-survival-summaries.html"><i class="fa fa-check"></i><b>8</b> Simple Survival Summaries</a></li>
-<li class="chapter" data-level="9" data-path="survival-times-in-long-format.html"><a href="survival-times-in-long-format.html"><i class="fa fa-check"></i><b>9</b> Survival Times in Long Format</a>
+<li class="chapter" data-level="4" data-path="univariate-regression.html"><a href="univariate-regression.html"><i class="fa fa-check"></i><b>4</b> Univariate regression</a>
 <ul>
-<li class="chapter" data-level="9.1" data-path="survival-times-with-covariate-adjustments.html"><a href="survival-times-with-covariate-adjustments.html"><i class="fa fa-check"></i><b>9.1</b> Survival Times With Covariate Adjustments</a></li>
+<li class="chapter" data-level="4.1" data-path="simple-linear-regression.html"><a href="simple-linear-regression.html"><i class="fa fa-check"></i><b>4.1</b> Simple Linear Regression</a></li>
+<li class="chapter" data-level="4.2" data-path="logistic-regression.html"><a href="logistic-regression.html"><i class="fa fa-check"></i><b>4.2</b> Logistic Regression</a></li>
+<li class="chapter" data-level="4.3" data-path="poisson-regression.html"><a href="poisson-regression.html"><i class="fa fa-check"></i><b>4.3</b> Poisson Regression</a></li>
+<li class="chapter" data-level="4.4" data-path="negative-binomial-regression.html"><a href="negative-binomial-regression.html"><i class="fa fa-check"></i><b>4.4</b> Negative Binomial Regression</a></li>
+<li class="chapter" data-level="4.5" data-path="survival-analysis.html"><a href="survival-analysis.html"><i class="fa fa-check"></i><b>4.5</b> Survival Analysis</a></li>
+<li class="chapter" data-level="4.6" data-path="competing-risk.html"><a href="competing-risk.html"><i class="fa fa-check"></i><b>4.6</b> Competing Risk</a></li>
+<li class="chapter" data-level="4.7" data-path="gee-models.html"><a href="gee-models.html"><i class="fa fa-check"></i><b>4.7</b> GEE Models</a></li>
+<li class="chapter" data-level="4.8" data-path="returning-model-objects.html"><a href="returning-model-objects.html"><i class="fa fa-check"></i><b>4.8</b> Returning Model Objects</a></li>
+<li class="chapter" data-level="4.9" data-path="adjusting-p-values.html"><a href="adjusting-p-values.html"><i class="fa fa-check"></i><b>4.9</b> Adjusting p-values</a></li>
 </ul></li>
-<li class="chapter" data-level="10" data-path="stratified-survival-summary.html"><a href="stratified-survival-summary.html"><i class="fa fa-check"></i><b>10</b> Stratified Survival Summary</a></li>
-<li class="chapter" data-level="11" data-path="plotting-functions.html"><a href="plotting-functions.html"><i class="fa fa-check"></i><b>11</b> Plotting Functions</a>
+<li class="chapter" data-level="5" data-path="multivariable-analysis.html"><a href="multivariable-analysis.html"><i class="fa fa-check"></i><b>5</b> Multivariable analysis</a></li>
+<li class="chapter" data-level="6" data-path="combining-univariate-and-multivariable-models.html"><a href="combining-univariate-and-multivariable-models.html"><i class="fa fa-check"></i><b>6</b> Combining univariate and multivariable models</a></li>
+<li class="chapter" data-level="7" data-path="changing-the-output.html"><a href="changing-the-output.html"><i class="fa fa-check"></i><b>7</b> Changing the output</a></li>
+<li class="chapter" data-level="8" data-path="combining-tables.html"><a href="combining-tables.html"><i class="fa fa-check"></i><b>8</b> Combining tables</a></li>
+<li class="chapter" data-level="9" data-path="simple-survival-summaries.html"><a href="simple-survival-summaries.html"><i class="fa fa-check"></i><b>9</b> Simple Survival Summaries</a></li>
+<li class="chapter" data-level="10" data-path="survival-times-in-long-format.html"><a href="survival-times-in-long-format.html"><i class="fa fa-check"></i><b>10</b> Survival Times in Long Format</a>
 <ul>
-<li class="chapter" data-level="11.1" data-path="plotting-bivariate-relationships.html"><a href="plotting-bivariate-relationships.html"><i class="fa fa-check"></i><b>11.1</b> Plotting bivariate relationships</a></li>
-<li class="chapter" data-level="11.2" data-path="plotting-odds-ratios.html"><a href="plotting-odds-ratios.html"><i class="fa fa-check"></i><b>11.2</b> Plotting odds ratios</a></li>
-<li class="chapter" data-level="11.3" data-path="plotting-survival-curves.html"><a href="plotting-survival-curves.html"><i class="fa fa-check"></i><b>11.3</b> Plotting survival curves</a></li>
+<li class="chapter" data-level="10.1" data-path="survival-times-with-covariate-adjustments.html"><a href="survival-times-with-covariate-adjustments.html"><i class="fa fa-check"></i><b>10.1</b> Survival Times With Covariate Adjustments</a></li>
 </ul></li>
-<li class="chapter" data-level="12" data-path="pdf-output.html"><a href="pdf-output.html"><i class="fa fa-check"></i><b>12</b> PDF Output</a></li>
-<li class="chapter" data-level="13" data-path="data-sets.html"><a href="data-sets.html"><i class="fa fa-check"></i><b>13</b> Data Sets</a>
+<li class="chapter" data-level="11" data-path="stratified-survival-summary.html"><a href="stratified-survival-summary.html"><i class="fa fa-check"></i><b>11</b> Stratified Survival Summary</a></li>
+<li class="chapter" data-level="12" data-path="working-with-labels.html"><a href="working-with-labels.html"><i class="fa fa-check"></i><b>12</b> Working with Labels</a>
 <ul>
-<li class="chapter" data-level="13.0.1" data-path="data-sets.html"><a href="data-sets.html#pembrolizumab"><i class="fa fa-check"></i><b>13.0.1</b> pembrolizumab</a></li>
-<li class="chapter" data-level="13.0.2" data-path="data-sets.html"><a href="data-sets.html#ctdna"><i class="fa fa-check"></i><b>13.0.2</b> ctDNA</a></li>
+<li class="chapter" data-level="12.1" data-path="worked-example.html"><a href="worked-example.html"><i class="fa fa-check"></i><b>12.1</b> Worked Example</a>
+<ul>
+<li class="chapter" data-level="12.1.1" data-path="worked-example.html"><a href="worked-example.html#sec-set_labels"><i class="fa fa-check"></i><b>12.1.1</b> set_labels</a></li>
+<li class="chapter" data-level="12.1.2" data-path="worked-example.html"><a href="worked-example.html#sec-set_var_labels"><i class="fa fa-check"></i><b>12.1.2</b> set_var_labels</a></li>
+<li class="chapter" data-level="12.1.3" data-path="worked-example.html"><a href="worked-example.html#sec-extract_labels"><i class="fa fa-check"></i><b>12.1.3</b> extract_labels</a></li>
+<li class="chapter" data-level="12.1.4" data-path="worked-example.html"><a href="worked-example.html#sec-replace_plot_labels"><i class="fa fa-check"></i><b>12.1.4</b> replace_plot_labels</a></li>
+<li class="chapter" data-level="12.1.5" data-path="worked-example.html"><a href="worked-example.html#sec-clear_labels"><i class="fa fa-check"></i><b>12.1.5</b> clear_labels</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="plotting-functions.html"><a href="plotting-functions.html"><i class="fa fa-check"></i><b>13</b> Plotting Functions</a>
+<ul>
+<li class="chapter" data-level="13.1" data-path="plotting-bivariate-relationships.html"><a href="plotting-bivariate-relationships.html"><i class="fa fa-check"></i><b>13.1</b> Plotting bivariate relationships</a></li>
+<li class="chapter" data-level="13.2" data-path="plotting-survival-curves.html"><a href="plotting-survival-curves.html"><i class="fa fa-check"></i><b>13.2</b> Plotting survival curves</a></li>
+<li class="chapter" data-level="13.3" data-path="forest-plots.html"><a href="forest-plots.html"><i class="fa fa-check"></i><b>13.3</b> Forest Plots</a></li>
+<li class="chapter" data-level="13.4" data-path="combining-univariable-and-multivariable-models-into-a-single-plot.html"><a href="combining-univariable-and-multivariable-models-into-a-single-plot.html"><i class="fa fa-check"></i><b>13.4</b> Combining univariable and multivariable models into a single plot</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="miscellaneous-functions.html"><a href="miscellaneous-functions.html"><i class="fa fa-check"></i><b>14</b> Miscellaneous Functions</a>
+<ul>
+<li class="chapter" data-level="14.1" data-path="excelcol.html"><a href="excelcol.html"><i class="fa fa-check"></i><b>14.1</b> excelCol</a></li>
+<li class="chapter" data-level="14.2" data-path="excelcolletters.html"><a href="excelcolletters.html"><i class="fa fa-check"></i><b>14.2</b> excelColLetters</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="options.html"><a href="options.html"><i class="fa fa-check"></i><b>15</b> Options</a></li>
+<li class="chapter" data-level="16" data-path="pdf-output.html"><a href="pdf-output.html"><i class="fa fa-check"></i><b>16</b> PDF Output</a></li>
+<li class="chapter" data-level="17" data-path="data-sets.html"><a href="data-sets.html"><i class="fa fa-check"></i><b>17</b> Data Sets</a>
+<ul>
+<li class="chapter" data-level="17.1" data-path="pembrolizumab.html"><a href="pembrolizumab.html"><i class="fa fa-check"></i><b>17.1</b> pembrolizumab</a></li>
+<li class="chapter" data-level="17.2" data-path="ctdna.html"><a href="ctdna.html"><i class="fa fa-check"></i><b>17.2</b> ctDNA</a></li>
 </ul></li>
 </ul>
 
@@ -195,39 +230,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="combining-univariate-and-multivariable-models" class="section level1 hasAnchor" number="5">
-<h1><span class="header-section-number">5</span> Combining univariate and multivariable models<a href="combining-univariate-and-multivariable-models.html#combining-univariate-and-multivariable-models" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="combining-univariate-and-multivariable-models" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">6</span> Combining univariate and multivariable models<a href="combining-univariate-and-multivariable-models.html#combining-univariate-and-multivariable-models" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>To display both models in a single table run the rm_uvsum and rm_mvsum functions with <code>tableOnly=TRUE</code> and combine.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="combining-univariate-and-multivariable-models.html#cb23-1" aria-hidden="true" tabindex="-1"></a>uvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
-<span id="cb23-2"><a href="combining-univariate-and-multivariable-models.html#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb23-3"><a href="combining-univariate-and-multivariable-models.html#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-4"><a href="combining-univariate-and-multivariable-models.html#cb23-4" aria-hidden="true" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
-<span id="cb23-5"><a href="combining-univariate-and-multivariable-models.html#cb23-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
-<span id="cb23-6"><a href="combining-univariate-and-multivariable-models.html#cb23-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
-<span id="cb23-7"><a href="combining-univariate-and-multivariable-models.html#cb23-7" aria-hidden="true" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb23-8"><a href="combining-univariate-and-multivariable-models.html#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-9"><a href="combining-univariate-and-multivariable-models.html#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="fu">rm_uv_mv</span>(uvsumTable,mvsumTable)</span></code></pre></div>
-<table class="table" style="margin-left: auto; margin-right: auto;">
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="combining-univariate-and-multivariable-models.html#cb37-1" tabindex="-1"></a>uvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb37-2"><a href="combining-univariate-and-multivariable-models.html#cb37-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-3"><a href="combining-univariate-and-multivariable-models.html#cb37-3" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="combining-univariate-and-multivariable-models.html#cb37-4" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
+<span id="cb37-5"><a href="combining-univariate-and-multivariable-models.html#cb37-5" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb37-6"><a href="combining-univariate-and-multivariable-models.html#cb37-6" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb37-7"><a href="combining-univariate-and-multivariable-models.html#cb37-7" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit, <span class="at">showN =</span> <span class="cn">TRUE</span>,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb37-8"><a href="combining-univariate-and-multivariable-models.html#cb37-8" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="combining-univariate-and-multivariable-models.html#cb37-9" tabindex="-1"></a><span class="fu">rm_uv_mv</span>(uvsumTable,mvsumTable)</span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Unadjusted OR(95%CI)
 </th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p
 </th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 Adjusted OR(95%CI)
 </th>
-<th style="text-align:right;">
-N (adj)
-</th>
-<th style="text-align:right;">
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 p (adj)
 </th>
 </tr>
@@ -241,12 +270,7 @@ p (adj)
 0.96 (0.91, 1.00)
 </td>
 <td style="text-align:right;">
-94
-</td>
-<td style="text-align:right;">
-0.09
-</td>
-<td style="text-align:right;">
+0.089
 </td>
 <td style="text-align:right;">
 </td>
@@ -260,12 +284,7 @@ p (adj)
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-94
-</td>
-<td style="text-align:right;">
 0.11
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -278,11 +297,6 @@ Female
 </td>
 <td style="text-align:right;">
 Reference
-</td>
-<td style="text-align:right;">
-58
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 </td>
@@ -299,9 +313,155 @@ Male
 0.41 (0.13, 1.22)
 </td>
 <td style="text-align:right;">
-36
 </td>
 <td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">pdl1</span>
+</td>
+<td style="text-align:right;">
+0.97 (0.95, 0.98)
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">&lt;0.001</span>
+</td>
+<td style="text-align:right;">
+0.98 (0.96, 1.00)
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">0.024</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">change ctdna group</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">0.002</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">0.004</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Decrease from baseline
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Increase from baseline
+</td>
+<td style="text-align:right;">
+28.74 (5.20, 540.18)
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+24.71 (2.87, 212.70)
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> This can also be done with adjusted p-values, but when combined the raw p-values are dropped.</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="combining-univariate-and-multivariable-models.html#cb38-1" tabindex="-1"></a>uvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_uvsum</span>(<span class="at">data=</span>pembrolizumab, <span class="at">response=</span><span class="st">&#39;orr&#39;</span>,</span>
+<span id="cb38-2"><a href="combining-univariate-and-multivariable-models.html#cb38-2" tabindex="-1"></a><span class="at">covs=</span><span class="fu">c</span>(<span class="st">&#39;age&#39;</span>,<span class="st">&#39;sex&#39;</span>,<span class="st">&#39;pdl1&#39;</span>,<span class="st">&#39;change_ctdna_group&#39;</span>),<span class="at">tableOnly =</span> <span class="cn">TRUE</span>,<span class="at">p.adjust=</span><span class="st">&#39;holm&#39;</span>)</span>
+<span id="cb38-3"><a href="combining-univariate-and-multivariable-models.html#cb38-3" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="combining-univariate-and-multivariable-models.html#cb38-4" tabindex="-1"></a>glm_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(orr<span class="sc">~</span>change_ctdna_group<span class="sc">+</span>pdl1,</span>
+<span id="cb38-5"><a href="combining-univariate-and-multivariable-models.html#cb38-5" tabindex="-1"></a>               <span class="at">family=</span><span class="st">&#39;binomial&#39;</span>,</span>
+<span id="cb38-6"><a href="combining-univariate-and-multivariable-models.html#cb38-6" tabindex="-1"></a>               <span class="at">data =</span> pembrolizumab)</span>
+<span id="cb38-7"><a href="combining-univariate-and-multivariable-models.html#cb38-7" tabindex="-1"></a>mvsumTable <span class="ot">&lt;-</span> <span class="fu">rm_mvsum</span>(glm_fit,<span class="at">tableOnly =</span> <span class="cn">TRUE</span>,<span class="at">p.adjust=</span><span class="st">&#39;holm&#39;</span>)</span>
+<span id="cb38-8"><a href="combining-univariate-and-multivariable-models.html#cb38-8" tabindex="-1"></a></span>
+<span id="cb38-9"><a href="combining-univariate-and-multivariable-models.html#cb38-9" tabindex="-1"></a><span class="fu">rm_uv_mv</span>(uvsumTable,mvsumTable)</span></code></pre></div>
+<table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted OR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted OR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p (adj)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">age</span>
+</td>
+<td style="text-align:right;">
+0.96 (0.91, 1.00)
+</td>
+<td style="text-align:right;">
+0.18
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">sex</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+0.18
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Female
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Male
+</td>
+<td style="text-align:right;">
+0.41 (0.13, 1.22)
 </td>
 <td style="text-align:right;">
 </td>
@@ -318,19 +478,13 @@ Male
 0.97 (0.95, 0.98)
 </td>
 <td style="text-align:right;">
-93
-</td>
-<td style="text-align:right;">
 <span style="font-weight: bold;">&lt;0.001</span>
 </td>
 <td style="text-align:right;">
 0.98 (0.96, 1.00)
 </td>
 <td style="text-align:right;">
-73
-</td>
-<td style="text-align:right;">
-<span style="font-weight: bold;">0.02</span>
+<span style="font-weight: bold;">0.024</span>
 </td>
 </tr>
 <tr>
@@ -340,18 +494,12 @@ Male
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-73
-</td>
-<td style="text-align:right;">
-<span style="font-weight: bold;">0.002</span>
+<span style="font-weight: bold;">0.005</span>
 </td>
 <td style="text-align:right;">
 </td>
 <td style="text-align:right;">
-73
-</td>
-<td style="text-align:right;">
-<span style="font-weight: bold;">0.004</span>
+<span style="font-weight: bold;">0.007</span>
 </td>
 </tr>
 <tr>
@@ -362,15 +510,9 @@ Decrease from baseline
 Reference
 </td>
 <td style="text-align:right;">
-33
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 Reference
-</td>
-<td style="text-align:right;">
-33
 </td>
 <td style="text-align:right;">
 </td>
@@ -383,22 +525,15 @@ Increase from baseline
 28.74 (5.20, 540.18)
 </td>
 <td style="text-align:right;">
-40
-</td>
-<td style="text-align:right;">
 </td>
 <td style="text-align:right;">
 24.71 (2.87, 212.70)
-</td>
-<td style="text-align:right;">
-40
 </td>
 <td style="text-align:right;">
 </td>
 </tr>
 </tbody>
 </table>
-<p><strong>Note:</strong> This can also be done with adjusted p-values, but when combined the raw p-values are dropped.</p>
 </div>
             </section>
 
@@ -460,20 +595,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>

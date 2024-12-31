@@ -1,16 +1,17 @@
 Package: reportRmd
 Title: Tidy Presentation of Clinical Reporting
-Version: 0.1.0
-Date: 2023-11-10
+Version: 0.1.1
+Date: 2024-12-30
 Authors@R: c(
     person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut"),comment=c(ORCID="0000-0002-8431-5143")),
     person(given="Ryan",family="Del Bel",email = "rdelbel@gmail.com",role="aut"),
     person(given="Osvaldo",family="Espin-Garcia",email = "osvaldo.espin-garcia@uhn.ca",role="aut"),
     person(given="Katherine",family="Lajkosz",email="Katherine.Lajkosz@uhn.ca",role="aut",comment=c(ORCID="0000-0003-3760-5401")),
+    person(given="Clarina", family="Ong",email = "clarinaongo@gmail.com",role="aut"),
     person(given="Tyler",family="Pittman",email="tyler.pittman@uhn.ca",role="aut",comment=c(ORCID="0000-0002-5013-6980")),
     person(given="Anna",family="Santiago",email= "Anna.Santiago@uhn.ca",role="aut",comment=c(ORCID="0000-0002-0932-2386")),
     person(given="Yanning",family="Wang",email = "21yw15@queensu.ca",role="ctr"),    
-    person(given="Jessica",family="Weiss",email = "jessica.weiss@uhn.ca",role="aut"),    
+    person(given="Jessica",family="Weiss",email = "jessica.weiss@uhn.ca",role="aut"),   
     person(given="Wei", family="Xu",email = "wei.xu@uhn.ca",role="aut"))
 Description: Streamlined statistical reporting in 'Rmarkdown' environments. 
     Facilitates the automated reporting of descriptive statistics, multiple 
@@ -19,16 +20,19 @@ Description: Streamlined statistical reporting in 'Rmarkdown' environments.
     logistic and ordinal regression and bivariate comparison plots.
 License: MIT + file LICENSE
 Suggests: 
+    nlme,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Imports: 
     aod,
+    boot,
     cmprsk,
     cowplot,
+    dplyr, 
     geepack,
     ggplot2,
     ggpubr,
@@ -42,10 +46,11 @@ Imports:
     rlang,
     rstatix,
     scales,
-    survival
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 
+    stats,
+    survival,
+    tidyselect
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'rm_mvsum2.R' 
 Depends: 
     R (>= 4.2)
-LazyData: true
+LazyData: no
 VignetteBuilder: knitr, rmarkdown
-

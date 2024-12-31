@@ -16,7 +16,10 @@ plotuv(
   ncol = 2,
   p_margins = c(0, 0.2, 1, 0.2),
   bpThreshold = 20,
-  mixed = TRUE
+  mixed = TRUE,
+  violin = FALSE,
+  position = c("dodge", "stack", "fill"),
+  use_labels = TRUE
 )
 }
 \arguments{
@@ -46,20 +49,29 @@ call, defaults to 2}
 \item{p_margins}{sets the TRBL margins of the individual plots, defaults to
 c(0,0.2,1,.2)}
 
-\item{bpThreshold}{Default is 20, if there are fewer than 20 observations in
-a category then dotplots, as opposed to boxplots are shown.}
+\item{bpThreshold}{Default is 20, if there are fewer than 20 observations in a
+category then dotplots, as opposed to boxplots are shown.}
 
 \item{mixed}{should a mix of dotplots and boxplots be shown based on sample
 size? If false then all categories will be shown as either dotplots, or
 boxplots according the bpThreshold and the smallest category size}
+
+\item{violin}{Show violin plots instead of boxplots. This will override
+bpThreshold and mixed.}
+
+\item{position}{for categorical variables how should barplots be presented.
+Default is "dodge" IF stack is TRUE then n will not be shown.}
+
+\item{use_labels}{boolean, default is true if the variables have label
+attributes this will be shown in the plot instead of the variable names, or
+if there are no labels then tidy versions of the variable names will be
+used. If use_labels=FALSE the variable names will be used.}
 }
 \value{
 a list containing plots for each variable in covs
-
-a plot object
 }
 \description{
-This function is designed to accompany \code{\link{uvsum}} as a means of
+This function is designed to accompany \code{\link{rm_uvsum}} as a means of
 visualising the results, and uses similar syntax.
 }
 \details{
@@ -70,6 +82,9 @@ For a numeric predictor: If 20+ observations available boxplot, otherwise
 dotplot with median line For a categorical predictor barplot Response
 variables are shown on the ordinate (y-axis) and covariates on the abscissa
 (x-axis)
+
+Variable names are replaced by their labels if available, or by tidy versions
+if not. Set use_labels=FALSE to use the variable names.
 }
 \examples{
 ## Run multiple univariate analyses on the pembrolizumab dataset to predict cbr and
@@ -81,6 +96,8 @@ plotuv(data=pembrolizumab,  response='cbr',
 covs=c('age','sex','l_size','baseline_ctdna'),showN=TRUE)
 }
 \seealso{
-\code{\link{ggplot}} and \code{\link{ggarrange}}
+\code{\link[ggplot2:ggplot]{ggplot2::ggplot}} and
+\code{\link[ggpubr:ggarrange]{ggpubr::ggarrange}}
+\code{\link{replace_plot_labels}}
 }
 \keyword{plot}

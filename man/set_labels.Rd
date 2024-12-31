@@ -25,9 +25,15 @@ If no label is provided then the existing label will not be changed. To
 remove a label set the label to NA.
 }
 \examples{
+data("ctDNA")
 # create data frame with labels
 lbls <- data.frame(c1=c('cohort','size_change'),
 c2=c('Cancer cohort','Change in tumour size'))
 # set labels and return labelled data frame
 set_labels(ctDNA,lbls)
+}
+\seealso{
+\code{\link[=set_var_labels]{set_var_labels()}} for setting individual variable labels,
+\code{\link[=extract_labels]{extract_labels()}} for creating a data frame of all variable labels,
+\code{\link[=clear_labels]{clear_labels()}} for removing variable labels
 }

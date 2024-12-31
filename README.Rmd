@@ -45,9 +45,9 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## New Features
 
-- Survival curves have been improved and now return ggplots
-- Variable labels will now be automatically output in tables
-
+- new compact summary table function `rm_compactsum`
+- main functions are now pipeable
+- new function to use variable labels in ggplots `replace_plot_labels`
 
 ## Documentation
 
@@ -60,9 +60,18 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 ```{r example}
 library(reportRmd)
 data("pembrolizumab")
+
 rm_covsum(data=pembrolizumab, maincov = 'sex',
 covs=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
+
+```
+
+### Compact Table 
+
+```{r}
+pembrolizumab |> rm_compactsum( grp = 'sex',
+xvars=c('age','pdl1','change_ctdna_group'))
 
 ```
 
@@ -150,7 +159,7 @@ data=pembrolizumab)
 
 ```{r, height=2}
 require(ggplot2)
-forestplot2(glm_fit)
+forestplotMV(glm_fit)
 ```
 
 ### Plotting bivariate relationships
@@ -161,5 +170,21 @@ require(ggplot2)
 plotuv(data=pembrolizumab, response='orr',
 covs=c('age','cohort','pdl1','change_ctdna_group'))
 
+```
+
+### Replacing variable names with labels in ggplot
+
+```{r}
+data("mtcars")
+mtcars <- mtcars |> 
+  dplyr::mutate(cyl = as.factor(cyl)) |>
+  set_labels(data.frame(var=c("hp","mpg","cyl"),
+                        label=c('Horsepower',
+                                'Miles per gallon',
+                                'Number of cylinders'))) 
+p <- mtcars |> 
+ggplot(aes(x=hp, y=mpg, color=cyl, shape=cyl)) +
+    geom_point()
+replace_plot_labels(p)
 ```
 

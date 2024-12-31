@@ -50,7 +50,8 @@ ggkmcif2Parameters(
   pval.digits = 3,
   median.digits = 3,
   set.time.digits = 3,
-  print.n.missing = TRUE
+  print.n.missing = TRUE,
+  returns = FALSE
 )
 }
 \arguments{
@@ -64,10 +65,10 @@ ggkmcif2Parameters(
 "logit". Only enough of the string to uniquely identify it is necessary.
 The first option causes confidence intervals not to be generated. The
 second causes the standard intervals curve +- k *se(curve), where k is
-determined from conf.int. The log option calculates intervals based on the
-cumulative hazard or log(survival). The log-log option bases the intervals
-on the log hazard or log(-log(survival)), and the logit option on
-log(survival/(1-survival)).}
+determined from conf.int. The log option calculates intervals based on
+the cumulative hazard or log(survival). The log-log option bases the
+intervals on the log hazard or log(-log(survival)), and the logit option
+on log(survival/(1-survival)).}
 
 \item{main}{String corresponding to main title. When NULL uses Kaplan-Meier
 Plot s, and "Cumulative Incidence Plot for CIF"}
@@ -84,23 +85,23 @@ covariate. Can use a string of "-" when the labels are long}
 \item{strataname.table}{String of the covariate name for the number at risk
 table default is  nicename(cov}
 
-\item{median.text}{boolean to specify if you want the median values added to
-the legend (or as added text if there are no covariates), for KM only}
+\item{median.text}{boolean to specify if you want the median values added
+to the legend (or as added text if there are no covariates), for KM only}
 
-\item{median.lines}{boolean to specify if you want the median values added as
-lines to the plot, for KM only}
+\item{median.lines}{boolean to specify if you want the median values added
+as lines to the plot, for KM only}
 
-\item{median.CI}{boolean to specify if you want the 95\\% confidence interval
-with the median text (Only for KM)}
+\item{median.CI}{boolean to specify if you want the 95\\% confidence
+interval with the median text (Only for KM)}
 
-\item{set.time.text}{string for the text to add survival at a specified time
-(eg. year OS)}
+\item{set.time.text}{string for the text to add survival at a specified
+time (eg. year OS)}
 
 \item{set.time.line}{boolean to specify if you want the survival added as
 lines to the plot at a specified point}
 
-\item{set.time}{Numeric values of the specific time of interest, default is 5
-(Multiple values can be entered)}
+\item{set.time}{Numeric values of the specific time of interest, default is
+5 (Multiple values can be entered)}
 
 \item{set.time.CI}{boolean to specify if you want the 95\\% confidence
 interval with the set time text}
@@ -128,25 +129,25 @@ covariates)}
 
 \item{median.lsize}{line size of the median lines}
 
-\item{set.size}{size of the survival at a set time text (Only when there are
-no covariates)}
+\item{set.size}{size of the survival at a set time text (Only when there
+are no covariates)}
 
 \item{set.pos}{vector of length 2 corresponding to the survival at a set
 point position (Only when there are no covariates)}
 
 \item{set.lsize}{line size of the survival at set points}
 
-\item{ylim}{vector of length 2 corresponding to limits of y-axis. Default to
-NULL}
+\item{ylim}{vector of length 2 corresponding to limits of y-axis. Default
+to NULL}
 
 \item{linetype}{vector of line types; default is solid for all lines}
 
-\item{xlim}{vector of length 2 corresponding to limits of x-axis. Default to
-NULL}
+\item{xlim}{vector of length 2 corresponding to limits of x-axis. Default
+to NULL}
 
-\item{legend.pos}{Can be either a string corresponding to the legend position
-("left","top", "right", "bottom", "none") or a vector of length 2
-corresponding to the legend position (uses normalized units (ie the
+\item{legend.pos}{Can be either a string corresponding to the legend
+position ("left","top", "right", "bottom", "none") or a vector of length
+2 corresponding to the legend position (uses normalized units (ie the
 c(0.5,0.5) is the middle of the plot))}
 
 \item{pval.pos}{vector of length 2 corresponding to the p-value position}
@@ -176,9 +177,13 @@ or linetype when plotting both events to colour = "col", line type}
 \item{set.time.digits}{Number of digits printed of the probability at a
 specified time}
 
-\item{print.n.missing}{Logical, should the number of missing be shown !Needs
-to be checked}
+\item{print.n.missing}{Logical, should the number of missing be shown
+!Needs to be checked}
+
+\item{returns}{Logical, if TRUE a list contain the plot and at risk table
+is returned}
 }
 \description{
-Additional parameters passed to ggkmcif2
+This section documents the additional parameters for \link{ggkmcif2}.
 }
+\keyword{internal}

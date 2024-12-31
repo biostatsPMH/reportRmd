@@ -33,6 +33,6 @@ m1 <- crrRx(as.formula('ftime+fstatus~x1+x2+x3'),df)
 rm_mvsum(m1,data=df,showN = TRUE,vif=TRUE)
 }
 \seealso{
-\code{\link{crr}}
+\code{\link[cmprsk:crr]{cmprsk::crr}}
 }
 \keyword{model}

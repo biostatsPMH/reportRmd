@@ -17,6 +17,7 @@ To change or remove individual labels use set_labels or set_var_labels
 }
 \examples{
 # Set a few variable labels for ctDNA
+data("ctDNA")
 ctDNA <- ctDNA |> set_var_labels(
    ctdna_status="detectable ctDNA",
   cohort="A cohort label")

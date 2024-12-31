@@ -70,7 +70,8 @@ table. Can only be obtained if pvalue is also requested. Effect sizes
 calculated include Cramer's V for categorical variables, Cohen's d,
 Wilcoxon r, or Eta-squared for numeric/continuous variables.}
 
-\item{p.adjust}{p-adjustments to be performed}
+\item{p.adjust}{p-adjustments to be performed. Uses the
+\link{p.adjust} function from base R}
 
 \item{unformattedp}{boolean indicating if you would like the p-value to be
 returned unformatted (ie not rounded or prefixed with '<'). Best used with
@@ -130,6 +131,9 @@ Effect size can be obtained when p-value is requested.
 
 Further formatting options are available using tableOnly=TRUE and outputting
 the table with a call to outTable.
+
+A newer version of this function is \link{rm_compactsum} which is more
+flexible and displays few rows of output.
 }
 \examples{
 data("pembrolizumab")
@@ -166,7 +170,7 @@ Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
 \seealso{
 \code{\link{covsum}},\code{\link{fisher.test}},
 \code{\link{chisq.test}}, \code{\link{wilcox.test}},
-\code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link{cramer_v}},
-\code{\link{eta_squared}}, and \code{\link{outTable}}
+\code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link[rstatix:cramer_v]{rstatix::cramer_v}},
+\code{\link[rstatix:eta_squared]{rstatix:eta_squared}}, and \code{\link{outTable}}
 }
 \keyword{dataframe}
