@@ -46,6 +46,11 @@ for (f in grep('_var',sheets,value=T)){
     datafile <- datafile %>%
     select(all_of(var_info$Variable))
 
+    # Change all character variables to factors
+    for (v in setdiff(names(datafile),'id')){
+      if ('character' %in% class(datafile[[v]]))  datafile[[v]] <- factor(datafile[[v]])
+    }
+
   # Ensure all variable names are in lowercase
   # & that spaces are converted to '_'
   names(datafile) <- tolower(names(datafile))
@@ -53,8 +58,13 @@ for (f in grep('_var',sheets,value=T)){
   var_info$Variable <- tolower(var_info$Variable)
   var_info$Variable <- gsub(' ','_',var_info$Variable)
 
+  # Add labels to the data
+  var_info <- var_info %>%
+    mutate(Description = gsub("[:].*","",Description))
+  datafile <- datafile |>
+    set_labels(var_info)
 
-  # Write the Documentation File
+    # Write the Documentation File
   sink('R/data.R',append = !(f==grep('_var',sheets,value=T)[1]))
   cat("#' ",description,'\n')
   cat("#' ",'\n')
@@ -76,14 +86,6 @@ for (f in grep('_var',sheets,value=T)){
   # Close the data documentation file
   sink()
 
-  # Change all character variables to factors
-  for (v in setdiff(names(datafile),'id')){
-      if ('character' %in% class(datafile[[v]]))  datafile[[v]] <- factor(datafile[[v]])
-  }
-
-  # Remove missing values
-#  datafile <- na.omit(datafile)
-
   # Output the Data
   eval(parse(text = paste(name,' <- datafile')))
   eval(parse(text = paste0("usethis::use_data(",name,", overwrite = TRUE)")))
@@ -92,7 +94,7 @@ for (f in grep('_var',sheets,value=T)){
 
 # Package System Data --------------------
 uvmodels <- readxl::read_excel('data-raw/uvmodels.xlsx')
-usethis::use_data(uvmodels,internal = TRUE)
+usethis::use_data(uvmodels,internal = TRUE,overwrite = TRUE)
 
 ## add documentation
 sink('R/data.R',append = TRUE)

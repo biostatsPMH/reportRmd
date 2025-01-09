@@ -12,7 +12,7 @@ A data frame with 94 rows and 15 variables:
 \item{id}{Patient ID}
 \item{age}{Age at study entry}
 \item{sex}{Patient Sex}
-\item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
+\item{cohort}{Study Cohort}
 \item{l_size}{Target lesion size at baseline}
 \item{pdl1}{PD L1 percent}
 \item{tmb}{log of TMB}
@@ -20,9 +20,9 @@ A data frame with 94 rows and 15 variables:
 \item{change_ctdna_group}{Did ctDNA increase or decrease from baseline to cycle 3}
 \item{orr}{Objective Response}
 \item{cbr}{Clinical Beneficial Response}
-\item{os_status}{Overall survival status, 0 = alive, 1 = deceased}
+\item{os_status}{Overall survival status}
 \item{os_time}{Overall survival time in months}
-\item{pfs_status}{Progression free survival status, 0 = progression free, 1 = progressed}
+\item{pfs_status}{Progression free survival status}
 \item{pfs_time}{Progression free survival time in months}
 }
 }

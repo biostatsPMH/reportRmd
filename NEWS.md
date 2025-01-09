@@ -6,6 +6,7 @@
 - new function to apply variable labels to ggplots (replace_plot_labels)
 - more comprehensive model summary function to allow plot extensions
 - incorporated tidyselect into main summary functions
+- support for tidycmprsk models
 
 ## Minor improvements and fixes
 

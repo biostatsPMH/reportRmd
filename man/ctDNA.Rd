@@ -10,7 +10,7 @@ Longitudinal changes in tumour size since baseline for patients by changes in ct
 A data frame with 270 rows and 5 variables:
 \describe{
 \item{id}{Patient ID}
-\item{cohort}{Study Cohort: A = Squamous cell carcinoma of soft pallate, B = Triple negative breast cancer, C = Ovarian, high grade serous, D = Melanoma, E = Other Solid Tumor}
+\item{cohort}{Study Cohort}
 \item{ctdna_status}{Change in ctDNA since baseline}
 \item{time}{Number of weeks on treatment}
 \item{size_change}{Percentage change in tumour measurement}

@@ -6,6 +6,10 @@ mterms.default <- function(model){
                                    names(model$coefficients),ignore.case = T)]
 }
 
+mterms.tidycrr <- function(model){
+  model$tidy$term
+}
+
 mterms.lmerModLmerTest <- function(model){
   if (requireNamespace("nlme", quietly = TRUE)) {
   names(nlme::fixef(model))[!grepl("intercept",
@@ -18,6 +22,7 @@ getVarLevels <- function(model){
   nt <- function(str) length(strsplit(str,":")[[1]])-1
   vrs<-try(attr(model$terms,"term.labels"),silent = T)
   if (inherits(vrs,"try-error"))  vrs<-try(attr(terms(model),"term.labels"))
+  if (is.null(vrs) &inherits(model,"tidycrr")) vrs <- try(names(model$blueprint$ptypes$predictors))
   if (inherits(vrs,"try-error")) stop("Model terms could not be found.")
   if (any(sapply(vrs,nt)>1)) stop("Summary functions will not work with three-way interactions.")
   terms <- mterms(model)

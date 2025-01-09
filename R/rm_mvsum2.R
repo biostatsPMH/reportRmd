@@ -79,8 +79,9 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 
   if (!missing(data)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(data)")
   if (!missing(chunk_label)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(chunk_label)")
-  if (any(is.na(model$coefficients))) stop(paste0('rm_mvsum cannot run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
-                                                  paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
+  model_coef <- get_model_coef(model)
+  if (any(is.na(model_coef))) stop(paste0('rm_mvsum cannot run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
+                                                  paste(names(model_coef)[is.na(model_coef)],collapse = ", "),
                                                   "\nPlease re-fit a valid model prior to reporting. Do you need to run droplevels?"))
   # get the table
   tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
@@ -118,7 +119,12 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 
   if (nicenames){
     attr(tab,"termnames") <- tab$Variable
-    tab$Variable <- replaceLbl(model$call[["data"]], tab$Variable)
+    md <- try(get_model_data(model))
+    if (inherits(md, "try-error")) {
+      warning("Unable to extract data from model, using variable names")
+    } else {
+      tab$Variable <- replaceLbl(md, tab$Variable)
+    }
   }
 
   names(tab)[1] <- covTitle

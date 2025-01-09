@@ -1,12 +1,12 @@
 #'Output a compact summary table
 #'
-#'Returns a data frame corresponding to a descriptive table.
+#'Outputs a table formatted for pdf, word or html output with summary statistics
 #'
 #'Comparisons for categorical variables default to chi-square tests, but if
 #'there are counts of <5 then the Fisher Exact test will be used. For grouping
 #'variables with two levels, either t-tests (mean) or wilcoxon tests (median)
-#'will be used for numerical variables. Otherwise, ANOVA (mean) or kruskal-
-#'wallis tests will be used. The statistical test used can be displayed by
+#'will be used for numerical variables. Otherwise, ANOVA (mean) or Kruskal-
+#'Wallis tests will be used. The statistical test used can be displayed by
 #'specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 #'or xvars with less than 2 counts in any level will not be shown.
 #'
@@ -14,10 +14,12 @@
 #'variable is summarised with the mean, otherwise Wilcoxon R if summarised with
 #'a median. Cramer's V is used for categorical variables, omega is used for
 #'differences in means among more than two groups and epsilon for differences in
-#'medians among more than two groups.
+#'medians among more than two groups. Confidence intervals are calculated using
+#'bootstrapping.
 #'
-#'tidyselect can only be used for xvars and grp variables. Additional arguments
-#'must be passed in using characters
+#'tidyselect can only be used for xvars and grp arguments. Additional arguments
+#'(digits, use_mean) must be passed in using characters if variable names are
+#'used.
 #'
 #'@param data dataframe containing data
 #'@param xvars character vector with the names of covariates to include in table
@@ -34,10 +36,9 @@
 #'  The default is to leave this empty for output or, for table only output to
 #'  use the column name 'Covariate'
 #'@param digits numeric specifying the number of digits for summarizing mean
-#'  data. Otherwise, can specify for individual covariates using a vector of
-#'  digits where each element is named using the covariate name. If a covariate
-#'  is not in the vector the default will be used for it (default is 1). See
-#'  examples
+#'  data. Digits can be specified for individual variables using a named vector
+#'  in the format digits=c("var1"=2,"var2"=3). If a variable is not in the
+#'  vector the default will be used for it (default is 1). See examples
 #'@param digits.cat numeric specifying the number of digits for the proportions
 #'  when summarizing categorical data (default is 0)
 #'@param nicenames logical indicating if you want to replace . and _ in strings
@@ -91,8 +92,7 @@
 #'  57(3), 579-594.
 #'@references FRITZ, C. O., MORRIS, P. E., & RICHLER, J. J. (2012). Effect Size
 #'  Estimates: Current Use, Calculations, and Interpretation. Journal of
-#'  Experimental Psychology. General, 141(1), 2–18.
-#'  \doi{10.1037/a0024338}
+#'  Experimental Psychology. General, 141(1), 2–18. \doi{10.1037/a0024338}
 #'
 #' @examples
 #' data("pembrolizumab")
@@ -138,10 +138,11 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   else {
     grouping_var <- NULL
   }
+  if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
+
   if (all.stats) {
     use_mean <- FALSE
   }
-  if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
 
   missing_vars = setdiff(c(grouping_var,x_vars), names(data))
   if (length(missing_vars) > 0) {
@@ -170,7 +171,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       warning("Small sample size in '", grouping_var, "' group may lead to unstable effect sizes.")
     }
   }
-
   if (missing(use_mean)) {
     use_mean <- FALSE
   } else {
@@ -410,8 +410,8 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     #   show.tests <- FALSE
     # }
     if (pvalue | effSize | show.tests) {
-      if (!any(chi.test.rm(cont_table)$expected < 5)) {
-        chisq_test <- chi.test.rm(cont_table)
+      if (!any(chi_test_rm(cont_table)$expected < 5)) {
+        chisq_test <- chi_test_rm(cont_table)
         df[1, "p-value"] <- chisq_test$p.value
         if (effSize) {
           output <- calc_CramerV(chisq_test)
@@ -429,8 +429,8 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-      else if (any(chi.test.rm(cont_table)$expected < 5)) {
-        fisher_test <- fisher.test.rm(cont_table)
+      else if (any(chi_test_rm(cont_table)$expected < 5)) {
+        fisher_test <- fisher_test_rm(cont_table)
         df[1, "p-value"] <-fisher_test$p.value
         if (effSize) {
           output <- calc_CramerV(fisher_test)
@@ -488,7 +488,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
     # }
     if (pvalue | effSize | show.tests) {
       if (length(unique(no_na_data$group_var)) == 2) {
-        t_test <- t.test.rm(x_var, group_var)
+        t_test <- t_test_rm(x_var, group_var)
         df[, "p-value"] <- t_test$p.value
         N <- nrow(data)
         if (effSize) {
@@ -601,7 +601,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     no_na_tab <- table(no_na[[grp]])
     if (pvalue | effSize | show.tests) {
       if (length(unique(no_na_data$group_var)) == 2) {
-        wilcox_test <- wilcox.test.rm(x_var, group_var)
+        wilcox_test <- wilcox_test_rm(x_var, group_var)
         df[1, "p-value"] <- wilcox_test$p.value
         if (effSize) {
           output <- calc_WilcoxonR(wilcox_test)
@@ -620,7 +620,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
         }
       }
       else if (length(unique(no_na_data$group_var)) > 2) {
-        kruskal_test <- kruskal.test.rm(x_var, group_var)
+        kruskal_test <- kruskal_test_rm(x_var, group_var)
         df[1, "p-value"] <- kruskal_test$p.value
         if (effSize) {
           output <- calc_epsilonSq(kruskal_test)
@@ -700,8 +700,8 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
     #   show.tests <- FALSE
     # }
     if (pvalue | effSize | show.tests) {
-      if (!any(chi.test.rm(cont_table)$expected < 5)) {
-        chisq_test <- chi.test.rm(cont_table)
+      if (!any(chi_test_rm(cont_table)$expected < 5)) {
+        chisq_test <- chi_test_rm(cont_table)
         df[1, "p-value"] <- chisq_test$p.value
         if (effSize) {
           output <- calc_CramerV(chisq_test)
@@ -719,8 +719,8 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-      else if (any(chi.test.rm(cont_table)$expected < 5)) {
-        fisher_test <- fisher.test.rm(cont_table)
+      else if (any(chi_test_rm(cont_table)$expected < 5)) {
+        fisher_test <- fisher_test_rm(cont_table)
         df[1, "p-value"] <- fisher_test$p.value
         if (effSize) {
           output <- calc_CramerV(fisher_test)
@@ -808,8 +808,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
       show.tests <- FALSE
     }
     if (pvalue | effSize | show.tests) {
-      if (!any(chi.test.rm(cont_table)$expected < 5)) {
-        chisq_test <- chi.test.rm(cont_table)
+      if (!any(chi_test_rm(cont_table)$expected < 5)) {
+        chisq_test <- chi_test_rm(cont_table)
         df[1, "p-value"] <- chisq_test$p.value
         if (effSize) {
           output <- calc_CramerV(chisq_test)
@@ -827,8 +827,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
           df[1, "effStat"] <- "Cramer's V"
         }
       }
-      else if (any(chi.test.rm(cont_table)$expected < 5)) {
-        fisher_test <- fisher.test.rm(cont_table)
+      else if (any(chi_test_rm(cont_table)$expected < 5)) {
+        fisher_test <- fisher_test_rm(cont_table)
         df[1, "p-value"] <-fisher_test$p.value
         if (effSize) {
           output <- calc_CramerV(fisher_test)
@@ -915,7 +915,7 @@ delta_CI <- function(htest,CIwidth=0.95){
       class(htest) <- c(class(htest),"rm_t")
     } else if (grepl("Fisher",htest$method)) {
       class(htest) <- c(class(htest),"rm_chi")
-    }}  else stop("htest must be the output of a call to t.test, chisq.test, kruskal.test, aov or fisher.test.rm")
+    }}  else stop("htest must be the output of a call to t.test, chisq.test, kruskal.test, aov or fisher_test_rm")
   dL <- delta_l(htest,CIwidth)
   dU <- delta_u(htest,CIwidth)
   ci <- c(dL,dU)
@@ -1085,7 +1085,7 @@ uncorrectedChi <- function(x) {
   return(stats::chisq.test(x$observed,correct = FALSE))
 }
 
-fisher.test.rm <- function(x,...){
+fisher_test_rm <- function(x,...){
   chi.out <- suppressWarnings(stats::chisq.test(x,...))
   rtn <- try(stats::fisher.test(x,...),silent=T)
   if (inherits(rtn,"try-error")){
@@ -1103,19 +1103,19 @@ fisher.test.rm <- function(x,...){
   rtn$k <- min(dim(chi.out$observed), na.rm = TRUE)
   rtn$N <- sum(chi.out$observed)
   rtn$method <- paste(rtn$method,"with additional chisq.test arguments")
-  class(rtn) <- c(class(rtn),"fisher.test.rm")
+  class(rtn) <- c(class(rtn),"fisher_test_rm")
   return(rtn)
 }
 
-chi.test.rm <- function(x,...){
+chi_test_rm <- function(x,...){
   chi_test <- suppressWarnings(stats::chisq.test(x,...))
   chi_test$k <- min(dim(chi_test$observed), na.rm = TRUE)
   chi_test$N <- sum(chi_test$observed)
-  class(chi_test) <- c(class(chi_test),"chi.test.rm")
+  class(chi_test) <- c(class(chi_test),"chi_test_rm")
   return(chi_test)
 }
 
-t.test.rm <- function(xvar,grp){
+t_test_rm <- function(xvar,grp){
   t_test <- stats::t.test(xvar~grp)
   n <- unlist(lapply(levels(grp),function(g){
     length(na.omit(xvar[grp==g]))
@@ -1124,11 +1124,11 @@ t.test.rm <- function(xvar,grp){
   t_test$n <- n
   t_test$xvar <- xvar
   t_test$grp <- grp
-  class(t_test) <- c(class(t_test),"t.test.rm")
+  class(t_test) <- c(class(t_test),"t_test_rm")
   return(t_test)
 }
 
-wilcox.test.rm <- function(xvar,grp){
+wilcox_test_rm <- function(xvar,grp){
   xg <- na.omit(cbind(xvar,grp))
   x <- xg[xg[,2]==1,1]
   y <- xg[xg[,2]==2,1]
@@ -1151,17 +1151,17 @@ wilcox.test.rm <- function(xvar,grp){
   wilcox_test$parameter=1
   wilcox_test$xvar <- xvar
   wilcox_test$grp <- grp
-  class(wilcox_test) <- c(class(wilcox_test),"wilcox.test.rm")
+  class(wilcox_test) <- c(class(wilcox_test),"wilcox_test_rm")
   return(wilcox_test)
 }
 
-kruskal.test.rm <- function(xvar,grp){
+kruskal_test_rm <- function(xvar,grp){
   kruskal_test <- stats::kruskal.test(xvar~grp)
   n <- length(na.omit(xvar))
   kruskal_test$n <- n
   kruskal_test$xvar <- xvar
   kruskal_test$grp <- grp
-  class(kruskal_test) <- c(class(kruskal_test),"kruskal.test.rm")
+  class(kruskal_test) <- c(class(kruskal_test),"kruskal_test_rm")
   return(kruskal_test)
 }
 
@@ -1186,7 +1186,7 @@ chi_toCramer <- function(chisq_test){
 }
 
 t_toCohen <-function(t_test){
-  if (!inherits(t_test,"t.test.rm")) stop("t_test must be a function returned from t.test.rm")
+  if (!inherits(t_test,"t_test_rm")) stop("t_test must be a function returned from t_test_rm")
   n1 <- t_test$n[1]
   n2 <- t_test$n[2]
   cohen=abs(t_test$statistic*sqrt((n1+n2)/(n1*n2)))
@@ -1231,7 +1231,7 @@ calc_CramerV <- function(chisq_test, CIwidth = 0.95) {
 
   bs_cramer <- function(data,indices){
     dt <- data[indices,]
-    new_chi <- chi.test.rm(dt[[1]],df[[2]])
+    new_chi <- chi_test_rm(dt[[1]],df[[2]])
 
     chi_toCramer(new_chi)
   }
@@ -1247,7 +1247,7 @@ calc_cohenD <- function(t_test, CIwidth = 0.95) {
 
   bs_cohen <- function(data,indices){
     dt <- data[indices,]
-    new_t <- tryCatch(t.test.rm(dt$xvar,dt$grp))
+    new_t <- tryCatch(t_test_rm(dt$xvar,dt$grp))
     t_toCohen(new_t)
   }
 
@@ -1263,7 +1263,7 @@ calc_WilcoxonR <- function(wilcox_test, CIwidth = 0.95) {
 
   bs_r <- function(data,indices){
     dt <- data[indices,]
-    new_wilcox <- wilcox.test.rm(dt$xvar, dt$grp)
+    new_wilcox <- wilcox_test_rm(dt$xvar, dt$grp)
     wilcox_effSize(new_wilcox)
   }
   b_r <- boot::boot(df,bs_r,R=1000)
@@ -1278,7 +1278,7 @@ calc_epsilonSq <- function(kruskal_test, CIwidth = 0.95) {
 
   bs_epsilon <- function(data,indices){
     dt <- data[indices,]
-    new_kruskal <- kruskal.test.rm(dt$xvar,dt$grp)
+    new_kruskal <- kruskal_test_rm(dt$xvar,dt$grp)
 
     chi_toEpsilonSq(new_kruskal)
   }

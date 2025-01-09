@@ -21,6 +21,7 @@ Description: Streamlined statistical reporting in 'Rmarkdown' environments.
 License: MIT + file LICENSE
 Suggests: 
     nlme,
+    tidycmprsk,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

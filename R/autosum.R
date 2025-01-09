@@ -74,13 +74,13 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   terms <- NULL
   if (vif){
     VIF <- try(GVIF(model),silent = TRUE)
-    if (!inherits(VIF,"try-error")){
+    if (inherits(VIF,"try-error") || all(is.infinite(VIF$VIF)) || all(is.na(VIF$VIF))){
+      message("Variance inflation factor can not be calculated")
+      vif <- FALSE
+    } else {
       names(VIF)[1] <- "terms"
       VIF$VIF <- round(VIF$VIF,digits)
       cs <- suppressMessages(dplyr::full_join(cs,VIF, by = dplyr::join_by(terms)))
-    } else {
-      message("Variance inflation factor can not be calculated")
-      vif <- FALSE
     }
   }
 
@@ -88,7 +88,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
     global_p <- gp(model)
     if (!all(is.na(global_p))){
       colnames(global_p) <- c("terms", "global_p")
-      cs <- suppressMessages(dplyr::full_join(cs,global_p, by = dplyr::join_by(terms)))
+      cs <- suppressMessages(dplyr::left_join(cs,global_p, by = dplyr::join_by(terms)))
     }
   }
 
@@ -307,6 +307,19 @@ coeffSum.crrRx <- function(model,CIwidth=.95,digits=2) {
   return(cs)
 }
 
+coeffSum.tidycrr <- function(model,CIwidth=.95,digits=2) {
+  ms <- model$tidy
+  Z_mult = qnorm(1 - (1 - CIwidth)/2)
+  cs <- data.frame(terms=ms$term,
+                   est=exp(ms$estimate),
+                   lwr=exp(ms$estimate-Z_mult*ms$std.error),
+                   upr=exp(ms$estimate+Z_mult*ms$std.error),
+                   p_value = ms$p.value)
+
+  attr(cs,'estLabel') <- betaWithCI("HR",CIwidth)
+  return(cs)
+}
+
 coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
   ci <- exp(as.data.frame(confint(model,level = CIwidth)))
@@ -404,6 +417,18 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
   return(cs)
 }
 
+# Extract coefficients from a fitted model ---------------
+get_model_coef <- function(model){
+  UseMethod("get_model_coef", model)
+}
+
+get_model_coef.default <- function(model){
+  return(model$coefficients)
+}
+
+get_model_coef.tidycrr <- function(model){
+  return(model$coefs)
+}
 
 # Extract data from a fitted model ---------------
 get_model_data <- function(model){
@@ -427,6 +452,9 @@ get_model_data.lmerModLmerTest <- function(model){
 }
 get_model_data.crrRx <- function(model){
   return(model$model)
+}
+get_model_data.tidycrr <- function(model){
+  return(model$data)
 }
 get_model_data.polr <- function(model){
   return(model$model)
@@ -469,6 +497,13 @@ get_event_counts.crrRx <- function(model){
   if (is.null(md)) return(NULL)
   return(md[[2]])
 }
+get_event_counts.tidycrr <- function(model){
+  md <- get_model_data(model)
+  if (is.null(md)) return(NULL)
+  stat_var <- names(model$blueprint$ptypes$outcomes)[2]
+  return(as.numeric(md[[stat_var]])-1)
+}
+
 get_event_counts.glm <- function(model){
   if (model$family$family=="binomial"|model$family$family=="quasibinomial"){
     return(model$y)
@@ -536,8 +571,8 @@ gp.coxph <- function(model,CIwidth=.95,digits=2) {
 
 gp.crrRx <- function(model,CIwidth=.95,digits=2) {
   m2 <- NULL
-  terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
-  terms <- sapply(terms,trimws)
+  # terms <- strsplit(trimws(gsub(".*~","", deparse(model$call[[1]]))),"[+]")[[1]]
+  # terms <- sapply(terms,trimws)
   terms <- attr(model$terms,"term.labels")
   gp_vals <- data.frame(var=terms,
                         global_p = NA)
@@ -557,6 +592,37 @@ gp.crrRx <- function(model,CIwidth=.95,digits=2) {
       attr(gp_vals,"global_p") <-"LRT"
     }}
   return(gp_vals)
+}
+
+gp.tidycrr <- function(model,CIwidth=.95,digits=2) {
+  terms <- names(model$blueprint$ptypes$predictors)
+  gp_vals <- data.frame(var=terms,
+                        global_p = NA)
+  rownames(gp_vals) <- NULL
+  if (requireNamespace("tidycmprsk", quietly = TRUE)) {
+    m2 <- NULL
+    md <- get_model_data(model)
+    mf <- deparse(model$formula)
+    lhs <- gsub("~.*","",mf)
+    if (length(terms)>1){
+      for (t in terms){
+        if (length(setdiff(terms,t))>0) x <- setdiff(terms,t) else x <- "1"
+        eval(parse(text = paste('m2 <-try(tidycmprsk::crr(',lhs,
+                                                        "~", x,
+                                ',data = md))')))
+
+        if (!inherits(m2,"try-error")) {
+          degf <- length(grep(t,names(model$coef)))
+          gp <- pchisq(2*(model$cmprsk$loglik-m2$cmprsk$loglik),degf)
+        } else gp <- NA
+        gp_vals$global_p[which(gp_vals$var==t)] <- gp
+        attr(gp_vals,"global_p") <-"LRT"
+      }}
+    return(gp_vals)
+  } else {
+    message("tidycmprsk package not installed. Global p values could not be evaluated.")
+    return(gp_vals)
+  }
 }
 
 gp.glm <- function(model,CIwidth=.95,digits=2) {

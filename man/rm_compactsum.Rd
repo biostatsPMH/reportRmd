@@ -50,10 +50,9 @@ The default is to leave this empty for output or, for table only output to
 use the column name 'Covariate'}
 
 \item{digits}{numeric specifying the number of digits for summarizing mean
-data. Otherwise, can specify for individual covariates using a vector of
-digits where each element is named using the covariate name. If a covariate
-is not in the vector the default will be used for it (default is 1). See
-examples}
+data. Digits can be specified for individual variables using a named vector
+in the format digits=c("var1"=2,"var2"=3). If a variable is not in the
+vector the default will be used for it (default is 1). See examples}
 
 \item{digits.cat}{numeric specifying the number of digits for the proportions
 when summarizing categorical data (default is 0)}
@@ -105,14 +104,14 @@ applicable, the types of statistical tests used will be included. If effSize
 }
 }
 \description{
-Returns a data frame corresponding to a descriptive table.
+Outputs a table formatted for pdf, word or html output with summary statistics
 }
 \details{
 Comparisons for categorical variables default to chi-square tests, but if
 there are counts of <5 then the Fisher Exact test will be used. For grouping
 variables with two levels, either t-tests (mean) or wilcoxon tests (median)
-will be used for numerical variables. Otherwise, ANOVA (mean) or kruskal-
-wallis tests will be used. The statistical test used can be displayed by
+will be used for numerical variables. Otherwise, ANOVA (mean) or Kruskal-
+Wallis tests will be used. The statistical test used can be displayed by
 specifying show.tests = TRUE. Statistical tests and effect sizes for grp and/
 or xvars with less than 2 counts in any level will not be shown.
 
@@ -120,10 +119,12 @@ Effect sizes are calculated as Cohen d for between group differences if the
 variable is summarised with the mean, otherwise Wilcoxon R if summarised with
 a median. Cramer's V is used for categorical variables, omega is used for
 differences in means among more than two groups and epsilon for differences in
-medians among more than two groups.
+medians among more than two groups. Confidence intervals are calculated using
+bootstrapping.
 
-tidyselect can only be used for xvars and grp variables. Additional arguments
-must be passed in using characters
+tidyselect can only be used for xvars and grp arguments. Additional arguments
+(digits, use_mean) must be passed in using characters if variable names are
+used.
 }
 \examples{
 data("pembrolizumab")
@@ -174,6 +175,5 @@ comparing K samples subject to unequal patterns of censorship. Biometrika,
 
 FRITZ, C. O., MORRIS, P. E., & RICHLER, J. J. (2012). Effect Size
 Estimates: Current Use, Calculations, and Interpretation. Journal of
-Experimental Psychology. General, 141(1), 2–18.
-\doi{10.1037/a0024338}
+Experimental Psychology. General, 141(1), 2–18. \doi{10.1037/a0024338}
 }

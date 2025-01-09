@@ -7,8 +7,10 @@ uv_lm <- lm(age~sex,data=pembrolizumab)
 coeffSum(uv_lm)
 getVarLevels(uv_lm)
 m_summary(uv_lm)
+rm_mvsum(uv_lm)
 
 auto_lm <- autoreg.rm_lm("age",data=pembrolizumab,"sex")
+rm_mvsum(auto_lm)
 coeffSum(auto_lm)
 getVarLevels(auto_lm)
 m_summary(auto_lm)
@@ -19,6 +21,7 @@ coeffSum(mv_lm)
 getVarLevels(mv_lm)
 m_summary(mv_lm)
 mv_lm2 <- lm(pdl1 ~ age*sex+sex*cohort+age*l_size,data = pembrolizumab)
+rm_mvsum(mv_lm2)
 gp(mv_lm2)
 coeffSum(mv_lm2)
 getVarLevels(mv_lm2)
@@ -73,6 +76,7 @@ gp(mv_pois)
 coeffSum(mv_pois)
 getVarLevels(mv_pois)
 m_summary(mv_pois)
+rm_mvsum(mv_pois)
 
 mv_pois2 <-glm(formula = int_var ~ age+sex:cohort, family = poisson, data = pembrolizumab)
 gp(mv_pois2)
@@ -88,6 +92,7 @@ uv_negbin <- MASS::glm.nb(formula=as.formula(int_var~sex),data=pembrolizumab)
 coeffSum(uv_negbin)
 getVarLevels(uv_negbin)
 m_summary(uv_negbin)
+rm_mvsum(uv_negbin)
 
 auto_negbin <- autoreg.rm_negbin("int_var",data=pembrolizumab,"sex",offset=NULL)
 coeffSum(auto_negbin)
@@ -115,7 +120,8 @@ pembrolizumab$ord_var <- factor(ifelse(pembrolizumab$int_var>2,2,pembrolizumab$i
 uv_ord <- MASS::polr(formula=as.formula(ord_var~sex),data=pembrolizumab)
 coeffSum(uv_ord)
 getVarLevels(uv_ord)
-m_summary(uv_ord)
+rm_mvsum(uv_ord)
+model = uv_ord
 
 auto_ord <- autoreg.rm_ordinal("ord_var",data=pembrolizumab, "sex")
 coeffSum(auto_ord)
@@ -157,6 +163,7 @@ gp(mv_cox)
 coeffSum(mv_cox)
 getVarLevels(mv_cox)
 m_summary(mv_cox)
+rm_mvsum(mv_cox)
 
 mv_cox2 <- survival::coxph(Surv(os_time,os_status) ~ age:sex+cohort, data = pembrolizumab)
 gp(mv_cox2)
@@ -186,6 +193,7 @@ getVarLevels(auto_crr)
 m_summary(auto_crr)
 
 mv_crr <-crrRx(as.formula('os_time+os_status2~age+sex+cohort'),data=pembrolizumab)
+get_event_counts(mv_crr)
 gp(mv_crr)
 coeffSum(mv_crr)
 getVarLevels(mv_crr)
@@ -197,10 +205,18 @@ gp(mv_crr2)
 coeffSum(mv_crr2)
 getVarLevels(mv_crr2)
 m_summary(mv_crr2)
-rm_mvsum2(mv_crr2,whichp = "both")
+rm_mvsum(mv_crr2,whichp = "both")
 
 uvsum_crr <- rm_uvsum(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
 uvsum2_crr <- rm_uvsum2(response=c("os_time","os_status2"), covs = c("age", "sex", "cohort"), data = pembrolizumab)
+
+### Tidy cmprsk -----------------
+model <- tidycmprsk::crr(Surv(ttdeath, death_cr) ~ age + grade, trial)
+pembrolizumab$os_status3 <- factor(pembrolizumab$os_status2)
+model <- tidycmprsk::crr(Surv(os_time, os_status3) ~ cohort, pembrolizumab)
+rm_mvsum(model)
+model <- tidycmprsk::crr(Surv(os_time, os_status3) ~ age*sex+age:cohort, pembrolizumab)
+m_summary(model)
 
 # GEE ---------------
 pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
@@ -208,6 +224,7 @@ pembrolizumab$orr2 <- ifelse(pembrolizumab$orr=="CR/PR",1,0)
 mv_gee2 <- geepack::geeglm(orr2 ~ age:sex+cohort, family = binomial,
                           data = pembrolizumab,
                           id = pembrolizumab$id, corstr = "independence")
+rm_mvsum(mv_gee2)
 gp(mv_gee2)
 coeffSum(mv_gee2)
 getVarLevels(mv_gee2)
@@ -663,3 +680,5 @@ call_str_vc <- as.character(model$call)
 # Count the number of commas
 num_commas <- length(unlist(gregexpr(",", call_str)))
 offset_str <- call_str_vc[num_commas+2]
+
+
