@@ -304,6 +304,15 @@ nestTable(rbind(cohortA,cohortE),head_col = 'Cohort',to_col = 'Covariate')
 
 ```
 
+# Scrollable Tables
+
+If you are rendering to html format you can use the `scrollTable` function to create a scrollable table. This is useful for tables with many rows. If the output format is not html then a regular table will be displayed.
+
+```{r}
+long_table <- rm_compactsum(data=pembrolizumab,xvars = c(age,sex,cohort,pdl1,tmb,baseline_ctdna,change_ctdna_group,orr,cbr))
+scrolling_table(long_table,pixelHeight = 300)
+```
+
 \newpage
 
 # Simple Survival Summaries

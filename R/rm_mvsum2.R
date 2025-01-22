@@ -14,8 +14,12 @@
 #'If the variance inflation factor is requested (VIF=T, default) then a
 #'generalised VIF will be calculated in the same manner as the car package.
 #'
-#'As of R 4.4.0 profile likelihood confidence intervals will be calculated
-#'automatically and there is no longer an option to force Wald tests.
+#'As of version 0.1.1 if global p-values are requested they will be included in
+#'the p-value column.
+#'
+#' As of R 4.4.0 profile likelihood confidence intervals will
+#'be calculated automatically and there is no longer an option to force Wald
+#'tests.
 #'
 #'The number of decimals places to display the statistics can be changed with
 #'digits, but this will not change the display of p-values. If more significant
@@ -106,6 +110,7 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
   if (!unformattedp) {
     tab[["p-value"]] <- formatp(tab[["p-value"]])
+    if ("Global p-value" %in% names(tab)) tab[["Global p-value"]] <- formatp(tab[["Global p-value"]])
   }
 
   # changing UB to Inf, LB to 0

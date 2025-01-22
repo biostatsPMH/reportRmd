@@ -11,6 +11,9 @@
 #'presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #'Wald global p-values are returned.
 #'
+#'As of version 0.1.1 if global p-values are requested they will be included in
+#'the p-value column.
+#'
 #'The number of decimals places to display the statistics can be changed with
 #'digits, but this will not change the display of p-values. If more significant
 #'digits are required for p-values then use tableOnly=TRUE and format as
@@ -145,8 +148,8 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (!all(response %in% names(data))) stop("response is not a variable in data")
   if (!all(covs %in% names(data))) stop(paste("The following covs not found in data:",setdiff(covs,names(data))))
 
-  fun <- get(match.call()[[1]])
   argList <- as.list(match.call()[-1])
+
   whichp <- match.arg(whichp)
   # checks for id and type
   if (!is.null(id) & (length(id) != 1)) {
@@ -160,7 +163,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     args <- list(strata = strata, type = type, offset = offset, id = id)
     empty <- names(args)[which(args == "")]
     for (var in empty) {
-      assign(var, formals(fun)[[var]])
+      assign(var, formals()[[var]])
     }
     warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
   }
@@ -172,12 +175,12 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
                                            paste0(missing_vars,collapse=csep())))
   if (is.null(strata)) {
-    strata <- formals(fun)[["strata"]]
-    argList[["strata"]] <- formals(fun)[["strata"]]
+    strata <- formals()[["strata"]]
+    argList[["strata"]] <- formals()[["strata"]]
   }
   if (is.na(strata)) {
-    strata <- formals(fun)[["strata"]]
-    argList[["strata"]] <- formals(fun)[["strata"]]
+    strata <- formals()[["strata"]]
+    argList[["strata"]] <- formals()[["strata"]]
   }
   if (strata==1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
@@ -222,7 +225,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     }
   }
   if (is.null(strata))
-  if (is.na(strata)) assign(argList[["strata"]], formals(fun)[["strata"]])
+  if (is.na(strata)) assign(argList[["strata"]], formals()[["strata"]])
 
   # remove arguments not used by uvsum2
   argList$unformattedp <- NULL
@@ -240,6 +243,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
   if (!unformattedp) {
     tab[["p-value"]] <- formatp(tab[["p-value"]])
+    if ("Global p-value" %in% names(tab)) tab[["Global p-value"]] <- formatp(tab[["Global p-value"]])
   }
 
   # changing UB to Inf, LB to 0
@@ -254,7 +258,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   names(tab)[1] <- covTitle
   lbl <- tab[, 1]
   if (nicenames) {
-    tab[, 1] <- replaceLbl(argList$data, lbl)
+    tab[, 1] <- replaceLbl(data, lbl)
   }
   argL <- list(tab=tab, digits = digits,
                to_indent=to_indent,bold_cells=bold_cells,
@@ -420,7 +424,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   summaryList <- NULL
   summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp=whichp, for_plot = FALSE)
   summaryList <- dplyr::bind_rows(summaryList)
-
   if (!showN) {
     summaryList[["N"]] <- NULL
   }

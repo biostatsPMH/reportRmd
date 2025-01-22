@@ -133,22 +133,23 @@ rm_compactsum(data = pembrolizumab, xvars = c("age",
 digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
 show.tests = TRUE)
 
-# Include the summary statistic in the variable column
-rm_compactsum(data = pembrolizumab, xvars = c("age",
-"change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
+# Other Examples (not run)
+## Include the summary statistic in the variable column
+#rm_compactsum(data = pembrolizumab, xvars = c("age",
+#"change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
 
-# To show effect sizes
-rm_compactsum(data = pembrolizumab, xvars = c("age",
-"change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
-effSize = TRUE, show.tests = TRUE)
+## To show effect sizes
+#rm_compactsum(data = pembrolizumab, xvars = c("age",
+#"change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
+#effSize = TRUE, show.tests = TRUE)
 
-# To return unformatted p-values
-rm_compactsum(data = pembrolizumab, xvars = c("l_size",
-"change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
+## To return unformatted p-values
+#rm_compactsum(data = pembrolizumab, xvars = c("l_size",
+#"change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 
-# Using tidyselect
-pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
-effSize = TRUE)
+## Using tidyselect
+#pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
+#effSize = TRUE)
 
 }
 \references{

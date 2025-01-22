@@ -135,10 +135,12 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
         cs[i, "p_value"] <- cs[i, "global_p"]
       }
     }
+    cs[["global_p"]] <- NULL
   }
   else if (whichp == "global" ) {
     if ("global_p" %in% names(cs)){
       cs[["p_value"]] <- cs[["global_p"]]
+      cs[["global_p"]] <- NULL
     } else {
       cs[["p_value"]] <- NA
     }

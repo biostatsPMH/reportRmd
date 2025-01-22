@@ -115,8 +115,12 @@ test is used.
 If the variance inflation factor is requested (VIF=T, default) then a
 generalised VIF will be calculated in the same manner as the car package.
 
-As of R 4.4.0 profile likelihood confidence intervals will be calculated
-automatically and there is no longer an option to force Wald tests.
+As of version 0.1.1 if global p-values are requested they will be included in
+the p-value column.
+
+As of R 4.4.0 profile likelihood confidence intervals will
+be calculated automatically and there is no longer an option to force Wald
+tests.
 
 The number of decimals places to display the statistics can be changed with
 digits, but this will not change the display of p-values. If more significant

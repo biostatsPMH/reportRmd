@@ -244,7 +244,7 @@ test_that("uvsum2 outputs geeglm models correctly",{
   # gee2 <- geeglm(mf2, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   output = uvsum2(response = 'Weight',covs=c('Cu','Time'), gee=T,
                  data=dietox, id='Pig', family=gaussian("identity"), corstr="ar1",whichp='both')
-  names = c('Variable','Estimate(95%CI)','p-value','Global p-value','N')
+  names = c('Variable','Estimate(95%CI)','p-value','N')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')
   est = c(NA,"Reference","-0.49 (-3.50, 2.52)","1.78 (-1.89, 5.45)", "6.73 (6.58, 6.88)")
   expect_equal(output[,1],covs)
@@ -256,7 +256,7 @@ test_that("rm_mvsum outputs geeglm models correctly",{
   mf1 <- formula(Weight ~ Cu+Time)
   gee1 <- geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   output = rm_mvsum(gee1,data=dietox,showN = T,tableOnly = T,whichp='both',vif=F)
-  names = c('Covariate','Estimate(95%CI)','p-value','Global p-value','N')
+  names = c('Covariate','Estimate(95%CI)','p-value','N')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')
   est = c(NA,"Reference","-0.47 (-3.29, 2.35)","1.21 (-2.30, 4.71)", "6.73 (6.58, 6.88)")
   expect_equal(output[,1],covs)

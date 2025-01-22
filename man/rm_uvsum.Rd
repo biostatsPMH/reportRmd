@@ -171,6 +171,9 @@ without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned.
 
+As of version 0.1.1 if global p-values are requested they will be included in
+the p-value column.
+
 The number of decimals places to display the statistics can be changed with
 digits, but this will not change the display of p-values. If more significant
 digits are required for p-values then use tableOnly=TRUE and format as

@@ -60,7 +60,7 @@ display, defaults to c('At Risk','Events','Censored')}
 
 \item{CIwidth}{width of the survival probabilities, default is 95\%}
 
-\item{conf.type}{type of confidence interval see \code{\link{survfit}} for
+\item{conf.type}{type of confidence interval see \code{\link[survival:survfit]{survival::survfit}} for
 details. Default is 'log'.}
 
 \item{na.action}{default is to omit missing values, but can be set to throw
@@ -109,5 +109,5 @@ covs='age',strata="cohort",survtimes=seq(12,72,12),survtimeunit='months')
 
 }
 \seealso{
-\code{\link{survfit}}
+\code{\link[survival:survfit]{survival::survfit}}
 }

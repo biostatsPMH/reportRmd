@@ -101,22 +101,23 @@
 #' digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
 #' show.tests = TRUE)
 #'
-#' # Include the summary statistic in the variable column
-#' rm_compactsum(data = pembrolizumab, xvars = c("age",
-#' "change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
+#' # Other Examples (not run)
+#' ## Include the summary statistic in the variable column
+#' #rm_compactsum(data = pembrolizumab, xvars = c("age",
+#' #"change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
 #'
-#' # To show effect sizes
-#' rm_compactsum(data = pembrolizumab, xvars = c("age",
-#' "change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
-#' effSize = TRUE, show.tests = TRUE)
+#' ## To show effect sizes
+#' #rm_compactsum(data = pembrolizumab, xvars = c("age",
+#' #"change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
+#' #effSize = TRUE, show.tests = TRUE)
 #'
-#' # To return unformatted p-values
-#' rm_compactsum(data = pembrolizumab, xvars = c("l_size",
-#' "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
+#' ## To return unformatted p-values
+#' #rm_compactsum(data = pembrolizumab, xvars = c("l_size",
+#' #"change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
 #'
-#' # Using tidyselect
-#' pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
-#' effSize = TRUE)
+#' ## Using tidyselect
+#' #pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
+#' #effSize = TRUE)
 #'
 #'@export
 rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.sumstats =FALSE,show.tests = FALSE, full = TRUE, percentage = "col") {
@@ -148,9 +149,15 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (length(missing_vars) > 0) {
     stop(paste0("These xvars are not in the data: '", paste0(missing_vars, collapse = "', '"), "'"))
   }
+  all_miss <- sapply(x_vars, function(x) all(is.na(data[[x]])))
+  all_miss <- names(all_miss)[all_miss]
+  if (length(all_miss)>0){
+    warning(paste("The following variables have only missing data and will be omitted from the output:",paste0(all_miss,collapse=", ")))
+    x_vars <- setdiff(x_vars,all_miss)
+  }
   if (!missing(grp)) {
     if (!(grouping_var %in% names(data))) {
-      stop("grp is not in the data")
+      stop(paste("grp variable",grouping_var,"is not in the data"))
     }
     if (grouping_var %in% x_vars){
       warning(paste(grouping_var,'is the grouping variable and can not appear as a covariate. \n',
@@ -214,11 +221,14 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
   xvars <- x_vars
+  dt_msg <- FALSE
 
   for (xvar in xvars) {
-    if (inherits(data[[xvar]], "Date") || inherits(data[[xvar]], "POSIXt")) {
-      xvars <- setdiff(xvars, xvar)
-      warning(paste("date variable", xvar, "will be ignored. \nrm_covsum can be used to summarise date variables."))
+    if ( inherits(data[[xvar]], "POSIXt")) {
+      data[[xvar]] <- as.Date(data[[xvar]])
+    }
+    if (inherits(data[[xvar]], "Date"))  {
+      dt_msg <- TRUE
     }
     if (inherits(data[[xvar]],"difftime")){
       data[[xvar]] <- as.numeric(data[[xvar]])
@@ -232,6 +242,8 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       newx <- factor(data[[xvar]],levels=lbl,labels=names(lbl))
     }
   }
+  if (dt_msg) message("no statistical tests will be applied to date variables, date variables will be summarised with median")
+
   args$grp <- grouping_var
   args$data <- data
   if (tableOnly) {
@@ -246,25 +258,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
   result <-dplyr::bind_rows(output_list)
   if (nrow(result)==0) return()
-
-  if (!missing(grp) ) {
-    if (n_na>0){
-      output_list <- NULL
-      miss_data[[grouping_var]] <- ifelse(is.na(miss_data[[grouping_var]]),"Missing","Discard")
-      args$pvalue = FALSE
-      args$data <- miss_data
-
-      for (xvar in xvars) {
-        class(xvar) <- assign_method(data,xvar,use_mean)
-        args$digits <- assign_digits(xvar,digits)
-        args$xvar = xvar
-        output_list[[xvar]] <- do.call(xvar_function, args)
-      }
-      miss_col <-dplyr::bind_rows(output_list)
-      out <- do.call(xvar_function, args)
-#      return(list(result,miss_col,args,out))
-    }
-  }
 
   if (all(na.omit(result[["Missing"]]) == 0))
     result <- result[, -which(names(result) == "Missing")]
@@ -367,6 +360,61 @@ xvar_function.default <- function(xvar, ...) {
   stop("No default method for xvar_function. The xvar class must be known")
 }
 
+xvar_function.rm_date <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+  # no testing implemented for dates, all stats not run, just summarised with median and either iqr or range
+  pvalue=FALSE; effSize=FALSE; show.tests = FALSE
+
+  class(xvar) <- "character"
+  x_var <- data[[xvar]]
+  df <- data.frame(Covariate = xvar)
+  df[["disp"]] <- ifelse(!iqr, " Median (Min-Max)", " Median (Q1-Q3)")
+
+  date_sum <- function(x_var){
+    var_sum <- as.character(summary(x_var))
+    if (iqr){
+      x_iqr <- var_sum[c(2,5)]
+      bracket <- paste0("(", x_iqr[1], " to ",x_iqr[2], ")")
+    } else {
+      x_rng <- var_sum[c(1,6)]
+      bracket <- paste0("(", x_rng[1], " to ",x_rng[2], ")")
+    }
+    return(paste0(var_sum[3], " ", bracket))
+  }
+  df[, paste0("Full Sample (n=", nrow(data), ")")] <- date_sum(x_var)
+
+  if (!missing(grp)) {
+    group_var <- factor(data[[grp]])
+
+    grp_columns <- lapply(levels(group_var), function(g) date_sum(x_var[group_var==g]))
+    i = 1
+    for (level in levels(group_var)) {
+      sub <- subset(data, group_var == level)
+      title <- paste0(level, " (n=", nrow(sub), ")")
+      df[, title] <- grp_columns[i]
+      i = i+1
+    }
+
+    no_na_data <- na.omit(data.frame(x_var = x_var, group_var = group_var))
+    if (length(unique(na.omit(group_var))) < 2 | length(unique(no_na_data$group_var)) < 2) {
+      df[1, "Missing"] <- sum(is.na(x_var))
+      return(df)
+    }
+
+  }
+  df[1, "Missing"] <- sum(is.na(x_var))
+  if (all.stats){
+    df$Covariate <- df$disp
+    df <- dplyr::bind_rows(data.frame(Covariate = xvar),df)
+  }
+  if (iqr) {
+    attr(df, "stat_sum") <- "median (IQR)"
+  }  else {
+    attr(df, "stat_sum") <- "median (min/max)"
+  }
+  return(df)
+}
+
+
 xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
@@ -404,11 +452,6 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    # if (any(no_na_tab < 2)) {
-    #   effSize <- FALSE
-    #   pvalue <- FALSE
-    #   show.tests <- FALSE
-    # }
     if (pvalue | effSize | show.tests) {
       if (!any(chi_test_rm(cont_table)$expected < 5)) {
         chisq_test <- chi_test_rm(cont_table)
@@ -481,11 +524,6 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    # if (any(no_na_tab < 2)) {
-    #   effSize <- FALSE
-    #   pvalue <- FALSE
-    #   show.tests <- FALSE
-    # }
     if (pvalue | effSize | show.tests) {
       if (length(unique(no_na_data$group_var)) == 2) {
         t_test <- t_test_rm(x_var, group_var)
@@ -858,6 +896,9 @@ assign_method <- function(data,xvar,use_mean){
   }
   else if (inherits(data[[xvar]],"factor")) {
     return("rm_categorical")
+  }
+  else if (inherits(data[[xvar]],"Date") ) {
+    return( "rm_date")
   }
   else if (is.numeric(data[[xvar]]) && is_binary(data[[xvar]])) {
     return( "rm_binary")

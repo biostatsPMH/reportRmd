@@ -16,6 +16,11 @@ getVarLevels(auto_lm)
 m_summary(auto_lm)
 
 mv_lm <- lm(pdl1 ~ age+sex+cohort,data = pembrolizumab)
+rm_mvsum(mv_lm)
+rm_mvsum(mv_lm,whichp = "both")
+m_summary(mv_lm,whichp = "both")
+m_summary(mv_lm,whichp = "global")
+
 gp(mv_lm)
 coeffSum(mv_lm)
 getVarLevels(mv_lm)
@@ -26,6 +31,17 @@ gp(mv_lm2)
 coeffSum(mv_lm2)
 getVarLevels(mv_lm2)
 m_summary(mv_lm2)
+
+
+rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab) # good
+rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab,whichp = "global")
+rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab,whichp = "both")
+
+reportRmd::rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab)
+library(rstatix)
+rm_covsum(data=ToothGrowth,maincov="supp",covs="len")
+data("pembrolizumab")
+rm_covsum(data=pembrolizumab |> filter(cohort=="A") |> filter(sex=="Female"),covs="age")
 
 uvsum_lm <- rm_uvsum("age", covs = c("sex", "l_size"), data = pembrolizumab)
 uvsum2_lm <- rm_uvsum2("age", covs = c("sex", "l_size"), data = pembrolizumab)
@@ -76,7 +92,12 @@ gp(mv_pois)
 coeffSum(mv_pois)
 getVarLevels(mv_pois)
 m_summary(mv_pois)
-rm_mvsum(mv_pois)
+m_summary(mv_pois,whichp="both")
+m_summary(mv_pois,whichp="global")
+m_summary(mv_pois)
+rm_mvsum(mv_pois) # good
+rm_mvsum(mv_pois,whichp = "both") # good
+rm_mvsum(mv_pois,whichp = "global") # good
 
 mv_pois2 <-glm(formula = int_var ~ age+sex:cohort, family = poisson, data = pembrolizumab)
 gp(mv_pois2)
@@ -241,6 +262,29 @@ uvsum2(response = c('os_time','os_status2'),
 rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id="",strata = "")
 
 
+data("iris")
+iris$date <- sample(seq(as.Date('2020-01-01'), as.Date('2023-01-01'), by="day"), nrow(iris), replace = TRUE)
+
+start_date <- as.POSIXct("2023-01-01 00:00:00")
+end_date <- as.POSIXct("2023-12-31 23:59:59")
+# Generate random times between start_date and end_date
+random_times <- as.POSIXct(runif(10, as.numeric(start_date), as.numeric(end_date)), origin = "1970-01-01")
+iris$date2 <- sample(random_times,nrow(iris),replace=T)
+
+iris |>
+  rm_compactsum(xvars=all_of(setdiff(names(iris),"date2")))
+iris |>
+  rm_compactsum(xvars='date2')
+
+iris |>
+  rm_compactsum(xvars=everything(),grp = "Species",full=F)
+
+iris$Petal.Width <- rep(NA,nrow(iris))
+return <- iris |>
+  rm_compactsum(xvars=everything(),grp = "Species",full=F)
+
+iris |>
+  rm_compactsum(xvars=everything(),use_mean = T)
 # works fine
 data("pembrolizumab")
 rm_compactsum(data = pembrolizumab, xvars = c("age",
@@ -682,3 +726,21 @@ num_commas <- length(unlist(gregexpr(",", call_str)))
 offset_str <- call_str_vc[num_commas+2]
 
 
+
+start_date <- as.POSIXct("2023-01-01 00:00:00")
+end_date <- as.POSIXct("2023-12-31 23:59:59")
+
+# Generate random times between start_date and end_date
+random_times <- as.POSIXct(runif(10, as.numeric(start_date), as.numeric(end_date)), origin = "1970-01-01")
+
+inherits(random_times,"Date")
+inherits(random_times,"POSIXt")
+inherits(random_times,"POSIXct")
+
+rand_Dates <- as.Date(random_times)
+
+
+ data("pembrolizumab")
+ tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
+ covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=F,tableOnly = T)
+ scrolling_table(outTable(tab),pixelHeight=300)

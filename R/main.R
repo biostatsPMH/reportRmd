@@ -2045,6 +2045,35 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
   do.call(outTable, argL)
 }
 
+#' Output a scrollable table
+#'
+#' This function accepts the output of a aa call to knitr::kable or
+#' reportRmd::outTable and, if the output format is html, will produce a
+#' scrollable table. Otherwise a regular table will be output for pandoc/latex
+#'
+#' @param knitrTable output from a call to knitr::kable or outTable
+#' @param pixelHeight the height of the scroll box in pixels,defulat is 500
+#' @importFrom kableExtra scroll_box
+#' @examples
+#' data("pembrolizumab")
+#' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
+#' covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=F)
+#' scrolling_table(tab,pixelHeight=300)
+#' @export
+scrolling_table <- function(knitrTable,pixelHeight=500){
+  if (!inherits(knitrTable,"knitr_kable")) stop("This function requires a knitr_kable object.\nTry running reportRmd::outTable prior to use.")
+
+  out_fmt = ifelse(is.null(knitr::pandoc_to()),'html',
+                   ifelse(knitr::pandoc_to(c('doc','docx')),'doc',
+                          ifelse(knitr::is_latex_output(),'latex','html')))
+  if (out_fmt %in% c('doc','latex')) return(knitrTable)
+
+  kableExtra::scroll_box(
+    knitrTable,
+    height = paste0(pixelHeight,"px;"),
+    box_css = "border: 1px solid #ddd; padding: 5px; ")
+}
+
 
 #' Outputs a descriptive covariate table
 #'
@@ -2163,8 +2192,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                        numobs = NULL, fontsize,chunk_label)
 {
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
-
-  df_nm <- matchdata(argList$data)
+  df_nm <- deparse(argList$data)
   argsToPass <- intersect(names(formals(covsum)), names(argList))
   covsumArgs <- argList[names(argList) %in% argsToPass]
   covsumArgs[["markup"]] <- FALSE
@@ -2176,7 +2204,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   to_bold_name <- which(attr(tab,"varID"))
   bold_cells <- arrayInd(to_bold_name, dim(tab))
 
-  if (nicenames) tab$Covariate <- replaceLbl(df_nm, tab$Covariate)
+  if (nicenames) tab$Covariate <- replaceLbl(data, tab$Covariate)
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
     if (p.adjust!='none'){
@@ -4742,7 +4770,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   #' @param showCols character vector specifying which of the optional columns to
   #'   display, defaults to c('At Risk','Events','Censored')
   #' @param CIwidth width of the survival probabilities, default is 95%
-  #' @param conf.type type of confidence interval see \code{\link{survfit}} for
+  #' @param conf.type type of confidence interval see \code{\link[survival:survfit]{survival::survfit}} for
   #'   details. Default is 'log'.
   #' @param na.action default is to omit missing values, but can be set to throw
   #'   and error using na.action='na.fail'
@@ -4753,7 +4781,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   #' @param tableOnly should a dataframe or a formatted object be returned
   #' @param fontsize PDF/HTML output only, manually set the table fontsize
   #' @importFrom  survival survfit Surv
-  #' @seealso \code{\link{survfit}}
+  #' @seealso \code{\link[survival:survfit]{survival::survfit}}
   #' @return A character vector of the survival table source code, unless tableOnly=TRUE in
   #'   which case a data frame is returned
   #' @export
