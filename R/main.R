@@ -1884,6 +1884,14 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
   }
   if (out_fmt=='doc'){
     caption = if (!is.null(caption)) {ifelse(chunk_label=='NOLABELTOADD',caption,paste0('(\\#tab:',chunk_label,')',caption))}
+
+    # required to handle missing dates
+    date_cols <- names(tab)[sapply(tab, inherits, "Date")]
+    if (length(date_cols)>0){
+      for (v in date_cols){
+        tab[[v]] <- as.character(tab[[v]])
+      }
+    }
     tab[is.na(tab)] <-'&nbsp;' # This is necessary to assign the 'Compact' style to empty cells
     tab[tab==''] <-'&nbsp;'
 
