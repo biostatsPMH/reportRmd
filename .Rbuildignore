@@ -27,3 +27,5 @@
 ^_ToDo\.R$
 ^_unusedFunctions\.R$
 ^_tidyselectForReportRmd\.R$
+^_pkgdown\.yml$
+^pkgdown$

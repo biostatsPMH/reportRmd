@@ -248,15 +248,23 @@ hbld<-function(strings){sapply(strings,function(x){
   return(paste('<span style="font-weight: bold;">',x,"</span>",sep=""))})}
 
 
+ltgt <- function(x){
+  # replace < and > with their html entities
+  sapply(x,function(x){
+    x <- gsub("<",'&lt;',x)
+    x <- gsub(">",'&gt;',x)
+    return(x)
+  })
+}
+
 #' Replace dollar signs with html for proper HTML output
 #'
 #'@param s a character vector
 #'@keywords helper
 rmds <- function(s){
   sapply(s,function(x){
-    x <- gsub("<0.001",'&lt;0.001',x)
-    # x <- gsub("<",'&lt;',x)
-    # x <- gsub(">",'&gt;',x)
+#    x <- gsub("<0.001",'&lt;0.001',x)
+    x <- ltgt(x)
     gsub("[$]",'<span style="display: inline">&#36</span>',x)
   })
 }

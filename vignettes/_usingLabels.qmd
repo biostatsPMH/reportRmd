@@ -1,0 +1,91 @@
+---
+title: "Testing reportRmd Labels"
+format: 
+  docx:
+    fig-height: 2
+    number-sections: false
+    reference-doc: '../../../wordTemplate.docx'
+editor: visual
+---
+
+Install the new version - this is on a separate branch, so that if you want to revert you the development or CRAN versions you can simply delete the reportRmd package folder and re-install.
+
+```{r, echo=F,include=FALSE}
+library(tidyverse)
+
+```
+
+```{r}
+# if you don't have devtools installed:
+#install("devtools")
+
+# otherwise the variable label version is here:
+#devtools::install_github("biostatsPMH/reportRmd", ref="varLabs")
+
+# For the most recent stable version
+# devtools::install_github("biostatsPMH/reportRmd", ref="development")
+library(reportRmd)
+```
+
+# Labels & reportRmd
+
+I've tried not to alter the basic workings of the package. The labels are added (and removed) from the variable attributes within data frames. **There is no longer an option for a default lookup table.**
+
+# Worked Example
+
+Get some descriptive stats for the ctDNA data that comes with the package. The `nicenames` argument is TRUE by default so underscores are replaced by spaces
+
+```{r}
+data(ctDNA)
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+If we have a lookup table of variable names and labels that we imported from a data dictionary we can set the variable labels for the data frame and these will be used in the `rm_` functions
+
+```{r}
+
+ctDNA_names <- data.frame(var=names(ctDNA),
+                          label=c('Patient ID',
+                                  'Study Cohort',
+                                  'Change in ctDNA since baseline',
+                                  'Number of weeks on treatment',
+                                  'Percentage change in tumour measurement'))
+ctDNA <- set_labels(ctDNA,ctDNA_names)
+
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+We can change individual labels with the `set_var_labels` command
+
+```{r}
+ctDNA <- set_var_labels(ctDNA,
+                        cohort="A new cohort label")
+rm_covsum(data=ctDNA,
+          covs=c('cohort','ctdna_status','size_change'))
+
+```
+
+We can extract the variable labels to a data frame
+
+```{r}
+var_labels <- extract_labels(ctDNA)
+var_labels
+```
+
+Or clear them all
+
+```{r}
+ctDNA <- clear_labels(ctDNA)
+```
+
+```{r}
+tab <- reportRmd:::covsum(data=pembrolizumab, maincov = 'orr',
+covs=c('age','sex','pdl1','tmb','l_size','change_ctdna_group'),
+show.tests=TRUE)
+
+
+```

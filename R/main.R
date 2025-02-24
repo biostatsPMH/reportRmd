@@ -1915,8 +1915,9 @@ outTable <- function(tab,row.names=NULL,to_indent=numeric(0),bold_headers=TRUE,
       if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) lbld(x))
     }
     if (out_fmt=='html') {
-      if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
+      names(tab) <- ltgt(names(tab))
       for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
+      if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
     }
     long_table <- ifelse(nrow(tab)>30, TRUE,FALSE)
     kout <- knitr::kable(tab, format = out_fmt,
