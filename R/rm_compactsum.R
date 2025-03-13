@@ -251,7 +251,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     if (covTitle=="") args$covTitle <- "Covariate"  }
 
   output_list <- NULL
-  return(args)
+
   for (xvar in xvars) {
     class(xvar) <- c(class(xvar),assign_method(data,xvar,use_mean))
     args$digits <- assign_digits(xvar,digits)
