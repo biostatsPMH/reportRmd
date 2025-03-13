@@ -1,0 +1,118 @@
+---
+title: "ggkmcif2"
+format: 
+  html:
+    fig-height: 5
+execute: 
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk: 
+    comment: ""
+    dpi: 300     
+editor: source
+---
+
+```{r setup}
+library(reportRmd)
+library(tidyverse)
+library(survminer)
+library(survival)
+```
+
+Current survival function (left) my adaptation (right)
+
+```{r}
+ggkmcif4 <- function(data,response,group,pval=T,conf.curves=F,rtn_table=TRUE,xlab="Time",ylab=NULL,col=NULL,type=NULL,plot.event=1,main=NULL,tbl_height,...){
+  response <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
+                                      allow_rename = FALSE)
+  response <- names(response)
+  if (!missing(group)) {
+    group <- tidyselect::eval_select(expr = enquo(group), data = data[unique(names(data))],
+                                     allow_rename = FALSE)
+    group <- names(group)
+  }
+  else {
+    group <- NULL
+  }
+
+
+  argList <- as.list(match.call(expand.dots = TRUE)[-1])
+  argList[["lsize"]] <- 0.7
+  argList[["Numbers_at_risk_text"]] <- ""
+  argList[["strataname.table"]] <- ""
+  argList[["censor.size"]] <- .5
+  #  argList[["table"]] <- TRUE
+  argList[["returns"]] <- TRUE
+  argList[["cov"]] <- eval(group)
+  if (!is.null(main)) argList[["main"]] <- nicename(eval(main))
+  #  return(argList)
+  p <- do.call(reportRmd::ggkmcif2, argList)
+  if (rtn_table){
+    pA <- p$plot +
+      theme(legend.position = "none",
+            plot.title = element_text(size = 10, face = "bold"))
+    pB <- p$table + xlab('') + ggtitle("At Risk") +
+      theme(plot.title = element_text(size = 10, face = "bold"))
+
+    tbl_ht <- ifelse(is.null(group),1,length(unique(data[[group]])))
+    if (!is.null(group)) if (inherits(data[[group]],"numeric")) tbl_ht <- 2
+    if (tbl_ht<3) tbl_ht <- 3.5
+    if (missing(tbl_height)) {
+      rel.height.table <- tbl_ht / 20
+    } else  rel.height.table <- tbl_height
+    p <- cowplot::plot_grid(pA, pB, nrow = 2, ncol = 1, rel_heights = c(1,rel.height.table),align = 'v', axis = 'l')
+    return(p)
+  } else return(p$plot)
+
+}
+
+
+```
+
+```{r}
+data("pembrolizumab")
+
+
+
+p1 <- ggkmcif2(response = c('os_time','os_status'),
+cov='cohort',
+data=pembrolizumab)
+
+p2 <- ggkmcif4(response = c('os_time','os_status'),
+group='cohort',
+data=pembrolizumab)
+
+ggpubr::ggarrange(p1,p2)
+```
+
+From survminer
+
+```{r}
+ggsurvplot(
+    survfit(Surv(os_time, os_status) ~ cohort, data = pembrolizumab),
+    data = pembrolizumab,
+    risk.table = TRUE,
+    pval = TRUE,
+    conf.int = F,
+    title = "Overall Survival by Treatment",
+    xlab = "Time (months)",
+    ylab = "Overall Survival Probability",
+)
+
+```
+
+From survival (base graphics)
+```{r}
+# Base survival plotting
+
+plot(survfit(Surv(os_time, os_status) ~ cohort, data=pembrolizumab),col = reportRmd:::reportRx_pal()(5))
+```
+
+What features are important?
+
+- ability to separate plot from table
+
+What features are missing?
+

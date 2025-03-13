@@ -128,17 +128,24 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (missing(xvars))
     stop("xvars is a required argument")
 
-  x_vars <- tidyselect::eval_select(expr = enquo(xvars), data = data[unique(names(data))],
+  x_vars <- tidyselect::eval_select(expr = tidyselect::enquo(xvars), data = data[unique(names(data))],
                                     allow_rename = FALSE)
   x_vars <- names(x_vars)
   if (!missing(grp)) {
-    grouping_var <- tidyselect::eval_select(expr = enquo(grp), data = data[unique(names(data))],
+    grouping_var <- tidyselect::eval_select(expr = tidyselect::enquo(grp), data = data[unique(names(data))],
                                             allow_rename = FALSE)
     grouping_var <- names(grouping_var)
   }
   else {
     grouping_var <- NULL
   }
+  argList <- as.list(match.call(expand.dots = TRUE)[-1])
+  argsToPass <- intersect(names(formals(xvar_function)), names(argList))
+  argsToPass <- setdiff(argsToPass,"xvars")
+  args <- argList[argsToPass]
+  xvars <- x_vars
+  dt_msg <- FALSE
+
   if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
 
   if (all.stats) {
@@ -216,12 +223,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     miss_data <- data
     data <- data[!is.na(data[[grouping_var]]),]
   }
-  argList <- as.list(match.call(expand.dots = TRUE)[-1])
-  argsToPass <- intersect(names(formals(xvar_function)), names(argList))
-  argsToPass <- setdiff(argsToPass,"xvars")
-  args <- argList[argsToPass]
-  xvars <- x_vars
-  dt_msg <- FALSE
 
   for (xvar in xvars) {
     if ( inherits(data[[xvar]], "POSIXt")) {
@@ -250,6 +251,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     if (covTitle=="") args$covTitle <- "Covariate"  }
 
   output_list <- NULL
+  return(args)
   for (xvar in xvars) {
     class(xvar) <- c(class(xvar),assign_method(data,xvar,use_mean))
     args$digits <- assign_digits(xvar,digits)

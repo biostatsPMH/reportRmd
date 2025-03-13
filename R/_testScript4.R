@@ -1,6 +1,13 @@
 
 # Testing for getVarLevels and coeffSum ------------
 data("pembrolizumab")
+library(devtools)
+library(janitor)
+load_all()
+load(file = "../ati_xsec_data.rda")
+
+ati_xsec_data |>  tabyl(IDH1_Status)
+args <- rm_compactsum(data=ati_xsec_data,xvars=IDH1_Status)
 
 ## Linear -----
 uv_lm <- lm(age~sex,data=pembrolizumab)
@@ -690,3 +697,16 @@ num_commas <- length(unlist(gregexpr(",", call_str)))
 offset_str <- call_str_vc[num_commas+2]
 
 
+getwd()
+load(file="R/test.rda")
+caption = NULL; tableOnly = FALSE; covTitle = ""; digits = 1; digits.cat = 0;  nicenames = TRUE; iqr = TRUE; all.stats = FALSE; pvalue = TRUE; effSize = FALSE; p.adjust = "none"; unformattedp = FALSE; show.sumstats =FALSE;show.tests = FALSE; full = TRUE; percentage = "col"
+rm_compactsum(data = d,xvars = xvars,grp="Type")
+
+
+library(devtools)
+load_all()
+data("pembrolizumab")
+# Simple plot without confidence intervals
+ggkmcif2(response = c('os_time','os_status'),
+        cov='cohort', type="CIF",
+        data=pembrolizumab)

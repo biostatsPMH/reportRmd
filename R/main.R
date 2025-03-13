@@ -2070,6 +2070,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' scrolling_table(tab,pixelHeight=300)
 #' @export
 scrolling_table <- function(knitrTable,pixelHeight=500){
+  if (is.null(knitrTable)) return()
   if (!inherits(knitrTable,"knitr_kable")) stop("This function requires a knitr_kable object.\nTry running reportRmd::outTable prior to use.")
 
   out_fmt = ifelse(is.null(knitr::pandoc_to()),'html',
