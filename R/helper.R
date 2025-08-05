@@ -251,9 +251,15 @@ hbld<-function(strings){sapply(strings,function(x){
 ltgt <- function(x){
   # replace < and > with their html entities
   sapply(x,function(x){
-    x <- gsub("<",'&lt;',x)
-    x <- gsub(">",'&gt;',x)
-    return(x)
+    z <- try(gsub("<",'&lt;',x),silent=T)
+    if (inherits(z,"try-error")){
+      # Warn user and try to convert
+      warning(paste("The following string contains non-ASCII charcters and may not display properly:\n",x))
+      z <- try(gsub("<",'&lt;',iconv(x, to = "ASCII", sub = "")),silent=T)
+      if (inherits(z,"try-error")) return(NA)
+    }
+    z <- gsub(">",'&gt;',z)
+    return(z)
   })
 }
 
@@ -268,6 +274,8 @@ rmds <- function(s){
     gsub("[$]",'<span style="display: inline">&#36</span>',x)
   })
 }
+
+
 
 #'Add spaces to strings in LaTeX
 #'

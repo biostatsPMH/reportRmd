@@ -20,6 +20,7 @@
 ^_old\.R
 ^_old\.Rmd
 ^overview\.qmd$
+^_vignettes/$
 ^vignettes/overview_files$
 ^_delta_calculation\.R$
 ^_testScript3\.R$

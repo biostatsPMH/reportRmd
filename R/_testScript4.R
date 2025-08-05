@@ -1,3 +1,28 @@
+df <-  read.csv("R/test.csv")
+library(MASS)
+polr_fit <- polr(group~value,data=df)
+polr_fit$model
+rm_mvsum(polr_fit,tableOnly = T,unformattedp = T)
+
+
+# OutTable Testing
+require(tidyverse)
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-Personal/UofT LCED/contruct_validity.rda")
+tab <- contruct_validity |>
+  transmute(Hypothesis = hypothesis_num,
+            Description,
+            `Spearman (95%CI)` = est_ci,
+            Hypothesis_Met)
+row.names=NULL;to_indent=numeric(0);bold_headers=TRUE;
+rows_bold=numeric(0);bold_cells=NULL;caption=NULL;digits=getOption("reportRmd.digits",2);align="r"
+applyAttributes=TRUE;keep.rownames=FALSE; nicenames=TRUE;fontsize=7;chunk_label=NULL;format=NULL
+for (i in seq_along(s)){
+  x <- s[i]
+  print(i)
+  x <- ltgt(x)
+  gsub("[$]",'<span style="display: inline">&#36</span>',x)
+
+}
 
 # Testing for getVarLevels and coeffSum ------------
 data("pembrolizumab")

@@ -893,14 +893,17 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
 #' @keywords plot
 #' @return a plot object
 #' @export
-#' @examples
-#' data("pembrolizumab")
-#' glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
-#' data=pembrolizumab,family = 'binomial')
-#' forestplot2(glm_fit)
 forestplot2 = function(model,conf.level=0.95,orderByRisk=TRUE,colours='default',showEst=TRUE,rmRef=FALSE,logScale=getOption("reportRmd.logScale",TRUE),nxTicks=5){
 
-  deprecate_warn("0.1.0","forestplot2()","forestplotUV()")
+  lifecycle::deprecate_warn(
+    when = "0.1.2",
+    what = "forestplot2()",
+    with = "forestplotMV()",
+    details = c(
+      "Please update your code to use either forestplotMV() or forestplotUV()",
+      "forestplot2 will be removed in future versions of reportRmd."
+    )
+  )
 
   if (inherits(model,'glm')){
     if(model$family$link=='log'){
@@ -1030,7 +1033,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   }
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
-  tab = uvsum(response, covs, data, digits = digits, id = NULL, corstr = NULL,
+  tab = uvsum2(response, covs, data, digits = digits, id = NULL, corstr = NULL,
               family = NULL, type = NULL, gee = FALSE, strata = 1, markup = F,
               sanitize = F, nicenames = F, showN = TRUE, showEvent = TRUE,
               CIwidth = conf.level, reflevel = NULL, returnModels = FALSE)
@@ -2408,7 +2411,6 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 
 
   # Summary functions for plots --------------------------
-  # TODO: re-write the forestplot functions to work with m_summary
   #'Get univariate summary dataframe
   #'
   #'Returns a dataframe corresponding to a univariate regression table
@@ -2426,441 +2428,37 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
   #'cases with observations on the response and covariate. For gee models the data
   #'are re-ordered so that the ids appear sequentially and proper estimates are
   #'given.
-  #'@param response string vector with name of response
-  #'@param covs character vector with the names of columns to fit univariate
-  #'  models to
-  #'@param data dataframe containing data
-  #'@param digits number of digits to round to
-  #'@param id character vector which identifies clusters. Used for GEE and coxph
-  #'  models.
-  #'@param corstr character string specifying the correlation structure. Only used
-  #'  for geeglm. The following are permitted: '"independence"', '"exchangeable"',
-  #'  '"ar1"', '"unstructured"' and '"userdefined"'
-  #'@param family specify details of the model used. This argument does not need
-  #'  to be specified and should be used with caution. By default, gaussian errors
-  #'  are used for linear models, the binomial family with logit link is used for
-  #'  logistic regression and poisson with log link is used for poisson
-  #'  regression. This can be specified with the type argument, or will be
-  #'  inferred from the data type. See \code{\link{family}}. Ignored for ordinal
-  #'  and survival regression and if the type argument is not explicitly
-  #'  specified.
-  #'@param type string indicating he type of univariate model to fit. The function
-  #'  will try and guess what type you want based on your response. If you want to
-  #'  override this you can manually specify the type. Options include "linear",
-  #'  "logistic", "poisson", coxph", "crr", "boxcox", "ordinal" and "negbin"
-  #'@param offset string specifying the offset term to be used for Poisson or
-  #' negative binomial regression. Example: offset="log(follow_up)"
-  #'@param  gee boolean indicating if gee models should be fit to account for
-  #'  correlated observations. If TRUE then the id argument must specify the
-  #'  column in the data which indicates the correlated clusters.
-  #'@param strata character vector of covariates to stratify by. Only used for
-  #'  coxph and crr
-  #'@param markup boolean indicating if you want latex markup
-  #'@param sanitize boolean indicating if you want to sanitize all strings to not
-  #'  break LaTeX
-  #'@param nicenames boolean indicating if you want to replace . and _ in strings
-  #'  with a space
-  #'@param showN boolean indicating if you want to show sample sizes
-  #'@param showEvent boolean indicating if you want to show number of events. Only
-  #'  available for logistic.
-  #'@param CIwidth width of confidence interval, default is 0.95
-  #'@param reflevel manual specification of the reference level. Only used for
-  #'  ordinal. This may allow you to debug if the function throws an error.
-  #'@param returnModels boolean indicating if a list of fitted models should be
-  #'  returned.
-  #'@param forceWald boolean indicating if Wald confidence intervals should be
-  #'  used instead of profile likelihood. This is not recommended, but can speed
-  #'  up computations. To use throughout a document use
-  #'  options(reportRmd.forceWald=TRUE)
   #'@seealso
-  #'\code{\link{lm}},\code{\link{glm}},\code{\link[cmprsk:crr]{cmprsk::crr}},\code{\link[survival:coxph]{survival::coxph}},
-  #'\code{\link[nlme:lme]{nlme::lme}},\code{\link[geepack:geeglm]{geepack::geeglm}},\code{\link[MASS:polr]{MASS::polr}},\code{\link[MASS:glm.nb]{MASS::glm.nb}}
-  #'@keywords dataframe
-  #'@importFrom MASS polr glm.nb
-  #'@importFrom stats setNames
-  #'@importFrom survival coxph Surv
-  #'@importFrom aod wald.test
-  #'@importFrom geepack geeglm
-  #'@importFrom stats na.omit as.formula anova glm lm qnorm qt confint
-  #'  confint.default
-  uvsum <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
-                     type = NULL, offset=NULL, gee=FALSE,strata = 1, markup = TRUE, sanitize = TRUE, nicenames = TRUE,
-                     showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE,forceWald)
-  {
-    lifecycle::deprecate_soft("0.2.0","covsum(markup)")
-    lifecycle::deprecate_soft("0.2.0","covsum(sanitize)")
+  #' @seealso [uvsum2()] for the current implementation
+  #' @return Same as `uvsum2()`
+  uvsum <- function(..., markup, sanitize, forceWald) {
+    lifecycle::deprecate_warn(
+      when = "0.1.2",
+      what = "uvsum()",
+      with = "uvsum2()",
+      details = c(
+        "Please update your code to use uvsum2():",
+        "uvsum2(response, covs, data, ...)",
+        "uvsum will be removed in future versions of reportRmd"
+      )
+    )
 
-    if (!markup) {
-      lbld <- identity
-      addspace <- identity
-      lpvalue <- identity
+    # Handle deprecated parameters with specific warnings
+    if (!missing(markup)) {
+      lifecycle::deprecate_warn("0.2.0", "uvsum(markup)")
     }
-    if (missing(forceWald)) forceWald = getOption("reportRmd.forceWald",FALSE)
-    if (!sanitize)  sanitizestr <- identity
-    if (!nicenames) nicename <- identity
-    if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
-    if (!inherits(strata,"numeric")) {
-      strataVar = strata
-      strata <- sapply(strata, function(stra) {
-        paste("strata(", stra, ")", sep = "")
-      })
+    if (!missing(sanitize)) {
+      lifecycle::deprecate_warn("0.2.0", "uvsum(sanitize)")
     }
-    else {
-      strataVar <- ""
-      strata <- ""
+    if (!missing(forceWald)) {
+      lifecycle::deprecate_warn("0.2.0", "uvsum(forceWald)")
     }
-    if (length(response)==1) {
-      if (sum(is.na(data[[response]]))>0) message(paste(sum(is.na(data[[response]])),"observations with missing outcome removed."))
-      data <- subset(data,!is.na(data[[response]]))
-    } else {
-      if (sum(is.na(data[[response[1]]])|is.na(data[[response[2]]]))>0) message(paste(sum(is.na(data[[response[1]]])|is.na(data[[response[2]]])),"observations with missing outcome removed."))
-      data <- subset(data,!(is.na(data[[response[1]]])|is.na(data[[response[2]]])))
-    }
-    if (!is.null(type)) {
-      if (length(response)==1 & (type %in% c('coxph','crr')))
-        stop('Please specify two variables in the response for survival models. \nExample: response=c("time","status")')
-      if (length(response)==2 & !(type %in% c('coxph','crr')))
-        stop('Response can only be of length one for non-survival models.')
-      if (type == "logistic") {
-        beta <- "OR"
-        if (is.null(family)) family='binomial'
-      }
-      else if (type == "poisson") {
-        if (all(data[[response]]==as.integer(data[[response]]))){
-          data[[response]]=as.integer(data[[response]])
-        }
-        else {
-          stop('Poisson regression requires an integer response.')
-        }
-        beta <- "RR"
-        if (is.null(family)) family='poisson'
-      }
-      else if (type == "negbin") {
-        if (all(data[[response]]==as.integer(data[[response]]))){
-          data[[response]]=as.integer(data[[response]])
-        }
-        else {
-          stop('Negative binomial regression requires an integer response.')
-        }
-        beta <- "RR"
-        if (!is.null(family)) message('For negative binomial regression currently only the log link is implemented.')
-      }
-      else if (type == "linear" | type == "boxcox") {
-        beta <- "Estimate"
-        if (is.null(family)) family='gaussian'
-      }
-      else if (type == "coxph" | type == "crr") {
-        beta <- "HR"
-      }
-      else if (type == "ordinal") {
-        if (!inherits(data[[response[1]]],c("factor","ordered"))) {
-          warning("Response variable is not a factor, will be converted to an ordered factor")
-          data[[response]] <- factor(data[[response]],
-                                     ordered = T)
-        }
-        if (!is.null(reflevel)) {
-          data[[response]] <- stats::relevel(data[[response]],
-                                             ref = reflevel)
-        }
-        beta <- "OR"
-      }
-      else {
-        stop("type must be either coxph, logistic, linear, poisson, negbin, boxcox, crr, ordinal (or NULL)")
-      }
-    }
-    else {
-      if (length(response) == 2) {
-        # Check that responses are numeric
-        for (i in 1:2) if (!is.numeric(data[[response[i]]])) stop('Both response variables must be numeric')
-        if (length(unique(na.omit(data[[response[2]]]))) < 3) {
-          type <- "coxph"
-        }
-        else {
-          type <- "crr"
-        }
-        beta <- "HR"
-      } else if (length(unique(na.omit(data[[response]]))) == 2) {
-        type <- "logistic"
-        beta <- "OR"
-        family="binomial"
-      } else if (inherits(data[[response[1]]],"ordered")) {
-        type <- "ordinal"
-        beta <- "OR"
-        if (!is.null(reflevel)) {
-          data[[response]] <- stats::relevel(data[[response]],
-                                             ref = reflevel)
-        }
-      } else if (inherits(data[[response[1]]],"integer")) {
-        type <- "poisson"
-        beta <- "RR"
-        family="poisson"
-      } else {
-        if (!inherits(data[[response[1]]],"numeric")) stop('Response variable must be numeric')
-        type <- "linear"
-        beta <- "Estimate"
-        family='gaussian'
-      }
-    }
-    if (forceWald) confint <- confint.default
-    beta = betaWithCI(beta, CIwidth)
-    if (strata != "" & type != "coxph") {
-      stop("strata can only be used with coxph")
-    }
-    if (!is.null(id)){
-      if (! (gee | type =='coxph')) {
-        warning('id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.')
-      }
-    }
-    if (!is.null(offset) & !(type %in% c('poisson','negbin'))) {
-      warning('Offset terms only used for Poisson and negative binomial regression.\nOffset term will be ignored.')
-    }
-    if (!is.null(corstr)){
-      if (! (gee | type =='coxph')) {
-        warning('id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.')
-      }
-    }
-    if (!is.null(offset)){
-      ovars <- unlist(strsplit(offset,"[^a-zA-Z_]"))
-      if(length(intersect(names(data),ovars))==0){
-        stop(paste('Variable names in the offset term contains special characters. \nPlease remove special characters, except "_" from the variable name and re-fit.\n',
-                   'offset =',offset))
-      } else ovars <- intersect(names(data),ovars)
-    } else ovars <- NULL
-    if (gee){
-      if (!type %in% c('linear','logistic','poisson')) stop('GEE models currently only implemented for Poisson, logistic or linear regression.')
-      if (is.null(id)) stop('The id argument must be set for gee models to indicate clusters.')
-      if (is.null(corstr)) stop ('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
-    }
-    if (returnModels) modelList <- NULL
-    out <- lapply(covs, function(x_var) {
-      data <- data[,intersect(c(response, x_var, strataVar,id,ovars),names(data))]
-      data <- stats::na.omit(data)
-      m2 <- NULL
-      if (gee){
-        data <- data[order(data[[id]]),]
-        idf <- as.numeric(as.factor(data[[id]]))
-        data$idf <- idf
-      }
-      if (inherits(data[[x_var]],c("ordered", "factor"))) {
-        data[[x_var]] = droplevels(data[[x_var]])
-      }
-      if (is.factor(data[[x_var]])) {
-        x_var_str <- x_var
-        levelnames = sapply(sapply(sapply(levels(data[[x_var]]),
-                                          nicename), sanitizestr), addspace)
-        x_var_str <- lbld(sanitizestr(nicename(x_var)))
-        title <- NULL
-        body <- NULL
-      } else x_var_str <- lbld(sanitizestr(nicename(x_var)))
 
-      if (type == "coxph") {
-        f <- paste(paste("survival::Surv(",
-                         response[1], ",", response[2], ")",
-                         sep = ""), "~", x_var, ifelse(strata ==
-                                                         "", "", "+"), paste(strata,
-                                                                             collapse = "+"), sep = "")
-        if (is.null(id)) {
-          eval(parse(text = paste('m2 <- survival::coxph(formula=as.formula(',f,'), data = data)')))
-        } else{
-          eval(parse(text = paste('m2 <- survival::coxph(formula=as.formula(',f,'),id =',id,', data = data)')))
-        }
-        m <- summary(m2,conf.int = CIwidth)
-        hr <- m$conf.int[, c(1, 3, 4)]
-        pvals <- m$coefficients[,"Pr(>|z|)"]
-        globalpvalue <- m$logtest['pvalue']
-
-      }
-      else if (type == "crr") {
-        eval(parse(text = paste('m2 <- crrRx(',paste(paste(response,collapse = "+"),
-                                                     "~", x_var, sep = ""),
-                                ',data = data)')))
-        m <- summary(m2,conf.int = CIwidth)
-        hr <- m$conf.int[, c(1, 3, 4)]
-        pvals <- m$coef[,5]
-        globalpvalue <- try(aod::wald.test(b = m2$coef,
-                                           Sigma = m2$var, Terms = seq_len(length(m2$coef)))$result$chi2[3])
-
-      }
-      else if (type %in% c("logistic","poisson")) {
-        if (gee){
-          eval(parse(text = paste0("m2 <- geepack::geeglm(",paste(response, "~",x_var, sep = ""),
-                                   ",family = ",family,",",
-                                   ifelse(is.null(offset),"",paste("offset=",offset,",")),
-                                   "data = data, id = idf, corstr = '",corstr,"')")))
-          globalpvalue <- try(aod::wald.test(b = m2$coefficients[-1],
-                                             Sigma = (m2$geese$vbeta)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3],
-                              silent = T)
-          m <- summary(m2)$coefficients
-          Zmult = stats::qnorm(1 - (1 - CIwidth)/2)
-          hr <- cbind(exp(m[,1]),exp(m[, 1] - Zmult * m[, 2]),
-                      exp(m[,1] + Zmult * m[, 2]))
-          pvals <- m[-1,"Pr(>|W|)"]
-        }
-        else{
-          eval(parse(text = paste("m2 <- glm(",paste(response, "~",x_var, sep = ""),
-                                  ",family = ",family,",",
-                                  ifelse(is.null(offset),"",paste("offset=",offset,",")),
-                                  "data = data)")))
-          if (!is.null(offset)){
-            m2data <- m2$model
-            names(m2data)[grep('offset',names(m2data))] <- "offset"
-            m2_null <- stats::update(m2,formula=as.formula(paste0(response,'~1')),
-                                     offset=offset,
-                                     data=m2data)
-          } else {
-            m2_null <- stats::update(m2,formula=as.formula(paste0(response,'~1')),
-                                     data=m2$model)
-
-          }
-          globalpvalue <- try(as.vector(stats::na.omit(anova(m2_null,m2,test="LRT")[,"Pr(>Chi)"])),silent = T) # LRT
-          m <- summary(m2)$coefficients
-          hr <- cbind(exp(m[,1]),exp(confint(m2,level=CIwidth)[,]))
-          pvals <- m[-1,"Pr(>|z|)"]
-
-        }
-        hr <- hr[-1,]
-      }
-      else if (type =='negbin'){
-        f <- paste(response, "~",x_var,
-                   ifelse(is.null(offset),"",paste0("+offset(",offset,")")),
-                   sep = "")
-        eval(parse(text = paste("m2 <- MASS::glm.nb(",f,
-                                ",link = log",",",
-                                "data = data)")))
-        m2data <- m2$model
-        names(m2data)[grep('offset',names(m2data))] <- 'offset'
-        m2_null <- stats::update(m2,formula=paste(response,"~1",
-                                                  ifelse(is.null(offset),"","+offset(offset)")),
-                                 data=m2data)
-        globalpvalue <- try(suppressWarnings(as.vector(stats::na.omit(anova(m2_null,m2,test="LRT")[,"Pr(Chi)"]))),silent = T) # LRT
-        m <- summary(m2)$coefficients
-        hr <- cbind(exp(m[,1]),exp(confint(m2,level=CIwidth)[,]))
-        pvals <- m[-1,"Pr(>|z|)"]
-        hr <- hr[-1,]
-      }
-      else if (type %in% c("linear", "boxcox")) {
-        if (gee){
-          eval(parse(text = paste0("m2 <- geepack::geeglm(",
-                                   paste(response, "~",x_var, sep = ""),
-                                   ",data = data, id = idf, corstr = '",corstr,
-                                   "', family = ",family,")")))
-          m <- summary(m2)$coefficients
-          globalpvalue <- try(aod::wald.test(b = m2$coefficients[-1],
-                                             Sigma = vcov(m2)[-1, -1], Terms = seq_len(length(m2$coefficients[-1])))$result$chi2[3],silent = T)
-          Tmult = stats::qt(1 - (1 - CIwidth)/2, m2$df.residual)
-          hr <- cbind(m[,1], m[, 1] - Tmult * m[, 2],
-                      m[, 1] +Tmult * m[, 2])
-          pvals <- m[-1,"Pr(>|W|)"]
-        } else {
-          if (type =='linear') {
-            eval(parse(text = paste('m2 <- lm(',
-                                    paste(response, "~",x_var, sep = ""),
-                                    ',data = data)')))
-          }
-          else {
-            eval(parse(text = paste('m2 <- boxcoxfitRx(',
-                                    paste(response,"~", x_var, sep = ""),
-                                    ',data = data)')))
-
-          }
-          m2_null <- lm(formula=as.formula(paste0(response,'~1')),data=m2$model)
-          globalpvalue <- try(as.vector(stats::na.omit(anova(m2_null,m2,test="LRT")[,"Pr(>Chi)"])),silent = T) # LRT
-          m <- summary(m2)$coefficients
-          hr <- cbind(m[,1], confint(m2,level=CIwidth))
-          pvals <- m[-1,4]
-        }
-        hr <- hr[-1,]
-      }
-      else if (type == "ordinal") {
-        eval(parse(text = paste('m2 = MASS::polr(data = data,',
-                                paste(response,"~", x_var, sep = ""),
-                                ',method = "logistic",Hess = TRUE)')))
-        m <- data.frame(summary(m2)$coef)
-        m <- m[grep(x_var, rownames(summary(m2)$coef)),]
-
-        m2_null <- stats::update(m2,data=m2$model,formula=as.formula(paste0(response,'~1' )))
-        globalpvalue <- try(as.vector(stats::na.omit(anova(m2_null,m2)[,"Pr(Chi)"])))
-
-        pvals <- stats::pt(abs(m[,3]),m2$df.residual, lower.tail = FALSE)*2
-        if (length(pvals)>1){
-          hr <- cbind(exp(m[,1]),exp(confint(m2,level=CIwidth)))
-        } else {
-          hr <- c(exp(m[,1]),exp(confint(m2,level=CIwidth)))
-        }
-      }
-      hrmat <- matrix(hr,ncol = 3)
-      if (is.error(globalpvalue))  globalpvalue <- "NA"
-      if (is.factor(data[[x_var]])){
-        hazardratio <- c("Reference", apply(hrmat, 1, psthr,digits))
-
-        if (length(pvals)>1){
-          pvalue <- c("", sapply(pvals,lpvalue))
-          title <- c(x_var_str, "", "", lpvalue(globalpvalue))
-
-        } else {
-          pvalue <- sapply(pvals,lpvalue)
-          title <- c(x_var_str, "", pvalue, lpvalue(globalpvalue))
-        }
-        if (length(levelnames) == 2) {
-          body <- cbind(levelnames, hazardratio, c("",
-                                                   ""), c("", ""))
-        }
-        else {
-          body <- cbind(levelnames, hazardratio, pvalue,
-                        rep("", length(levelnames)))
-        }
-        out <- rbind(title, body)
-      } else {
-        out <- matrix(c(x_var_str,
-                        psthr(hr,digits),
-                        lpvalue(pvals),
-                        lpvalue(globalpvalue)),
-                      ncol = 4)
-
-      }
-      if (showN) {
-        n_by_level = nrow(data)
-        if (is.factor(data[[x_var]])) {
-          n_by_level = c(n_by_level, as.vector(table(data[[x_var]])))
-        }
-        out <- cbind(out, n_by_level)
-      }
-      if (showEvent & type == "logistic") {
-        data <- as.data.frame(data);
-        event_by_level = nrow(data[which(data[,1] %in% c(1, levels(data[,1])[2])),])
-        if (is.factor(data[which(data[,1] %in% c(1, levels(data[,1])[2])),][[x_var]])) {
-          event_by_level = c(event_by_level, as.vector(table(data[which(data[,1] %in% c(1, levels(data[,1])[2])),][[x_var]])))
-        }
-        out <- cbind(out, event_by_level)
-      }
-      if (returnModels) {
-        m2$data <- data
-        modelList[[x_var]] <<- m2
-      }
-      rownames(out) <- NULL
-      colnames(out) <- NULL
-      return(list(out, nrow(out)))
-    })
-    table <- lapply(out, function(x) {
-      return(x[[1]])
-    })
-    varID <- do.call("c",lapply(table,function(x){
-      return(stats::setNames(c(TRUE,rep(FALSE,nrow(x)-1)),x[,1]))
-    }))
-    table <- do.call("rbind", lapply(table, data.frame,
-                                     stringsAsFactors = FALSE))
-    colName <- c("Covariate", sanitizestr(beta),
-                 "p-value", "Global p-value")
-    if (showN) colName <- c(colName,"N")
-    if (showEvent & type == "logistic") colName <- c(colName,"Event")
-    colnames(table) <- colName
-    table[,"Global p-value"] <- ifelse(table[,'p-value']=='',table[,"Global p-value"],'')
-    if (all(table[,"Global p-value"]=='')) table <- table[, -which(colnames(table)=="Global p-value")]
-    colnames(table) <- sapply(colnames(table), lbld)
-    attr(table,"varID") <- varID
-    if (returnModels) return(list(table,models=modelList)) else return(table)
+    # Remove deprecated parameters and call uvsum2
+    dots <- list(...)
+    valid_args <- dots[!names(dots) %in% c("markup", "sanitize", "forceWald")]
+    do.call(uvsum2, valid_args)
   }
-
 
   #' Get multivariate summary dataframe
   #'
@@ -2908,6 +2506,15 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                      CIwidth = 0.95, vif=TRUE){
     lifecycle::deprecate_soft("0.2.0","covsum(markup)")
     lifecycle::deprecate_soft("0.2.0","covsum(sanitize)")
+    lifecycle::deprecate_warn(
+      when = "0.1.2",
+      what = "mvsum()",
+      with = "modelsummary()",
+      details = c(
+        "Please update your code to use modelsummary():",
+        "mvsum will be removed in future versions of reportRmd"
+      )
+    )
 
     if (any(is.na(model$coefficients))) stop(paste0('rm_mvsum can not run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
                                                     paste(names(model$coefficients)[is.na(model$coefficients)],collapse = ", "),
@@ -3488,7 +3095,16 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                       cut=NULL,eventlabs=NULL,event.name=NULL,Numbers_at_risk_text="Numbers at risk",
                       HR.digits = 2,HR.pval.digits=3, pval.digits=3,
                       median.digits=3,set.time.digits=3,returns = FALSE,print.n.missing=TRUE){
-    lifecycle::deprecate_warn("0.1.0","ggkmcif()","ggkmcif2()")
+
+      lifecycle::deprecate_warn(
+        when = "0.1.2",
+        what = "ggkmcif()",
+        with = "ggkmcif2()",
+        details = c(
+          "Please update your code to use ggkmcif2()",
+          "ggkmcif will be removed in future versions of reportRmd"
+        )
+      )
 
     event <- match.arg(event)
 
@@ -5024,8 +4640,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
     data <- data.frame(data)
 
     if (!is.null(cov))
-      remove <- rowSums(is.na(data[, c(response, cov)])) >
-      0
+      remove <- rowSums(is.na(data[, c(response, cov)])) > 0
     if (is.null(cov))
       remove <- rowSums(is.na(data[, c(response)])) > 0
     data <- data[!remove, ]
@@ -5479,11 +5094,13 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                                                                                                                                                                                                                 hjust = 0), axis.title.x.bottom = element_text(vjust = 4)) +
       scale_x_continuous(paste0("\n", xlab), breaks = times,
                          limits = c(0, maxxval)) + coord_cartesian(xlim = c(0,
-                                                                            maxxlim)) + scale_y_continuous(paste0(ylab, "\n"), limits = ylim) +
-      theme(panel.grid.minor = element_blank()) + theme(legend.key = element_rect(colour = "transparent",
-                                                                                  fill = "transparent"), legend.background = element_blank(),
-                                                        legend.position = leg.pos) + labs(linetype = linetype_name,
-                                                                                          col = col_name)
+                                                                            maxxlim)) +
+      scale_y_continuous(paste0(ylab, "\n"), limits = ylim) +
+      theme(panel.grid.minor = element_blank()) +
+      theme(legend.key = element_rect(colour = "transparent",
+                                      fill = "transparent"), legend.background = element_blank(),
+            legend.position = leg.pos) +
+      labs(linetype = linetype_name,col = col_name)
     if (!is.null(main)){
       p <- p + ggtitle(main) + theme(plot.title = element_text(face = "bold", hjust = 0.5, size = fsize))
     }

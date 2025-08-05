@@ -1,6 +1,6 @@
 Package: reportRmd
 Title: Tidy Presentation of Clinical Reporting
-Version: 0.1.1
+Version: 0.1.2
 Date: 2024-12-30
 Authors@R: c(
     person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut"),comment=c(ORCID="0000-0002-8431-5143")),
@@ -50,7 +50,7 @@ Imports:
     stats,
     survival,
     tidyselect
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'rm_mvsum2.R' 
+Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'ggkmcif3_complete.R' 'rm_mvsum2.R' 
 Depends: 
     R (>= 4.2)
 LazyData: no

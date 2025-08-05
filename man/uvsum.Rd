@@ -4,95 +4,10 @@
 \alias{uvsum}
 \title{Get univariate summary dataframe}
 \usage{
-uvsum(
-  response,
-  covs,
-  data,
-  digits = getOption("reportRmd.digits", 2),
-  id = NULL,
-  corstr = NULL,
-  family = NULL,
-  type = NULL,
-  offset = NULL,
-  gee = FALSE,
-  strata = 1,
-  markup = TRUE,
-  sanitize = TRUE,
-  nicenames = TRUE,
-  showN = TRUE,
-  showEvent = TRUE,
-  CIwidth = 0.95,
-  reflevel = NULL,
-  returnModels = FALSE,
-  forceWald
-)
+uvsum(..., markup, sanitize, forceWald)
 }
-\arguments{
-\item{response}{string vector with name of response}
-
-\item{covs}{character vector with the names of columns to fit univariate
-models to}
-
-\item{data}{dataframe containing data}
-
-\item{digits}{number of digits to round to}
-
-\item{id}{character vector which identifies clusters. Used for GEE and coxph
-models.}
-
-\item{corstr}{character string specifying the correlation structure. Only used
-for geeglm. The following are permitted: '"independence"', '"exchangeable"',
-'"ar1"', '"unstructured"' and '"userdefined"'}
-
-\item{family}{specify details of the model used. This argument does not need
-to be specified and should be used with caution. By default, gaussian errors
-are used for linear models, the binomial family with logit link is used for
-logistic regression and poisson with log link is used for poisson
-regression. This can be specified with the type argument, or will be
-inferred from the data type. See \code{\link{family}}. Ignored for ordinal
-and survival regression and if the type argument is not explicitly
-specified.}
-
-\item{type}{string indicating he type of univariate model to fit. The function
-will try and guess what type you want based on your response. If you want to
-override this you can manually specify the type. Options include "linear",
-"logistic", "poisson", coxph", "crr", "boxcox", "ordinal" and "negbin"}
-
-\item{offset}{string specifying the offset term to be used for Poisson or
-negative binomial regression. Example: offset="log(follow_up)"}
-
-\item{gee}{boolean indicating if gee models should be fit to account for
-correlated observations. If TRUE then the id argument must specify the
-column in the data which indicates the correlated clusters.}
-
-\item{strata}{character vector of covariates to stratify by. Only used for
-coxph and crr}
-
-\item{markup}{boolean indicating if you want latex markup}
-
-\item{sanitize}{boolean indicating if you want to sanitize all strings to not
-break LaTeX}
-
-\item{nicenames}{boolean indicating if you want to replace . and _ in strings
-with a space}
-
-\item{showN}{boolean indicating if you want to show sample sizes}
-
-\item{showEvent}{boolean indicating if you want to show number of events. Only
-available for logistic.}
-
-\item{CIwidth}{width of confidence interval, default is 0.95}
-
-\item{reflevel}{manual specification of the reference level. Only used for
-ordinal. This may allow you to debug if the function throws an error.}
-
-\item{returnModels}{boolean indicating if a list of fitted models should be
-returned.}
-
-\item{forceWald}{boolean indicating if Wald confidence intervals should be
-used instead of profile likelihood. This is not recommended, but can speed
-up computations. To use throughout a document use
-options(reportRmd.forceWald=TRUE)}
+\value{
+Same as \code{uvsum2()}
 }
 \description{
 Returns a dataframe corresponding to a univariate regression table
@@ -113,7 +28,5 @@ are re-ordered so that the ids appear sequentially and proper estimates are
 given.
 }
 \seealso{
-\code{\link{lm}},\code{\link{glm}},\code{\link[cmprsk:crr]{cmprsk::crr}},\code{\link[survival:coxph]{survival::coxph}},
-\code{\link[nlme:lme]{nlme::lme}},\code{\link[geepack:geeglm]{geepack::geeglm}},\code{\link[MASS:polr]{MASS::polr}},\code{\link[MASS:glm.nb]{MASS::glm.nb}}
+\code{\link[=uvsum2]{uvsum2()}} for the current implementation
 }
-\keyword{dataframe}
