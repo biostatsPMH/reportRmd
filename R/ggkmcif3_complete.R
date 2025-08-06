@@ -223,11 +223,14 @@ calculate_and_add_median_times <- function(sfit = NULL, fit = NULL, stratalabs, 
 #' @param plot.event Events to plot (for CIF)
 #' @param set.time.text Text label for time points
 #' @param set.time Time points to evaluate
+#' @param set.time.line boolean to specify if you want the survival added as
+#'   lines to the plot at a specified point
 #' @param set.time.CI Whether to include CI
 #' @param set.time.digits Number of digits
 calculate_and_add_time_specific_estimates <- function(sfit = NULL, fit = NULL, stratalabs,
                                                       type = "KM", plot.event = 1,
                                                       set.time.text = NULL, set.time = NULL,
+                                                      set.time.line = FALSE,
                                                       set.time.CI = FALSE, set.time.digits = 3) {
 
   if (is.null(set.time.text) && !set.time.line) {
@@ -1283,7 +1286,7 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
 #' @param Numbers_at_risk_text String for the label of the number at risk, set
 #'   Numbers_at_risk_text=NULL to remove
 #' @param tbl.height Height of the at risk table, relative to plot. To set the
-#'   table to half the height of the plot use tbl.heigh = 0.5
+#'   table to half the height of the plot use tbl.height = 0.5
 #' @param HR.digits Number of digits printed of the  hazard ratio
 #' @param HR.pval.digits Number of digits printed of the hazard ratio pvalue
 #' @param pval.digits Number of digits printed of the Gray's/log rank pvalue
@@ -1315,7 +1318,7 @@ ggkmcif3Parameters <- function(HR = FALSE, HR_pval = FALSE, conf.type = "log",
                                event = c("col", "linetype"), flip.CIF = FALSE,
                                cut = NULL, eventlabs = NULL, event.name = NULL,
                                Numbers_at_risk_text = "At risk",
-                               table.height = NULL,
+                               tbl.height = NULL,
                                HR.digits = 2, HR.pval.digits = 3, pval.digits = 3, median.digits = 3,
                                set.time.digits = 3, print.n.missing = TRUE, returns = FALSE) {
   return(as.list(environment(), all = TRUE))

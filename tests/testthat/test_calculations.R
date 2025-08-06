@@ -254,7 +254,7 @@ test_that("uvsum2 outputs geeglm models correctly",{
 
 test_that("rm_mvsum outputs geeglm models correctly",{
   mf1 <- formula(Weight ~ Cu+Time)
-  gee1 <- geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
+  gee1 <- geepack::geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   output = rm_mvsum(gee1,data=dietox,showN = T,tableOnly = T,whichp='both',vif=F)
   names = c('Covariate','Estimate(95%CI)','p-value','N')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')

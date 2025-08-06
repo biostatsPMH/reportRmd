@@ -1,15 +1,14 @@
 # To Do
 
-# testing all the rm_uvsum2 models -- DONE (results are in a spreadsheet)
+# run tests in _ggkmcif3_test.r file and try to fix bugs, document persistent errors
 
-# trying to get the rm_mvsum2 up and running -- DONE except extra rows for interaction terms
+# find call to xfun and update as required
 
-# test weird things in all the function and add nice error messages if we don't have them
+# fix forestplotUV and forestplotMV to use the new uvsum2 and msummary functions
+# update documentation
 
-# tidy code, so that we don't have extra print statements -- DONE
+# run Build > check and fix bugs
 
-# move the functions that we aren't using to a new R file _unusedFunctions.R - maybe we will use them for better CIs at some point (-- which coeffSum functions are not being used?)
 
-# run the Build > Check and try to resolve the errors and warnings -- STUCK
-
-# go to the beach or the forest :-)
+data("pembrolizumab")
+ggkmcif3(data=pembrolizumab,c("os_time","os_status"),"cohort")
