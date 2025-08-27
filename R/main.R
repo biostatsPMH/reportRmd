@@ -2204,10 +2204,16 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
                        percentage = c("column", "row"), dropLevels = TRUE, excludeLevels = NULL,
                        numobs = NULL, fontsize,chunk_label)
 {
+  if (missing(data))
+    stop("data is a required argument")
+  if (!inherits(data, "data.frame"))
+    stop("data must be supplied as a data frame.")
+
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
   df_nm <- deparse(argList$data)
   argsToPass <- intersect(names(formals(covsum)), names(argList))
   covsumArgs <- argList[names(argList) %in% argsToPass]
+  covsumArgs[["data"]] <- data  # required to avoid error if data object shares the name of an R function
   covsumArgs[["markup"]] <- FALSE
   covsumArgs[["sanitize"]] <- FALSE
   covsumArgs[["nicenames"]] <- FALSE

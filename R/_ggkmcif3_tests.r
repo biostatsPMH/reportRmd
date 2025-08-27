@@ -30,10 +30,13 @@ cif_data <- data.frame(
   risk_score = rnorm(n, 0, 1) |> round(2)
 )
 
-# Wuick Test
+# Quick Test
 data("pembrolizumab")
 data=pembrolizumab;cov="cohort";response=c("os_time","os_status")
 ggkmcif3(response,cov,data,censor.size=2.5,censor.stroke=7)
+
+ggkmcif3(response,cov,data,times=seq(0,42,6))
+ggkmcif3(response,cov,data,times=seq(0,42,6),xlim=c(0,30))
 
 # Test Helper Functions ----
 
@@ -51,6 +54,7 @@ run_test <- function(test_name, data, response, test_args = list()) {
     args <- c(list(response = response, data = data), test_args)
     return(args)
     result <- do.call(ggkmcif3, args)
+    plot(result)
     cat("✓ Test passed successfully\n")
     return(result)
   }, error = function(e) {
@@ -675,11 +679,4 @@ run_specific_tests <- function(test_categories = NULL) {
   }
 }
 
-# Usage Examples ----
-cat("ggkmcif3 Testing Suite Loaded!\n")
-cat("Usage:\n")
-cat("- run_all_tests()                    # Run complete test suite\n")
-cat("- run_specific_tests()               # See available test categories\n")
-cat("- run_specific_tests(c('basic'))     # Run specific test categories\n")
-cat("- test_basic_functionality()         # Run individual test functions\n")
-cat("\nExample test datasets created: km_data, cif_data\n")
+run_all_tests()
