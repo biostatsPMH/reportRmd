@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggkmcif3_complete.R
 \name{apply_scales_and_guides}
 \alias{apply_scales_and_guides}
-\title{Apply color and linetype scales}
+\title{Apply colour and linetype scales}
 \usage{
 apply_scales_and_guides(
   p,
@@ -18,7 +18,7 @@ apply_scales_and_guides(
 \arguments{
 \item{p}{ggplot object}
 
-\item{col}{Colors vector}
+\item{col}{colours vector}
 
 \item{linetype}{Line types vector}
 
@@ -33,5 +33,5 @@ apply_scales_and_guides(
 \item{event}{How events are distinguished}
 }
 \description{
-Apply color and linetype scales
+Apply colour and linetype scales
 }

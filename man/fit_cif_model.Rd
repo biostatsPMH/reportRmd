@@ -2,17 +2,20 @@
 % Please edit documentation in R/ggkmcif3_complete.R
 \name{fit_cif_model}
 \alias{fit_cif_model}
-\title{Fit Cumulative Incidence Function curves}
+\title{Fit Competing Risks Model}
 \usage{
 fit_cif_model(data, response, cov = NULL)
 }
 \arguments{
-\item{data}{Input data}
+\item{data}{Input dataframe}
 
-\item{response}{Time and status variables}
+\item{response}{Character vector with time and status column names}
 
-\item{cov}{Covariate (optional)}
+\item{cov}{Covariate column name (optional)}
+}
+\value{
+List containing fit object and group separator
 }
 \description{
-Fit Cumulative Incidence Function curves
+Fit Competing Risks Model
 }

@@ -2,33 +2,42 @@
 % Please edit documentation in R/ggkmcif3_complete.R
 \name{create_cif_dataframe}
 \alias{create_cif_dataframe}
-\title{Create plotting dataframe for CIF curves}
+\title{Create CIF Plotting Data Frame}
 \usage{
 create_cif_dataframe(
   fit,
+  gsep,
+  plot.event,
   stratalabs,
-  plot.event = 1,
-  conf.curves = FALSE,
   conf.type = "log",
   flip.CIF = FALSE,
-  eventlabs = NULL
+  eventlabs = NULL,
+  cov = NULL,
+  data = NULL
 )
 }
 \arguments{
 \item{fit}{CIF fit object}
 
-\item{stratalabs}{Strata labels}
+\item{gsep}{Group separator from fit_cif_model}
 
 \item{plot.event}{Events to plot}
 
-\item{conf.curves}{Whether to include confidence intervals}
+\item{stratalabs}{Strata labels}
 
 \item{conf.type}{Confidence interval type}
 
-\item{flip.CIF}{Whether to flip CIF (1-CIF)}
+\item{flip.CIF}{Whether to flip the CIF curve}
 
 \item{eventlabs}{Event labels}
+
+\item{cov}{Covariate for proper factor levels}
+
+\item{data}{Original data (for factor levels)}
+}
+\value{
+Data frame for plotting
 }
 \description{
-Create plotting dataframe for CIF curves
+Create CIF Plotting Data Frame
 }

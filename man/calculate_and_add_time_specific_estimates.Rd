@@ -12,6 +12,7 @@ calculate_and_add_time_specific_estimates(
   plot.event = 1,
   set.time.text = NULL,
   set.time = NULL,
+  set.time.line = FALSE,
   set.time.CI = FALSE,
   set.time.digits = 3
 )
@@ -30,6 +31,9 @@ calculate_and_add_time_specific_estimates(
 \item{set.time.text}{Text label for time points}
 
 \item{set.time}{Time points to evaluate}
+
+\item{set.time.line}{boolean to specify if you want the survival added as
+lines to the plot at a specified point}
 
 \item{set.time.CI}{Whether to include CI}
 

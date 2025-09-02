@@ -46,7 +46,7 @@ ggkmcif3Parameters(
   eventlabs = NULL,
   event.name = NULL,
   Numbers_at_risk_text = "At risk",
-  table.height = NULL,
+  tbl.height = NULL,
   HR.digits = 2,
   HR.pval.digits = 3,
   pval.digits = 3,
@@ -173,7 +173,8 @@ or linetype when plotting both events to colour = "col", line type}
 \item{Numbers_at_risk_text}{String for the label of the number at risk, set
 Numbers_at_risk_text=NULL to remove}
 
-\item{table.height}{Relative height of risk table (0-1)}
+\item{tbl.height}{Height of the at risk table, relative to plot. To set the
+table to half the height of the plot use tbl.height = 0.5}
 
 \item{HR.digits}{Number of digits printed of the  hazard ratio}
 
@@ -192,10 +193,8 @@ to be checked}
 \item{returns}{Logical, if TRUE a list contain the plot and at risk table is
 returned}
 
-\item{tbl.height}{Height of the at risk table, relative to plot. To set the
-table to half the height of the plot use tbl.heigh = 0.5}
+\item{table.height}{Relative height of risk table (0-1)}
 }
 \description{
 This section documents the additional parameters for \link{ggkmcif3}.
 }
-\keyword{internal}

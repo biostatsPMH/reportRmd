@@ -11,6 +11,7 @@ add_statistical_tests(
   pval_result,
   pval.pos = NULL,
   times,
+  xlim,
   ylim,
   psize = 3.5,
   pval.digits = 3,
@@ -30,6 +31,8 @@ add_statistical_tests(
 \item{pval.pos}{Position for p-value text}
 
 \item{times}{Time breaks}
+
+\item{xlim}{X-axis limits}
 
 \item{ylim}{Y-axis limits}
 

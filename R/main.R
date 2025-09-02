@@ -1034,8 +1034,8 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   #tab = format_glm(model, conf.level = conf.level, orderByRisk = orderByRisk)
   ###################################
   tab = uvsum2(response, covs, data, digits = digits, id = NULL, corstr = NULL,
-              family = NULL, type = NULL, gee = FALSE, strata = 1, markup = F,
-              sanitize = F, nicenames = F, showN = TRUE, showEvent = TRUE,
+              family = NULL, type = NULL, gee = FALSE, strata = 1,
+              nicenames = F, showN = TRUE, showEvent = TRUE,
               CIwidth = conf.level, reflevel = NULL, returnModels = FALSE)
   tab$estimate.label <- tab[,2];
   tab$estimate.label[which(tab$estimate.label == "Reference")] <- "1.0 (Reference)";
@@ -1059,7 +1059,7 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   tab <- tab[order(tab$var.order, -tab$level.order), ];
   tab$p.value <- tab$"p-value";
   tab$p.label <- paste(format(round(as.numeric(tab$p.value), 3), nsmall=3), sep="");
-  tab$variable <- tab$Covariate;
+  tab$variable <- tab$Variable;
   tab <- tab[, c("variable", "var.name", "level.name", "level.order", "estimate", "p.label", "p.value", "conf.low", "conf.high", "var.order", "estimate.label", "N", "Event")];
   tab <- as.data.frame(tab);
   ###################################
@@ -1114,14 +1114,19 @@ forestplotUV = function (response, covs, data, id = NULL, corstr = NULL,
   colours <- colours[sort(unique(tab$colour))]
   suppressWarnings({tryCatch({
     p = ggplot(tab, aes_(x = ~x.val, y = ~y.val, colour = ~colour)) +
-      geom_point(na.rm = TRUE, size = 2) + geom_errorbarh(aes_(xmin = ~conf.low,
+      geom_point(na.rm = TRUE, size = 2) +
+      geom_errorbarh(aes_(xmin = ~conf.low,
                                                                xmax = ~conf.high), height = 0, size = 0.9, na.rm = TRUE) +
       geom_vline(xintercept = 1) + labs(y = "", x = x_lab) +
       guides(colour = "none") + Axis + scale_colour_manual(values = colours) +
-      theme_bw() + theme(axis.text.y = element_text(face = ifelse(tab$variable ==
+      theme_bw() +
+      theme(axis.text.y = element_text(face = ifelse(tab$variable ==
                                                                     tab$var.name | is.na(tab$var.name), "bold", "plain"),
-                                                    hjust = 0), panel.grid.major.y = element_blank(), panel.grid.minor.y = element_blank(),
-                         axis.ticks = element_blank()) + themeSecAxis
+                                                    hjust = 0),
+            panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank(),
+            axis.ticks = element_blank()) +
+      themeSecAxis
     if (logScale)
       p + scale_x_log10(breaks = scales::log_breaks(n = nxTicks))
     else p
@@ -3512,6 +3517,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
 
 
 
+
     }
 
 
@@ -5023,6 +5029,7 @@ rm_covsum <- function (data, covs, maincov = NULL, caption = NULL, tableOnly = F
         levels(df$event) <- eventlabs
       }
       else eventlabs <- c(1, 2)
+
     }
     m <- max(nchar(stratalabs))
     maxxval = max(df$time, times[length(times)])

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggkmcif3_complete.R
 \name{ggkmcif3}
 \alias{ggkmcif3}
-\title{Main plotting function (refactored and complete)}
+\title{Main plotting function (refactored with separate CIF functions)}
 \usage{
 ggkmcif3(
   response,
@@ -38,18 +38,18 @@ ggkmcif3(
 
 \item{ylab}{Y-axis label}
 
-\item{col}{Colors vector}
+\item{col}{colours vector}
 
-\item{times}{Time breaks}
+\item{times}{Numeric vector of times for the x-axis}
 
 \item{type}{Plot type ("KM" or "CIF", auto-detected if NULL)}
 
 \item{plot.event}{Events to plot}
 
-\item{returns}{Whether to return list with plot components}
+\item{returns}{Whether to return list with plot and at risk table}
 
 \item{...}{Additional arguments}
 }
 \description{
-Main plotting function (refactored and complete)
+Main plotting function (refactored with separate CIF functions)
 }

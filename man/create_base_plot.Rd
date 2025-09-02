@@ -43,7 +43,7 @@ create_base_plot(
 
 \item{fsize}{Font size}
 
-\item{col}{Colors vector}
+\item{col}{colours vector}
 
 \item{linetype}{Line types vector}
 

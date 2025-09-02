@@ -7,6 +7,7 @@
 create_risk_table(
   sfit,
   times,
+  xlim,
   stratalabs,
   stratalabs.table = NULL,
   strataname.table = "",
@@ -22,6 +23,8 @@ create_risk_table(
 
 \item{times}{Time points for risk table}
 
+\item{xlim}{X-axis limits}
+
 \item{stratalabs}{Strata labels}
 
 \item{stratalabs.table}{Table-specific strata labels}
@@ -32,7 +35,7 @@ create_risk_table(
 
 \item{multiple_lines}{Whether multiple strata}
 
-\item{col}{Colors for strata}
+\item{col}{colours for strata}
 
 \item{fsize}{Font size}
 

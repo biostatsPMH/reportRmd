@@ -21,6 +21,30 @@ km_data <- data.frame(
   sex = factor(sample(c("Male", "Female"), n, replace = TRUE))
 )
 
+forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
+              data=pembrolizumab, family='binomial')
+km_data2 <- data.frame(
+  time = rexp(n, rate = 0.1) |> round(2),
+  status = rbinom(n, 1, 0.7),  # 70% event rate
+
+  # 2 levels
+  treatment = factor(sample(c("Control", "Treatment"), n, replace = TRUE)),
+
+  # 3 levels
+  stage = factor(sample(c("Early", "Intermediate", "Advanced"), n, replace = TRUE)),
+
+  # 4 levels
+  region = factor(sample(c("North", "South", "East", "West"), n, replace = TRUE)),
+
+  # 5 levels
+  risk_score = factor(sample(c("Very Low", "Low", "Moderate", "High", "Very High"),
+                             n, replace = TRUE,
+                             prob = c(0.15, 0.25, 0.3, 0.2, 0.1))),  # Weighted sampling
+
+  # Keep your continuous variables
+  age_cont = rnorm(n, 60, 15) |> round(1),
+  sex = factor(sample(c("Male", "Female"), n, replace = TRUE))
+)
 # Sample CIF data (competing risks)
 cif_data <- data.frame(
   time = rexp(n, rate = 0.1) |> round(2),
@@ -34,9 +58,33 @@ cif_data <- data.frame(
 data("pembrolizumab")
 data=pembrolizumab;cov="cohort";response=c("os_time","os_status")
 ggkmcif3(response,cov,data,censor.size=2.5,censor.stroke=7)
-
 ggkmcif3(response,cov,data,times=seq(0,42,6))
 ggkmcif3(response,cov,data,times=seq(0,42,6),xlim=c(0,30))
+
+ggkmcif3(response=c("time","status"),cov="sex",km_data)
+ggkmcif2(response=c("time","status"),cov="age_group",cif_data)
+
+p <- ggkmcif3(response=c("time","status"),cov="risk_score",km_data2,returns = T)
+get_theme_base_size <- function() {
+  current_theme <- theme_get()
+
+  # The base_size is stored in the text element
+  if (!is.null(current_theme$text) && !is.null(current_theme$text$size)) {
+    return(current_theme$text$size)
+  }
+  # Fallback to ggplot2 default
+  return(11)
+}
+line_size_in_inches <- get_theme_base_size()/72
+dev_height_inches <- dev.size("in")[2]
+p_risk_lines <- length(unique(p$table$data$strata))+1.5
+p2_risk_height <- line_size_in_inches*p_risk_lines
+p1_height <-  dev_height_inches - p2_risk_height
+rel_height = c(1,(dev_height_inches-p1_height)/p1_height)
+cowplot::plot_grid(p$plot,p$table,rel_heights = rel_height,ncol=1)
+
+
+df <- ggkmcif2(response=c("time","status"),cov="age_group",cif_data,censor.size=2.5,censor.stroke=7)
 
 # Test Helper Functions ----
 
@@ -52,11 +100,10 @@ run_test <- function(test_name, data, response, test_args = list()) {
 
   tryCatch({
     args <- c(list(response = response, data = data), test_args)
-    return(args)
     result <- do.call(ggkmcif3, args)
     plot(result)
     cat("✓ Test passed successfully\n")
-    return(result)
+    return(args)
   }, error = function(e) {
     cat("✗ Test failed with error:", e$message, "\n")
     return(NULL)
@@ -71,11 +118,9 @@ test_basic_functionality <- function() {
   cat("#", "\n")
 
   # Test 1: Basic KM plot
-args <-  run_test("Basic KM plot - no covariates",
+  run_test("Basic KM plot - no covariates",
            km_data,
            c("time", "status"))
-do.call(ggkmcif3,args)
-ggkmcif3(data=km_data,response = c("time", "status"),cov="age_group")
 
   # Test 2: Basic KM plot with covariate
   run_test("Basic KM plot - with treatment covariate",
@@ -88,6 +133,7 @@ ggkmcif3(data=km_data,response = c("time", "status"),cov="age_group")
            cif_data,
            c("time", "status"),
            list(type = "CIF"))
+  ggkmcif3(response =c("time", "status"), data=cif_data)
 
   # Test 4: Basic CIF plot with covariate
   run_test("Basic CIF plot - with treatment covariate",
@@ -680,3 +726,9 @@ run_specific_tests <- function(test_categories = NULL) {
 }
 
 run_all_tests()
+ data("pembrolizumab")
+ UVp = forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age",
+ "l_size"), data=pembrolizumab, family='binomial')
+ MVp = forestplotMV(glm(orr~change_ctdna_group+sex+age+l_size,
+ data=pembrolizumab,family = 'binomial'))
+ forestplotUVMV(UVp, MVp)
