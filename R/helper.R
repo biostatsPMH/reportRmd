@@ -701,3 +701,259 @@ fillNAs <- function(x) {
 }
 
 
+#' Extract Function and Package Information from Current Document
+#'
+#' This function analyses the current file (an R script, Rmd or qmd file) to
+#' extract information about all functions called within the code, identifies
+#' their associated packages, and returns a summary of packages used with
+#' version and citation information.
+#'
+#' @description The function automatically detects the current R script file
+#' (works best in RStudio), parses the code to identify function calls,
+#' determines which packages they belong to, and creates a summary of all
+#' non-base R packages used in the script. It handles both namespace-qualified
+#' function calls (e.g., `dplyr::filter`) and regular function calls, while
+#' filtering out base R functions and control structures.
+#'
+#' @return A data frame with the following columns:
+#' \describe{
+#'   \item{package_name}{Character. Name of the package}
+#'   \item{functions_called}{Character. Comma-separated list of functions called from this package}
+#'   \item{package_version}{Character. Version number of the installed package}
+#'   \item{package_citation}{Character. Formatted citation for the package}
+#' }
+#'
+#' @note
+#' \itemize{
+#'   \item Works best when run from RStudio with an active source file
+#'   \item Requires that referenced packages are already loaded/installed
+#'   \item Will not detect functions called through indirect methods (e.g., `do.call()`)
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' # Run this function from within an R script to analyze its dependencies
+#' package_info <- extract_package_details()
+#' print(package_info)
+#'
+#' @seealso \code{\link[utils]{getAnywhere}},
+#' \code{\link[utils]{packageVersion}}, \code{\link[utils]{citation}}
+#'
+#' @importFrom utils getAnywhere packageVersion citation
+#' @importFrom  rstudioapi isAvailable getSourceEditorContext
+#' @export
+extract_package_details <- function() {
+
+  # Get the current file path
+  # Try different methods to detect the current file
+  get_current_file <- function() {
+    # Try rstudioapi first (works in RStudio)
+    if (requireNamespace("rstudioapi", quietly = TRUE)) {
+      if (rstudioapi::isAvailable()) {
+        file_path <- rstudioapi::getSourceEditorContext()$path
+        if (!is.null(file_path) && file_path != "") {
+          return(file_path)
+        }
+      }
+    }
+    # Try to get the currently executing script
+    # This works when source() is used
+    if (exists("ofile", envir = parent.frame())) {
+      return(get("ofile", envir = parent.frame()))
+    }
+
+    # Try sys.frame approach
+    for (i in sys.nframe():1) {
+      if (exists("ofile", envir = sys.frame(i))) {
+        return(get("ofile", envir = sys.frame(i)))
+      }
+    }
+
+    # If all else fails, prompt user
+    stop("Could not detect current file. Please ensure you're running this from RStudio with an active file, or use rstudioapi package.")
+  }
+
+  try(file_path <- get_current_file(),silent = T)
+  if (inherits("try-error",file_path)) stop("Current file can not be identified.")
+
+
+  # Read the file content
+  text <- readLines(file_path, warn = FALSE) |>
+    paste(collapse = "\n")
+
+  # Remove HTML comments (<!-- -->)
+  text <- gsub("<!--.*?-->", "", text, perl = TRUE)
+
+  # Split into lines for processing
+  lines <- strsplit(text, "\n")[[1]]
+
+  # Remove comments (everything after # on each line)
+  # But preserve # inside strings
+  remove_comments <- function(line) {
+    # Simple approach: find # not inside quotes
+    in_single_quote <- FALSE
+    in_double_quote <- FALSE
+    chars <- strsplit(line, "")[[1]]
+    result <- character()
+
+    for (i in seq_along(chars)) {
+      char <- chars[i]
+
+      # Check for escape sequences
+      if (i > 1 && chars[i-1] == "\\") {
+        result <- c(result, char)
+        next
+      }
+
+      # Toggle quote states
+      if (char == "'" && !in_double_quote) {
+        in_single_quote <- !in_single_quote
+      } else if (char == '"' && !in_single_quote) {
+        in_double_quote <- !in_double_quote
+      } else if (char == "#" && !in_single_quote && !in_double_quote) {
+        # Found a comment outside of quotes
+        break
+      }
+
+      result <- c(result, char)
+    }
+
+    paste(result, collapse = "")
+  }
+
+  # Apply comment removal to each line
+  lines <- sapply(lines, remove_comments, USE.NAMES = FALSE)
+
+  # Combine back into single text
+  text <- paste(lines, collapse = "\n")
+
+  # First, remove function definitions to avoid false positives
+  # Match "function(" only when preceded by space, =, <-, or start of line
+  text_no_func_def <- gsub("(^|\\s|=|<-)function\\s*\\(", "\\1FUNCTION_DEFINITION(", text, perl = TRUE)
+
+  # Initialize results list
+  all_functions <- list()
+
+  # Pattern 1: Namespace-qualified function calls (package::function or package:::function)
+  ns_pattern <- "\\b([a-zA-Z][a-zA-Z0-9.]*)(:::|::)([a-zA-Z_][a-zA-Z0-9._]*)\\s*\\("
+  ns_matches <- gregexpr(ns_pattern, text_no_func_def, perl = TRUE)
+  ns_calls <- regmatches(text_no_func_def, ns_matches)[[1]]
+
+  if (length(ns_calls) > 0) {
+    # Extract package and function names
+    for (call in ns_calls) {
+      # Remove the opening parenthesis and whitespace
+      call_clean <- gsub("\\s*\\($", "", call)
+
+      # Split by :: or :::
+      parts <- strsplit(call_clean, ":::|::")[[1]]
+      if (length(parts) == 2) {
+        all_functions[[length(all_functions) + 1]] <- list(
+          function_name = parts[2],
+          package_name = parts[1],
+          is_namespaced = TRUE
+        )
+      }
+    }
+  }
+
+  # Pattern 2: Regular function calls (not namespace-qualified)
+  # Exclude calls that are preceded by :: or :::
+  regular_pattern <- "(?<!:)(?<!::|:::)\\b([a-zA-Z_][a-zA-Z0-9._]*)\\s*\\("
+  regular_matches <- gregexpr(regular_pattern, text_no_func_def, perl = TRUE)
+  regular_calls <- regmatches(text_no_func_def, regular_matches)[[1]]
+
+  if (length(regular_calls) > 0) {
+    # Extract just the function names (remove the trailing "(")
+    function_names <- gsub("\\s*\\($", "", regular_calls)
+
+    # Remove some common non-function patterns
+    control_structures <- c("if", "for", "while", "repeat", "function",
+                            "case_when","c","list","data.frame","tibble",
+                            "FUNCTION_DEFINITION", "switch")
+    function_names <- function_names[!function_names %in% control_structures]
+
+    # Add to list
+    for (func_name in function_names) {
+      all_functions[[length(all_functions) + 1]] <- list(
+        function_name = func_name,
+        package_name = NA,
+        is_namespaced = FALSE
+      )
+    }
+  }
+
+  # Convert to data frame for easier manipulation
+  if (length(all_functions) == 0) {
+    return(data.frame(
+      function_name = character(),
+      package_name = character(),
+      package_version = character(),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  functions_df <- do.call(rbind, lapply(all_functions, as.data.frame))
+
+  # Get unique function-package combinations
+  functions_df <- functions_df |> distinct()
+
+  # Check if not namespaced functions are base R function, and if so, remove
+  is_base_R <- function(func_name){
+    sapply(func_name, function(f){
+      exists(f, mode = "function", envir = baseenv())
+    })
+  }
+
+  functions_df <- functions_df |>
+    mutate(
+      package_name = ifelse(is.na(package_name),ifelse(is_base_R(function_name),"base",NA),package_name)) |>
+    filter(!grepl("base",package_name)) |>
+    filter(function_name != "extract_package_details")
+
+  # Get package information for non-namespaced functions
+  get_function_package <- function(func_names) {
+    sapply(func_names,function(func_name) {
+      # find the function
+      where_found <- getAnywhere(func_name)
+      if (length(where_found$where)>0){
+        if ( ".GlobalEnv" %in% where_found$where) return("GlobalEnv")
+        pkg_list <- unique(gsub("package[:]|namespace[:]","",
+                                grep("package|namespace",where_found$where,value = T)))
+        return(pkg_list[1])
+      } else return("Unknown")
+    },USE.NAMES=F,simplify=T)
+  }
+
+  functions_df <- functions_df |>
+    mutate(
+      package_name = ifelse(is.na(package_name),
+                            get_function_package(function_name),package_name)) |>
+    filter(!grepl("Unknown",package_name))
+
+  # Function to get package version
+  get_package_version <- function(pkg_name) {
+    sapply(pkg_name, function(pn){
+      tryCatch(
+        as.character(packageVersion(pn)),
+        error = function(e) NA_character_
+      )
+    })
+  }
+  # Function to get package citation
+  get_package_citation <- function(pkg_name) {
+    sapply(pkg_name, function(pn){
+      tryCatch(
+        format(citation(pn),style = "text"),
+        error = function(e) NA_character_
+      )
+    })
+  }
+  packages_df <- functions_df |>
+    group_by(package_name) |>
+    summarise(functions_called = paste(unique(function_name),collapse=", ")) |>
+    mutate(package_version = get_package_version(package_name),
+           package_citation = get_package_citation(package_name))
+
+}
+
