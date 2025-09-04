@@ -954,6 +954,6 @@ extract_package_details <- function() {
     summarise(functions_called = paste(unique(function_name),collapse=", ")) |>
     mutate(package_version = get_package_version(package_name),
            package_citation = get_package_citation(package_name))
-
+  return(packages_df)
 }
 
