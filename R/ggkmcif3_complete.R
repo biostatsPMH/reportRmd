@@ -1199,7 +1199,8 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
 
   # Auto-detect plot type
   if (is.null(type)) {
-    type <- if (length(unique(data[[response[2]]])) < 3) "KM" else "CIF"
+    if (length(unique(na.omit(data[[response[2]]]))) > 3) stop("More than 3 unique values detected in the event type. For KM curves there should be two unique values and for CIF either two, or three if there is a competing risk")
+    type <- if (length(unique(na.omit(data[[response[2]]]))) < 3) "KM" else "CIF"
   }
 
   # Set default y-axis label

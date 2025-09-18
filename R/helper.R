@@ -741,6 +741,7 @@ fillNAs <- function(x) {
 #'
 #' @importFrom utils getAnywhere packageVersion citation
 #' @importFrom  rstudioapi isAvailable getSourceEditorContext
+#' @importFrom dplyr distinct group_by summarise mutate
 #' @export
 extract_package_details <- function() {
 
@@ -896,7 +897,7 @@ extract_package_details <- function() {
   functions_df <- do.call(rbind, lapply(all_functions, as.data.frame))
 
   # Get unique function-package combinations
-  functions_df <- functions_df |> distinct()
+  functions_df <- functions_df |> dplyr::distinct()
 
   # Check if not namespaced functions are base R function, and if so, remove
   is_base_R <- function(func_name){
@@ -906,10 +907,10 @@ extract_package_details <- function() {
   }
 
   functions_df <- functions_df |>
-    mutate(
+    dplyr::mutate(
       package_name = ifelse(is.na(package_name),ifelse(is_base_R(function_name),"base",NA),package_name)) |>
-    filter(!grepl("base",package_name)) |>
-    filter(function_name != "extract_package_details")
+    dplyr::filter(!grepl("base",package_name)) |>
+    dplyr::filter(function_name != "extract_package_details")
 
   # Get package information for non-namespaced functions
   get_function_package <- function(func_names) {
@@ -926,10 +927,10 @@ extract_package_details <- function() {
   }
 
   functions_df <- functions_df |>
-    mutate(
+    dplyr::mutate(
       package_name = ifelse(is.na(package_name),
                             get_function_package(function_name),package_name)) |>
-    filter(!grepl("Unknown",package_name))
+    dplyr::filter(!grepl("Unknown",package_name))
 
   # Function to get package version
   get_package_version <- function(pkg_name) {
@@ -950,10 +951,19 @@ extract_package_details <- function() {
     })
   }
   packages_df <- functions_df |>
-    group_by(package_name) |>
-    summarise(functions_called = paste(unique(function_name),collapse=", ")) |>
-    mutate(package_version = get_package_version(package_name),
-           package_citation = get_package_citation(package_name))
+    dplyr::group_by(package_name) |>
+    dplyr::summarise(functions_called = paste(unique(function_name),collapse=", ")) |>
+    dplyr::ungroup() |>
+    dplyr::filter(package_name !="GlobalEnv") |>
+    dplyr::add_row(package_name ="utils") |>
+    dplyr::mutate(package_version = get_package_version(package_name),
+                  package_citation = get_package_citation(package_name)) |>
+    dplyr::group_by(package_citation) |>
+    dplyr::slice_tail(n=1) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(package_name = gsub("utils","R",package_name))
+  ord <- c((1:nrow(packages_df))[-which(packages_df$package_name=="R")],which(packages_df$package_name=="R"))
+  packages_df <-packages_df[ord,]
   return(packages_df)
 }
 

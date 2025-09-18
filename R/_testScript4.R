@@ -735,3 +735,15 @@ data("pembrolizumab")
 ggkmcif2(response = c('os_time','os_status'),
         cov='cohort', type="CIF",
         data=pembrolizumab)
+
+
+# Forest plot testing ------------
+ data("pembrolizumab")
+ glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
+ data=pembrolizumab,family = 'binomial')
+pMV <- forestplotMV2(glm_fit)
+
+pUV <-  forestplotUV2(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
+  data=pembrolizumab, family='binomial')
+
+forestplotUVMV(pUV,pMV,scale,logScale = T)
