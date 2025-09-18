@@ -192,8 +192,6 @@ to be checked}
 
 \item{returns}{Logical, if TRUE a list contain the plot and at risk table is
 returned}
-
-\item{table.height}{Relative height of risk table (0-1)}
 }
 \description{
 This section documents the additional parameters for \link{ggkmcif3}.

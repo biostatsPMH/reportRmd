@@ -278,8 +278,8 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     }
   }
   lbl <- result[, 1]
-  to_indent <- which(!(result[, 1] %in% names(data)))
-  bold_cells <- cbind(which(result[, 1] %in% names(data)), rep(1, length(which(result[, 1] %in% names(data)))))
+  to_indent <- which(!(result[, 1] %in% names(data)) & result$disp=="")
+  bold_cells <- cbind(which(result[, 1] %in% names(data) & result$disp!="" ), rep(1, length(which(result[, 1] %in% names(data)))))
   if (nicenames) {
     result[, 1] <- replaceLbl(args$data, lbl)
   }

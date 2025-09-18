@@ -716,6 +716,7 @@ extract_grays_test <- function(fit, plot.event = 1) {
 # Plotting Helper Functions ----
 
 #' Get current ggplot2 theme base size
+#' @noRd
 get_current_base_size <- function(default = 11) {
   current_theme <- ggplot2::theme_get()
   base_size <- current_theme$text$size
@@ -1144,7 +1145,7 @@ create_risk_table <- function(sfit, times, xlim,stratalabs, stratalabs.table = N
 }
 
 # Utility Functions ----
-#' Break function for x-axis
+#' @noRd
 break_function <- function(x, n = 5) {
   pretty(c(0, x), n = n)
 }
@@ -1469,7 +1470,6 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
 #'   cumulative hazard or log(survival). The log-log option bases the intervals
 #'   on the log hazard or log(-log(survival)), and the logit option on
 #'   log(survival/(1-survival)).
-#' @param table.height Relative height of risk table (0-1)
 #' @param main String corresponding to main title. When NULL uses Kaplan-Meier
 #'   Plot s, and "Cumulative Incidence Plot for CIF"
 #'
@@ -1580,6 +1580,7 @@ ggkmcif3Parameters <- function(HR = FALSE, HR_pval = FALSE, conf.type = "log",
 # Additional Required Functions ----
 
 #' Function to extract ggplot colours
+#' @noRd
 .extract_ggplot_colours <- function(p, grp.levels) {
   # Extract colours from ggplot object
   g <- ggplot_build(p)
@@ -1591,6 +1592,7 @@ ggkmcif3Parameters <- function(HR = FALSE, HR_pval = FALSE, conf.type = "log",
 }
 
 #' Function to set large dash as y-axis text
+#' @noRd
 .set_large_dash_as_ytext <- function(plot) {
   # Handle large dash formatting for y-axis text
   plot + ggplot2::theme(axis.text.y = ggplot2::element_text(family = "mono"))

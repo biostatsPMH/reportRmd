@@ -183,7 +183,7 @@ pembrolizumab |> rm_uvsum(response = sex,
 covs = c(age, cohort))
 }
 \seealso{
-\code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},
+\code{\link{lm}},\code{\link{glm}},
 \code{\link[cmprsk:crr]{cmprsk::crr}},
 \code{\link[survival:coxph]{survival::coxph}},
 \code{\link[nlme:lme]{nlme::lme}},

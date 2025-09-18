@@ -80,7 +80,7 @@
 #'  longer supported; this function will always use profile likelihoods as per
 #'  the inclusion of the MASS confidence intervals into base from from R 4.4.0
 #'@seealso
-#'\code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},
+#'\code{\link{lm}},\code{\link{glm}},
 #'\code{\link[cmprsk:crr]{cmprsk::crr}},
 #'\code{\link[survival:coxph]{survival::coxph}},
 #'\code{\link[nlme:lme]{nlme::lme}},
@@ -234,9 +234,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   # get the table
   tab <- do.call(uvsum2,argList)
   # If user specifies return models, don't format a table, just return a list of models
+  if (returnModels) return (tab$models)
   to_indent <- attr(tab, "to_indent")
   bold_cells <- attr(tab, "bold_cells")
-  if (returnModels) return (tab$models)
   att_tab <- attributes(tab)
 
   method <- p.adjust

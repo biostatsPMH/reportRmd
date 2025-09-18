@@ -735,6 +735,7 @@ fillNAs <- function(x) {
 #' # Run this function from within an R script to analyze its dependencies
 #' package_info <- extract_package_details()
 #' print(package_info)
+#' }
 #'
 #' @seealso \code{\link[utils]{getAnywhere}},
 #' \code{\link[utils]{packageVersion}}, \code{\link[utils]{citation}}

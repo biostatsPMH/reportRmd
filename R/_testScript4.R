@@ -747,3 +747,16 @@ pUV <-  forestplotUV2(response="orr", covs=c("change_ctdna_group", "sex", "age",
   data=pembrolizumab, family='binomial')
 
 forestplotUVMV(pUV,pMV,scale,logScale = T)
+
+
+result <- df |>
+  rm_compactsum(xvars=all_of(c(demo_vars,
+                               "all_treatments",
+                               treatments))
+  )
+
+df |>
+  rm_compactsum(xvars=all_of(c(demo_vars,
+                               "all_treatments",
+                               treatments))
+  )
