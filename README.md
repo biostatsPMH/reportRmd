@@ -36,7 +36,7 @@ You can install the development version of reportRmd from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("biostatsPMH/reportRmd", ref="development")
+devtools::install_github("biostatsPMH/reportRmd", ref="ggkmcif3")
 ```
 
 ## New Features
