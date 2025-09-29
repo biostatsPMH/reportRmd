@@ -732,8 +732,8 @@ library(devtools)
 load_all()
 data("pembrolizumab")
 # Simple plot without confidence intervals
-ggkmcif2(response = c('os_time','os_status'),
-        cov='cohort', type="CIF",
+ggkmcif3(response = c('os_time','os_status'),
+        cov='cohort',
         data=pembrolizumab)
 
 

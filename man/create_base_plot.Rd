@@ -49,7 +49,7 @@ create_base_plot(
 
 \item{legend.pos}{Legend position}
 
-\item{legend.title}{Legend position}
+\item{legend.title}{Legend title}
 
 \item{times}{Time breaks}
 

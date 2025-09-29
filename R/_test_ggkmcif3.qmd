@@ -1,0 +1,98 @@
+---
+title: "ggkmcif3"
+format: docx
+editor: source
+---
+
+```{r setup}
+library(reportRmd)
+data("pembrolizumab")
+```
+
+
+## Figure Height =  5
+
+### ggkmcif2
+
+```{r, fig.height=5}
+ggkmcif2(response = c('os_time','os_status'),
+cov='cohort', times = seq(0,36,6),xlim=c(0,25),
+data=pembrolizumab)
+
+```
+
+### ggkmcif3
+
+```{r, fig.height=5}
+ggkmcif3(response = c('os_time','os_status'),
+         #type="CIF",
+cov='cohort', times = seq(0,36,6),xlim=c(0,25),
+pval.pos=c(18,0),
+data=pembrolizumab)
+
+```
+
+\newpage
+## Figure Height =  4
+
+### ggkmcif2
+
+```{r, fig.height=4}
+ggkmcif2(response = c('os_time','os_status'),
+cov='sex',
+data=pembrolizumab)
+
+```
+
+### ggkmcif3
+
+```{r, fig.height=4}
+ggkmcif3(response = c('os_time','os_status'),
+cov='sex',
+data=pembrolizumab)
+
+```
+
+\newpage
+
+## Figure Height =  3
+
+### ggkmcif2
+
+```{r, fig.height=3}
+ggkmcif2(response = c('os_time','os_status'),
+cov='sex',
+data=pembrolizumab)
+
+```
+
+### ggkmcif3
+
+```{r, fig.height=3}
+ggkmcif3(response = c('os_time','os_status'),
+cov='sex',
+data=pembrolizumab)
+
+```
+
+\newpage
+
+## Figure Height =  2
+
+### ggkmcif2
+
+```{r, fig.height=2}
+ggkmcif2(response = c('os_time','os_status'),
+cov='sex',
+data=pembrolizumab)
+
+```
+
+### ggkmcif3
+
+```{r, fig.height=2}
+ggkmcif3(response = c('os_time','os_status'),
+cov='sex',
+data=pembrolizumab)
+
+```

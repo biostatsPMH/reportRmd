@@ -737,7 +737,7 @@ get_current_base_size <- function(default = 11) {
 #' @param col colours vector
 #' @param linetype Line types vector
 #' @param legend.pos Legend position
-#' @param legend.title Legend position
+#' @param legend.title Legend title
 #' @param times Time breaks
 #' @param ylim Y-axis limits
 #' @param xlim X-axis limits
@@ -749,7 +749,7 @@ create_base_plot <- function(df, type, xlab = "Time", ylab = "Survival Probabili
                              times, ylim = c(0, 1), xlim = NULL, main = NULL) {
 
   # Determine maximum x value
-  maxxval <- max(df$time, times[length(times)])
+  maxxval <- max(times)
   maxxlim <- if (is.null(xlim)) maxxval else xlim[2]
 
   # Create base plot
@@ -780,20 +780,32 @@ create_base_plot <- function(df, type, xlab = "Time", ylab = "Survival Probabili
       axis.title.x.bottom = ggplot2::element_text(vjust = 4),
       panel.grid.minor = ggplot2::element_blank(),
       legend.key = ggplot2::element_rect(colour = "transparent", fill = "transparent"),
-      legend.background = ggplot2::element_blank(),
-      legend.position = legend.pos
+      legend.key.spacing.y = unit(-.25, "lines"),
+      legend.margin = margin(0, 0, 0, 0),
+      legend.box.margin = margin(0, 0, 0, 0),
+      legend.background = ggplot2::element_blank()
     ) +
     ggplot2::scale_x_continuous(paste0("\n", xlab), breaks = times, limits = c(0, maxxval)) +
     ggplot2::coord_cartesian(xlim = c(0, maxxlim)) +
     ggplot2::scale_y_continuous(paste0(ylab, "\n"), limits = ylim)
-
-
+  if (is.null(legend.title)){
+    p <- p+ ggplot2::theme(legend.title = element_blank())
+  } else p <- p+ ggplot2::theme(legend.title = element_text(margin = margin(b = 0,l=5),hjust = 0.5))
   # Add title if specified
   if (!is.null(main)) {
     p <- p + ggplot2::ggtitle(main) +
       ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", hjust = 0.5, size = fsize))
   }
-
+  # position the legend
+  if (is.numeric(legend.pos)) {
+    p <- p +
+      ggplot2::theme(
+        legend.position = "inside",
+        legend.position.inside = legend.pos,
+        legend.justification.inside = legend.pos)
+  } else {
+    p <- p + ggplot2::theme(legend.position = legend.pos)
+  }
   p
 }
 
@@ -892,8 +904,11 @@ add_statistical_tests <- function(p, type, multiple_lines, pval_result, pval.pos
     pvaltxt <- paste(lpvalue2(pval_result, pval.digits), "(Log Rank)")
 
     if (is.null(pval.pos)) {
-      p + ggplot2::annotate("text", x = 0.85 * xlim[2], y = ylim[1],
+      p + ggplot2::annotate("text", x = Inf, y = Inf,
+                            hjust = 1, vjust = 1,
                             label = pvaltxt, size = psize)
+      # p + ggplot2::annotate("text", x = 0.85 * xlim[2], y = ylim[1],
+      #                       label = pvaltxt, size = psize)
     } else {
       p + ggplot2::annotate("text", x = pval.pos[1], y = pval.pos[2],
                             label = pvaltxt, size = psize)
@@ -903,8 +918,11 @@ add_statistical_tests <- function(p, type, multiple_lines, pval_result, pval.pos
       pvaltxt <- paste(lpvalue2(pval_result, pval.digits), "(Gray's test)")
 
       if (is.null(pval.pos)) {
-        p + ggplot2::annotate("text", x = 0.85 * xlim[2], y = ylim[1],
+        p + ggplot2::annotate("text", x = Inf, y = -Inf,
+                              hjust = 1.1, vjust = -0.5,
                               label = pvaltxt, size = psize)
+        # p + ggplot2::annotate("text", x = 0.85 * xlim[2], y = ylim[1],
+        #                       label = pvaltxt, size = psize)
       } else {
         p + ggplot2::annotate("text", x = pval.pos[1], y = pval.pos[2],
                               label = pvaltxt, size = psize)
@@ -1088,7 +1106,7 @@ create_risk_table <- function(sfit, times, xlim,stratalabs, stratalabs.table = N
                               multiple_lines = TRUE, col = NULL, fsize = 12, nsize = 3) {
 
   # Determine maximum x value
-  maxxval <- max(df$time, times[length(times)])
+  maxxval <- max(times)
   maxxlim <- if (is.null(xlim)) maxxval else xlim[2]
 
     if (is.null(stratalabs.table)) stratalabs.table <- stratalabs
@@ -1145,6 +1163,25 @@ create_risk_table <- function(sfit, times, xlim,stratalabs, stratalabs.table = N
 }
 
 # Utility Functions ----
+#' @noRd
+process_legend_pos <- function(legend.pos) {
+  if (is.character(legend.pos) && length(legend.pos) == 1) {
+    # Use switch for string positions
+    switch(legend.pos,
+           "left" = "left",
+           "top" = "top",
+           "right" = "right",
+           "bottom" = "bottom",
+           "none" = "none",
+           stop("Invalid legend position string. Must be one of: 'left', 'top', 'right', 'bottom', 'none'"))
+  } else if (is.numeric(legend.pos) && length(legend.pos) == 2) {
+    # Return numeric vector as-is for custom positioning
+    legend.pos
+  } else {
+    stop("legend.pos must be either a character string or a numeric vector of length 2")
+  }
+}
+
 #' @noRd
 break_function <- function(x, n = 5) {
   pretty(c(0, x), n = n)
@@ -1203,6 +1240,11 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
     if (length(unique(na.omit(data[[response[2]]]))) > 3) stop("More than 3 unique values detected in the event type. For KM curves there should be two unique values and for CIF either two, or three if there is a competing risk")
     type <- if (length(unique(na.omit(data[[response[2]]]))) < 3) "KM" else "CIF"
   }
+  # Check & set legend position
+  if (!("legend.pos" %in% names(mainArgs))){
+    if (type == "KM") legend.pos <- c(0,0) else legend.pos <- c(0,1)
+  } else legend.pos <- process_legend_pos(legend.pos)
+
 
   # Set default y-axis label
   if (type == "KM") {
@@ -1236,6 +1278,7 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
 
   # Set font size
   if (missing(fsize)) fsize <- get_current_base_size()
+  if (missing(psize)) psize <- (fsize * 0.8) / .pt
 
   # Process colours and line types
   if (is.null(stratalabs.table)) stratalabs.table <- stratalabs
@@ -1339,31 +1382,18 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
     }
   }
 
-  # Set up legend position
+
+  # Set time breaks
   m <- max(nchar(stratalabs))
   maxxval <- max(df$time, if (!is.null(times)) times[length(times)] else 0)
   maxxlim <- if (is.null(xlim)) maxxval else xlim[2]
-
-  leg.pos <- legend.pos
-  d <- length(unique(df$strata))
-
-  if (!multiple_lines && (type == "KM" || (type == "CIF" && length(plot.event) == 1))) {
-    leg.pos <- "none"
-  } else if (is.null(legend.pos)) {
-    if (type == "CIF" && !flip.CIF) {
-      leg.pos <- c(min(0.1 + m/200, 0.5), 0.9 - d * 0.05)
-    } else {
-      leg.pos <- c(min(0.1 + m/200, 0.5), 0.05 + d * 0.05)
-    }
-  }
-
-  # Set time breaks
   if (is.null(times)) times <- break_function(maxxlim)
   if (is.null(xlim)) xlim <- c(min(times), max(times))
 
+
   # Create base plot
   p <- create_base_plot(df, type, xlab, ylab, multiple_lines, plot.event, event,
-                        lsize, fsize, col, linetype, leg.pos, legend.title,
+                        lsize, fsize, col, linetype, legend.pos, legend.title,
                         times, ylim, xlim, main)
 
   # Add confidence bands
@@ -1424,19 +1454,11 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
     # Set table height
     line_size_in_inches <- fsize/72
     dev_height_inches <- dev.size("in")[2]
-    p_risk_lines <- length(unique(stratalabs))+1.5
+    p_risk_lines <- length(unique(stratalabs))+2
     p2_risk_height <- line_size_in_inches*p_risk_lines
     p1_height <-  dev_height_inches - p2_risk_height
     rel_height = c(1,(dev_height_inches-p1_height)/p1_height)
 
-    # tbl_ht <- ifelse(is.null(cov), 1, length(unique(data[[cov]])))
-    # if (!is.null(cov)) if (inherits(data[[cov]], "numeric")) tbl_ht <- 2
-    # if (tbl_ht < 3) tbl_ht <- 3.5
-    # if (is.null(tbl.height)) {
-    #   rel.height.table <- tbl_ht / 20
-    # } else {
-    #   rel.height.table <- tbl.height
-    # }
 
     p_combined <- cowplot::plot_grid(p, data.table, nrow = 2, ncol = 1,
                                      rel_heights = rel_height,
@@ -1522,10 +1544,10 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
 #' @param linetype vector of line types; default is solid for all lines
 #' @param xlim  vector of length 2 corresponding to limits of x-axis. Default to
 #'   NULL
-#' @param legend.pos Can be either a string corresponding to the legend position
-#'   ("left","top", "right", "bottom", "none") or a vector of length 2
-#'   corresponding to the legend position (uses normalized units (ie the
-#'   c(0.5,0.5) is the middle of the plot))
+#' @param legend.pos A string corresponding to the legend position
+#'   ("left","top", "right", "bottom", "none") or a numeric vector specifying
+#'   the internal coordinates of the plot ie c(0.5,.0.5) for the centre of the
+#'   plot.
 #' @param legend.title a string for the title of the legend, defaults to
 #'   strataname
 #' @param pval.pos  vector of length 2 corresponding to the p-value position
@@ -1565,7 +1587,7 @@ ggkmcif3Parameters <- function(HR = FALSE, HR_pval = FALSE, conf.type = "log",
                                fsize, nsize = 3, lsize = .7, psize = 3.5,
                                median.size = 3, median.pos = NULL, median.lsize = 1, set.size = 3,
                                set.pos = NULL, set.lsize = 1, ylim = c(0, 1),
-                               linetype = NULL, xlim = NULL, legend.pos = NULL,
+                               linetype = NULL, xlim = NULL, legend.pos,
                                legend.title = strataname,
                                pval.pos = NULL,
                                event = c("col", "linetype"), flip.CIF = FALSE,

@@ -37,7 +37,7 @@ ggkmcif3Parameters(
   ylim = c(0, 1),
   linetype = NULL,
   xlim = NULL,
-  legend.pos = NULL,
+  legend.pos,
   legend.title = strataname,
   pval.pos = NULL,
   event = c("col", "linetype"),
@@ -148,10 +148,10 @@ NULL}
 \item{xlim}{vector of length 2 corresponding to limits of x-axis. Default to
 NULL}
 
-\item{legend.pos}{Can be either a string corresponding to the legend position
-("left","top", "right", "bottom", "none") or a vector of length 2
-corresponding to the legend position (uses normalized units (ie the
-c(0.5,0.5) is the middle of the plot))}
+\item{legend.pos}{A string corresponding to the legend position
+("left","top", "right", "bottom", "none") or a numeric vector specifying
+the internal coordinates of the plot ie c(0.5,.0.5) for the centre of the
+plot.}
 
 \item{legend.title}{a string for the title of the legend, defaults to
 strataname}
