@@ -30,3 +30,4 @@
 ^_tidyselectForReportRmd\.R$
 ^_pkgdown\.yml$
 ^pkgdown$
+^\.git$

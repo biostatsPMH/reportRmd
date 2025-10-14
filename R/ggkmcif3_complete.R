@@ -1212,11 +1212,19 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
   # Process arguments and set defaults
   mainArgs <- as.list(match.call(expand.dots = TRUE)[-1])
   toAdd <- mainArgs[setdiff(names(mainArgs), ls())]
-  toAdd <- lapply(toAdd, function(arg) {
-    if (inherits(arg, "call")) arg <- eval(arg)
-    return(arg)
-  })
+  # Capture the parent environment before entering lapply & eval all
+  parentEnv <- parent.frame()
+  # toAdd <- lapply(toAdd, function(arg) {
+  #   if (inherits(arg, "call")) arg <- eval(arg)
+  #   return(arg)
+  # })
+  toAdd <- toAdd |>
+    lapply(function(arg) eval(arg, envir = parentEnv))
   list2env(toAdd, environment())
+
+
+
+
 
   # Add default parameters
   if (!("strataname" %in% names(mainArgs))) {
