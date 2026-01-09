@@ -9,7 +9,7 @@ scrolling_table(knitrTable, pixelHeight = 500)
 \arguments{
 \item{knitrTable}{output from a call to knitr::kable or outTable}
 
-\item{pixelHeight}{the height of the scroll box in pixels,defulat is 500}
+\item{pixelHeight}{the height of the scroll box in pixels, default is 500}
 }
 \description{
 This function accepts the output of a aa call to knitr::kable or

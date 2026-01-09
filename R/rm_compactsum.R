@@ -216,6 +216,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   }
 
   data <- dplyr::select(data, dplyr::all_of(c(grouping_var,x_vars)))
+  data_lbls <- extract_labels(data)
 
   if (!missing(grp) ) {
     n_na <- sum(is.na(data[[grouping_var]]))
@@ -276,12 +277,15 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
         result[["p-value"]] <- formatp(result[["p-value"]])
       }
     }
-  }
+  }  
   lbl <- result[, 1]
+  data <- set_labels(data,data_lbls)
   to_indent <- which(!(result[, 1] %in% names(data)) & result$disp=="")
-  bold_cells <- cbind(which(result[, 1] %in% names(data) & result$disp!="" ), rep(1, length(which(result[, 1] %in% names(data)))))
+  if (all(result$disp=="")) {
+     bold_cells <- cbind(which(result[, 1] %in% names(data) ), rep(1, length(which(result[, 1] %in% names(data)))))
+  } else   bold_cells <- cbind(which(result[, 1] %in% names(data) & result$disp!="" ), rep(1, length(which(result[, 1] %in% names(data)))))
   if (nicenames) {
-    result[, 1] <- replaceLbl(args$data, lbl)
+    result[, 1] <- replaceLbl(data, lbl)
   }
   if ("ref" %in% names(result)) {
     result[, 1] <- paste0(result[, 1],ifelse(is.na(result$`ref`),"",result$`ref`))

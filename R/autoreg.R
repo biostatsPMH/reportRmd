@@ -24,7 +24,7 @@ autoreg.rm_lm <- function(response,data,x_var,id=NULL,strata="",family=NULL,offs
 autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   m2 <- NULL
   if (all(data[[response[2]]]==0)) stop('No events observed, can\'t fit a Cox model.')
-  if (all(data[[response[2]]]==1)) stop(paste('All participants with non-missing',x_var,'experienced the event. \nConsider continuous regression.'))
+  if (all(data[[response[2]]]==1)) msg(paste('All participants with non-missing',x_var,'experienced the event.'))
   f <- paste(paste("survival::Surv(",
                    response[1], ",", response[2], ")",
                    sep = ""), "~", x_var, ifelse(strata ==

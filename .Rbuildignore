@@ -25,6 +25,10 @@
 ^_delta_calculation\.R$
 ^_testScript3\.R$
 ^_testScript4\.R$
+^_ggkmcif2\.R$
+^_ggkmcif3_tests\.r$
+^_forestPlots\.R$
+^_refactored_compactsum\.r$
 ^_ToDo\.R$
 ^_unusedFunctions\.R$
 ^_tidyselectForReportRmd\.R$

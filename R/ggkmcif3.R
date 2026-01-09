@@ -1204,7 +1204,7 @@ break_function <- function(x, n = 5) {
 #' @param returns Whether to return list with plot and at risk table
 #' @param ... Additional arguments
 #' @export
-ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
+ggkmcif2 <- function(response, cov = NULL, data, pval = TRUE,
                      conf.curves = FALSE, table = TRUE, xlab = "Time",
                      ylab = NULL, col = NULL, times = NULL, type = NULL,
                      plot.event = 1, returns = FALSE, ...) {
@@ -1234,7 +1234,7 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
     legend.title <- ifelse(is.null(strataname), "", strataname)
   }
 
-  defaultExtraArgs <- ggkmcif3Parameters(strataname = strataname)
+  defaultExtraArgs <- ggkmcif2Parameters(strataname = strataname)
   argsToAdd <- defaultExtraArgs[setdiff(names(defaultExtraArgs), names(mainArgs))]
   argsToAdd <- lapply(argsToAdd, function(arg) {
     if (inherits(arg, "call")) arg <- eval(arg)
@@ -1486,9 +1486,9 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
   }
 }
 
-#' Additional parameters passed to ggkmcif3
+#' Additional parameters passed to ggkmcif2
 #'
-#' This section documents the additional parameters for \link{ggkmcif3}.
+#' This section documents the additional parameters for \link{ggkmcif2}.
 #'
 #' @param HR boolean to specify if you want hazard ratios included in the plot
 #' @param HR_pval boolean to specify if you want HR p-values in the plot
@@ -1582,9 +1582,9 @@ ggkmcif3 <- function(response, cov = NULL, data, pval = TRUE,
 #' @param returns Logical, if TRUE a list contain the plot and at risk table is
 #'   returned
 #'
-#' @name ggkmcif3Parameters
+#' @name ggkmcif2Parameters
 #' @export
-ggkmcif3Parameters <- function(HR = FALSE, HR_pval = FALSE, conf.type = "log",
+ggkmcif2Parameters <- function(HR = FALSE, HR_pval = FALSE, conf.type = "log",
                                main = NULL, stratalabs = NULL, strataname,
                                stratalabs.table = NULL, strataname.table = strataname,
                                median.text = FALSE, median.lines = FALSE, median.CI = FALSE,

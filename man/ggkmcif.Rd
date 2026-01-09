@@ -110,14 +110,14 @@ Plot s, and "Cumulative Incidence Plot for CIF"}
 \item{stratalabs}{string corresponding to the labels of the covariate, when
 NULL will use the levels of the covariate}
 
-\item{strataname}{String of the covariate name default is  nicename(cov)}
+\item{strataname}{String of the covariate name default is nicename(cov)}
 
 \item{stratalabs.table}{String corresponding to the levels of the covariate
 for the number at risk table, when NULL will use the levels of the
 covariate. Can use a string of "-" when the labels are long}
 
 \item{strataname.table}{String of the covariate name for the number at risk
-table default is  nicename(cov}
+table default is nicename(cov)}
 
 \item{median.text}{boolean to specify if you want the median values added to
 the legend (or as added text if there are no covariates), for KM only}

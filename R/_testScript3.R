@@ -1,3 +1,25 @@
+# TEsting rm_compactsum
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/checked_data.rda")
+library(tidyverse)
+demo_vars <- c( 'mcspc_type', 'sites_of_metastases___1', 'sites_of_metastases___2', 'sites_of_metastases___4', 'sites_of_metastases___5')
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/checked_data.rda")
+study_data$sites_of_metastases___1
+result <- study_data |> 
+  filter(is.na(redcap_repeat_instance )) |> 
+  rm_compactsum(xvars = demo_vars,nicenames = T,tableOnly = T)
+result
+result$data$sites_of_metastases___1
+replaceLbl(result$data,result$lbl)
+replaceLbl(study_data,result$lbl)
+
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/study_data_08Jan2026.rda")
+study_data$sites_of_metastases___1
+result <- study_data |> 
+  filter(is.na(redcap_repeat_instance )) |> 
+  rm_compactsum(xvars = demo_vars,nicenames = T,tableOnly = T)
+result
+result$data$sites_of_metastases___1
+replaceLbl(result$data,result$lbl)
 
 # Testing for getVarLevels and coeffSum ------------
 

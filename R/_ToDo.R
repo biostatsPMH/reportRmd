@@ -11,4 +11,4 @@
 
 
 data("pembrolizumab")
-ggkmcif3(data=pembrolizumab,c("os_time","os_status"),"cohort")
+ggkmcif2(data=pembrolizumab,c("os_time","os_status"),"cohort")
