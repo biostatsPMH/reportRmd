@@ -1902,7 +1902,7 @@ geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 
                                                                                                                                     # Convert all columns to character
                                                                                                                                     tab <- tab |>
                                                                                                                                     lapply(as.character) |>
-                                                                                                                                    as.data.frame()
+                                                                                                                                    as.data.frame(check.names = FALSE)
                                                                                                                                     tab[is.na(tab)] <-'&nbsp;' # This is necessary to assign the 'Compact' style to empty cells
                                                                                                                                     tab[tab==''] <-'&nbsp;'
                                                                                                                                     

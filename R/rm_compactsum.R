@@ -259,7 +259,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     args$xvar = xvar
     output_list[[xvar]] <- do.call(xvar_function, args)
   }
-  result <-dplyr::bind_rows(output_list)
+  result <- dplyr::bind_rows(output_list,.id="var")
   if (nrow(result)==0) return()
 
   if (all(na.omit(result[["Missing"]]) == 0))
@@ -278,12 +278,13 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
       }
     }
   }  
+  to_indent <- which(result$Covariate != result$var & result$disp=="")
+  if (all(result$disp=="")) {
+     bold_cells <- cbind(which(result$Covariate == result$var ), rep(1, length(which(result$Covariate == result$var))))
+  } else   bold_cells <- cbind(which(result$Covariate == result$var & result$disp!="" ), rep(1, length(which(result$Covariate == result$var))))
+  result$var <- NULL
   lbl <- result[, 1]
   data <- set_labels(data,data_lbls)
-  to_indent <- which(!(result[, 1] %in% names(data)) & result$disp=="")
-  if (all(result$disp=="")) {
-     bold_cells <- cbind(which(result[, 1] %in% names(data) ), rep(1, length(which(result[, 1] %in% names(data)))))
-  } else   bold_cells <- cbind(which(result[, 1] %in% names(data) & result$disp!="" ), rep(1, length(which(result[, 1] %in% names(data)))))
   if (nicenames) {
     result[, 1] <- replaceLbl(data, lbl)
   }

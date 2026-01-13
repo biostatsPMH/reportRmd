@@ -12,6 +12,15 @@ result$data$sites_of_metastases___1
 replaceLbl(result$data,result$lbl)
 replaceLbl(study_data,result$lbl)
 
+treatment_regimes <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/treatment_regimes.csv")
+data = treatment_regimes 
+xvars=c("ADT","ARPI","Docetaxel","treatments")
+grp="mcspc_diagnosis"
+result<- treatment_regimes |> 
+  rm_compactsum(xvars=c(ADT,ARPI,Docetaxel,treatments),
+  grp=mcspc_diagnosis,
+  full=F,pvalue = F)
+
 load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/study_data_08Jan2026.rda")
 study_data$sites_of_metastases___1
 result <- study_data |> 
