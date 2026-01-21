@@ -607,3 +607,102 @@ rm_compactsum(data=dt, xvars="start_date") # Error in round(summary(subdata[[cov
 
 summary(dt$start_date)
 summary(as.numeric(dt$total_time) )
+
+
+
+# survival data for testing -----
+set.seed(123)
+
+library(survival)
+library(dplyr)
+
+# -----------------------------
+# Parameters
+# -----------------------------
+n_patients <- 300
+
+beta_age    <- 0.03
+beta_sex    <- 0.4
+beta_tumour <- 0.15
+
+baseline_hazard <- 0.01
+
+# -----------------------------
+# Patient-level covariates
+# -----------------------------
+patients <- data.frame(
+  id  = 1:n_patients,
+  age = rnorm(n_patients, mean = 65, sd = 8),
+  sex = rbinom(n_patients, 1, 0.5)  # 0 = female, 1 = male
+)
+
+# -----------------------------
+# Simulate longitudinal tumour size + survival
+# -----------------------------
+long_data <- list()
+
+for (i in 1:n_patients) {
+
+  age <- patients$age[i]
+  sex <- patients$sex[i]
+
+  # Visit times
+  n_visits <- sample(3:7, 1)
+  visit_times <- sort(runif(n_visits, 0, 10))
+
+  # Tumour size trajectory
+  tumour_size <- rnorm(1, 3, 0.5) +
+    0.2 * visit_times +
+    rnorm(n_visits, 0, 0.3)
+
+  # Linear predictor (time-varying)
+  linpred <- beta_age * age +
+             beta_sex * sex +
+             beta_tumour * tumour_size
+
+  # Approximate cumulative hazard
+  dt <- c(visit_times[1], diff(visit_times))
+  hazard <- baseline_hazard * exp(linpred)
+  cumhaz <- cumsum(hazard * dt)
+
+  # Event generation
+  u <- runif(1)
+  event_time <- visit_times[n_visits]
+  event <- 0
+
+  if (any(cumhaz > -log(u))) {
+    event_time <- visit_times[min(which(cumhaz > -log(u)))]
+    event <- 1
+  }
+
+  # Start–stop data
+  for (j in 1:n_visits) {
+
+    start <- ifelse(j == 1, 0, visit_times[j - 1])
+    stop  <- visit_times[j]
+
+    long_data[[length(long_data) + 1]] <- data.frame(
+      id = i,
+      start = start,
+      stop = stop,
+      event = as.integer(event == 1 & stop == event_time),
+      age = age,
+      sex = sex,
+      tumour_size = tumour_size[j]
+    )
+  }
+}
+
+tv_data <- bind_rows(long_data)
+head(tv_data)
+
+test1 <- coxph(Surv(start,stop,event) ~ age + sex + tumour_size,
+data=tv_data)
+summary(test1)
+rm_mvsum(test1)
+
+test2 <- coxph(Surv(start,stop,event) ~ age + sex + tumour_size,
+cluster = id,
+data=tv_data)
+summary(test2)
+rm_mvsum(test2)

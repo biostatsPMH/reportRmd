@@ -330,8 +330,8 @@ coeffSum.coxph <- function(model,CIwidth=.95,digits=2) {
   rownames(ci) <- NULL
   cs <- data.frame(
     terms=rownames(ms),
-    est=ms[,2],
-    p_value = ms[,5]
+    est=ms[,"exp(coef)"],
+    p_value = ms[,"Pr(>|z|)"]
   )
   cs <- merge(cs,ci,all.x = T)
   # test for PH assumption

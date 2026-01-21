@@ -1817,7 +1817,7 @@ geoR_boxcoxfit <- function (object, xmat, lambda, lambda2 = NULL, add.to.data = 
                                                                                                                               applyAttributes=TRUE,keep.rownames=FALSE, nicenames=TRUE,fontsize,chunk_label,format=NULL){
                                                                                                                                 if (!inherits(tab,"data.frame")) stop("tab must be a data frame")
                                                                                                                                 if (nrow(tab)==0) return(NULL)
-                                                                                                                                  
+                                                                                                                                
                                                                                                                                 # strip tibble aspects
                                                                                                                                 tab=as.data.frame(tab)
                                                                                                                                 if (!is.null(row.names)) {
