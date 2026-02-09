@@ -37,10 +37,9 @@ install.packages('reportRmd')
 
 You can install the development version of reportRmd from [GitHub](https://github.com/) with:
 
-
 ``` r
 # install.packages("devtools")
-devtools::install_github("biostatsPMH/reportRmd", ref="development")
+devtools::install_github("biostatsPMH/reportRmd", ref="development", build_vignettes = TRUE)
 ```
 
 ## New Features (v0.1.3)
@@ -50,7 +49,16 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## Documentation
 
+For the CRAN version:
+
 [Online Documentation](https://biostatsPMH.github.io/reportRmd/)
+
+For the Development version run the following and select HTML on the webpage
+
+``` r 
+browseVignettes("reportRmd")
+```
+
 
 ## Examples
 
