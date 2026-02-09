@@ -4,7 +4,13 @@
 \alias{extract_package_details}
 \title{Extract Function and Package Information from Current Document}
 \usage{
-extract_package_details()
+extract_package_details(ignore_comments = TRUE)
+}
+\arguments{
+\item{ignore_comments}{Logical. If TRUE (default), ignores function calls
+within commented code (both R comments starting with # and HTML/XML
+comments \if{html}{\out{<!-- -->}}). If FALSE, extracts functions from all code including
+commented sections.}
 }
 \value{
 A data frame with the following columns:
@@ -40,6 +46,9 @@ version and citation information.
 \dontrun{
 # Run this function from within an R script to analyze its dependencies
 package_info <- extract_package_details()
+
+# Include functions from commented code
+package_info_all <- extract_package_details(ignore_comments = FALSE)
 print(package_info)
 }
 

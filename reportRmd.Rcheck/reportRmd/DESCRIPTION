@@ -1,0 +1,51 @@
+Package: reportRmd
+Title: Tidy Presentation of Clinical Reporting
+Version: 0.1.3
+Date: 2026-02-14
+Authors@R: c(
+    person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut"),comment=c(ORCID="0000-0002-8431-5143")),
+    person(given="Ryan",family="Del Bel",email = "rdelbel@gmail.com",role="aut"),
+    person(given="Osvaldo",family="Espin-Garcia",email = "osvaldo.espin-garcia@uhn.ca",role="aut"),
+    person(given="Katherine",family="Lajkosz",email="Katherine.Lajkosz@uhn.ca",role="aut",comment=c(ORCID="0000-0003-3760-5401")),
+    person(given="Clarina", family="Ong",email = "clarinaongo@gmail.com",role="aut"),
+    person(given="Tyler",family="Pittman",email="tyler.pittman@uhn.ca",role="aut",comment=c(ORCID="0000-0002-5013-6980")),
+    person(given="Anna",family="Santiago",email= "Anna.Santiago@uhn.ca",role="aut",comment=c(ORCID="0000-0002-0932-2386")),
+    person(given="Yanning",family="Wang",email = "21yw15@queensu.ca",role="ctr"),    
+    person(given="Jessica",family="Weiss",email = "jessica.weiss@uhn.ca",role="aut"),   
+    person(given="Wei", family="Xu",email = "wei.xu@uhn.ca",role="aut"))
+Description: Streamlined statistical reporting in 'Rmarkdown' environments. 
+    Facilitates the automated reporting of descriptive statistics, multiple 
+    univariate models, multivariable models and tables combining these outputs. 
+    Plotting functions include customisable survival curves, forest plots from 
+    logistic and ordinal regression and bivariate comparison plots.
+License: MIT + file LICENSE
+Suggests: nlme, tidycmprsk, rmarkdown, testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: aod, boot, cmprsk, cowplot, dplyr, geepack, ggplot2, ggpubr,
+        gridExtra, kableExtra, knitr, lifecycle, MASS, pander, plyr,
+        rlang, rstatix, rstudioapi, scales, stats, survival, tidyr,
+        tidyselect
+Collate: 'imports.R' 'helper.R' 'model_registry.R' 'main.R' 'globals.R'
+        'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R'
+        'autoreg.R' 'autosum.R' 'getVarLevels.R' 'ggkmcif3.R'
+        'rm_mvsum2.R' 'deprecated.R'
+Depends: R (>= 4.2)
+LazyData: no
+URL: https://biostatspmh.github.io/reportRmd/
+NeedsCompilation: no
+Packaged: 2026-02-04 23:05:24 UTC; lisaavery
+Author: Lisa Avery [cre, aut] (<https://orcid.org/0000-0002-8431-5143>),
+  Ryan Del Bel [aut],
+  Osvaldo Espin-Garcia [aut],
+  Katherine Lajkosz [aut] (<https://orcid.org/0000-0003-3760-5401>),
+  Clarina Ong [aut],
+  Tyler Pittman [aut] (<https://orcid.org/0000-0002-5013-6980>),
+  Anna Santiago [aut] (<https://orcid.org/0000-0002-0932-2386>),
+  Yanning Wang [ctr],
+  Jessica Weiss [aut],
+  Wei Xu [aut]
+Maintainer: Lisa Avery <lisa.avery@uhn.ca>
+Built: R 4.4.2; ; 2026-02-04 23:06:22 UTC; unix

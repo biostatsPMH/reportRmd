@@ -1,0 +1,107 @@
+url: https://biostatspmh.github.io/reportRmd/
+template:
+  bootstrap: 5
+
+reference:
+  - title: "Summary Statistics"
+    desc: "Functions for creating summary tables"
+    contents:
+    - rm_covsum
+    - rm_compactsum
+
+  - title: "Regression Models - Univariate"
+    desc: "Functions for univariate regression output"
+    contents:
+    - rm_uvsum
+
+  - title: "Regression Models - Multivariable"
+    desc: "Functions for multivariable regression output"
+    contents:
+    - rm_mvsum
+    - rm_uv_mv
+
+  - title: "Survival Analysis"
+    desc: "Functions for survival and competing risk analysis"
+    contents:
+    - rm_survsum
+    - rm_survtime
+    - rm_survdiff
+    - rm_cifsum
+
+  - title: "Plotting Functions - Regression"
+    desc: "Visualization functions for regression models"
+    contents:
+    - forestplotUV
+    - forestplotMV
+    - forestplotUVMV
+    - plotuv
+
+  - title: "Plotting Functions - Survival"
+    desc: "Survival curve visualization"
+    contents:
+    - ggkmcif2
+    - ggkmcif2Parameters
+
+  - title: "Table Formatting"
+    desc: "Functions for formatting and displaying tables"
+    contents:
+    - outTable
+    - nestTable
+    - scrolling_table
+
+  - title: "Variable Labels"
+    desc: "Functions for managing variable labels"
+    contents:
+    - set_labels
+    - set_var_labels
+    - extract_labels
+    - clear_labels
+    - replace_plot_labels
+
+  - title: "Utility Functions"
+    desc: "Helper and utility functions"
+    contents:
+    - excelCol
+    - excelColLetters
+    - extract_package_details
+    - crrRx
+    - ggkmcif_paste
+
+  - title: "Deprecated Functions"
+    desc: "Functions maintained for backwards compatibility"
+    contents:
+    - forestplot2
+    - ggkmcif
+
+articles:
+  - title: "Getting Started"
+    navbar: ~
+    contents:
+    - reportRmd
+
+navbar:
+  structure:
+    left:  [home, reference, articles, news]
+    right: [github]
+  components:
+    home:
+      icon: fa-home
+      href: index.html
+    reference:
+      text: "Reference"
+      href: reference/index.html
+    articles:
+      text: "Vignette"
+      href: articles/reportRmd.html
+    news:
+      text: "Changelog"
+      href: news/index.html
+    github:
+      icon: fa-github
+      href: https://github.com/biostatsPMH/reportRmd
+      aria-label: GitHub
+
+home:
+  links:
+  - text: Browse source code
+    href: https://github.com/biostatsPMH/reportRmd

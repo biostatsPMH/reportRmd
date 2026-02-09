@@ -6,7 +6,7 @@
 \usage{
 rm_covsum(
   data,
-  covs,
+  covs = NULL,
   maincov = NULL,
   caption = NULL,
   tableOnly = FALSE,
@@ -30,15 +30,19 @@ rm_covsum(
   excludeLevels = NULL,
   numobs = NULL,
   fontsize,
-  chunk_label
+  chunk_label,
+  xvars = NULL,
+  grp = NULL
 )
 }
 \arguments{
 \item{data}{dataframe containing data}
 
-\item{covs}{character vector with the names of columns to include in table}
+\item{covs}{Character vector of covariate names to summarize.
+Can also be specified using the \code{xvars} alias.}
 
-\item{maincov}{covariate to stratify table by}
+\item{maincov}{Character string specifying the grouping variable.
+Can also be specified using the \code{grp} alias.}
 
 \item{caption}{character containing table caption (default is no caption)}
 
@@ -111,6 +115,12 @@ the covariate}
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{xvars}{Alias for \code{covs}. Accepts either unquoted variable names
+(e.g., \code{c(age, sex)}) or character strings (e.g., \code{c("age", "sex")}).}
+
+\item{grp}{Alias for \code{maincov}. Accepts either an unquoted variable name
+(e.g., \code{sex}) or a character string (e.g., \code{"sex"}).}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -133,7 +143,7 @@ Further formatting options are available using tableOnly=TRUE and outputting
 the table with a call to outTable.
 
 A newer version of this function is \link{rm_compactsum} which is more
-flexible and displays few rows of output.
+flexible and displays fewer rows of output.
 }
 \examples{
 data("pembrolizumab")
@@ -170,7 +180,6 @@ Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
 \seealso{
 \code{\link{covsum}},\code{\link{fisher.test}},
 \code{\link{chisq.test}}, \code{\link{wilcox.test}},
-\code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link[rstatix:cramer_v]{rstatix::cramer_v}},
-\code{\link[rstatix:eta_squared]{rstatix:eta_squared}}, and \code{\link{outTable}}
+\code{\link{kruskal.test}}, \code{\link{anova}}, and \code{\link{outTable}}
 }
 \keyword{dataframe}

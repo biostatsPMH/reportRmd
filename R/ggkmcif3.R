@@ -598,7 +598,8 @@ create_km_dataframe <- function(sfit, stratalabs, conf.curves = FALSE, conf.type
     strata = if (multiple_lines) levels(df$strata) else factor("All")
   )
 
-  plyr::rbind.fill(zeros, df) |>
+  zeros <- match_column_types(zeros,df)
+  dplyr::bind_rows(zeros, df) |>
     transform(strata = factor(strata, levels = stratalabs))
 }
 
@@ -1182,10 +1183,8 @@ process_legend_pos <- function(legend.pos) {
   }
 }
 
-#' @noRd
-break_function <- function(x, n = 5) {
-  pretty(c(0, x), n = n)
-}
+# NOTE: break_function() is now defined in helper.R
+# This eliminates code duplication across files
 # Main Plotting Function ----
 
 #' Main plotting function (refactored with separate CIF functions)

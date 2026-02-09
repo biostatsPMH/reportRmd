@@ -1,0 +1,108 @@
+add_censor_marks        Add censor marks to KM plot
+add_cif_hazard_ratios   Add CIF Hazard Ratios to Strata Labels
+add_confidence_bands    Add confidence bands to plot
+add_km_hazard_ratios    Add hazard ratios to strata labels
+add_median_lines        Add median survival lines to plot
+add_median_text         Add median survival text to plot
+add_set_time_lines      Add survival at set time lines to plot
+add_set_time_text       Add survival at set time text to plot
+add_statistical_tests   Add statistical test results to plot
+addspace                Add LaTeX spacing before string
+apply_scales_and_guides
+                        Apply colour and linetype scales
+boxcoxfitRx             fit box cox transformed linear model
+calculate_and_add_median_times
+                        Calculate median survival times and add to
+                        labels
+calculate_and_add_time_specific_estimates
+                        Calculate survival/CIF at specific time points
+                        and add to labels
+calculate_cif_median    Calculate Median Time to Event for CIF
+calculate_cif_timepoints
+                        Calculate CIF Estimates at Specific Time Points
+cap                     Capitalize a string
+clear_labels            Clear variable labels from a data frame
+covsum                  Get covariate summary dataframe
+create_base_plot        Create base ggplot for survival curves
+create_cif_dataframe    Create CIF Plotting Data Frame
+create_cif_risk_table_sfit
+                        Create Survival Fit for Risk Table in CIF
+create_km_dataframe     Create plotting dataframe for KM curves
+create_risk_table       Create risk table for survival plot
+crrRx                   fit crr model
+ctDNA                   Tumour size change over time Longitudinal
+                        changes in tumour size since baseline for
+                        patients by changes in ctDNA status (clearance,
+                        decrease or increase) since baseline.
+excelCol                Retrieve columns number from spreadsheet
+                        columns specified as unquoted letters
+excelColLetters         Retrieve spreadsheet column letter-names from
+                        columns indices
+extract_grays_test      Extract Gray's test results from CIF fit
+extract_labels          Extract variable labels from labelled data
+                        frame
+extract_package_details
+                        Extract Function and Package Information from
+                        Current Document
+fit_cif_model           Fit Competing Risks Model
+fit_km_model            Fit Kaplan-Meier survival curves
+forestplot2             Create a forest plot using ggplot2 (DEPRECATED)
+forestplotMV            Create a multivariable forest plot using
+                        ggplot2
+forestplotUV            Create an univariable forest plot using ggplot2
+forestplotUVMV          Combine univariable and multivariable forest
+                        plot (DEPRECATED)
+formatp                 Format p-values for tables (HTML/LaTeX)
+geoR_boxcoxfit          Parameter Estimation for the Box-Cox
+                        Transformation
+ggkmcif                 Plot KM and CIF curves with ggplot
+ggkmcif2                Main plotting function (refactored with
+                        separate CIF functions)
+ggkmcif2Parameters      Additional parameters passed to ggkmcif2
+ggkmcif2_2025           Plot KM and CIF curves with ggplot
+ggkmcif_paste           Plot KM and CIF curves with ggplot
+hbld                    Bold strings for HTML output
+lbld                    Bold strings for LaTeX output
+lpvalue                 Format p-values for LaTeX output with bolding
+lpvalue2                Format p-values for plot annotations
+mvsum                   Get multivariate summary dataframe
+nestTable               Combine two table columns into a single column
+                        with levels of one nested within levels of the
+                        other.
+niceNum                 Round numbers with trailing zeros
+nicename                Lean strings for printing
+outTable                Print tables to PDF/Latex HTML or Word
+pembrolizumab           Survival data Survival status and ctDNA levels
+                        for patients receiving pembrolizumab
+plotuv                  Plot multiple bivariate relationships in a
+                        single plot
+process_cif_medians     Process CIF Median Values
+process_cif_timepoints
+                        Process CIF Time-Specific Estimates
+process_covariate       Process covariate variable (factor conversion,
+                        numeric cutoffs)
+psthr                   Round and paste with parentheses (smart
+                        formatting)
+pstprn                  Paste vector elements with parentheses
+replace_plot_labels     Replace variable names with labels in ggplot
+rm_cifsum               Summarize cumulative incidence by group
+rm_compactsum           Output a compact summary table
+rm_covsum               Outputs a descriptive covariate table
+rm_mvsum                Format a regression model nicely for
+                        'Rmarkdown'
+rm_survdiff             Display event counts, expected event counts and
+                        logrank test of differences
+rm_survsum              Summarise survival data by group
+rm_survtime             Display survival rates and events for specified
+                        times
+rm_uv_mv                Combine univariate and multivariable regression
+                        tables
+rm_uvsum                Output several univariate models nicely in a
+                        single table
+rmds                    Replace dollar signs for HTML output
+sanitizestr             Sanitize string vector for LaTeX
+scrolling_table         Output a scrollable table
+set_labels              Set variable labels
+set_var_labels          Set variable labels
+validate_and_prepare_data
+                        Validate and prepare input data

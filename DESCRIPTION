@@ -1,7 +1,7 @@
 Package: reportRmd
 Title: Tidy Presentation of Clinical Reporting
-Version: 0.1.2
-Date: 2024-12-30
+Version: 0.1.3
+Date: 2026-02-14
 Authors@R: c(
     person(given="Lisa",family="Avery",email = "lisa.avery@uhn.ca",role=c("cre","aut"),comment=c(ORCID="0000-0002-8431-5143")),
     person(given="Ryan",family="Del Bel",email = "rdelbel@gmail.com",role="aut"),
@@ -20,6 +20,8 @@ Description: Streamlined statistical reporting in 'Rmarkdown' environments.
     logistic and ordinal regression and bivariate comparison plots.
 License: MIT + file LICENSE
 Suggests: 
+    geepack,
+    MASS,
     nlme,
     tidycmprsk,
     rmarkdown,
@@ -34,26 +36,22 @@ Imports:
     cmprsk,
     cowplot,
     dplyr,
-    geepack,
     ggplot2,
     ggpubr,
-    gridExtra,
     kableExtra,
     knitr,
     lifecycle,
-    MASS,
     pander,
-    plyr,
     rlang,
-    rstatix,
     rstudioapi,
     scales,
     stats,
     survival,
+    tidyr,
     tidyselect
-Collate: 'helper.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'ggkmcif3.R' 'rm_mvsum2.R' 
+Collate: 'imports.R' 'helper.R' 'model_registry.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'ggkmcif3.R' 'rm_mvsum2.R' 'deprecated.R' 
 Depends: 
     R (>= 4.2)
 LazyData: no
-VignetteBuilder: knitr, rmarkdown
 URL: https://biostatspmh.github.io/reportRmd/
+VignetteBuilder: knitr

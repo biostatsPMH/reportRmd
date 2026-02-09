@@ -2,26 +2,26 @@
 % Please edit documentation in R/main.R
 \name{forestplotUV}
 \alias{forestplotUV}
-\title{Create an univariable forest plot using ggplot2}
+\title{Create a univariable forest plot using ggplot2}
 \usage{
 forestplotUV(
   response,
   covs,
   data,
+  model = "glm",
   id = NULL,
   corstr = NULL,
-  model = "glm",
   family = NULL,
   digits = getOption("reportRmd.digits", 2),
   conf.level = 0.95,
-  orderByRisk = TRUE,
   colours = "default",
   showEst = TRUE,
-  rmRef = FALSE,
+  showRef = TRUE,
   logScale = getOption("reportRmd.logScale", TRUE),
   nxTicks = 5,
   showN = TRUE,
-  showEvent = TRUE
+  showEvent = TRUE,
+  xlim = c(0.2, 5)
 )
 }
 \arguments{
@@ -31,51 +31,52 @@ forestplotUV(
 
 \item{data}{dataframe containing your data}
 
+\item{model}{fitted model object (default "glm")}
+
 \item{id}{character vector which identifies clusters. Only used for geeglm}
 
 \item{corstr}{character string specifying the correlation structure. Only
-used for geeglm. The following are permitted: '"independence"',
-'"exchangeable"', '"ar1"', '"unstructured"' and '"userdefined"'}
-
-\item{model}{fitted model object}
+used for geeglm}
 
 \item{family}{description of the error distribution and link function to be
-used in the model. Only used for geeglm}
+used in the model}
 
-\item{digits}{number of digits to round to}
+\item{digits}{number of digits to round to (default 2)}
 
-\item{conf.level}{controls the width of the confidence interval}
+\item{conf.level}{controls the width of the confidence interval (default 0.95)}
 
-\item{orderByRisk}{logical, should the plot be ordered by risk}
+\item{colours}{can specify colours for risks less than, equal to, and greater
+than 1.0. Default is green, black, red}
 
-\item{colours}{can specify colours for risks less than, 1 and greater than
-1.0. Default is red, black, green}
+\item{showEst}{logical, should the risks be displayed on the plot in text?
+Default is TRUE}
 
-\item{showEst}{logical, should the risks be displayed on the plot in text}
+\item{showRef}{logical, should reference levels be shown? Default is TRUE}
 
-\item{rmRef}{logical, should the reference levels be removed for the plot?}
+\item{logScale}{logical, should OR/RR be shown on log scale? Defaults to TRUE}
 
-\item{logScale}{logical, should OR/RR be shown on log scale, defaults to
-TRUE, or reportRmd.logScale if set. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
-linear scale.}
+\item{nxTicks}{Number of tick marks for x-axis (default 5)}
 
-\item{nxTicks}{Number of tick marks supplied to the log_breaks function to
-produce}
+\item{showN}{Show number of observations per variable and category (default TRUE)}
 
-\item{showN}{Show number of observations per variable and category}
+\item{showEvent}{Show number of events per variable and category (default TRUE)}
 
-\item{showEvent}{Show number of events per variable and category}
+\item{xlim}{numeric vector of length 2 specifying x-axis limits. Default is
+c(0.2, 5). Confidence intervals extending beyond these limits will be
+shown with arrows. Set to NULL to disable limit constraining.}
 }
 \value{
-a plot object
+a ggplot object
 }
 \description{
-This function will send and take log or logistic regression fit from glm or geeglm
-from uvsum function, and display the OR or RR for each variable on the appropriate log scale.
+This function creates forest plots from univariable regression models.
+For new code, consider using forestplotMV() which can handle both adjusted
+and unadjusted estimates.
 }
 \examples{
 data("pembrolizumab")
-forestplotUV(response="orr", covs=c("change_ctdna_group", "sex", "age", "l_size"),
-data=pembrolizumab, family='binomial')
+forestplotUV(response = "orr",
+             covs = c("change_ctdna_group", "sex", "age", "l_size"),
+             data = pembrolizumab, family = 'binomial')
 }
 \keyword{plot}

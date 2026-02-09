@@ -8,3 +8,5 @@ inst/doc
 vignettes/overview_files/libs/*
 vignettes/overview_files/figure-revealjs/*
 docs
+^R/\.claude$
+DOCUMENTATION_WORKFLOW.md
