@@ -84,6 +84,14 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   if (unformattedp) formatp <- function(x) {as.numeric(x)}
   whichp <- match.arg(whichp)
 
+  # Handle multiply imputed (mira) models
+  is_mira <- inherits(model, "mira")
+  if (is_mira) {
+    if (!requireNamespace("mice", quietly = TRUE))
+      stop("The mice package is required for multiply imputed model summaries.")
+    fit1 <- model$analyses[[1]]
+  }
+
   if (!missing(data)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(data)")
   if (!missing(chunk_label)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(chunk_label)")
   model_coef <- get_model_coef(model)
@@ -92,6 +100,10 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
                                           "\nPlease re-fit a valid model prior to reporting. Do you need to run droplevels?"))
   # get the table
   tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
+  if (include_unadjusted && is_mira) {
+    message("Unadjusted estimates are not supported for multiply imputed models.")
+    include_unadjusted <- FALSE
+  }
   if (include_unadjusted) {
     m_sum <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = TRUE)
     ma <- get_model_args(model)
@@ -113,8 +125,9 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     if (length(rmc)>0) tab <- tab[,-rmc ]
   }
   att_tab <- attributes(tab)
-  to_indent <- which(!(tab[["Variable"]] %in% attr(model$terms, "term.labels")))
-  bold_cells <- cbind(which(tab[["Variable"]] %in% attr(model$terms, "term.labels")), rep(1, length(which(tab[["Variable"]] %in% attr(model$terms, "term.labels")))))
+  model_terms <- if (is_mira) fit1$terms else model$terms
+  to_indent <- which(!(tab[["Variable"]] %in% attr(model_terms, "term.labels")))
+  bold_cells <- cbind(which(tab[["Variable"]] %in% attr(model_terms, "term.labels")), rep(1, length(which(tab[["Variable"]] %in% attr(model_terms, "term.labels")))))
   attr(tab, "to_indent") <- to_indent
   attr(tab, "bold_cells") <- bold_cells
 
@@ -167,7 +180,7 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 
   if (nicenames){
     attr(tab,"termnames") <- tab$Variable
-    md <- try(get_model_data(model))
+    md <- try(get_model_data(if (is_mira) fit1 else model))
     if (inherits(md, "try-error")) {
       warning("Unable to extract data from model, using variable names")
     } else {

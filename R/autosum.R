@@ -49,6 +49,18 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   m_coeff$Est_CI <- apply(m_coeff[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
 
   if (any(!is.na(m_coeff$lwr) & !is.na(m_coeff$upr) & (m_coeff$lwr == m_coeff$upr))) message("Zero-width confidence interval detected. Check predictor units.")
+
+  # For multiply imputed models, swap to first fit for downstream functions
+  if (inherits(model, "mira")) {
+    model <- model$analyses[[1]]
+    vif <- FALSE
+    message("VIF is not available for multiply imputed models.")
+    if (whichp != "levels") {
+      whichp <- "levels"
+      message("Global p-values are not yet supported for multiply imputed models.")
+    }
+  }
+
   lvls <- getVarLevels(model)
   lvls$ord  <- 1:nrow(lvls)
 
@@ -419,6 +431,75 @@ coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
   return(cs)
 }
 
+coeffSum.mira <- function(model, CIwidth = 0.95, digits = 2) {
+  if (!requireNamespace("mice", quietly = TRUE))
+    stop("The mice package is required for multiply imputed model summaries.")
+
+  fit1 <- model$analyses[[1]]
+
+  # --- Validate event count consistency across imputations ---
+  events <- lapply(model$analyses, function(f) get_event_counts(f))
+  if (!is.null(events[[1]])) {
+    event_sums <- sapply(events, sum, na.rm = TRUE)
+    if (length(unique(event_sums)) > 1) {
+      stop(
+        "Event counts are not consistent across imputations.\n",
+        "  Event totals per imputation: ",
+        paste(event_sums, collapse = ", "), "\n",
+        "This may indicate that the outcome variable was imputed, ",
+        "which is not supported.\n",
+        "Please ensure the outcome is complete or excluded from the imputation model."
+      )
+    }
+  }
+
+  # --- Pool estimates via Rubin's rules ---
+  pooled <- mice::pool(model)
+
+  # Detect if exponentiation is needed
+  exponentiate <- FALSE
+  if (inherits(fit1, "glm") && fit1$family$link %in% c("logit", "log")) {
+    exponentiate <- TRUE
+  } else if (inherits(fit1, "coxph")) {
+    exponentiate <- TRUE
+  }
+
+  ps <- summary(pooled, conf.int = TRUE, conf.level = CIwidth,
+                exponentiate = exponentiate)
+
+  # Build output in standard coeffSum format
+  ci_cols <- grep("%", names(ps), value = TRUE)
+  cs <- data.frame(
+    terms   = ps$term,
+    est     = ps$estimate,
+    lwr     = ps[[ci_cols[1]]],
+    upr     = ps[[ci_cols[2]]],
+    p_value = ps$p.value,
+    stringsAsFactors = FALSE
+  )
+
+  # Remove intercept row (consistent with other coeffSum methods
+  # where intercept is dropped during merge with getVarLevels)
+  cs <- cs[!grepl("intercept", cs$terms, ignore.case = TRUE), ]
+
+  # Set estimate label based on model type
+  if (inherits(fit1, "glm")) {
+    if (fit1$family$link == "logit") {
+      attr(cs, "estLabel") <- betaWithCI("OR", CIwidth)
+    } else if (fit1$family$link == "log") {
+      attr(cs, "estLabel") <- betaWithCI("RR", CIwidth)
+    } else {
+      attr(cs, "estLabel") <- betaWithCI("Estimate", CIwidth)
+    }
+  } else if (inherits(fit1, "coxph")) {
+    attr(cs, "estLabel") <- betaWithCI("HR", CIwidth)
+  } else {
+    attr(cs, "estLabel") <- betaWithCI("Estimate", CIwidth)
+  }
+
+  return(cs)
+}
+
 # Extract coefficients from a fitted model ---------------
 get_model_coef <- function(model){
   UseMethod("get_model_coef", model)
@@ -511,6 +592,20 @@ get_event_counts.glm <- function(model){
     return(model$y)
   }
 }
+
+# S3 methods for multiply imputed (mira) objects ---------------
+get_model_coef.mira <- function(model) {
+  return(model$analyses[[1]]$coefficients)
+}
+
+get_model_data.mira <- function(model) {
+  return(get_model_data(model$analyses[[1]]))
+}
+
+get_event_counts.mira <- function(model) {
+  return(get_event_counts(model$analyses[[1]]))
+}
+
 # Calculate a global p-value for categorical variables --------
 gp <- function(model,CIwidth=.95,digits=2) {
   UseMethod("gp", model)

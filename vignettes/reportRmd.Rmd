@@ -283,6 +283,32 @@ data("ctDNA")
  data=ctDNA,showN=TRUE)
 ```
 
+## MICE output
+
+Outputs from multiple imputations can be summarised as follows:
+  
+```{r, echo=T,eval=F}
+
+miss_data <- pembrolizumab
+miss_data$age[sample(1:nrow(pembrolizumab),50,replace=F)] <- NA
+miss_data$cohort[sample(1:nrow(pembrolizumab),50,replace=F)] <- NA
+require(mice)
+ini <- mice::mice(miss_data, maxit = 0)
+pred_matrix <- ini$predictorMatrix
+pred_matrix[1, ] <- 0
+pred_matrix[, 1] <- 0
+imp <- mice::mice(miss_data, m = 5, predictorMatrix = pred_matrix, printFlag = FALSE)
+imputed_datasets <- purrr::map(1:5, \(m) mice::complete(imp, m))
+
+fits <- lapply(imputed_datasets, function(dat) {
+  glm(orr ~ age+cohort, data = dat,family='binomial')
+})
+model <- mice::as.mira(fits)
+rm_mvsum(model)           
+
+
+```
+
 ## Returning Model Objects
 If you want to check the underlying models, set `returnModels = TRUE`
 

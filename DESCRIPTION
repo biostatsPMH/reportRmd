@@ -19,9 +19,10 @@ Description: Streamlined statistical reporting in 'Rmarkdown' environments.
     Plotting functions include customisable survival curves, forest plots from 
     logistic and ordinal regression and bivariate comparison plots.
 License: MIT + file LICENSE
-Suggests: 
+Suggests:
     geepack,
     MASS,
+    mice,
     nlme,
     tidycmprsk,
     rmarkdown,
