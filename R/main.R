@@ -2027,15 +2027,12 @@ outTable <- function(tab, row.names = NULL, to_indent = numeric(0), bold_headers
   }
 
   # Round and format numeric columns
-  if (!missing(digits)) {
-    numCols <- names(tab)[sapply(tab, inherits, 'numeric')]
-    if (length(numCols) > 0) {
-      colRound <- cbind(numCols, digits)
-      colDigits <- as.numeric(colRound[, 2])
-      names(colDigits) <- colRound[, 1]
-      for (v in numCols) {
-        tab[[v]] <- sapply(tab[[v]], function(x) niceNum(x, digits = colDigits[v]))
-      }
+  numColIdx <- which(sapply(tab, inherits, 'numeric'))
+  if (length(numColIdx) > 0) {
+    colDigits <- rep_len(digits, length(numColIdx))
+    for (i in seq_along(numColIdx)) {
+      idx <- numColIdx[i]
+      tab[[idx]] <- sapply(tab[[idx]], function(x) niceNum(x, digits = colDigits[i]))
     }
   }
 
