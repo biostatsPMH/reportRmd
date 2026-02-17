@@ -1,5 +1,5 @@
 ---
-title: "ggkmcif3"
+title: "ggkmcif2"
 format: docx
 editor: source
 ---
@@ -21,11 +21,11 @@ ggkmcif2(response = c('os_time','os_status'),
 
 ```
 
-### ggkmcif3
+### ggkmcif2
 
 ```{r, fig.height=5}
 titleStr="myTitle"
-ggkmcif3(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
          #type="CIF",
          cov='cohort', times = seq(0,36,6),xlim=c(0,25),
          legend.pos=c(.25,0),
@@ -47,10 +47,10 @@ ggkmcif2(response = c('os_time','os_status'),
 
 ```
 
-### ggkmcif3
+### ggkmcif2
 
 ```{r, fig.height=4}
-ggkmcif3(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
          cov='sex',
          data=pembrolizumab)
 
@@ -69,10 +69,10 @@ ggkmcif2(response = c('os_time','os_status'),
 
 ```
 
-### ggkmcif3
+### ggkmcif2
 
 ```{r, fig.height=3}
-ggkmcif3(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
          cov='sex',
          data=pembrolizumab)
 
@@ -91,10 +91,10 @@ ggkmcif2(response = c('os_time','os_status'),
 
 ```
 
-### ggkmcif3
+### ggkmcif2
 
 ```{r, fig.height=2}
-ggkmcif3(response = c('os_time','os_status'),
+ggkmcif2(response = c('os_time','os_status'),
          cov='sex',
          data=pembrolizumab)
 
@@ -110,7 +110,7 @@ rm_compactsum(data = pembrolizumab,
                                               "change_ctdna_group", "l_size", "pdl1"), grp = "sex", use_mean = "age",
               digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
               show.tests = TRUE)
-rm_compactsum2(data = pembrolizumab, 
+rm_compactsum(data = pembrolizumab, 
               xvars = c("age",
                                               "change_ctdna_group", "l_size", "pdl1"), grp = "sex", use_mean = "age",
               digits = c("age" = 2, "l_size" = 3), digits.cat = 1, iqr = TRUE,
@@ -121,36 +121,36 @@ rm_compactsum2(data = pembrolizumab,
 rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
 
-rm_compactsum2(data = pembrolizumab, xvars = c("age",
+rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group"), grp = "sex", use_mean = "age", show.sumstats=TRUE)
 # To show effect sizes
 rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
               effSize = TRUE, show.tests = TRUE)
-rm_compactsum2(data = pembrolizumab, xvars = c("age",
+rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group"), grp = "sex", use_mean = "age", digits = 2,
               effSize = TRUE, show.tests = TRUE)
 
 rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group"), grp = "cohort", use_mean = "age", digits = 2,
               effSize = TRUE, show.tests = TRUE)
-rm_compactsum2(data = pembrolizumab, xvars = c("age","l_size",
+rm_compactsum(data = pembrolizumab, xvars = c("age","l_size",
                                               "change_ctdna_group"), grp = "cohort", use_mean = c("age","l_size"), digits = 2,
               effSize = TRUE, show.tests = TRUE)
-rm_compactsum2(data = pembrolizumab, xvars = c("age",
+rm_compactsum(data = pembrolizumab, xvars = c("age",
                                               "change_ctdna_group"), grp = "cohort",  digits = 2,
               effSize = TRUE, show.tests = TRUE)
 
 # To return unformatted p-values
 rm_compactsum(data = pembrolizumab, xvars = c("l_size",
                                               "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE)
-rm_compactsum2(data = pembrolizumab, xvars = c("l_size",
+rm_compactsum(data = pembrolizumab, xvars = c("l_size",
                                               "change_ctdna_group"), grp = "cohort", effSize = TRUE, unformattedp = TRUE,covTitle = "my left foot")
 
 # Using tidyselect
 pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
                                effSize = TRUE)
-pembrolizumab |> rm_compactsum2(xvars = c(age, sex, pdl1), grp = cohort,
+pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
                                effSize = TRUE)
 
 ```

@@ -1,3 +1,44 @@
+# Internal helper: format a percentage string with specified decimal places.
+# Returns e.g. "45.0" for fmt_pct(0.45, 1) or "45.00" for fmt_pct(0.45, 2).
+# @keywords internal
+# @noRd
+fmt_pct <- function(fraction, digits.cat) {
+  format(round(100 * fraction, digits.cat), nsmall = digits.cat)
+}
+
+# Internal helper: run chi-sq or Fisher test and populate df with results
+# Used by xvar_function.rm_binary, .rm_categorical, and .rm_two_level
+# @keywords internal
+# @noRd
+apply_cat_test <- function(df, cont_table, x_var, pvalue, effSize, show.tests) {
+  if (!(pvalue | effSize | show.tests)) return(df)
+  if (!any(chi_test_rm(cont_table)$expected < 5)) {
+    chisq_test <- chi_test_rm(cont_table)
+    df[1, "p-value"] <- chisq_test$p.value
+    if (effSize) {
+      output <- calc_CramerV(chisq_test)
+      df[1, "Effect Size (95% CI)"] <- format_delta(output)
+      attr(df, "eff_size") <- "Cramer's V"
+    }
+    df[1, "Missing"] <- sum(is.na(x_var))
+    if (show.tests & pvalue) df[1, "pTest"] <- "ChiSq"
+    if (pvalue) attr(df, "stat_test") <- "chi-square test"
+    if (show.tests & effSize) df[1, "effStat"] <- "Cramer's V"
+  } else {
+    fisher_test <- fisher_test_rm(cont_table)
+    df[1, "p-value"] <- fisher_test$p.value
+    if (effSize) {
+      output <- calc_CramerV(fisher_test)
+      df[1, "Effect Size (95% CI)"] <- format_delta(output)
+      attr(df, "eff_size") <- "Cramer's V"
+    }
+    if (show.tests & pvalue) df[1, "pTest"] <- fisher_test$p_type
+    if (pvalue) attr(df, "stat_test") <- fisher_test$stat_test
+    if (show.tests & effSize) df[1, "effStat"] <- "Cramer's V"
+  }
+  return(df)
+}
+
 #'Output a compact summary table
 #'
 #'Outputs a table formatted for pdf, word or html output with summary statistics
@@ -357,20 +398,17 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 #' @return A data frame is returned
 #'
 #' @keywords internal
-
+#' @export
 xvar_function <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   UseMethod("xvar_function", xvar)
 }
 
-#' Helper function: xvar_function.default
-#'
-#' @param ...
-#'
-#' @keywords internal
+#' @export
 xvar_function.default <- function(xvar, ...) {
   stop("No default method for xvar_function. The xvar class must be known")
 }
 
+#' @export
 xvar_function.rm_date <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   # no testing implemented for dates, all stats not run, just summarised with median and either iqr or range
   pvalue=FALSE; effSize=FALSE; show.tests = FALSE
@@ -426,6 +464,7 @@ xvar_function.rm_date <- function(xvar, data, grp, covTitle = "", digits = 1, di
 }
 
 
+#' @export
 xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
@@ -438,7 +477,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     df[, paste0("Full Sample (n=", nrow(data), ")")] <- as.character(sum(x_var, na.rm = TRUE))
   }
   else {
-    df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(sum(x_var, na.rm = TRUE), " (", format(round((100*sum(x_var, na.rm = TRUE) / (nrow(data) - sum(is.na(x_var)))), digits.cat), nsmall = digits.cat), "%)")
+    df[, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(sum(x_var, na.rm = TRUE), " (", fmt_pct(sum(x_var, na.rm = TRUE) / (nrow(data) - sum(is.na(x_var))), digits.cat), "%)")
   }
 
 
@@ -463,51 +502,14 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    if (pvalue | effSize | show.tests) {
-      if (!any(chi_test_rm(cont_table)$expected < 5)) {
-        chisq_test <- chi_test_rm(cont_table)
-        df[1, "p-value"] <- chisq_test$p.value
-        if (effSize) {
-          output <- calc_CramerV(chisq_test)
-          df[1, "Effect Size (95% CI)"] <- format_delta(output)
-          attr(df, "eff_size") <- "Cramer's V"
-        }
-        df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests & pvalue) {
-          df[1, "pTest"] <- "ChiSq"
-        }
-        if (pvalue) {
-          attr(df, "stat_test") <- "chi-square test"
-        }
-        if (show.tests & effSize) {
-          df[1, "effStat"] <- "Cramer's V"
-        }
-      }
-      else if (any(chi_test_rm(cont_table)$expected < 5)) {
-        fisher_test <- fisher_test_rm(cont_table)
-        df[1, "p-value"] <-fisher_test$p.value
-        if (effSize) {
-          output <- calc_CramerV(fisher_test)
-          df[1, "Effect Size (95% CI)"] <- format_delta(output)
-          attr(df, "eff_size") <- "Cramer's V"
-        }
-        if (show.tests & pvalue) {
-          df[1, "pTest"] <- fisher_test$p_type
-        }
-        if (pvalue) {
-          attr(df, "stat_test") <- fisher_test$stat_test
-        }
-        if (show.tests & effSize) {
-          df[1, "effStat"] <- "Cramer's V"
-        }
-      }
-    }
+    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests)
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   attr(df, "stat_sum") <- "counts (%)"
   return(df)
 }
 
+#' @export
 xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
@@ -584,6 +586,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
   return(df)
 }
 
+#' @export
 xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
@@ -619,8 +622,8 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
     group_var <- data[[grp]]
     if (all.stats) {
       grp_mean <- lapply(as.list(levels(group_var)), mean_by_grp, data = data, xvar = xvar, grp = grp, digits = digits)
-      grp_med <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = T, digits = digits)
-      grp_range <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = F, digits = digits, range_only = T)
+      grp_med <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = TRUE, digits = digits)
+      grp_range <- lapply(as.list(levels(group_var)), median_by_grp, data = data, xvar = xvar, grp = grp, iqr = FALSE, digits = digits, range_only = TRUE)
       i = 1
       for (level in levels(group_var)) {
         sub <- subset(data, group_var == level)
@@ -701,6 +704,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
   return(df)
 }
 
+#' @export
 xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
@@ -721,7 +725,7 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
       df[i, paste0("Full Sample (n=", nrow(data), ")")] <- as.character(nrow(xvar_subset))
     }
     else {
-      df[i, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(nrow(xvar_subset), " (", format(round((100*nrow(xvar_subset) / (nrow(data) - sum(is.na(x_var)))), digits.cat), nsmall = digits.cat), "%)")
+      df[i, paste0("Full Sample (n=", nrow(data), ")")] <- paste0(nrow(xvar_subset), " (", fmt_pct(nrow(xvar_subset) / (nrow(data) - sum(is.na(x_var))), digits.cat), "%)")
     }
     i = i + 1
   }
@@ -743,55 +747,13 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    # if (any(no_na_tab < 2)) {
-    #   effSize <- FALSE
-    #   pvalue <- FALSE
-    #   show.tests <- FALSE
-    # }
-    if (pvalue | effSize | show.tests) {
-      if (!any(chi_test_rm(cont_table)$expected < 5)) {
-        chisq_test <- chi_test_rm(cont_table)
-        df[1, "p-value"] <- chisq_test$p.value
-        if (effSize) {
-          output <- calc_CramerV(chisq_test)
-          df[1, "Effect Size (95% CI)"] <- format_delta(output)
-          attr(df, "eff_size") <- "Cramer's V"
-        }
-        df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests & pvalue) {
-          df[1, "pTest"] <- "ChiSq"
-        }
-        if (pvalue) {
-          attr(df, "stat_test") <- "chi-square test"
-        }
-        if (show.tests & effSize) {
-          df[1, "effStat"] <- "Cramer's V"
-        }
-      }
-      else if (any(chi_test_rm(cont_table)$expected < 5)) {
-        fisher_test <- fisher_test_rm(cont_table)
-        df[1, "p-value"] <- fisher_test$p.value
-        if (effSize) {
-          output <- calc_CramerV(fisher_test)
-          df[1, "Effect Size (95% CI)"] <- format_delta(output)
-          attr(df, "eff_size") <- "Cramer's V"
-        }
-        if (show.tests & pvalue) {
-          df[1, "pTest"] <- "Fisher Exact"
-        }
-        if (pvalue) {
-          attr(df, "stat_test") <- "Fisher's exact test"
-        }
-        if (show.tests & effSize) {
-          df[1, "effStat"] <- "Cramer's V"
-        }
-      }
-    }
+    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests)
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   return(df)
 }
 
+#' @export
 xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
@@ -827,7 +789,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     df[, paste0("Full Sample (n=", nrow(temp), ")")] <- as.character(sum(x_var, na.rm = TRUE))
   }
   else {
-    df[, paste0("Full Sample (n=", nrow(temp), ")")] <- paste0(sum(x_var, na.rm = TRUE), " (", format(round((100*sum(x_var, na.rm = TRUE) / (nrow(data) - sum(is.na(x_var)))), digits.cat), nsmall = digits.cat), "%)")
+    df[, paste0("Full Sample (n=", nrow(temp), ")")] <- paste0(sum(x_var, na.rm = TRUE), " (", fmt_pct(sum(x_var, na.rm = TRUE) / (nrow(data) - sum(is.na(x_var))), digits.cat), "%)")
   }
 
   if (!missing(grp)) {
@@ -856,45 +818,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
       pvalue <- FALSE
       show.tests <- FALSE
     }
-    if (pvalue | effSize | show.tests) {
-      if (!any(chi_test_rm(cont_table)$expected < 5)) {
-        chisq_test <- chi_test_rm(cont_table)
-        df[1, "p-value"] <- chisq_test$p.value
-        if (effSize) {
-          output <- calc_CramerV(chisq_test)
-          df[1, "Effect Size (95% CI)"] <- format_delta(output)
-          attr(df, "eff_size") <- "Cramer's V"
-        }
-        df[1, "Missing"] <- sum(is.na(x_var))
-        if (show.tests & pvalue) {
-          df[1, "pTest"] <- "ChiSq"
-        }
-        if (pvalue) {
-          attr(df, "stat_test") <- "chi-square test"
-        }
-        if (show.tests & effSize) {
-          df[1, "effStat"] <- "Cramer's V"
-        }
-      }
-      else if (any(chi_test_rm(cont_table)$expected < 5)) {
-        fisher_test <- fisher_test_rm(cont_table)
-        df[1, "p-value"] <-fisher_test$p.value
-        if (effSize) {
-          output <- calc_CramerV(fisher_test)
-          df[1, "Effect Size (95% CI)"] <- format_delta(output)
-          attr(df, "eff_size") <- "Cramer's V"
-        }
-        if (show.tests & pvalue) {
-          df[1, "pTest"] <- fisher_test$p_type
-        }
-        if (pvalue) {
-          attr(df, "stat_test") <- fisher_test$stat_test
-        }
-        if (show.tests & effSize) {
-          df[1, "effStat"] <- "Cramer's V"
-        }
-      }
-    }
+    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests)
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   attr(df, "stat_sum") <- "counts (%)"
@@ -975,14 +899,25 @@ delta_CI <- function(htest,CIwidth=0.95){
   return(ci)
 }
 
+#' Lower bound of non-centrality parameter confidence interval
+#'
+#' S3 generic to compute the lower bound of the confidence interval
+#' for the non-centrality parameter of a test statistic.
+#' @param htest A hypothesis test object (with class indicating test type).
+#' @param CIwidth Confidence interval width.
+#' @return A numeric lower bound.
+#' @keywords internal
+#' @export
 delta_l <- function(htest,CIwidth){
   UseMethod("delta_l")
 }
 
+#' @export
 delta_l.default <- function(...){
   stop("No default method for delta_l. The test type must be known")
 }
 
+#' @export
 delta_l.rm_F <- function(htest,CIwidth) {
   hsum <- summary(htest)[[1]]
   Fstat <- hsum[["F value"]][1]
@@ -1009,6 +944,7 @@ delta_l.rm_F <- function(htest,CIwidth) {
   return(lc[2])
 }
 
+#' @export
 delta_l.rm_chi <- function(htest,CIwidth) {
   chival <- htest$statistic; df <- htest$parameter
   ulim <- 1 - (1-CIwidth)/2
@@ -1031,6 +967,7 @@ delta_l.rm_chi <- function(htest,CIwidth) {
   return(lc[2])
 }
 
+#' @export
 delta_l.rm_t <- function(htest,CIwidth) {
   tval <- abs(htest$statistic); df <- htest$parameter
   ulim <- 1 - (1-CIwidth)/2
@@ -1051,14 +988,25 @@ delta_l.rm_t <- function(htest,CIwidth) {
   return(lc[2])
 }
 
+#' Upper bound of non-centrality parameter confidence interval
+#'
+#' S3 generic to compute the upper bound of the confidence interval
+#' for the non-centrality parameter of a test statistic.
+#' @param htest A hypothesis test object (with class indicating test type).
+#' @param CIwidth Confidence interval width.
+#' @return A numeric upper bound.
+#' @keywords internal
+#' @export
 delta_u <- function(htest,CIwidth){
   UseMethod("delta_u")
 }
 
+#' @export
 delta_u.default <- function(...){
   stop("No default method for delta_u. The test type must be known")
 }
 
+#' @export
 delta_u.rm_F <- function(htest,CIwidth) {
   hsum <- summary(htest)[[1]]
   Fstat <- hsum[["F value"]][1]
@@ -1086,6 +1034,7 @@ delta_u.rm_F <- function(htest,CIwidth) {
   return(uc[2])
 }
 
+#' @export
 delta_u.rm_chi <- function(htest,CIwidth) {
   alpha <- 1-CIwidth
   chival <- htest$statistic; df <- htest$parameter
@@ -1110,6 +1059,7 @@ delta_u.rm_chi <- function(htest,CIwidth) {
   return(uc[2])
 }
 
+#' @export
 delta_u.rm_t <- function(htest,CIwidth) {
   alpha <- 1-CIwidth
   tval <- abs(htest$statistic); df <- htest$parameter
@@ -1139,10 +1089,10 @@ uncorrectedChi <- function(x) {
 
 fisher_test_rm <- function(x,...){
   chi.out <- suppressWarnings(stats::chisq.test(x,...))
-  rtn <- try(stats::fisher.test(x,...),silent=T)
+  rtn <- try(stats::fisher.test(x,...),silent=TRUE)
   if (inherits(rtn,"try-error")){
     message("Using MC sim. Use set.seed() prior to function for reproducible results.")
-    rtn <- stats::fisher.test(x, simulate.p.value = T)
+    rtn <- stats::fisher.test(x, simulate.p.value = TRUE)
     rtn$p_type <- "MC sim"
     rtn$stat_test <- "Fisher's exact test with Monte Carlo simulation"
   } else {
@@ -1248,6 +1198,7 @@ t_toCohen <-function(t_test){
 chi_toEpsilonSq <- function(kruskal_test){
   n <- kruskal_test$n
   epsilonSq <- kruskal_test$statistic/(n-1)
+  return(epsilonSq)
 }
 
 wilcox_effSize <- function(wilcox_test){
@@ -1262,8 +1213,8 @@ lambda_toCramer <- function(lambda,N,k,df){
   sqrt((lambda+df)/(N*(k-1)))
 }
 
-lambda_toEpsilon <- function(lamba,N,df){
-  (lamba+df)/((N^2-1)/(N+1))
+lambda_toEpsilon <- function(lambda,N,df){
+  (lambda+df)/((N^2-1)/(N+1))
 }
 
 lambda_toCohen <- function(lambda,N1,N2){
@@ -1384,7 +1335,7 @@ mean_by_grp <- function(grp_level, data, xvar, grp, digits = 1) {
   return(paste0(format(round(mean(new_xvar, na.rm = TRUE), digits), nsmall = digits), " (", format(round(sd(new_xvar, na.rm = TRUE), digits), nsmall = digits), ")"))
 }
 
-median_by_grp <- function(grp_level, data, xvar, grp, iqr = FALSE, digits = 1, range_only = F) {
+median_by_grp <- function(grp_level, data, xvar, grp, iqr = FALSE, digits = 1, range_only = FALSE) {
   x_var <- data[[xvar]]
   group_var <- data[[grp]]
   subset_grp <- subset(data, group_var == grp_level)
@@ -1397,7 +1348,7 @@ median_by_grp <- function(grp_level, data, xvar, grp, iqr = FALSE, digits = 1, r
     bracket <- paste0("(", format(round(x_iqr[1], digits), nsmall = digits), "-", ifelse(x_iqr[2]<0,"(",""),format(round(x_iqr[2], digits), nsmall = digits), ifelse(x_iqr[2]<0,")",""),")")
   }
   else {
-    x_rng <- range(new_xvar,na.rm=T)
+    x_rng <- range(new_xvar,na.rm=TRUE)
     bracket <- paste0("(", format(round(x_rng[1], digits), nsmall = digits), "-", ifelse(x_rng[2]<0,"(",""),format(round(x_rng[2], digits), nsmall = digits), ifelse(x_rng[2]<0,")",""),")")
   }
   if (range_only && !iqr) {
@@ -1422,10 +1373,10 @@ categ_xvar_helper <- function(xvar_level, data, xvar, grp, digits.cat = 0, perce
     subset_xvar_grp <- subset(data, group_var == grp_level & x_var == xvar_level)
     to_return[1, grp_level] <- paste0(grp_level, " (n=", nrow(subset_grp), ")")
     if (percentage == "row") {
-      to_return[2, grp_level] <- paste0(nrow(subset_xvar_grp), " (", ifelse((nrow(subset_grp) - missing_grp) == 0, 0, format(round((100*nrow(subset_xvar_grp) / (nrow(subset_xvar) - missing_xvar)), digits.cat), nsmall = digits.cat)), r_brckt)
+      to_return[2, grp_level] <- paste0(nrow(subset_xvar_grp), " (", ifelse((nrow(subset_grp) - missing_grp) == 0, 0, fmt_pct(nrow(subset_xvar_grp) / (nrow(subset_xvar) - missing_xvar), digits.cat)), r_brckt)
     }
     else {
-      to_return[2, grp_level] <- paste0(nrow(subset_xvar_grp), " (", ifelse((nrow(subset_grp) - missing_grp) == 0, 0, format(round((100*nrow(subset_xvar_grp) / (nrow(subset_grp) - missing_grp)), digits.cat), nsmall = digits.cat)), r_brckt)
+      to_return[2, grp_level] <- paste0(nrow(subset_xvar_grp), " (", ifelse((nrow(subset_grp) - missing_grp) == 0, 0, fmt_pct(nrow(subset_xvar_grp) / (nrow(subset_grp) - missing_grp), digits.cat)), r_brckt)
     }
     if (all(is.na((subset_grp[[xvar]])))) {
       to_return[2, grp_level] <- "NA"
@@ -1436,7 +1387,7 @@ categ_xvar_helper <- function(xvar_level, data, xvar, grp, digits.cat = 0, perce
     to_return[2, "Full Sample"] <- as.character(nrow(subset_xvar))
   }
   else {
-    to_return[2, "Full Sample"] <- paste0(nrow(subset_xvar), " (", format(round((100*nrow(subset_xvar) / (nrow(data) - missing_xvar)), digits.cat), nsmall = digits.cat), r_brckt)
+    to_return[2, "Full Sample"] <- paste0(nrow(subset_xvar), " (", fmt_pct(nrow(subset_xvar) / (nrow(data) - missing_xvar), digits.cat), r_brckt)
   }
   return(to_return)
 }
@@ -1451,10 +1402,10 @@ binary_xvar_helper <- function(grp_level, data, xvar, grp, digits.cat = 0, perce
   }
   num_missing <- sum(is.na(subset_grp[[xvar]]))
   if (percentage == "row") {
-    bracket <- paste0(" (", format(round(100*sum(subset_grp[[xvar]], na.rm = TRUE) / sum(x_var, na.rm = TRUE), digits.cat), nsmall = digits.cat), r_brckt)
+    bracket <- paste0(" (", fmt_pct(sum(subset_grp[[xvar]], na.rm = TRUE) / sum(x_var, na.rm = TRUE), digits.cat), r_brckt)
   }
   else {
-    bracket <- paste0(" (", format(round(100*sum(subset_grp[[xvar]], na.rm = TRUE) / (nrow(subset_grp) - num_missing), digits.cat), nsmall = digits.cat), r_brckt)
+    bracket <- paste0(" (", fmt_pct(sum(subset_grp[[xvar]], na.rm = TRUE) / (nrow(subset_grp) - num_missing), digits.cat), r_brckt)
   }
   return(paste0(sum(subset_grp[[xvar]], na.rm = TRUE), bracket))
 }

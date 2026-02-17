@@ -59,7 +59,7 @@ uvsum <- function(..., markup, sanitize, forceWald) {
 #' presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #' Wald global p-values are returned.
 #'
-#' If the variance inflation factor is requested (VIF=T) then a generalised VIF
+#' If the variance inflation factor is requested (VIF=TRUE) then a generalised VIF
 #' will be calculated in the same manner as the car package.
 #'
 #' VIF for competing risk models is computed by fitting a linear model with a
@@ -123,18 +123,18 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
   }  else if (inherits(model,c("crr"))) {
     call <- paste(deparse(model$formula), collapse = "")
   }  else call <- paste(deparse(model$formula), collapse = "")
-  call <- unlist(strsplit(call, "~", fixed = T))[2]
-  call <- unlist(strsplit(call, ",", fixed = T))[1]
+  call <- unlist(strsplit(call, "~", fixed = TRUE))[2]
+  call <- unlist(strsplit(call, ",", fixed = TRUE))[1]
   if (substr(call, nchar(call), nchar(call)) == "\"")
     call <- substr(call, 1, nchar(call) - 1)
-  call <- unlist(strsplit(call, "\"", fixed = T))[1]
-  call <- unlist(strsplit(call, "+", fixed = T))
-  call <- unlist(strsplit(call, "*", fixed = T))
-  call <- unlist(strsplit(call, ":", fixed = T))
+  call <- unlist(strsplit(call, "\"", fixed = TRUE))[1]
+  call <- unlist(strsplit(call, "+", fixed = TRUE))
+  call <- unlist(strsplit(call, "*", fixed = TRUE))
+  call <- unlist(strsplit(call, ":", fixed = TRUE))
   call <- unique(call)
   call <- call[which(is.na(sapply(call, function(cov) {
     charmatch("strata(", cov)
-  })) == T)]
+  })) == TRUE)]
   call <- gsub("\\s", "", call)
   type <- class(model)[1]
   if (!isTRUE(model$family$link) && !isTRUE(model$family$link %in% c("log", "logit"))){
@@ -230,7 +230,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
   beta = betaWithCI(beta, CIwidth)
   ucall = unique(call)
   if (length(setdiff(ucall,names(data)))>0) stop('Currently this function is only implemented to work with standard variable names.\n Try converting the data to a standard data.frame with data.frame(data) and re-running the model to use rm_mvsum.')
-  indx = try(matchcovariate(betanames, ucall),silent = T)
+  indx = try(matchcovariate(betanames, ucall),silent = TRUE)
   if (is.error(indx)) stop('This function not yet implemented for complex function calls. Try re-specifying the model.')
   for (v in ucall) {
     if (inherits(data[[v]], "character"))
@@ -247,7 +247,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
   }
   out <- lapply(y, function(covariateindex) {
     betaname <- betanames[covariateindex]
-    betaname <- strsplit(betaname, ":", fixed = T)
+    betaname <- strsplit(betaname, ":", fixed = TRUE)
     oldcovname <- covnm(betaname[[1]], call)
     oldcovname <- getvarname(oldcovname)
     oldcovname <- paste(oldcovname,collapse = ":")
@@ -272,20 +272,20 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
         m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data,method='ML'),silent=TRUE)
         if (!is.error(m_small)){
           m_new <- stats::update(model,method='ML')
-          globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_new)[,"p-value"])),silent=T) # LRT
+          globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,m_new)[,"p-value"])),silent=TRUE) # LRT
         }
       }
       if (is.na(globalpvalue)| is.error(globalpvalue)) {
         globalpvalue <- try(aod::wald.test(b = model$coef$fixed[covariateindex],
                                            Sigma = vcov(model)[covariateindex, covariateindex],
-                                           Terms = seq_along(covariateindex))$result$chi2[3],silent = T)
+                                           Terms = seq_along(covariateindex))$result$chi2[3],silent = TRUE)
       }
     } else if (type  =='negbin'){
-      m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = T)
-      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(Chi)"])),silent = T)
+      m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = TRUE)
+      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(Chi)"])),silent = TRUE)
     } else if (type  =='glm'){
-      m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = T)
-      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model,test='LRT')[,"Pr(>Chi)"])),silent = T)
+      m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent = TRUE)
+      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model,test='LRT')[,"Pr(>Chi)"])),silent = TRUE)
     } else if (type == "polr") {
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
       globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(Chi)"])),silent=TRUE)
@@ -293,25 +293,25 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
       globalpvalue <- try(aod::wald.test(b = model$coef[covariateindex],
                                          Sigma = model$var[covariateindex, covariateindex],
                                          Terms = seq_along(covariateindex))$result$chi2[3],
-                          silent = T)
+                          silent = TRUE)
     } else if (type=='geeglm'){ # Leave as Wald Test
       globalpvalue <- try(aod::wald.test(b = model$coefficients[covariateindex],
                                          Sigma = (model$geese$vbeta)[covariateindex, covariateindex],
                                          Terms = seq_len(length(model$coefficients[covariateindex])))$result$chi2[3],
-                          silent = T)
+                          silent = TRUE)
 
     } else if (type=='coxph') {
       m_data <- data
       names(m_data)[1] <- 'y'
       m_full <- try(stats::update(model,as.formula('y ~ . '),data=m_data),silent=TRUE)
       m_small <- try(stats::update(model,paste0('y ~ . -',oldcovname),data=m_data),silent=TRUE)
-      gp_aov <- try(anova(m_small,m_full),silent = T)
+      gp_aov <- try(anova(m_small,m_full),silent = TRUE)
 
       if (inherits(gp_aov,'try-error')) globalpvalue <- gp_aov else globalpvalue <- as.vector(stats::na.omit(gp_aov[,4]))
 
     } else {
       m_small <- try(stats::update(model,paste0('. ~ . -',oldcovname),data=data),silent=TRUE)
-      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = T)
+      globalpvalue <- try(as.vector(stats::na.omit(anova(m_small,model)[,"Pr(>F)"])),silent = TRUE)
     }
     if (is.error(globalpvalue)) globalpvalue <- "NA"
     if (length(globalpvalue)==0) globalpvalue <- "NA"
@@ -628,10 +628,13 @@ modify_ggkmcif <- function(list_gg){
                             details = "ggkmcif has been replaced by ggkmcif2 which uses cowplot to export plotting elements, modify_ggkmcif has been deprecated.")
 }
 
+#' combine components of a call to ggkmci
+#'
 #' @description
 #' `r lifecycle::badge("deprecated")`
 #'
 #' `ggkmcif()` was deprecated in version 0.1.2 and will be removed in a future version.
+#' @param list_gg A list of ggplot objects from `ggkmcif()`. (Deprecated)
 #' Please use [ggkmcif2()] instead.
 ggkmcif_paste <- function(list_gg){
   lifecycle::deprecate_stop("0.1.0","ggkmcif_paste()","ggkmcif2()",

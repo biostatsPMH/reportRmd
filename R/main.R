@@ -90,11 +90,11 @@ boxcoxfitRx<-function(f,data,lambda=FALSE){
   df1<-data.frame(tempindexboxcoxfitRx,data)
   f2<-as.formula(paste("tempindexboxcoxfitRx+",y,"~",x))
   temp<-modelmatrix(f2,df1)
-  ff<-list(temp[[1]][,-1,drop=F],temp[[2,drop=F]])
-  temp<-temp[[1]][,1,drop=F]
+  ff<-list(temp[[1]][,-1,drop=FALSE],temp[[2,drop=FALSE]])
+  temp<-temp[[1]][,1,drop=FALSE]
   lambda1<-unlist(unlist(geoR_boxcoxfit(ff[[1]],ff[[2]],lambda2=TRUE))[1:2])
   ff[[1]]<-((ff[[1]]+lambda1[2])^lambda1[1]-1)/lambda1[1]
-  df<-merge(df1,temp,by="tempindexboxcoxfitRx")[,-1,drop=F]
+  df<-merge(df1,temp,by="tempindexboxcoxfitRx")[,-1,drop=FALSE]
   df[,time]<-ff[[1]]
   out<-lm(f,data=df)
   out$call<-paste("~",covs)
@@ -280,6 +280,237 @@ extract_terms <- function(terms) {
   return(ts)
 }
 
+# Internal helper: compute Cramer's V effect size
+# @keywords internal
+# @noRd
+covsum_cramers_v <- function(x, y, N) {
+  try(sqrt((stats::chisq.test(x, y)$statistic / N) /
+             (min(length(unique(x)) - 1, length(unique(y)) - 1))),
+      silent = TRUE)
+}
+
+# Internal helper: format proportion strings for covsum
+# Takes a numeric vector of counts and digits.cat, returns
+# character vector like "count (prop%)"
+# @keywords internal
+# @noRd
+covsum_format_prop <- function(counts, digits.cat) {
+  counts <- as.numeric(counts)
+  prop <- round(counts / sum(counts), 2 + digits.cat) * 100
+  prop <- sapply(prop, function(x) {
+    if (!is.nan(x)) x else 0
+  })
+  prop.fmt <- sprintf(paste0("%.", digits.cat, "f"), prop)
+  paste(counts, " (", prop.fmt, ")", sep = "")
+}
+
+# Internal helper: prepare and transform data/settings for covsum
+# Called after initial missing() checks (which must stay in covsum).
+# Returns a list with processed data, covs, and derived settings.
+# @keywords internal
+# @noRd
+covsum_prepare <- function(data, covs, maincov, pvalue, effSize,
+                           markup, digits, digits.cat, sanitize,
+                           nicenames, dropLevels, testcont, testcat,
+                           percentage) {
+  if (!pvalue & effSize)
+    stop("effSize can only be specified when pvalue = TRUE")
+  if (!inherits(data, "data.frame"))
+    stop("data must be supplied as a data frame.")
+  if (!inherits(covs, "character"))
+    stop("covs must be supplied as a character vector or string indicating variables in data")
+  if (!is.null(maincov)) {
+    if (!inherits(maincov, "character") | length(maincov) > 1)
+      stop("maincov must be supplied as a string indicating a variable in data")
+  }
+  missing_vars = setdiff(c(maincov, covs), names(data))
+  if (length(missing_vars) > 0) {
+    stop(paste("These covariates are not in the data:", paste0(missing_vars,
+                                                               collapse = csep())))
+  }
+  for (v in c(maincov, covs)) {
+    if (inherits(data[[v]], "difftime"))
+      data[[v]] <- as.numeric(data[[v]])
+    if (inherits(data[[v]], "logical"))
+      data[[v]] <- factor(data[[v]])
+    if (inherits(data[[v]], "character"))
+      data[[v]] <- factor(data[[v]])
+    if (inherits(data[[v]], c("POSIXt"))) {
+      covs <- setdiff(covs, v)
+      message(paste("POSIXt can not be summarised in this version of reportRmd.\n The variable",
+                    v, "does not appear in the table."))
+    }
+  }
+  if (!all(names(data[, c(maincov, covs)]) == names(data.frame(data[,
+                                                                    c(maincov, covs)]))))
+    warning("Non-standard variable names may cause problems. Check output.")
+  testcont <- match.arg(testcont, c("rank-sum test", "ANOVA"))
+  testcat <- match.arg(testcat, c("Chi-squared", "Fisher"))
+  percentage <- match.arg(percentage, c("column", "row"))
+  if (!markup) {
+    lbld <- identity
+    addspace <- identity
+    lpvalue <- identity
+  } else {
+    lbld <- NULL
+    addspace <- NULL
+    lpvalue <- NULL
+  }
+  digits <- as.integer(digits[1])
+  digits.cat <- as.integer(digits.cat)
+  if (digits < 0)
+    stop("parameter 'digits' cannot be negative!")
+  if (digits.cat < 0)
+    stop("parameter 'digits.cat' cannot be negative!")
+  if (!sanitize)
+    sanitizestr <- identity
+  else
+    sanitizestr <- NULL
+  if (!nicenames)
+    nicename <- identity
+  else
+    nicename <- NULL
+  if (dropLevels)
+    data <- droplevels(data)
+
+  list(data = data, covs = covs, testcont = testcont, testcat = testcat,
+       percentage = percentage, digits = digits, digits.cat = digits.cat,
+       lbld = lbld, addspace = addspace, lpvalue = lpvalue,
+       sanitizestr = sanitizestr, nicename = nicename)
+}
+
+# Internal helper: compute p-value and effect size for categorical covariates
+# @keywords internal
+# @noRd
+covsum_cat_pvalue <- function(data, maincov, cov, excludeLevel, N,
+                              testcat, missing_testcat, lowcounts,
+                              effSize, pvalue, lpvalue) {
+  p <- NULL
+  p_type <- NULL
+  e <- NULL
+  e_type <- NULL
+
+  if (pvalue) {
+    pdata = data[!(data[[cov]] %in% excludeLevel), ]
+    lowcounts <- sum(table(pdata[[maincov]], pdata[[cov]],
+                           exclude = excludeLevel) < 5) > 0
+    if (!missing_testcat & testcat == "Chi-squared" &
+        lowcounts)
+      warning(paste("Low counts are present in",
+                    cov, "variable consider Fisher's test."),
+              call. = FALSE)
+    if ((missing_testcat & lowcounts) | testcat ==
+        "Fisher") {
+      p_type <- "Fisher Exact"
+      p <- try(stats::fisher.test(pdata[[maincov]],
+                                  pdata[[cov]])$p.value, silent = TRUE)
+      if (effSize) {
+        e_type <- "Cramer's V"
+        e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
+      }
+      if (is.error(p)) {
+        message("Using MC sim. Use set.seed() prior to function for reproducible results.")
+        p <- try(stats::fisher.test(pdata[[maincov]],
+                                    pdata[[cov]], simulate.p.value = TRUE)$p.value,
+                 silent = TRUE)
+        p_type <- "MC sim"
+        if (effSize) {
+          e_type <- "Cramer's V"
+          e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
+        }
+      }
+    }
+    else {
+      p_type = "Chi Sq"
+      p = try(stats::chisq.test(pdata[[maincov]],
+                                pdata[[cov]])$p.value, silent = TRUE)
+      if (effSize) {
+        e_type <- "Cramer's V"
+        e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
+      }
+    }
+    if (is.error(p))
+      p <- NA
+    p <- lpvalue(p)
+    if (effSize) {
+      if (is.error(e))
+        e <- NA
+      e <- lpvalue(e)
+    }
+  }
+
+  list(p = p, p_type = p_type, e = e, e_type = e_type)
+}
+
+# Internal helper: compute p-value and effect size for continuous covariates
+# @keywords internal
+# @noRd
+covsum_cont_pvalue <- function(data, maincov, cov, N, testcont,
+                               effSize, pvalue, lpvalue) {
+  p <- NULL
+  p_type <- NULL
+  e <- NULL
+  e_type <- NULL
+
+  if (pvalue) {
+    if (testcont[1] == "rank-sum test") {
+      if (length(unique(data[[maincov]])) == 2) {
+        p_type = "Wilcoxon Rank Sum"
+        p <- try(stats::wilcox.test(data[[cov]] ~
+                                      data[[maincov]])$p.value, silent = TRUE)
+        if (effSize) {
+          e_type <- "Wilcoxon r"
+          e <- try(ifelse(is.finite(qnorm(stats::wilcox.test(data[[cov]]~data[[maincov]], data=data)$p.value/2)),
+                          abs(qnorm(stats::wilcox.test(data[[cov]]~data[[maincov]], data=data)$p.value/2))/sqrt(N),
+                          abs(qnorm(0.0001/2))/sqrt(N)),
+                   silent = TRUE)
+        }
+      }
+      else {
+        p_type = "Kruskal Wallis"
+        p <- try(stats::kruskal.test(data[[cov]] ~
+                                       data[[maincov]])$p.value, silent = TRUE)
+        if (effSize) {
+          e_type <- "Eta sq"
+          e <- try(summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
+                     (summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
+        }
+      }
+    }
+    else {
+      if (length(unique(data[[maincov]])) == 2) {
+        p_type = "t-test"
+        p <- try(stats::t.test(data[[cov]] ~ data[[maincov]])$p.value,
+                 silent = TRUE)
+        if (effSize) {
+          e_type <- "Cohen's d"
+          e <- try(abs(2*stats::t.test(data[[cov]] ~ data[[maincov]])$statistic/sqrt(N)), silent = TRUE)
+        }
+      }
+      else {
+        p_type = "ANOVA"
+        p <- try(stats::anova(stats::lm(data[[cov]] ~
+                                          data[[maincov]]))[5][[1]][1], silent = TRUE)
+        if (effSize) {
+          e_type <- "Eta sq"
+          e <- try(summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
+                     (summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]+summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[2]))
+        }
+      }
+    }
+    if (is.error(p))
+      p <- NA
+    p <- lpvalue(p)
+    if (effSize) {
+      if (is.error(e))
+        e <- NA
+      e <- lpvalue(e)
+    }
+  }
+
+  list(p = p, p_type = p_type, e = e, e_type = e_type)
+}
+
 #' Get covariate summary dataframe
 #'
 #' Returns a dataframe corresponding to a descriptive table.
@@ -364,63 +595,20 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
     stop("data is a required argument")
   if (missing(covs))
     stop("covs is a required argument")
-  if (!pvalue & effSize)
-    stop("effSize can only be specified when pvalue = TRUE")
-  if (!inherits(data, "data.frame"))
-    stop("data must be supplied as a data frame.")
-  if (!inherits(covs, "character"))
-    stop("covs must be supplied as a character vector or string indicating variables in data")
-  if (!is.null(maincov)) {
-    if (!inherits(maincov, "character") | length(maincov) >
-        1)
-      stop("maincov must be supplied as a string indicating a variable in data")
-  }
-  missing_vars = setdiff(c(maincov, covs), names(data))
-  if (length(missing_vars) > 0) {
-    stop(paste("These covariates are not in the data:", paste0(missing_vars,
-                                                               collapse = csep())))
-  }
-  for (v in c(maincov, covs)) {
-    if (inherits(data[[v]], "difftime"))
-      data[[v]] <- as.numeric(data[[v]])
-    if (inherits(data[[v]], "logical"))
-      data[[v]] <- factor(data[[v]])
-    if (inherits(data[[v]], "character"))
-      data[[v]] <- factor(data[[v]])
-    if (inherits(data[[v]], c("POSIXt"))) {
-      covs <- setdiff(covs, v)
-      message(paste("POSIXt can not be summarised in this version of reportRmd.\n The variable",
-                    v, "does not appear in the table."))
-    }
-  }
-  if (!all(names(data[, c(maincov, covs)]) == names(data.frame(data[,
-                                                                    c(maincov, covs)]))))
-    warning("Non-standard variable names may cause problems. Check output.")
   missing_testcat <- missing(testcat)
-  testcont <- match.arg(testcont)
-  testcat <- match.arg(testcat)
-  percentage <- match.arg(percentage)
+  v <- covsum_prepare(data, covs, maincov, pvalue, effSize,
+                      markup, digits, digits.cat, sanitize,
+                      nicenames, dropLevels, testcont, testcat,
+                      percentage)
+  data <- v$data; covs <- v$covs; testcont <- v$testcont
+  testcat <- v$testcat; percentage <- v$percentage
+  digits <- v$digits; digits.cat <- v$digits.cat
+  lbld <- v$lbld; addspace <- v$addspace; lpvalue <- v$lpvalue
+  sanitizestr <- v$sanitizestr; nicename <- v$nicename
   if (!pvalue) {
     show.tests <- FALSE
     excludeLevels <- NULL
   }
-  if (!markup) {
-    lbld <- identity
-    addspace <- identity
-    lpvalue <- identity
-  }
-  digits <- as.integer(digits)
-  digits.cat <- as.integer(digits.cat)
-  if (digits < 0)
-    stop("parameter 'digits' cannot be negative!")
-  if (digits.cat < 0)
-    stop("parameter 'digits.cat' cannot be negative!")
-  if (!sanitize)
-    sanitizestr <- identity
-  if (!nicenames)
-    nicename <- identity
-  if (dropLevels)
-    data <- droplevels(data)
   if (!is.null(maincov)) {
     if (include_missing == FALSE)
       data <- data[!is.na(data[[maincov]]), ]
@@ -448,7 +636,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
     p <- NULL
   }
   out <- lapply(covs, function(cov) {
-    ismiss = F
+    ismiss = FALSE
     n <- sum(table(data[[cov]]))
     if (!is.null(excludeLevels[[cov]])) {
       excludeLevel = excludeLevels[[cov]]
@@ -458,7 +646,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
     if (is.null(numobs[[cov]]))
       numobs[[cov]] <- nmaincov
     if (numobs[[cov]][1] - n > 0) {
-      ismiss = T
+      ismiss = TRUE
       factornames <- c(factornames, "Missing")
     }
     if (is.factor(data[[cov]])) {
@@ -473,7 +661,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
               lowcounts)
             warning(paste("Low counts are present in",
                           cov, "variable consider Fisher's test."),
-                    call. = F)
+                    call. = FALSE)
           if ((missing_testcat & lowcounts) | testcat ==
               "Fisher") {
             p_type <- "Fisher Exact"
@@ -481,21 +669,17 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                         pdata[[cov]])$p.value, silent = TRUE)
             if (effSize) {
               e_type <- "Cramer's V"
-              e <- try(sqrt((stats::chisq.test(pdata[[maincov]],
-                                               pdata[[cov]])$statistic/N)/
-                              (min(length(unique(pdata[[maincov]]))-1,length(unique(pdata[[cov]]))-1))), silent = TRUE)
+              e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
             }
             if (is.error(p)) {
               message("Using MC sim. Use set.seed() prior to function for reproducible results.")
               p <- try(stats::fisher.test(pdata[[maincov]],
-                                          pdata[[cov]], simulate.p.value = T)$p.value,
+                                          pdata[[cov]], simulate.p.value = TRUE)$p.value,
                        silent = TRUE)
               p_type <- "MC sim"
               if (effSize) {
                 e_type <- "Cramer's V"
-                e <- try(sqrt((stats::chisq.test(pdata[[maincov]],
-                                                 pdata[[cov]])$statistic/N)/
-                                (min(length(unique(pdata[[maincov]]))-1,length(unique(pdata[[cov]]))-1))), silent = TRUE)
+                e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
               }
             }
           }
@@ -505,9 +689,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
                                       pdata[[cov]])$p.value, silent = TRUE)
             if (effSize) {
               e_type <- "Cramer's V"
-              e <- try(sqrt((stats::chisq.test(pdata[[maincov]],
-                                               pdata[[cov]])$statistic/N)/
-                              (min(length(unique(pdata[[maincov]]))-1,length(unique(pdata[[cov]]))-1))), silent = TRUE)
+              e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
             }
           }
           if (is.error(p))
@@ -633,7 +815,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
             if (length(unique(data[[maincov]])) == 2) {
               p_type = "Wilcoxon Rank Sum"
               p <- try(stats::wilcox.test(data[[cov]] ~
-                                            data[[maincov]])$p.value, silent = T)
+                                            data[[maincov]])$p.value, silent = TRUE)
               if (effSize) {
                 e_type <- "Wilcoxon r"
                 e <- try(ifelse(is.finite(qnorm(stats::wilcox.test(data[[cov]]~data[[maincov]], data=data)$p.value/2)),
@@ -645,7 +827,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
             else {
               p_type = "Kruskal Wallis"
               p <- try(stats::kruskal.test(data[[cov]] ~
-                                             data[[maincov]])$p.value, silent = T)
+                                             data[[maincov]])$p.value, silent = TRUE)
               if (effSize) {
                 e_type <- "Eta sq"
                 e <- try(summary(stats::aov(data[[cov]]~data[[maincov]]))[[1]]$`Sum Sq`[1]/
@@ -707,7 +889,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
         }
         else if (inherits(subdata[[cov]],"Date")) {
           meansd <- paste(as.Date(floor(as.numeric(niceNum(sumCov["Mean"], digits))), origin="1970-01-01"),
-                          " (", niceNum(sd(subdata[[cov]], na.rm = T),
+                          " (", niceNum(sd(subdata[[cov]], na.rm = TRUE),
                                         digits), " days)", sep = "")
           mmm <- if (IQR | all.stats) {
             if (all(as.Date(c(sumCov["Median"], sumCov["1st Qu."],
@@ -751,7 +933,7 @@ covsum <- function (data, covs, maincov = NULL, digits = 1, numobs = NULL,
         }
         else {
           meansd <- paste(niceNum(sumCov["Mean"], digits),
-                          " (", niceNum(sd(subdata[[cov]], na.rm = T),
+                          " (", niceNum(sd(subdata[[cov]], na.rm = TRUE),
                                         digits), ")", sep = "")
           mmm <- if (IQR | all.stats) {
             if (all(c(sumCov["Median"], sumCov["1st Qu."],
@@ -1973,6 +2155,15 @@ plotuv <- function(response,covs,data,showN=FALSE,showPoints=TRUE,na.rm=TRUE,
 #' @param chunk_label only used knitting to Word docs to allow cross-referencing
 #' @param format if specified ('html','latex') will override the
 #'   global pandoc setting
+#' @param header_above a named numeric vector specifying an extra header row
+#'   above the column names, where the names are the labels and the values are
+#'   the number of columns each label should span. For example,
+#'   \code{c(" " = 1, "Group A" = 2, "Group B" = 2)} will leave the first
+#'   column blank, then span "Group A" over the next 2 columns, and
+#'   "Group B" over the following 2. For HTML and PDF output the header is
+#'   rendered as a true spanning row via kableExtra. For Word output the
+#'   labels are prepended as the first data row of the table (pandoc
+#'   markdown does not support cell merging).
 #' @return A character vector of the table source code, unless tableOnly=TRUE in
 #'   which case a data frame is returned
 #' @export
@@ -1980,7 +2171,7 @@ outTable <- function(tab, row.names = NULL, to_indent = numeric(0), bold_headers
                      rows_bold = numeric(0), bold_cells = NULL, caption = NULL,
                      digits = getOption("reportRmd.digits", 2), align,
                      applyAttributes = TRUE, keep.rownames = FALSE, nicenames = TRUE,
-                     fontsize, chunk_label, format = NULL) {
+                     fontsize, chunk_label, format = NULL, header_above = NULL) {
 
   # Input validation
   if (!inherits(tab, "data.frame")) stop("tab must be a data frame")
@@ -2027,13 +2218,8 @@ outTable <- function(tab, row.names = NULL, to_indent = numeric(0), bold_headers
   }
 
   # Round and format numeric columns
-  numColIdx <- which(sapply(tab, inherits, 'numeric'))
-  if (length(numColIdx) > 0) {
-    colDigits <- rep_len(digits, length(numColIdx))
-    for (i in seq_along(numColIdx)) {
-      idx <- numColIdx[i]
-      tab[[idx]] <- sapply(tab[[idx]], function(x) niceNum(x, digits = colDigits[i]))
-    }
+  if (!missing(digits)) {
+    tab <- round_numeric_cols(tab, digits)
   }
 
   # Determine output format
@@ -2092,36 +2278,44 @@ outTable <- function(tab, row.names = NULL, to_indent = numeric(0), bold_headers
         paste0('(\\#tab:', chunk_label, ')', caption)
       }
     }
-
-    # Handle Date columns (convert to character to avoid errors)
     date_cols <- names(tab)[sapply(tab, inherits, "Date")]
     if (length(date_cols) > 0) {
-      for (v in date_cols) {
-        tab[[v]] <- as.character(tab[[v]])
-      }
+      for (v in date_cols) tab[[v]] <- as.character(tab[[v]])
     }
-
-    # Preserve column names before conversion
     col_names <- names(tab)
-
-    # Convert all columns to character
     tab <- tab |>
       lapply(as.character) |>
       as.data.frame(stringsAsFactors = FALSE, check.names = FALSE)
-
-    # Restore column names explicitly
     names(tab) <- col_names
-
-    # Replace NA and empty strings with non-breaking space
+    # Prepend header_above as a data row for Word output
+    if (!is.null(header_above)) {
+      hdr_row <- character(ncol(tab))
+      pos <- 1
+      for (i in seq_along(header_above)) {
+        span <- header_above[i]
+        label <- names(header_above)[i]
+        if (!is.null(label) && trimws(label) != "") {
+          hdr_row[pos] <- label
+        }
+        pos <- pos + span
+      }
+      hdr_df <- as.data.frame(as.list(hdr_row), stringsAsFactors = FALSE)
+      names(hdr_df) <- col_names
+      tab <- rbind(hdr_df, tab)
+      # Shift row indices to account for the new first row
+      to_indent <- to_indent + 1
+      if (!is.null(bold_cells)) bold_cells[, 1] <- bold_cells[, 1] + 1
+      hdr_bold <- which(trimws(hdr_row) != "")
+      if (length(hdr_bold) > 0) {
+        hdr_bold_cells <- cbind(rep(1, length(hdr_bold)), hdr_bold)
+        bold_cells <- rbind(hdr_bold_cells, bold_cells)
+      }
+    }
     tab[is.na(tab)] <- '&nbsp;'
     tab[tab == ''] <- '&nbsp;'
-
-    # Apply indentation
     if (length(to_indent) > 0) {
       tab[[1]][to_indent] <- paste('&nbsp;&nbsp;', tab[[1]][to_indent])
     }
-
-    # Output with pander
     pander::pander(
       tab,
       caption = caption,
@@ -2176,6 +2370,11 @@ outTable <- function(tab, row.names = NULL, to_indent = numeric(0), bold_headers
     } else {
       kout <- kout |>
         kableExtra::kable_styling(latex_options = c('repeat_header'))
+    }
+
+    # Apply header row above column names
+    if (!is.null(header_above)) {
+      kout <- kableExtra::add_header_above(kout, header = header_above)
     }
 
     # Apply indentation
@@ -2249,8 +2448,8 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
   data <- data[,colOrd]
   # ensure that the data are sorted by the header column and to column in the order they first appear
   # necessary if there is a misplaced row
-  data[[head_col]] <- factor(data[[head_col]],levels=unique(data[[head_col]]),ordered = T)
-  data[[to_col]] <- factor(data[[to_col]],levels=unique(data[[to_col]]),ordered = T)
+  data[[head_col]] <- factor(data[[head_col]],levels=unique(data[[head_col]]),ordered = TRUE)
+  data[[to_col]] <- factor(data[[to_col]],levels=unique(data[[to_col]]),ordered = TRUE)
   data <- data[order(data[[head_col]],data[[to_col]]),]
   data[[head_col]] <- as.character(data[[head_col]])
   data[[to_col]] <- as.character(data[[to_col]])
@@ -2258,14 +2457,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 
   # round and format numeric columns if digits is specified
   if (!missing(digits)){
-    coltypes <- unlist(lapply(data, class))
-    numCols <- names(coltypes)[coltypes=='numeric']
-    if (length(numCols)>0){
-      colRound <- cbind(numCols,digits)
-      colDigits <- as.numeric(colRound[,2])
-      names(colDigits) <- colRound[,1]
-      for (v in numCols) data[[v]] <- sapply(data[[v]],function(x) niceNum(x,digits=colDigits[v]))
-    }
+    data <- round_numeric_cols(data, digits)
   }
 
   for (i in 1:ncol(new_row)) new_row[1,i] <- NA
@@ -2313,7 +2505,7 @@ nestTable <- function(data,head_col,to_col,colHeader ='',caption=NULL,indent=TRU
 #' @examples
 #' data("pembrolizumab")
 #' tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-#' covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=F)
+#' covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=FALSE)
 #' scrolling_table(tab,pixelHeight=300)
 #' @export
 scrolling_table <- function(knitrTable,pixelHeight=500){
@@ -2332,125 +2524,6 @@ scrolling_table <- function(knitrTable,pixelHeight=500){
 }
 
 #' Add header row to table
-#'
-#' This function adds a custom header row to the output of outTable() or
-#' nestTable(), allowing labels to span multiple columns. This is useful for
-#' grouping related columns under common headers. Works with HTML, PDF (LaTeX),
-#' and Word output formats.
-#'
-#' @param knitrTable output from a call to outTable() or nestTable()
-#' @param header_labels character vector of labels for the header row. Use ""
-#'   or NA for columns without a header label.
-#' @param column_spans list of numeric vectors specifying which column(s) each
-#'   label should span. Each element corresponds to a label in header_labels.
-#'   For example, list(1, 2:3, 4:5) means the first label spans column 1,
-#'   second label spans columns 2-3, and third label spans columns 4-5.
-#' @param align character string specifying alignment of header labels.
-#'   Options are "l" (left), "c" (center), or "r" (right). Default is "c".
-#' @param bold logical indicating whether header labels should be bolded.
-#'   Default is TRUE.
-#' @param line_sep logical indicating whether to add a line separator below
-#'   the header row. Default is TRUE for HTML/PDF, ignored for Word.
-#'
-#' @return A knitr_kable object with the custom header row added
-#'
-#' @details
-#' The function automatically detects the output format (HTML, PDF, or Word) and
-#' applies the appropriate formatting. For Word output, the function uses
-#' kableExtra's add_header_above which has good cross-format support.
-#'
-#' Note: Column spanning in Word documents may have limited styling options
-#' compared to HTML/PDF output, but the structure will be preserved.
-#'
-#' @importFrom kableExtra add_header_above
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' # Create a summary table
-#' tab <- rm_covsum(data = pembrolizumab, maincov = 'sex',
-#'                  covs = c('age', 'pdl1', 'cohort'))
-#'
-#' # Add header row grouping columns
-#' add_header_row(tab,
-#'                header_labels = c("", "Males", "Females", ""),
-#'                column_spans = list(1, 2, 3, 4))
-#'
-#' # More complex example with column grouping
-#' tab2 <- rm_compactsum(data = pembrolizumab, grp = 'sex',
-#'                       xvars = c('age', 'pdl1'))
-#' add_header_row(tab2,
-#'                header_labels = c("", "Group A", "Group B", ""),
-#'                column_spans = list(1, 2:3, 4:5, 6))
-#' }
-add_header_row <- function(knitrTable, header_labels, column_spans,
-                           align = "c", bold = TRUE, line_sep = TRUE) {
-
-  # Input validation
-  if (!inherits(knitrTable, "knitr_kable")) {
-    stop("This function requires a knitr_kable object.\nTry running reportRmd::outTable or reportRmd::nestTable first.")
-  }
-
-  if (missing(header_labels) || missing(column_spans)) {
-    stop("Both header_labels and column_spans must be provided")
-  }
-
-  if (length(header_labels) != length(column_spans)) {
-    stop("header_labels and column_spans must have the same length")
-  }
-
-  # Validate alignment
-  if (!align %in% c("l", "c", "r")) {
-    warning("align must be 'l', 'c', or 'r'. Using 'c' (center) as default.")
-    align <- "c"
-  }
-
-  # Detect output format
-  out_fmt <- ifelse(is.null(knitr::pandoc_to()), 'html',
-                    ifelse(knitr::pandoc_to(c('doc', 'docx')), 'docx',
-                           ifelse(knitr::is_latex_output(), 'latex', 'html')))
-
-  # Build the header specification for add_header_above
-  # This function expects a named vector where names are labels
-  # and values are the number of columns to span
-  header_spec <- setNames(numeric(length(header_labels)), character(length(header_labels)))
-
-  for (i in seq_along(header_labels)) {
-    label <- header_labels[i]
-    span_cols <- column_spans[[i]]
-
-    # Calculate span width
-    span_width <- length(span_cols)
-
-    # Empty labels should be represented as " " for kableExtra
-    if (is.na(label) || label == "") {
-      label <- " "
-    }
-
-    header_spec[i] <- span_width
-    names(header_spec)[i] <- label
-  }
-
-  # For Word output, line_sep should be 0 as it may cause formatting issues
-  if (out_fmt == "docx") {
-    line_sep_value <- 0
-  } else {
-    line_sep_value <- if (line_sep) 3 else 0
-  }
-
-  # Add the header row using kableExtra
-  # add_header_above works across HTML, LaTeX, and Word formats
-  result <- kableExtra::add_header_above(
-    knitrTable,
-    header = header_spec,
-    bold = bold,
-    align = align,
-    line_sep = line_sep_value
-  )
-
-  return(result)
-}
-
 
 #' Outputs a descriptive covariate table
 #'
@@ -2471,15 +2544,19 @@ add_header_row <- function(knitrTable, header_labels, column_spans,
 #' A newer version of this function is \link{rm_compactsum} which is more
 #' flexible and displays fewer rows of output.
 #'
+#' Tidyselect can be used for \code{covs}, \code{maincov}, \code{xvars}, and
+#' \code{grp} arguments, allowing bare column names (e.g., \code{c(age, sex)})
+#' in addition to character strings (e.g., \code{c("age", "sex")}).
+#'
 #' @param data dataframe containing data
-#' @param covs Character vector of covariate names to summarize.
-#'   Can also be specified using the \code{xvars} alias.
-#' @param maincov Character string specifying the grouping variable.
+#' @param covs Covariate names to summarize. Accepts either a character vector
+#'   (e.g., \code{c("age", "sex")}) or tidyselect bare names
+#'   (e.g., \code{c(age, sex)}). Can also be specified using the \code{xvars} alias.
+#' @param maincov Grouping variable. Accepts either a character string
+#'   (e.g., \code{"sex"}) or a tidyselect bare name (e.g., \code{sex}).
 #'   Can also be specified using the \code{grp} alias.
-#' @param xvars Alias for \code{covs}. Accepts either unquoted variable names
-#'   (e.g., \code{c(age, sex)}) or character strings (e.g., \code{c("age", "sex")}).
-#' @param grp Alias for \code{maincov}. Accepts either an unquoted variable name
-#'   (e.g., \code{sex}) or a character string (e.g., \code{"sex"}).
+#' @param xvars Alias for \code{covs}. Supports tidyselect.
+#' @param grp Alias for \code{maincov}. Supports tidyselect.
 #' @param caption character containing table caption (default is no caption)
 #' @param tableOnly Logical, if TRUE then a dataframe is returned, otherwise a
 #'   formatted printed object is returned (default).
@@ -2578,41 +2655,34 @@ rm_covsum <- function (data, covs=NULL, maincov = NULL, caption = NULL, tableOnl
   if (!inherits(data, "data.frame"))
     stop("data must be supplied as a data frame.")
 
-  # Handle grp alias for maincov
-  if (!is.null(substitute(grp)) && is.null(maincov)) {
-    grp_expr <- substitute(grp)
-    if (is.character(grp)) {
-      maincov <- grp
-    } else {
-      # Convert symbol to string
-      maincov <- deparse(grp_expr)
-    }
-  }
-
-  # Handle xvars alias for covs
-  if (!is.null(substitute(xvars)) && is.null(covs)) {
-    xvars_expr <- substitute(xvars)
-
-    if (is.character(xvars)) {
-      covs <- xvars
-    } else if (is.call(xvars_expr) && identical(xvars_expr[[1]], as.name("c"))) {
-      # Extract from c(...) - could be symbols or strings
-      covs <- sapply(as.list(xvars_expr)[-1], function(x) {
-        if (is.character(eval(x, parent.frame()))) {
-          eval(x, parent.frame())
-        } else {
-          deparse(x)
-        }
-      })
-    } else {
-      # Single variable
-      covs <- deparse(xvars_expr)
-    }
-  }
-
-  # Check that we have required arguments
-  if (is.null(covs)) {
+  # Tidyselect resolution for covs/xvars
+  if (!is.null(substitute(covs))) {
+    covs_sel <- tidyselect::eval_select(expr = tidyselect::enquo(covs),
+                                        data = data[unique(names(data))],
+                                        allow_rename = FALSE)
+    covs <- names(covs_sel)
+  } else if (!is.null(substitute(xvars))) {
+    covs_sel <- tidyselect::eval_select(expr = tidyselect::enquo(xvars),
+                                        data = data[unique(names(data))],
+                                        allow_rename = FALSE)
+    covs <- names(covs_sel)
+  } else {
     stop("Either 'covs' or 'xvars' must be provided")
+  }
+
+  # Tidyselect resolution for maincov/grp
+  if (!is.null(substitute(maincov))) {
+    mc_sel <- tidyselect::eval_select(expr = tidyselect::enquo(maincov),
+                                      data = data[unique(names(data))],
+                                      allow_rename = FALSE)
+    maincov <- names(mc_sel)
+  } else if (!is.null(substitute(grp))) {
+    mc_sel <- tidyselect::eval_select(expr = tidyselect::enquo(grp),
+                                      data = data[unique(names(data))],
+                                      allow_rename = FALSE)
+    maincov <- names(mc_sel)
+  } else {
+    maincov <- NULL
   }
 
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
@@ -3072,11 +3142,11 @@ rm_survsum <- function (data, time, status, group = NULL, survtimes = NULL,
     colsToExtract <- which(names(sfit) %in% c("strata",
                                               "time", "sr", "surv", "lower", "upper"))
     tb <- data.frame(do.call(cbind, ofit[colsToExtract]))
-    if (eventProb == F){
+    if (eventProb == FALSE){
       tb$sr <- apply(tb[, c("surv", "lower", "upper")], 1,
                      psthr, digits)
     }
-    if (eventProb == T){
+    if (eventProb == TRUE){
       tb$surv <- 1-tb$surv
       tb$lower_temp <- tb$lower; tb$upper_temp <- tb$upper
       tb$upper <- 1-tb$lower_temp
@@ -3300,7 +3370,7 @@ rm_cifsum <- function (data, time, status, group = NULL, eventcode = 1, cencode 
     for (i in 1:nrow(event.comb)) w[which(rownames(w) == event.comb$strata[i]),
                                     which(colnames(w) == event.comb$time[i])] <- event.comb$sr[i]
 
-    if (showCounts == T){
+    if (showCounts == TRUE){
       num.event <- vector()
       num.total <- vector()
       for(i in 1:length(levels(data[[group]]))){
@@ -3322,7 +3392,7 @@ rm_cifsum <- function (data, time, status, group = NULL, eventcode = 1, cencode 
     }
   }
   else {
-    if (showCounts == T){
+    if (showCounts == TRUE){
       w <- matrix(nrow = 1, ncol = length(unique(event.comb$time)))
       colnames(w) <- unique(event.comb$time)
       for (i in 1:nrow(event.comb)) w[1, which(colnames(w) == event.comb$time[i])] <- event.comb$sr[i]

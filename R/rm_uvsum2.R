@@ -208,7 +208,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (nrow(data)!=nomiss) warning(paste("Cases with missing response data have been removed.\n",
                                         nrow(data)-nomiss,"case(s) removed."))
   for (v in covs) {
-    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
+    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = FALSE)
     if (inherits(data[[v]],c('Date','POSIXt'))) {
       covs <- setdiff(covs,v)
       message(paste('Dates can not be used as predictors, try creating a time variable.\n The variable',v,'does not appear in the table.'))
@@ -241,21 +241,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   bold_cells <- attr(tab, "bold_cells")
   att_tab <- attributes(tab)
 
-  method <- p.adjust
-  tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
-  if (!unformattedp) {
-    tab[["p-value"]] <- formatp(tab[["p-value"]])
-    if ("Global p-value" %in% names(tab)) tab[["Global p-value"]] <- formatp(tab[["Global p-value"]])
-  }
-
-  # changing UB to Inf, LB to 0
-  # tab[, 2] <- sapply(tab[, 2], process_ci)
-
-  p_col <- (which(names(tab) == "p-value"))
-  bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)))))
-  if (nrow(bold_cells) < 1) {
-    bold_cells <- NULL
-  }
+  pv <- format_bold_pvalues(tab, bold_cells,
+                            unformattedp = unformattedp, p.adjust = p.adjust)
+  tab <- pv$tab; bold_cells <- pv$bold_cells
 
   names(tab)[1] <- covTitle
   lbl <- tab[, 1]
@@ -335,7 +323,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
       if (!inherits(data[[response[1]]],c("factor","ordered"))) {
         warning("Response variable is not a factor, will be converted to an ordered factor")
         data[[response]] <- factor(data[[response]],
-                                   ordered = T)
+                                   ordered = TRUE)
       }
       if (!is.null(reflevel)) {
         data[[response]] <- stats::relevel(data[[response]],

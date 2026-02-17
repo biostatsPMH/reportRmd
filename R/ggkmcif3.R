@@ -1,6 +1,15 @@
 # Utility function for default values
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
+# Internal helper: format "value(lower-upper)" CI string
+# @keywords internal
+# @noRd
+format_ci <- function(value, lower, upper, digits) {
+  paste0(round_sprintf(value, digits = digits),
+         "(", round_sprintf(lower, digits = digits),
+         "-", round_sprintf(upper, digits = digits), ")")
+}
+
 # Data Preparation Functions ----
 
 #' Validate and prepare input data
@@ -200,9 +209,7 @@ calculate_cif_timepoints <- function(fit, plot.event, set.time,
 
     keep_sum <- data.frame(value = val, time = time_i)
     keep_sum$set.CI <- if (set.time.CI) {
-      paste0(round_sprintf(val, digits = set.time.digits),
-             "(", round_sprintf(lower, digits = set.time.digits),
-             "-", round_sprintf(upper, digits = set.time.digits), ")")
+      format_ci(val, lower, upper, set.time.digits)
     } else {
       round_sprintf(val, digits = set.time.digits)
     }
@@ -290,6 +297,25 @@ create_cif_risk_table_sfit <- function(data, response, cov = NULL) {
 
 # HR and Statistical Functions ----
 
+# Internal helper: append HR values and p-values to strata labels given a fitted model.
+# @param compact If TRUE, use compact formatting (no spaces) for plot annotations.
+# @keywords internal
+# @noRd
+append_hr_labels <- function(stratalabs, fit, HR, HR_pval, HR.digits,
+                             HR.pval.digits, compact = FALSE) {
+  hr_prefix <- if (compact) "HR=" else "HR = "
+  HR_vals <- paste0(hr_prefix, sapply(seq(length(stratalabs) - 1), function(i) {
+    psthr(summary(fit)$conf.int[i, c(1, 3, 4)], y = HR.digits, compact = compact)
+  }))
+  if (HR) stratalabs[-1] <- paste(stratalabs[-1], HR_vals)
+  if (HR_pval) {
+    stratalabs[-1] <- paste(stratalabs[-1],
+                            sapply(summary(fit)$coef[, 5], lpvalue2, digits = HR.pval.digits))
+  }
+  stratalabs[1] <- paste(stratalabs[1], "REF")
+  stratalabs
+}
+
 #' Add hazard ratios to strata labels
 #' @param stratalabs Original strata labels
 #' @param data Input data
@@ -315,32 +341,14 @@ add_km_hazard_ratios <- function(stratalabs, data, response, cov, type, plot.eve
       as.formula(paste(paste("survival::Surv(", response[1], ",", response[2], ")", sep = ""), "~", cov, sep = "")),
       data = data
     )
-
-    HR_vals <- paste0("HR = ", sapply(seq(length(stratalabs) - 1), function(i) {
-      return(psthr(summary(coxfit)$conf.int[i, c(1, 3, 4)], y = HR.digits))
-    }))
-
-    if (HR) stratalabs[-1] <- paste(stratalabs[-1], HR_vals)
-    if (HR_pval) {
-      stratalabs[-1] <- paste(stratalabs[-1], sapply(summary(coxfit)$coef[, 5], lpvalue2, digits = HR.pval.digits))
-    }
-    stratalabs[1] <- paste(stratalabs[1], "REF")
+    stratalabs <- append_hr_labels(stratalabs, coxfit, HR, HR_pval, HR.digits, HR.pval.digits)
 
   } else if (type == "CIF" && length(plot.event) == 1 && plot.event[1] == 1) {
     crrfit <- crrRx(
       as.formula(paste(paste(response, collapse = "+"), "~", cov, sep = "")),
       data = data
     )
-
-    HR_vals <- paste0("HR = ", sapply(seq(length(stratalabs) - 1), function(i) {
-      return(psthr(summary(crrfit)$conf.int[i, c(1, 3, 4)], y = HR.digits))
-    }))
-
-    if (HR) stratalabs[-1] <- paste(stratalabs[-1], HR_vals)
-    if (HR_pval) {
-      stratalabs[-1] <- paste(stratalabs[-1], sapply(summary(crrfit)$coef[, 5], lpvalue2, digits = HR.pval.digits))
-    }
-    stratalabs[1] <- paste(stratalabs[1], "REF")
+    stratalabs <- append_hr_labels(stratalabs, crrfit, HR, HR_pval, HR.digits, HR.pval.digits)
   }
 
   stratalabs
@@ -373,21 +381,8 @@ add_cif_hazard_ratios <- function(stratalabs, data, response, cov,
     data = data
   )
 
-  # Extract hazard ratios
-  HR_vals <- paste0("HR=", sapply(seq(length(stratalabs) - 1), function(i) {
-    psthr0(summary(crrfit)$conf.int[i, c(1, 3, 4)], digits = HR.digits)
-  }))
-
-  # Add HR and p-values to labels
-  if (HR) stratalabs[-1] <- paste(stratalabs[-1], HR_vals)
-  if (HR_pval) {
-    stratalabs[-1] <- paste(stratalabs[-1],
-                            sapply(summary(crrfit)$coef[, 5], lpvalue2,
-                                   digits = HR.pval.digits))
-  }
-  stratalabs[1] <- paste(stratalabs[1], "REF")
-
-  stratalabs
+  append_hr_labels(stratalabs, crrfit, HR, HR_pval, HR.digits, HR.pval.digits,
+                   compact = TRUE)
 }
 # Summary Statistics Functions ----
 
@@ -415,9 +410,7 @@ calculate_and_add_median_times <- function(sfit = NULL, fit = NULL, stratalabs, 
       median_upper <- summary(sfit)$table[, "0.95UCL"]
 
       med_txt <- if (median.CI) {
-        paste0(round_sprintf(median_vals, digits = median.digits),
-               "(", round_sprintf(median_lower, digits = median.digits),
-               "-", round_sprintf(median_upper, digits = median.digits), ")")
+        format_ci(median_vals, median_lower, median_upper, median.digits)
       } else round_sprintf(median_vals, digits = median.digits)
 
       stratalabs <- paste(stratalabs, ", Median=", med_txt)
@@ -428,9 +421,7 @@ calculate_and_add_median_times <- function(sfit = NULL, fit = NULL, stratalabs, 
       median_upper <- summary(sfit)$table["0.95UCL"]
 
       median_txt <- if (median.CI) {
-        paste0(round_sprintf(median_vals, digits = median.digits),
-               "(", round_sprintf(median_lower, digits = median.digits),
-               "-", round_sprintf(median_upper, digits = median.digits), ")")
+        format_ci(median_vals, median_lower, median_upper, median.digits)
       } else round_sprintf(median_vals, digits = median.digits)
     }
   }
@@ -473,9 +464,7 @@ calculate_and_add_time_specific_estimates <- function(sfit = NULL, fit = NULL, s
         sum <- summary(sfit, time = c(0, time_i))
         df_text <- data.frame(strata = sum$strata, time = sum$time)
         df_text$set.CI <- if (set.time.CI) {
-          paste0(round_sprintf(sum$surv, digits = set.time.digits),
-                 "(", round_sprintf(sum$lower, digits = set.time.digits),
-                 "-", round_sprintf(sum$upper, digits = set.time.digits), ")")
+          format_ci(sum$surv, sum$lower, sum$upper, set.time.digits)
         } else round_sprintf(sum$surv, digits = set.time.digits)
 
         dup_strata <- sum$strata[duplicated(sum$strata)]
@@ -502,9 +491,7 @@ calculate_and_add_time_specific_estimates <- function(sfit = NULL, fit = NULL, s
         sum <- summary(sfit, time = c(0, time_i))
         df_text <- data.frame(time = sum$time)
         df_text$set.CI <- if (set.time.CI) {
-          paste0(round_sprintf(sum$surv, digits = set.time.digits),
-                 "(", round_sprintf(sum$lower, digits = set.time.digits),
-                 "-", round_sprintf(sum$upper, digits = set.time.digits), ")")
+          format_ci(sum$surv, sum$lower, sum$upper, set.time.digits)
         } else round_sprintf(sum$surv, digits = set.time.digits)
 
         keep_sum <- df_text
@@ -539,9 +526,7 @@ calculate_and_add_time_specific_estimates <- function(sfit = NULL, fit = NULL, s
         keep_sum <- data.frame(val, time_i)
         names(keep_sum)[1] <- "value"
         keep_sum$set.CI <- if (set.time.CI) {
-          paste0(round_sprintf(val, digits = set.time.digits),
-                 "(", round_sprintf(lower, digits = set.time.digits),
-                 "-", round_sprintf(upper, digits = set.time.digits), ")")
+          format_ci(val, lower, upper, set.time.digits)
         } else round_sprintf(val, digits = set.time.digits)
 
         if (is.null(set.surv.text)) {

@@ -19,6 +19,6 @@ scrollable table. Otherwise a regular table will be output for pandoc/latex
 \examples{
 data("pembrolizumab")
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=F)
+covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=FALSE)
 scrolling_table(tab,pixelHeight=300)
 }

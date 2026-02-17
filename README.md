@@ -36,7 +36,7 @@ You can install the development version of reportRmd from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("biostatsPMH/reportRmd", ref="development")
+devtools::install_github("biostatsPMH/reportRmd", ref="development", build_vignettes = TRUE)
 ```
 
 ## New Features (v0.1.3)
@@ -49,7 +49,16 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development")
 
 ## Documentation
 
+For the CRAN version:
+
 [Online Documentation](https://biostatsPMH.github.io/reportRmd/)
+
+For the Development version run the following and select HTML on the
+webpage
+
+``` r
+browseVignettes("reportRmd")
+```
 
 ## Examples
 
@@ -1971,74 +1980,10 @@ Increase from baseline
 ### Tidy multivariable analysis
 
 ``` r
-glm_fit <- glm(orr~change_ctdna_group+pdl1+cohort,
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
 rm_mvsum(glm_fit,showN=T)
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
-#> Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm):
-#> collapsing to unique 'x' values
 ```
 
 <table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -2110,7 +2055,7 @@ VIF
 
 <td style="text-align:right;">
 
-1.00
+1.03
 </td>
 
 </tr>
@@ -2156,12 +2101,12 @@ Increase from baseline
 
 <td style="text-align:right;">
 
-19.99 (2.86, 409.54)
+23.92 (3.69, 508.17)
 </td>
 
 <td style="text-align:right;">
 
-<span style="font-weight: bold;">0.009</span>
+<span style="font-weight: bold;">0.006</span>
 </td>
 
 <td style="text-align:right;">
@@ -2189,12 +2134,12 @@ Increase from baseline
 
 <td style="text-align:right;">
 
-0.97 (0.94, 1.00)
+0.97 (0.95, 0.99)
 </td>
 
 <td style="text-align:right;">
 
-0.066
+<span style="font-weight: bold;">0.011</span>
 </td>
 
 <td style="text-align:right;">
@@ -2209,7 +2154,7 @@ Increase from baseline
 
 <td style="text-align:right;">
 
-1.18
+1.24
 </td>
 
 </tr>
@@ -2218,15 +2163,17 @@ Increase from baseline
 
 <td style="text-align:left;">
 
-<span style="font-weight: bold;">cohort</span>
+<span style="font-weight: bold;">Age at study entry</span>
 </td>
 
 <td style="text-align:right;">
 
+0.94 (0.87, 1.00)
 </td>
 
 <td style="text-align:right;">
 
+0.078
 </td>
 
 <td style="text-align:right;">
@@ -2241,171 +2188,7 @@ Increase from baseline
 
 <td style="text-align:right;">
 
-1.04
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-A
-</td>
-
-<td style="text-align:right;">
-
-Reference
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-14
-</td>
-
-<td style="text-align:right;">
-
-11
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-B
-</td>
-
-<td style="text-align:right;">
-
-2.6e+07 (0, Inf)
-</td>
-
-<td style="text-align:right;">
-
-1.00
-</td>
-
-<td style="text-align:right;">
-
-11
-</td>
-
-<td style="text-align:right;">
-
-11
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-C
-</td>
-
-<td style="text-align:right;">
-
-4.2e+07 (0, Inf)
-</td>
-
-<td style="text-align:right;">
-
-1.00
-</td>
-
-<td style="text-align:right;">
-
-10
-</td>
-
-<td style="text-align:right;">
-
-10
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-D
-</td>
-
-<td style="text-align:right;">
-
-0.07 (0, 0.83)
-</td>
-
-<td style="text-align:right;">
-
-0.057
-</td>
-
-<td style="text-align:right;">
-
-10
-</td>
-
-<td style="text-align:right;">
-
-3
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-E
-</td>
-
-<td style="text-align:right;">
-
-0.44 (0.02, 4.10)
-</td>
-
-<td style="text-align:right;">
-
-0.51
-</td>
-
-<td style="text-align:right;">
-
-28
-</td>
-
-<td style="text-align:right;">
-
-23
-</td>
-
-<td style="text-align:right;">
-
+1.23
 </td>
 
 </tr>
@@ -2692,8 +2475,6 @@ log rank test.
 ``` r
  rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
  group="cohort",survtimes=c(12,24),
-# group="cohort",survtimes=seq(12,36,12),
-# survtimesLbls=seq(1,3,1),
  survtimesLbls=c(1,2),
  survtimeunit='yr')
 ```

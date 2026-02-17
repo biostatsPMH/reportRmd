@@ -11,7 +11,7 @@
 #'Wald global p-values are returned. For negative binomial models a deviance
 #'test is used.
 #'
-#'If the variance inflation factor is requested (VIF=T, default) then a
+#'If the variance inflation factor is requested (VIF=TRUE, default) then a
 #'generalised VIF will be calculated in the same manner as the car package.
 #'
 #'As of version 0.1.1 if global p-values are requested they will be included in
@@ -131,51 +131,17 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   attr(tab, "to_indent") <- to_indent
   attr(tab, "bold_cells") <- bold_cells
 
-  # Find all p-value columns
-  pval_cols <- grep("p-value", names(tab), value = TRUE)
-
   # Find all estimate columns (contain "95%CI")
   est_cols <- grep("\\(95%CI\\)", names(tab), value = TRUE)
 
-  # formatting pval columns - apply p.adjust to all p-value columns
-  method <- p.adjust
-  for (pcol in pval_cols) {
-    tab[[pcol]] <- p.adjust(tab[[pcol]], method = method)
-    if (!unformattedp) {
-      tab[[pcol]] <- formatp(tab[[pcol]])
-    }
-  }
-
-  # Format Global p-value if present
-  if ("Global p-value" %in% names(tab) && !unformattedp) {
-    tab[["Global p-value"]] <- formatp(tab[["Global p-value"]])
-  }
+  # Format and bold p-values
+  pv <- format_bold_pvalues(tab, bold_cells,
+                            unformattedp = unformattedp, p.adjust = p.adjust)
+  tab <- pv$tab; bold_cells <- pv$bold_cells
 
   # changing UB to Inf, LB to 0 for all estimate columns
   for (ecol in est_cols) {
     tab[[ecol]] <- sapply(tab[[ecol]], process_ci)
-  }
-
-  # Bold significant p-values - only for "Adjusted p-value" or "p-value" (if no adjusted column)
-  adjusted_pval_col <- grep("Adjusted p-value", names(tab), value = TRUE)
-  if (length(adjusted_pval_col) > 0) {
-    # Use Adjusted p-value column for bolding
-    p_col_idx <- which(names(tab) == adjusted_pval_col[1])
-    sig_rows <- which(as.numeric(gsub("[^0-9\\.]", "", tab[[adjusted_pval_col[1]]])) < 0.05)
-    if (length(sig_rows) > 0) {
-      bold_cells <- rbind(bold_cells, cbind(sig_rows, rep(p_col_idx, length(sig_rows))))
-    }
-  } else if ("p-value" %in% names(tab)) {
-    # Fall back to regular p-value column
-    p_col_idx <- which(names(tab) == "p-value")
-    sig_rows <- which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)
-    if (length(sig_rows) > 0) {
-      bold_cells <- rbind(bold_cells, cbind(sig_rows, rep(p_col_idx, length(sig_rows))))
-    }
-  }
-
-  if (nrow(bold_cells) < 1) {
-    bold_cells <- NULL
   }
 
   if (nicenames){
@@ -228,21 +194,21 @@ get_model_args <- function(model) {
 
 combine_uv_mv <- function(tabUV, m_sum, tabMV) {
 
-  # Detect estimate column name dynamically ----
+  # Detect estimate column name dynamically
   est_col_uv <- grep("\\(95%CI\\)", names(tabUV), value = TRUE)[1]
   est_col_mv <- grep("\\(95%CI\\)", names(tabMV), value = TRUE)[1]
 
   if (is.na(est_col_uv)) stop("Cannot find estimate column in tabUV")
   if (is.na(est_col_mv)) stop("Cannot find estimate column in tabMV")
 
-  # Standardize column names for internal processing ----
+  # Standardize column names for internal processing
   tabUV_work <- tabUV
   names(tabUV_work)[names(tabUV_work) == est_col_uv] <- "Est_CI"
 
   tabMV_work <- tabMV
   names(tabMV_work)[names(tabMV_work) == est_col_mv] <- "Est_CI"
 
-  # 1. Reconstruct (var, lvl) for tabUV using its structure ----
+  # 1. Reconstruct (var, lvl) for tabUV using its structure
   tabUV2 <- tabUV_work |>
     dplyr::mutate(
       is_header = (is.na(Est_CI) | Est_CI == "<NA>") &
@@ -252,7 +218,7 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
     ) |>
     tidyr::fill(var, .direction = "down")
 
-  # 2. Attach (var, lvl) to MV table and merge with UV ----
+  # 2. Attach (var, lvl) to MV table and merge with UV
   # Preserve original tabMV row order
   out <- tabMV_work |>
     dplyr::mutate(
@@ -285,12 +251,12 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
       "N", "Event", "VIF"
     )))
 
-  # 3. Identify UV-only main effects from interactions ----
+  # 3. Identify UV-only main effects from interactions
   mv_main_vars <- unique(out$var[!grepl(":", out$var)])
   out_cols <- names(out)
   uv_only_vars <- c()
 
-  # Find all interaction terms in MV model and extract their components ----
+  # Find all interaction terms in MV model and extract their components
   interaction_terms <- unique(out$var[grepl(":", out$var)])
   for (int_term in interaction_terms) {
     components <- unlist(strsplit(int_term, ":"))
@@ -304,7 +270,7 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
   # Remove 'var' column before appending UV-only rows
   out <- out |> dplyr::select(-var)
 
-  # 4. Append UV-only main effects at the end ----
+  # 4. Append UV-only main effects at the end
   if (length(uv_only_vars) > 0) {
     uv_rows_to_add <- list()
 
@@ -315,7 +281,7 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
       has_header <- any(uv_rows$is_header)
 
       if (has_header) {
-        # Categorical: add header then levels ----
+        # Categorical: add header then levels
         header_row <- uv_rows |> dplyr::filter(is_header)
         level_rows <- uv_rows |> dplyr::filter(!is_header)
 
@@ -337,7 +303,7 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
           uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_row)
         }
       } else {
-        # Continuous: single row ----
+        # Continuous: single row
         uv_row <- uv_rows[1, ]
         new_row <- as.list(rep(NA, length(out_cols)))
         names(new_row) <- out_cols
@@ -355,7 +321,7 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
     }
   }
 
-  # Rename columns back to original format ----
+  # Rename columns back to original format
   names(out)[names(out) == "Unadjusted Est_CI"] <-
     paste0("Unadjusted ", est_col_mv)
   names(out)[names(out) == "Adjusted Est_CI"] <-

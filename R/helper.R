@@ -95,7 +95,58 @@ niceNum <- function(x, digits = 2) {
   return(gsub(" ", "", rndx))
 }
 
+# Internal helper: round numeric columns in a data frame using niceNum().
+# digits is recycled over the numeric columns (same as outTable/nestTable behavior).
+# @keywords internal
+# @noRd
+round_numeric_cols <- function(df, digits) {
+  numColIdx <- which(sapply(df, inherits, 'numeric'))
+  if (length(numColIdx) > 0) {
+    colDigits <- rep_len(digits, length(numColIdx))
+    for (i in seq_along(numColIdx)) {
+      idx <- numColIdx[i]
+      df[[idx]] <- sapply(df[[idx]], function(x) niceNum(x, digits = colDigits[i]))
+    }
+  }
+  df
+}
 
+# Internal helper: adjust, format, and bold significant p-values in a summary table.
+# Handles single or multiple p-value columns, and prefers "Adjusted p-value" for bolding.
+# @param tab data frame with p-value column(s)
+# @param bold_cells matrix of (row, col) indices for bolding (may be NULL)
+# @param unformattedp if FALSE, apply formatp()
+# @param p.adjust character method for stats::p.adjust
+# @return list(tab, bold_cells) with updated table and bold indices
+# @keywords internal
+# @noRd
+format_bold_pvalues <- function(tab, bold_cells, unformattedp = FALSE,
+                                p.adjust = "none") {
+  pval_cols <- grep("p-value", names(tab), value = TRUE)
+  method <- p.adjust
+  for (pcol in pval_cols) {
+    tab[[pcol]] <- stats::p.adjust(tab[[pcol]], method = method)
+    if (!unformattedp) tab[[pcol]] <- formatp(tab[[pcol]])
+  }
+  if ("Global p-value" %in% names(tab) && !unformattedp) {
+    tab[["Global p-value"]] <- formatp(tab[["Global p-value"]])
+  }
+  # Prefer "Adjusted p-value" for bolding, else fall back to "p-value"
+  adj_col <- grep("Adjusted p-value", names(tab), value = TRUE)
+  bold_target <- if (length(adj_col) > 0) adj_col[1]
+                 else if ("p-value" %in% names(tab)) "p-value"
+                 else NULL
+  if (!is.null(bold_target)) {
+    p_col_idx <- which(names(tab) == bold_target)
+    sig_rows <- which(as.numeric(gsub("[^0-9\\.]", "", tab[[bold_target]])) < 0.05)
+    if (length(sig_rows) > 0) {
+      bold_cells <- rbind(bold_cells,
+                          cbind(sig_rows, rep(p_col_idx, length(sig_rows))))
+    }
+  }
+  if (!is.null(bold_cells) && nrow(bold_cells) < 1) bold_cells <- NULL
+  list(tab = tab, bold_cells = bold_cells)
+}
 
 #' Paste vector elements with parentheses
 #'
@@ -105,9 +156,12 @@ niceNum <- function(x, digits = 2) {
 #' @param x Vector of values (first element shown separately)
 #' @return Character string with first element followed by remaining elements in parentheses
 #' @keywords internal
-#' @noRd
-pstprn <- function(x) {
-  paste0(x[1], " (", paste(x[-1], collapse = csep()), ")")
+pstprn <- function(x, compact = FALSE) {
+  if (compact) {
+    paste0(x[1], "(", paste0(x[-1], collapse = ","), ")")
+  } else {
+    paste0(x[1], " (", paste(x[-1], collapse = csep()), ")")
+  }
 }
 
 #' Round and paste with parentheses (smart formatting)
@@ -121,16 +175,16 @@ pstprn <- function(x) {
 #'
 #' @param x Numeric vector to round and format
 #' @param y Number of digits/significant figures (default 2)
+#' @param compact If TRUE, omit spaces for compact display (e.g. plots)
 #' @return Character string with first element followed by remaining elements in parentheses
 #' @keywords internal
-#' @noRd
-psthr <- function(x, y = 2) {
+psthr <- function(x, y = 2, compact = FALSE) {
   x <- sapply(x, function(x) {
     ifelse(abs(x) < 0.01 | abs(x) > 1000,
            format(x, scientific = TRUE, digits = y),
-           format(round(x, y), nsmall = y))
+           round_sprintf(x, y))
   })
-  pstprn(x)
+  pstprn(x, compact = compact)
 }
 
 # Model Coefficient and Term Matching Functions ----
@@ -145,7 +199,6 @@ psthr <- function(x, y = 2) {
 #' @param call Vector of covariate names from model formula
 #' @return Vector of matched covariate names
 #' @keywords internal
-#' @noRd
 covnm <- function(betanames, call) {
   sapply(betanames, function(betaname) {
     # Find indices where call elements are found in betaname
@@ -405,7 +458,7 @@ ltgt <- function(x) {
 rmds <- function(s) {
   sapply(s, function(x) {
     x <- ltgt(x)  # Handle < and >
-    gsub("[$]", '<span style="display: inline">&#36</span>', x)
+    gsub("[$]", '<span style="display: inline">&#36;</span>', x)
   }, USE.NAMES = FALSE)
 }
 
@@ -741,35 +794,13 @@ round_sprintf <- function(value, digits) {
   sprintf(paste0("%.", digits, "f"), round(value, digits))
 }
 
-#' Paste with parentheses (no spaces)
-#'
-#' Similar to pstprn() but without spaces. Used for compact
-#' formatting in survival plots.
-#'
-#' @param x Vector of values
-#' @return Character string in format "x[1](x[2],x[3],...)"
+#' @describeIn pstprn Compact version without spaces (for plots)
 #' @keywords internal
-pstprn0 <- function(x) {
-  paste0(x[1], "(", paste0(x[-1], collapse = ","), ")")
-}
+pstprn0 <- function(x) pstprn(x, compact = TRUE)
 
-#' Round and paste with parentheses (no spaces, for plots)
-#'
-#' Compact version of psthr() without spaces. Used specifically
-#' for survival plot annotations where space is limited.
-#'
-#' @param x Numeric vector to round and format
-#' @param digits Number of decimal places (default 2)
-#' @return Character string in format "x[1](x[2],x[3])"
+#' @describeIn psthr Compact version without spaces (for plots)
 #' @keywords internal
-psthr0 <- function(x, digits = 2) {
-  x <- sapply(x, function(x) {
-    ifelse(abs(x) < 0.01 | abs(x) > 1000,
-           format(x, scientific = TRUE, digits = digits),
-           round_sprintf(x, digits))
-  })
-  pstprn0(x)
-}
+psthr0 <- function(x, digits = 2) psthr(x, y = digits, compact = TRUE)
 
 #' Custom break function for axis scaling
 #'
@@ -970,14 +1001,14 @@ format_glm = function(glm_fit,conf.level = 0.95,digits=c(2,3),orderByRisk=TRUE){
     }
 
 
-    tab = merge(ref_levels, tab, by='variable',all = T)
+    tab = merge(ref_levels, tab, by='variable',all = TRUE)
 
     tab$estimate.label = ifelse(is.na(tab$estimate), '1.0 (Reference)',
                                 paste0(niceNum(tab$estimate), ' (',niceNum(tab$conf.low),', ',niceNum(tab$conf.high),')'))
 
     varOrders <- tapply(X = tab$var.order,
                         INDEX=tab$var.name,
-                        FUN = function(x) min(x,na.rm=T))
+                        FUN = function(x) min(x,na.rm=TRUE))
     varOrderLookup <- data.frame(var.name=names(varOrders),var.order=varOrders)
 
 
@@ -988,7 +1019,7 @@ format_glm = function(glm_fit,conf.level = 0.95,digits=c(2,3),orderByRisk=TRUE){
     }
 
     tab$estimate.label = ifelse(tab$level.name %in% names(glm_fit$xlevels),NA_character_,tab$estimate.label)
-    tab[order(tab$var.order,tab$level.order,decreasing=c(F,T)),]
+    tab[order(tab$var.order,tab$level.order,decreasing=c(FALSE,TRUE)),]
   } else {
     tab$estimate.label = paste0(niceNum(tab$estimate), ' (',niceNum(tab$conf.low),', ',niceNum(tab$conf.high),')')
     tab$level.order=1
@@ -1032,7 +1063,7 @@ niceStr <- function (strings)
 wrp_lbl <- function(x,width = 10){
   x <- niceStr(x)
   #  strwrap(x,width = width) # doesn't work nicely with spaces
-  lst <- strwrap(x,width = width,simplify = F)
+  lst <- strwrap(x,width = width,simplify = FALSE)
   for (i in seq_along(lst)) lst[[i]] <- paste(lst[[i]],collapse='\n')
   unlist(lst)
 }
@@ -1184,8 +1215,8 @@ extract_package_details <- function(ignore_comments = TRUE) {
     stop("Could not detect current file. Please ensure you're running this from RStudio with an active file, or use rstudioapi package.")
   }
 
-  try(file_path <- get_current_file(),silent = T)
-  if (inherits("try-error",file_path)) stop("Current file can not be identified.")
+  try(file_path <- get_current_file(),silent = TRUE)
+  if (inherits(file_path,"try-error")) stop("Current file can not be identified.")
 
 
   # Read the file content
@@ -1332,10 +1363,10 @@ extract_package_details <- function(ignore_comments = TRUE) {
       if (length(where_found$where)>0){
         if ( ".GlobalEnv" %in% where_found$where) return("GlobalEnv")
         pkg_list <- unique(gsub("package[:]|namespace[:]","",
-                                grep("package|namespace",where_found$where,value = T)))
+                                grep("package|namespace",where_found$where,value = TRUE)))
         return(pkg_list[1])
       } else return("Unknown")
-    },USE.NAMES=F,simplify=T)
+    },USE.NAMES=FALSE,simplify=TRUE)
   }
 
   functions_df <- functions_df |>

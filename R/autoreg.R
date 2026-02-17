@@ -1,26 +1,45 @@
 
 # Fitting Functions ---------------------------
-# default is linear
+#' Fit a regression model based on response type
+#'
+#' S3 generic that dispatches to the appropriate model fitting function
+#' based on the class of the response variable.
+#' @param response The response variable (used for S3 dispatch).
+#' @param data A data frame containing the model data.
+#' @param x_var Character string of the predictor variable name.
+#' @param id Optional subject ID for GEE models.
+#' @param strata Optional stratification variable.
+#' @param family Optional family for GLM models.
+#' @param offset Optional offset term.
+#' @param corstr Correlation structure for GEE models (default "independence").
+#' @return A fitted model object.
+#' @keywords internal
+#' @export
 autoreg <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   UseMethod("autoreg",response)
 }
 
+# Internal helper: fit a model using eval(parse(...)) with a simple formula
+# @keywords internal
+# @noRd
+autoreg_simple_fit <- function(fit_call, response, x_var, data, extra_args = "") {
+  m2 <- NULL
+  f <- paste(response, "~", x_var, sep = "")
+  eval(parse(text = paste0("m2 <- ", fit_call, "(", f,
+                            ifelse(nzchar(extra_args), paste0(",", extra_args), ""),
+                            ", data = data)")))
+  return(m2)
+}
+
+#' @export
 autoreg.rm_default <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
-  m2 <- NULL
-  eval(parse(text = paste('m2 <- lm(',
-                          paste(response, "~",x_var, sep = ""),
-                          ',data = data)')))
-  return(m2)
+  autoreg_simple_fit("lm", response, x_var, data)
 }
 
-autoreg.rm_lm <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
-  m2 <- NULL
-  eval(parse(text = paste('m2 <- lm(',
-                          paste(response, "~",x_var, sep = ""),
-                          ',data = data)')))
-  return(m2)
-}
+#' @export
+autoreg.rm_lm <- autoreg.rm_default
 
+#' @export
 autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   m2 <- NULL
   if (all(data[[response[2]]]==0)) stop('No events observed, can\'t fit a Cox model.')
@@ -40,14 +59,12 @@ autoreg.rm_coxph <- function(response,data,x_var,id=NULL,strata="",family=NULL,o
   return(m2)
 }
 
+#' @export
 autoreg.rm_crr <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
-  m2 <- NULL
-  eval(parse(text = paste('m2 <- crrRx(',paste(paste(response,collapse = "+"),
-                                               "~", x_var, sep = ""),
-                          ',data = data)')))
-  return(m2)
+  autoreg_simple_fit("crrRx", paste(response, collapse = "+"), x_var, data)
 }
 
+#' @export
 autoreg.rm_glm <- function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   m2 <- NULL
   eval(parse(text = paste("m2 <- glm(",paste(response, "~",x_var, sep = ""),
@@ -57,6 +74,7 @@ autoreg.rm_glm <- function(response,data,x_var,id=NULL,strata="",family=NULL,off
   return(m2)
 }
 
+#' @export
 autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NULL, corstr = "independence"){
   # Check if geepack is available ----
   if (!requireNamespace("geepack", quietly = TRUE)) {
@@ -76,6 +94,7 @@ autoreg.rm_gee <-function(response,data,x_var,id,strata="",family=NULL,offset=NU
 }
 
 
+#' @export
 autoreg.rm_negbin <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   # Check if MASS is available ----
   if (!requireNamespace("MASS", quietly = TRUE)) {
@@ -92,15 +111,13 @@ autoreg.rm_negbin <-function(response,data,x_var,id=NULL,strata="",family=NULL,o
                           "data = data)")))
   return(m2)
 }
-autoreg.rm_boxcox <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
-  m2 <- NULL
-  eval(parse(text = paste('m2 <- boxcoxfitRx(',
-                          paste(response,"~", x_var, sep = ""),
-                          ',data = data)')))
 
-  return(m2)
+#' @export
+autoreg.rm_boxcox <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
+  autoreg_simple_fit("boxcoxfitRx", response, x_var, data)
 }
 
+#' @export
 autoreg.rm_ordinal <-function(response,data,x_var,id=NULL,strata="",family=NULL,offset=NULL, corstr = "independence"){
   m2 <- NULL
   eval(parse(text = paste('m2 = MASS::polr(data = data,',

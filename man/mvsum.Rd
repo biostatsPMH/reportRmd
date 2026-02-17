@@ -55,7 +55,7 @@ without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned.
 
-If the variance inflation factor is requested (VIF=T) then a generalised VIF
+If the variance inflation factor is requested (VIF=TRUE) then a generalised VIF
 will be calculated in the same manner as the car package.
 
 VIF for competing risk models is computed by fitting a linear model with a

@@ -197,6 +197,41 @@ summary_tab <- rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','o
 cat(attr(summary_tab, "description"))
 ```
 
+## Using Tidyselect
+
+Both `rm_covsum` and `rm_compactsum` support tidyselect syntax, allowing you to use
+bare column names instead of character strings. This also enables piping with `|>`:
+
+```{r}
+pembrolizumab |> rm_compactsum(xvars = c(age, pdl1, change_ctdna_group), grp = sex)
+```
+
+The same tidyselect syntax works with `rm_covsum`:
+
+```{r}
+pembrolizumab |> rm_covsum(covs = c(age, pdl1, change_ctdna_group), maincov = sex)
+```
+
+The `xvars`/`grp` aliases can also be used with `rm_covsum` for a consistent interface:
+
+```{r}
+pembrolizumab |> rm_covsum(xvars = c(age, pdl1, change_ctdna_group), grp = sex)
+```
+
+## Adding Header Rows
+
+Header rows can be added to any table using the `header_above` argument in `outTable()`.
+This works for HTML, PDF and Word output. The argument takes a named vector where the names
+are the header labels and the values are the number of columns each label spans.
+
+```{r}
+tab <- rm_covsum(data = pembrolizumab, maincov = cohort,
+                  covs = c(age, pdl1, sex), full = FALSE,
+                  pvalue = FALSE, tableOnly = TRUE)
+
+outTable(tab, header_above = c(" " = 1, "Cohorts A-C" = 3, "Cohorts D,E" = 2))
+```
+
 
 \newpage
 
@@ -447,17 +482,6 @@ If you are rendering to html format you can use the `scrollTable` function to cr
 ```{r}
 long_table <- rm_compactsum(data=pembrolizumab,xvars = c(age,sex,cohort,pdl1,tmb,baseline_ctdna,change_ctdna_group,orr,cbr))
 scrolling_table(long_table,pixelHeight = 300)
-```
-
-## Header Rows
-
-```{r}
-tab <- rm_covsum(data = pembrolizumab, maincov = 'cohort',
-                  covs = c('age', 'pdl1', 'sex'),full=FALSE,pvalue = F)
-
-tab |> add_header_row(header_labels = c("","Cohorts A-C","Cohorts D,E"),
-                      column_spans = list(1,2:4,5:6))
-
 ```
 
 \newpage

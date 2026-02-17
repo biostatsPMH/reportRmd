@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^README\.Rmd$
+^ARCHITECTURE\.qmd$
 ^cran-comments\.md$
 ^data-raw$
 ^docs$

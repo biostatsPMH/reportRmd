@@ -76,7 +76,7 @@
 <p>You can install the development version of reportRmd from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"biostatsPMH/reportRmd"</span>, ref<span class="op">=</span><span class="st">"development"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"biostatsPMH/reportRmd"</span>, ref<span class="op">=</span><span class="st">"development"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="new-features-v013">New Features (v0.1.3)<a class="anchor" aria-label="anchor" href="#new-features-v013"></a>
@@ -91,7 +91,11 @@
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
+<p>For the CRAN version:</p>
 <p><a href="https://biostatsPMH.github.io/reportRmd/" class="external-link">Online Documentation</a></p>
+<p>For the Development version run the following and select HTML on the webpage</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"reportRmd"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
@@ -99,7 +103,7 @@
 <div class="section level3">
 <h3 id="summary-statistics-by-sex">Summary statistics by Sex<a class="anchor" aria-label="anchor" href="#summary-statistics-by-sex"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://biostatspmh.github.io/reportRmd/" class="external-link">reportRmd</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"pembrolizumab"</span><span class="op">)</span></span>
 <span></span>
@@ -328,7 +332,7 @@ Missing
 <div class="section level3">
 <h3 id="compact-table">Compact Table<a class="anchor" aria-label="anchor" href="#compact-table"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pembrolizumab</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span> grp <span class="op">=</span> <span class="st">'sex'</span>,</span>
 <span>xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -419,7 +423,7 @@ Missing
 <h3 id="switching-between-function">Switching between function<a class="anchor" aria-label="anchor" href="#switching-between-function"></a>
 </h3>
 <p>As of v0.1.3 you can now use <code>xvars</code> and <code>grp</code> as aliases for covs and maincov in <code>rm_covsum</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, grp <span class="op">=</span> <span class="st">'sex'</span>,</span>
 <span>xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,</span>
 <span>show.tests<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -641,7 +645,7 @@ Missing
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, grp <span class="op">=</span> <span class="st">'sex'</span>,</span>
 <span>xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,</span>
 <span>show.tests<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -867,7 +871,7 @@ Missing
 <div class="section level3">
 <h3 id="using-variable-labels">Using Variable Labels<a class="anchor" aria-label="anchor" href="#using-variable-labels"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">var_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>var<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>,<span class="st">"pdl1"</span>,<span class="st">"change_ctdna_group"</span><span class="op">)</span>,</span>
 <span>                          label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Age at study entry'</span>,</span>
 <span>                                  <span class="st">'PD L1 percent'</span>,</span>
@@ -1071,7 +1075,7 @@ Missing
 <div class="section level3">
 <h3 id="multiple-univariate-regression-analyses">Multiple Univariate Regression Analyses<a class="anchor" aria-label="anchor" href="#multiple-univariate-regression-analyses"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -1180,75 +1184,11 @@ Increase from baseline
 <div class="section level3">
 <h3 id="tidy-multivariable-analysis">Tidy multivariable analysis<a class="anchor" aria-label="anchor" href="#tidy-multivariable-analysis"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span><span class="op">+</span><span class="va">cohort</span>,</span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
 <span>               family<span class="op">=</span><span class="st">'binomial'</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">glm_fit</span>,showN<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
-<span><span class="co">#&gt; Warning in regularize.values(x, y, ties, missing(ties), na.rm = na.rm):</span></span>
-<span><span class="co">#&gt; collapsing to unique 'x' values</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">glm_fit</span>,showN<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
@@ -1285,7 +1225,7 @@ VIF
 58
 </td>
 <td style="text-align:right;">
-1.00
+1.03
 </td>
 </tr>
 <tr>
@@ -1311,10 +1251,10 @@ Reference
 Increase from baseline
 </td>
 <td style="text-align:right;">
-19.99 (2.86, 409.54)
+23.92 (3.69, 508.17)
 </td>
 <td style="text-align:right;">
-<span style="font-weight: bold;">0.009</span>
+<span style="font-weight: bold;">0.006</span>
 </td>
 <td style="text-align:right;">
 40
@@ -1330,10 +1270,10 @@ Increase from baseline
 <span style="font-weight: bold;">PD L1 percent</span>
 </td>
 <td style="text-align:right;">
-0.97 (0.94, 1.00)
+0.97 (0.95, 0.99)
 </td>
 <td style="text-align:right;">
-0.066
+<span style="font-weight: bold;">0.011</span>
 </td>
 <td style="text-align:right;">
 73
@@ -1342,16 +1282,18 @@ Increase from baseline
 58
 </td>
 <td style="text-align:right;">
-1.18
+1.24
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-<span style="font-weight: bold;">cohort</span>
+<span style="font-weight: bold;">Age at study entry</span>
 </td>
 <td style="text-align:right;">
+0.94 (0.87, 1.00)
 </td>
 <td style="text-align:right;">
+0.078
 </td>
 <td style="text-align:right;">
 73
@@ -1360,101 +1302,7 @@ Increase from baseline
 58
 </td>
 <td style="text-align:right;">
-1.04
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-A
-</td>
-<td style="text-align:right;">
-Reference
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-14
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-B
-</td>
-<td style="text-align:right;">
-2.6e+07 (0, Inf)
-</td>
-<td style="text-align:right;">
-1.00
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-11
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-C
-</td>
-<td style="text-align:right;">
-4.2e+07 (0, Inf)
-</td>
-<td style="text-align:right;">
-1.00
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-D
-</td>
-<td style="text-align:right;">
-0.07 (0, 0.83)
-</td>
-<td style="text-align:right;">
-0.057
-</td>
-<td style="text-align:right;">
-10
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-E
-</td>
-<td style="text-align:right;">
-0.44 (0.02, 4.10)
-</td>
-<td style="text-align:right;">
-0.51
-</td>
-<td style="text-align:right;">
-28
-</td>
-<td style="text-align:right;">
-23
-</td>
-<td style="text-align:right;">
+1.23
 </td>
 </tr>
 </tbody>
@@ -1463,7 +1311,7 @@ E
 <div class="section level3">
 <h3 id="combining-univariate-and-multivariable-models">Combining univariate and multivariable models<a class="anchor" aria-label="anchor" href="#combining-univariate-and-multivariable-models"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">uvsumTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'sex'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,tableOnly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -1617,11 +1465,9 @@ Increase from baseline
 <h3 id="simple-survival-summary-table">Simple survival summary table<a class="anchor" aria-label="anchor" href="#simple-survival-summary-table"></a>
 </h3>
 <p>Shows events, median survival, survival rates at different times and the log rank test.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="fu"><a href="reference/rm_survsum.html">rm_survsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>,</span>
 <span> group<span class="op">=</span><span class="st">"cohort"</span>,survtimes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">24</span><span class="op">)</span>,</span>
-<span><span class="co"># group="cohort",survtimes=seq(12,36,12),</span></span>
-<span><span class="co"># survtimesLbls=seq(1,3,1),</span></span>
 <span> survtimesLbls<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>,</span>
 <span> survtimeunit<span class="op">=</span><span class="st">'yr'</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -1763,7 +1609,7 @@ p-value
 <div class="section level3">
 <h3 id="summarise-cumulative-incidence">Summarise Cumulative incidence<a class="anchor" aria-label="anchor" href="#summarise-cumulative-incidence"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pbc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/rm_cifsum.html">rm_cifsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pbc</span>,time<span class="op">=</span><span class="st">'time'</span>,status<span class="op">=</span><span class="st">'status'</span>,group<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'trt'</span>,<span class="st">'sex'</span><span class="op">)</span>,</span>
@@ -1872,7 +1718,7 @@ p-value
 <div class="section level3">
 <h3 id="plotting-survival-curves">Plotting survival curves<a class="anchor" aria-label="anchor" href="#plotting-survival-curves"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/ggkmcif2.html">ggkmcif2</a></span><span class="op">(</span>response <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'os_time'</span>,<span class="st">'os_status'</span><span class="op">)</span>,</span>
 <span>cov<span class="op">=</span><span class="st">'cohort'</span>,</span>
 <span>data<span class="op">=</span><span class="va">pembrolizumab</span><span class="op">)</span></span>
@@ -1884,7 +1730,7 @@ p-value
 <h3 id="plotting-odds-ratios">Plotting odds ratios<a class="anchor" aria-label="anchor" href="#plotting-odds-ratios"></a>
 </h3>
 <p>Forest plots can display multivariable results, or include univariate estimates for comparison:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: ggplot2</span></span>
 <span><span class="co"># Multivariable only</span></span>
@@ -1892,7 +1738,7 @@ p-value
 <span><span class="co">#&gt; Warning: Vectorized input to `element_text()` is not officially supported.</span></span>
 <span><span class="co">#&gt; ℹ Results may be unexpected or may change in future versions of ggplot2.</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-11-1.png" width="100%"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># With unadjusted estimates</span></span>
 <span><span class="fu"><a href="reference/forestplotMV.html">forestplotMV</a></span><span class="op">(</span><span class="va">glm_fit</span>, data <span class="op">=</span> <span class="va">pembrolizumab</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -1906,7 +1752,7 @@ p-value
 <h3 id="plotting-bivariate-relationships">Plotting bivariate relationships<a class="anchor" aria-label="anchor" href="#plotting-bivariate-relationships"></a>
 </h3>
 <p>These plots are designed for quick inspection of many variables, not for publication.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plotuv.html">plotuv</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span><span class="op">)</span></span>
@@ -1917,7 +1763,7 @@ p-value
 <div class="section level3">
 <h3 id="replacing-variable-names-with-labels-in-ggplot">Replacing variable names with labels in ggplot<a class="anchor" aria-label="anchor" href="#replacing-variable-names-with-labels-in-ggplot"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"mtcars"</span><span class="op">)</span></span>
 <span><span class="va">mtcars</span> <span class="op">&lt;-</span> <span class="va">mtcars</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cyl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">cyl</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>

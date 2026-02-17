@@ -90,7 +90,7 @@ presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned. For negative binomial models a deviance
 test is used.
 
-If the variance inflation factor is requested (VIF=T, default) then a
+If the variance inflation factor is requested (VIF=TRUE, default) then a
 generalised VIF will be calculated in the same manner as the car package.
 
 As of version 0.1.1 if global p-values are requested they will be included in

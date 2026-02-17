@@ -65,13 +65,13 @@ reference:
     - excelColLetters
     - extract_package_details
     - crrRx
-    - ggkmcif_paste
 
   - title: "Deprecated Functions"
     desc: "Functions maintained for backwards compatibility"
     contents:
     - forestplot2
     - ggkmcif
+    - ggkmcif_paste
 
 articles:
   - title: "Getting Started"

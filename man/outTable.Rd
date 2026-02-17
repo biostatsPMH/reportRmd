@@ -19,7 +19,8 @@ outTable(
   nicenames = TRUE,
   fontsize,
   chunk_label,
-  format = NULL
+  format = NULL,
+  header_above = NULL
 )
 }
 \arguments{
@@ -67,6 +68,16 @@ with a space}
 
 \item{format}{if specified ('html','latex') will override the
 global pandoc setting}
+
+\item{header_above}{a named numeric vector specifying an extra header row
+above the column names, where the names are the labels and the values are
+the number of columns each label should span. For example,
+\code{c(" " = 1, "Group A" = 2, "Group B" = 2)} will leave the first
+column blank, then span "Group A" over the next 2 columns, and
+"Group B" over the following 2. For HTML and PDF output the header is
+rendered as a true spanning row via kableExtra. For Word output the
+labels are prepended as the first data row of the table (pandoc
+markdown does not support cell merging).}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

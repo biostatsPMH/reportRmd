@@ -154,12 +154,12 @@ replaceLbl <- function(data_arg,cv){
     lbl <- extract_labels(data_arg)
   } else {
     if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
-    if (is.null(get0(dn))) stop("Could not extract labels from data. Try running with nicenames=F, or use the function directly on a data.frame (without manipulation)")
+    if (is.null(get0(dn))) stop("Could not extract labels from data. Try running with nicenames=FALSE, or use the function directly on a data.frame (without manipulation)")
     lbl <- extract_labels(get0(dn))
   }
   vl <- data.frame(variable=cv,ord=1:length(cv))
   if (!is.null(lbl)){
-    cvnew <- merge(vl,lbl,all.x=T)
+    cvnew <- merge(vl,lbl,all.x=TRUE)
     cvnew <- cvnew[order(cvnew$ord),]
     cvnew <- cvnew[!duplicated(cvnew),]
   } else {

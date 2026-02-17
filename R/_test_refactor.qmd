@@ -1,0 +1,392 @@
+---
+title: "reportRmd Refactoring Validation"
+format: html
+---
+
+```{r setup}
+library(reportRmd)
+library(survival)
+```
+
+# Test Data
+
+```{r create-data}
+set.seed(42)
+n <- 100
+
+test_data <- data.frame(
+  # Continuous: complete
+  age = round(rnorm(n, mean = 55, sd = 12), 1),
+  # Continuous: ~15% missing
+  biomarker = ifelse(runif(n) < 0.15, NA,
+                     round(rlnorm(n, meanlog = 2, sdlog = 0.8), 2)),
+  # Categorical: 3 levels, complete
+  stage = factor(sample(c("I", "II", "III"), n, replace = TRUE,
+                        prob = c(0.3, 0.4, 0.3))),
+  # Categorical: 4 levels, ~10% missing
+  treatment = factor(ifelse(runif(n) < 0.10, NA,
+                            sample(c("Placebo", "Low", "Medium", "High"), n,
+                                   replace = TRUE,
+                                   prob = c(0.25, 0.25, 0.25, 0.25)))),
+  # Binary grouping variable
+  sex = factor(sample(c("Male", "Female"), n, replace = TRUE))
+)
+
+# Add survival outcomes (for uvsum/mvsum survival tests)
+test_data$os_time <- round(rexp(n, rate = 0.05), 1)
+test_data$os_status <- rbinom(n, 1, prob = 0.4)
+
+# Add a binary outcome for logistic tests
+test_data$response <- rbinom(n, 1, prob = 0.3)
+
+str(test_data)
+summary(test_data)
+```
+
+
+# 1. rm_covsum — covsum_prepare, covsum_cramers_v, fmt_pct
+
+## Basic (no grouping)
+
+```{r covsum-basic}
+rm_covsum(data = test_data,
+          covs = c("age", "biomarker", "stage", "treatment"))
+
+```
+
+Same - with tidyselect
+```{r}
+test_data |> rm_covsum(
+          covs = c(age, biomarker, stage, treatment))
+
+```
+
+## Grouped by sex
+
+```{r covsum-grouped}
+rm_covsum(data = test_data,
+          covs = c("age", "biomarker", "stage", "treatment"),
+          maincov = "sex")
+```
+
+## With effect sizes and test names (exercises covsum_cramers_v)
+
+```{r covsum-effsize}
+rm_covsum(data = test_data,
+          covs = c("age", "biomarker", "stage", "treatment"),
+          maincov = "sex",
+          effSize = TRUE, show.tests = TRUE)
+```
+
+## Row percentages
+
+```{r covsum-row-pct}
+rm_covsum(data = test_data,
+          covs = c("stage", "treatment"),
+          maincov = "sex",
+          percentage = "row")
+```
+
+## Custom digits
+
+```{r covsum-digits}
+rm_covsum(data = test_data,
+          covs = c("age", "biomarker", "stage"),
+          maincov = "sex",
+          digits = 3, digits.cat = 1)
+```
+
+## tableOnly (returns data.frame)
+
+```{r covsum-tableonly}
+tab <- rm_covsum(data = test_data,
+                 covs = c("age", "biomarker", "stage", "treatment"),
+                 maincov = "sex",
+                 tableOnly = TRUE)
+str(tab)
+```
+
+
+# 2. outTable — header_above, round_numeric_cols
+
+## header_above with grouped covsum
+
+```{r outtable-header-above}
+tab <- rm_covsum(data = test_data,
+                 covs = c("age", "biomarker", "stage"),
+                 maincov = "sex",
+                 tableOnly = TRUE)
+
+outTable(tab,
+         header_above = c(" " = 1, " " = 1, "Sex" = 2, " " = 1))
+```
+
+## outTable with numeric rounding
+
+```{r outtable-rounding}
+num_tab <- data.frame(
+  Variable = c("A", "B", "C"),
+  Mean = c(1.23456, 7.89012, 3.45678),
+  SD = c(0.12345, 0.67890, 0.23456)
+)
+outTable(num_tab, digits = 2)
+```
+
+
+# 3. rm_compactsum — apply_cat_test, fmt_pct
+
+## Basic compact table
+
+```{r compactsum-basic}
+rm_compactsum(data = test_data,
+              xvars = c("age", "biomarker", "stage", "treatment"))
+```
+
+## Grouped compact table (exercises fmt_pct in grouped path)
+
+```{r compactsum-grouped}
+rm_compactsum(data = test_data,
+              xvars = c("age", "biomarker", "stage", "treatment"),
+              grp = "sex")
+```
+
+## With p-values, effect sizes, test names (exercises apply_cat_test)
+
+```{r compactsum-pvalue}
+rm_compactsum(data = test_data,
+              xvars = c("age", "biomarker", "stage", "treatment"),
+              grp = "sex",
+              pvalue = TRUE, effSize = TRUE, show.tests = TRUE)
+```
+
+## Row percentages (exercises fmt_pct row-percentage path)
+
+```{r compactsum-row-pct}
+rm_compactsum(data = test_data,
+              xvars = c("stage", "treatment"),
+              grp = "sex",
+              percentage = "row")
+```
+
+## Custom category digits (exercises fmt_pct with digits.cat > 0)
+
+```{r compactsum-digits}
+rm_compactsum(data = test_data,
+              xvars = c("stage", "treatment"),
+              grp = "sex",
+              digits.cat = 1)
+```
+
+
+# 4. rm_uvsum — autoreg_simple_fit, format_bold_pvalues, gp_from_drop1
+
+## Linear model
+
+```{r uvsum-linear}
+rm_uvsum(response = "age",
+         covs = c("biomarker", "stage", "treatment", "sex"),
+         data = test_data)
+```
+
+## Logistic model
+
+```{r uvsum-logistic}
+rm_uvsum(response = "response",
+         covs = c("age", "biomarker", "stage", "treatment", "sex"),
+         data = test_data)
+```
+
+## Cox model
+
+```{r uvsum-cox}
+rm_uvsum(response = c("os_time", "os_status"),
+         covs = c("age", "biomarker", "stage", "treatment", "sex"),
+         data = test_data)
+```
+
+## With p-value adjustment
+
+```{r uvsum-padj}
+rm_uvsum(response = "age",
+         covs = c("biomarker", "stage", "treatment", "sex"),
+         data = test_data,
+         p.adjust = "bonferroni")
+```
+
+## Global p-values only
+
+```{r uvsum-global-p}
+rm_uvsum(response = "age",
+         covs = c("biomarker", "stage", "treatment", "sex"),
+         data = test_data,
+         whichp = "global")
+```
+
+## Both level and global p-values
+
+```{r uvsum-both-p}
+rm_uvsum(response = "age",
+         covs = c("biomarker", "stage", "treatment", "sex"),
+         data = test_data,
+         whichp = "both")
+```
+
+
+# 5. rm_mvsum — coeffSum, gp, get_model_data, format_bold_pvalues
+
+## Linear model
+
+```{r mvsum-lm}
+fit_lm <- lm(age ~ biomarker + stage + treatment + sex, data = test_data)
+rm_mvsum(fit_lm)
+```
+
+## Logistic model
+
+```{r mvsum-glm}
+fit_glm <- glm(response ~ age + biomarker + stage + sex,
+               data = test_data, family = "binomial")
+rm_mvsum(fit_glm)
+```
+
+## Cox model
+
+```{r mvsum-cox}
+fit_cox <- coxph(Surv(os_time, os_status) ~ age + stage + sex,
+                 data = test_data)
+rm_mvsum(fit_cox)
+```
+
+## With VIF
+
+```{r mvsum-vif}
+rm_mvsum(fit_lm, vif = TRUE)
+```
+
+## With unadjusted estimates
+
+```{r mvsum-unadjusted}
+rm_mvsum(fit_lm, include_unadjusted = TRUE)
+```
+
+## Global p-values
+
+```{r mvsum-global-p}
+rm_mvsum(fit_lm, whichp = "both")
+```
+
+## With p-value adjustment
+
+```{r mvsum-padj}
+rm_mvsum(fit_lm, p.adjust = "holm")
+```
+
+
+# 6. pstprn / psthr — compact parameter
+
+These helpers were refactored with a `compact` flag. They are exercised
+indirectly through the model summaries above, but let's verify directly.
+
+```{r pstprn-psthr}
+# Normal formatting (spaces, commas)
+cat("pstprn:", reportRmd:::pstprn(c(1.5, 0.8, 2.3)), "\n")
+cat("psthr:", reportRmd:::psthr(c(1.5, 0.8, 2.3), y = 2), "\n")
+
+# Compact formatting (no spaces)
+cat("pstprn0:", reportRmd:::pstprn0(c(1.5, 0.8, 2.3)), "\n")
+cat("psthr0:", reportRmd:::psthr0(c(1.5, 0.8, 2.3), digits = 2), "\n")
+```
+
+
+# 7. Survival plots — format_ci, append_hr_labels
+
+```{r ggkmcif-km, fig.width=8, fig.height=6}
+ggkmcif2(response = c("os_time", "os_status"),
+         cov = "sex",
+         data = test_data)
+```
+
+```{r ggkmcif-hr, fig.width=8, fig.height=6}
+ggkmcif2(response = c("os_time", "os_status"),
+         cov = "sex",
+         data = test_data,
+         HR = TRUE, HR_pval = TRUE)
+```
+
+```{r ggkmcif-stage, fig.width=8, fig.height=6}
+ggkmcif2(response = c("os_time", "os_status"),
+         cov = "stage",
+         data = test_data,
+         HR = TRUE, HR_pval = TRUE)
+```
+
+
+# 8. nestTable — round_numeric_cols
+
+```{r nesttable}
+m1 <- rm_mvsum(fit_lm, tableOnly = TRUE)
+m1$Model <- "Linear"
+
+fit_lm2 <- lm(biomarker ~ age + stage + sex, data = test_data)
+m2 <- rm_mvsum(fit_lm2, tableOnly = TRUE)
+m2$Model <- "Biomarker"
+
+nestTable(rbind(m1, m2), head_col = "Model", to_col = "Covariate")
+```
+
+
+# 9. gp methods — gp_from_drop1, gp_crr_lrt
+
+The gp generics are exercised through rm_mvsum and rm_uvsum above.
+Let's also call them directly to verify the shared helpers.
+
+```{r gp-direct}
+# gp() is now a properly registered S3 generic — dispatch works correctly.
+
+# gp.default (lm) — uses gp_from_drop1
+gp_lm <- reportRmd::gp(fit_lm)
+cat("gp.default (lm):\n")
+print(gp_lm)
+
+# gp.glm — uses gp_from_drop1 with test = "LRT"
+gp_glm <- reportRmd::gp(fit_glm)
+cat("\ngp.glm:\n")
+print(gp_glm)
+
+# gp.coxph — uses gp_from_drop1 with custom extract_pvals
+gp_cox <- reportRmd::gp(fit_cox)
+cat("\ngp.coxph:\n")
+print(gp_cox)
+```
+
+
+# 10. Edge cases
+
+## All missing in one group for a categorical variable
+
+```{r edge-all-missing}
+edge_data <- test_data
+edge_data$treatment[edge_data$sex == "Male"] <- NA
+rm_compactsum(data = edge_data,
+              xvars = c("treatment"),
+              grp = "sex")
+```
+
+## Single-level factor after dropping missing
+
+```{r edge-single-level}
+edge_data2 <- test_data
+edge_data2$stage <- factor("I", levels = c("I", "II", "III"))
+rm_covsum(data = edge_data2,
+          covs = c("age", "stage"),
+          maincov = "sex")
+```
+
+## Unformatted p-values
+
+```{r edge-unformatted-p}
+rm_uvsum(response = "age",
+         covs = c("stage", "sex"),
+         data = test_data,
+         unformattedp = TRUE, tableOnly = TRUE)
+```
