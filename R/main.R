@@ -3164,13 +3164,13 @@ outTable <- function(
   # Handle chunk label
   chunk_label <- if (missing(chunk_label)) 'NOLABELTOADD' else chunk_label
 
-  # Apply stored attributes if requested
+  # Apply stored attributes if requested, but explicit arguments take priority
   if (applyAttributes && !is.null(attr(tab, 'dimchk'))) {
     if (all(attr(tab, 'dimchk') == dim(tab))) {
-      if (!is.null(attr(tab, 'to_indent'))) {
+      if (!is.null(attr(tab, 'to_indent')) && length(to_indent) == 0) {
         to_indent <- attr(tab, 'to_indent')
       }
-      if (!is.null(attr(tab, 'bold_cells'))) {
+      if (!is.null(attr(tab, 'bold_cells')) && is.null(bold_cells) && length(rows_bold) == 0) {
         bold_cells <- attr(tab, 'bold_cells')
       }
     }
