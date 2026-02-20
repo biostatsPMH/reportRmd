@@ -17,7 +17,7 @@ forestplotMV(
   nxTicks = 5,
   showN = TRUE,
   showEvent = TRUE,
-  xlim = c(0.2, 5)
+  xlim = NULL
 )
 }
 \arguments{
@@ -50,7 +50,7 @@ See https://doi.org/10.1093/aje/kwr156 for why you may prefer a linear scale}
 
 \item{showEvent}{Show number of events per variable and category (default TRUE)}
 
-\item{xlim}{Numeric vector of length 2 specifying x-axis limits (default c(0.2, 5))}
+\item{xlim}{Numeric vector of length 2 specifying x-axis limits (ex c(0.2, 5))}
 }
 \value{
 a ggplot object

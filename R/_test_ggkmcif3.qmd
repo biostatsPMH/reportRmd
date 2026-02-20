@@ -155,3 +155,35 @@ pembrolizumab |> rm_compactsum(xvars = c(age, sex, pdl1), grp = cohort,
 
 ```
 
+## Testing header above
+
+
+```{r}
+data(pembrolizumab)
+tab <- rm_covsum(data = pembrolizumab,
+                 covs = c("age", "sex"),
+                 maincov = "cohort",
+                 tableOnly = TRUE)
+
+  # row.names = NULL;
+  # to_indent = numeric(0);
+  # bold_headers = TRUE;
+  # rows_bold = numeric(0);
+  # bold_cells = NULL;
+  # caption = NULL;
+  # digits = 2
+  # applyAttributes = TRUE;
+  # keep.rownames = FALSE;
+  # nicenames = TRUE;
+  # format = NULL;
+  # header_above = c(" " = 2, "Cohort" = 5, " " = 1)
+
+outTable(tab,
+         header_above = c(" " = 2, "Cohort" = 5, " " = 1),format = "doc")
+```
+
+```{r}
+outTable(tab,
+         header_above = c(" " = 2, "Cohort" = 5, " " = 1),format = "doc",to_indent = 1:4,rows_bold = 1,applyAttributes = F)
+```
+

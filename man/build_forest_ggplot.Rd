@@ -15,7 +15,7 @@ build_forest_ggplot(
   nxTicks = 5,
   showN = TRUE,
   showEvent = TRUE,
-  xlim = c(0.2, 5)
+  xlim = NULL
 )
 }
 \arguments{

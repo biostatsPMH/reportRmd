@@ -21,7 +21,7 @@ forestplotUV(
   nxTicks = 5,
   showN = TRUE,
   showEvent = TRUE,
-  xlim = c(0.2, 5)
+  xlim = NULL
 )
 }
 \arguments{
@@ -61,9 +61,9 @@ Default is TRUE}
 
 \item{showEvent}{Show number of events per variable and category (default TRUE)}
 
-\item{xlim}{numeric vector of length 2 specifying x-axis limits. Default is
-c(0.2, 5). Confidence intervals extending beyond these limits will be
-shown with arrows. Set to NULL to disable limit constraining.}
+\item{xlim}{numeric vector of length 2 specifying x-axis limits (ex c(0.2, 5))
+Confidence intervals extending beyond these limits will be
+shown with arrows.}
 }
 \value{
 a ggplot object
