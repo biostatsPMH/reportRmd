@@ -11,8 +11,9 @@ mterms <- function(model) {
 }
 #' @export
 mterms.default <- function(model){
-  names(model$coefficients)[!grepl("intercept",
-                                   names(model$coefficients),ignore.case = TRUE)]
+  nms <- names(model$coefficients)
+  # Exclude intercept and inestimable (NA) coefficients
+  nms[!grepl("intercept", nms, ignore.case = TRUE) & !is.na(model$coefficients)]
 }
 
 #' @export
@@ -79,7 +80,7 @@ getVarLevels <- function(model){
       l=strsplit(l,"[:]")[[1]]
       paste0(mapply(function(v,l) sub(v,"",l),v,l,USE.NAMES = FALSE),collapse = ":")
     }, df$var,df$lvl,USE.NAMES=FALSE)
-    df$lvl=sub("^:","",lvl2)
+    df$lvl=sub(":$","",sub("^:","",lvl2))
   }
   df$lvl <- ifelse(df$lvl=="NA:NA",NA,df$lvl)
   df$lvl <- ifelse(df$lvl=="NA",NA,df$lvl)
@@ -158,6 +159,43 @@ getVarLevels <- function(model){
   out$ord <- ifelse(is.na(out$ord),0,out$ord)
   out <- dplyr::arrange(out,vord,ord)
   out$ref <- out$ord==0
+
+  # Remove spurious reference rows for interaction terms without main effects.
+  # When A:B is in the model but A (a factor) is not a main effect, R estimates
+  # all levels of A in the interaction — there is no dropped reference level.
+  # The frequency table join creates a ref row for the first factor level, but
+  # it is not meaningful and should be removed.
+  # Before removing, transfer N/Events to the coefficient rows by matching
+  # factor levels within the coefficient lvl strings.
+  main_effects <- vrs[!grepl(":", vrs)]
+  for (int_var in int_terms) {
+    int_components <- strsplit(int_var, ":")[[1]]
+    factor_components <- int_components[int_components %in% names(vcls)[vcls == "factor"]]
+    # Check if any factor component lacks a main effect
+    has_no_main <- any(!factor_components %in% main_effects)
+    if (has_no_main) {
+      # Frequency-only rows (from full_join, ord==0) have N/Events per level
+      freq_rows <- which(out$var == int_var & out$ref == TRUE)
+      coeff_rows <- which(out$var == int_var & out$ref == FALSE)
+      if (length(freq_rows) > 0 && length(coeff_rows) > 0) {
+        # Match frequency rows to coefficient rows by factor level
+        for (fi in freq_rows) {
+          freq_lvl <- out$lvl[fi]  # e.g., "Female" or "Female:A"
+          # Find coefficient row whose lvl contains this factor level
+          for (ci in coeff_rows) {
+            coeff_lvl <- out$lvl[ci]  # e.g., "sexFemale:age"
+            if (!is.na(coeff_lvl) && !is.na(freq_lvl) && grepl(freq_lvl, coeff_lvl, fixed = TRUE)) {
+              out$n[ci] <- out$n[fi]
+              if ("Events" %in% names(out)) out$Events[ci] <- out$Events[fi]
+              break
+            }
+          }
+        }
+        out <- out[-freq_rows, , drop = FALSE]
+      }
+    }
+  }
+
   extra_lvl <- xtr_lvls(out$ref )
   rtn <- out[setdiff(1:nrow(out),extra_lvl),
              intersect(c("var","lvl","n","ref","Events","terms"),names(out))]

@@ -95,9 +95,9 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   if (!missing(data)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(data)")
   if (!missing(chunk_label)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(chunk_label)")
   model_coef <- get_model_coef(model)
-  if (any(is.na(model_coef))) stop(paste0('rm_mvsum cannot run when any model coeffcients are NA.\nThe following model coefficients could not be estimated:\n',
-                                          paste(names(model_coef)[is.na(model_coef)],collapse = ", "),
-                                          "\nPlease re-fit a valid model prior to reporting. Do you need to run droplevels?"))
+  if (any(is.na(model_coef))) warning(paste0('The following model coefficients could not be estimated and are excluded from the table:\n',
+                                             paste(names(model_coef)[is.na(model_coef)],collapse = ", "),
+                                             "\nConsider re-fitting the model or running droplevels."))
   # get the table
   tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
   if (include_unadjusted && is_mira) {
@@ -134,10 +134,31 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   # Find all estimate columns (contain "95%CI")
   est_cols <- grep("\\(95%CI\\)", names(tab), value = TRUE)
 
+  # Temporarily remove already-formatted unadjusted p-values before
+  # format_bold_pvalues, which would corrupt string values like "<0.001"
+  unadj_p_col <- NULL
+  if (include_unadjusted && "Unadjusted p-value" %in% names(tab)) {
+    unadj_p_col <- tab[["Unadjusted p-value"]]
+    tab[["Unadjusted p-value"]] <- NULL
+  }
+
   # Format and bold p-values
   pv <- format_bold_pvalues(tab, bold_cells,
                             unformattedp = unformattedp, p.adjust = p.adjust)
   tab <- pv$tab; bold_cells <- pv$bold_cells
+
+  # Restore unadjusted p-values in the correct position (after unadjusted estimate)
+  if (!is.null(unadj_p_col)) {
+    unadj_est_col <- grep("^Unadjusted.*\\(95%CI\\)", names(tab), value = TRUE)[1]
+    insert_pos <- if (!is.na(unadj_est_col)) which(names(tab) == unadj_est_col) + 1 else 2
+    tab <- data.frame(
+      tab[, seq_len(insert_pos - 1), drop = FALSE],
+      `Unadjusted p-value` = unadj_p_col,
+      tab[, insert_pos:ncol(tab), drop = FALSE],
+      check.names = FALSE,
+      stringsAsFactors = FALSE
+    )
+  }
 
   # changing UB to Inf, LB to 0 for all estimate columns
   for (ecol in est_cols) {
@@ -253,7 +274,6 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
 
   # 3. Identify UV-only main effects from interactions
   mv_main_vars <- unique(out$var[!grepl(":", out$var)])
-  out_cols <- names(out)
   uv_only_vars <- c()
 
   # Find all interaction terms in MV model and extract their components
@@ -269,6 +289,7 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
 
   # Remove 'var' column before appending UV-only rows
   out <- out |> dplyr::select(-var)
+  out_cols <- names(out)
 
   # 4. Append UV-only main effects at the end
   if (length(uv_only_vars) > 0) {
@@ -285,34 +306,31 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV) {
         header_row <- uv_rows |> dplyr::filter(is_header)
         level_rows <- uv_rows |> dplyr::filter(!is_header)
 
-        new_header <- as.list(rep(NA, length(out_cols)))
-        names(new_header) <- out_cols
+        new_header <- stats::setNames(as.list(rep(NA, length(out_cols))), out_cols)
         new_header$Variable <- v
         new_header$N <- header_row$N[1]
-        uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_header)
+        uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_header, check.names = FALSE, stringsAsFactors = FALSE)
 
         for (k in seq_len(nrow(level_rows))) {
           lv_row <- level_rows[k, ]
-          new_row <- as.list(rep(NA, length(out_cols)))
-          names(new_row) <- out_cols
+          new_row <- stats::setNames(as.list(rep(NA, length(out_cols))), out_cols)
           new_row$Variable <- lv_row$lvl
           new_row$`Unadjusted Est_CI` <- lv_row$Est_CI
           new_row$`Unadjusted p-value` <- lv_row$`p-value`
           new_row$N <- lv_row$N
-          if ("Event" %in% names(lv_row)) new_row$Event <- lv_row$Event
-          uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_row)
+          if ("Event" %in% out_cols && "Event" %in% names(lv_row)) new_row$Event <- lv_row$Event
+          uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_row, check.names = FALSE, stringsAsFactors = FALSE)
         }
       } else {
         # Continuous: single row
         uv_row <- uv_rows[1, ]
-        new_row <- as.list(rep(NA, length(out_cols)))
-        names(new_row) <- out_cols
+        new_row <- stats::setNames(as.list(rep(NA, length(out_cols))), out_cols)
         new_row$Variable <- v
         new_row$`Unadjusted Est_CI` <- uv_row$Est_CI
         new_row$`Unadjusted p-value` <- uv_row$`p-value`
         new_row$N <- uv_row$N
-        if ("Event" %in% names(uv_row)) new_row$Event <- uv_row$Event
-        uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_row)
+        if ("Event" %in% out_cols && "Event" %in% names(uv_row)) new_row$Event <- uv_row$Event
+        uv_rows_to_add[[length(uv_rows_to_add) + 1]] <- as.data.frame(new_row, check.names = FALSE, stringsAsFactors = FALSE)
       }
     }
 

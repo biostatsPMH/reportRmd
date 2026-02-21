@@ -104,12 +104,21 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
     }
   }
 
+  model_n <- nrow(get_model_data(model))
+  model_events <- {
+    ev <- get_event_counts(model)
+    if (!is.null(ev)) sum(ev == 1) else NULL
+  }
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "header"])) {
       v <- cs[i, "var"]
       n <- sum(cs[which(cs[, "var"] == v), "n"], na.rm = TRUE)
+      # For interaction terms without main effects, child rows have no per-level
+      # N (all NA), so the sum is 0. Fall back to the model's total N.
+      if (n == 0 && !is.null(model_n)) n <- model_n
       if ("Events" %in% colnames(cs)) {
         e <- sum(cs[which(cs[, "var"] == v), "Events"], na.rm = TRUE)
+        if (e == 0 && !is.null(model_events)) e <- model_events
         cs[i, c("n", "Events")] <- c(n, e)
       }
       else {
