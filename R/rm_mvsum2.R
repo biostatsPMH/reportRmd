@@ -4,12 +4,17 @@
 #'and a global p-value is added for the evaluation of factor variables.
 #'
 #'Global p-values are likelihood ratio tests for lm, glm and polr models. For
-#'lme models an attempt is made to re-fit the model using ML and if,successful
-#'LRT is used to obtain a global p-value. For coxph models the model is re-run
-#'without robust variances with and without each variable and a LRT is
-#'presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
-#'Wald global p-values are returned. For negative binomial models a deviance
-#'test is used.
+#'lme models an attempt is made to re-fit the model using ML and if successful
+#'LRT is used to obtain a global p-value. For lmer models (lme4), if the
+#'lmerTest package is installed, Satterthwaite-based p-values and F-test global
+#'p-values are used; otherwise Wald z-based p-values and chi-squared LRT global
+#'p-values are returned. For glmer models (lme4), Wald z-based p-values are
+#'used with chi-squared LRT global p-values. Estimates are exponentiated for
+#'binomial (OR) and poisson/negative binomial (RR) families. For coxph models
+#'the model is re-run without robust variances with and without each variable
+#'and a LRT is presented. If unsuccessful a Wald p-value is returned. For GEE
+#'and CRR models Wald global p-values are returned. For negative binomial
+#'models a deviance test is used.
 #'
 #'If the variance inflation factor is requested (VIF=TRUE, default) then a
 #'generalised VIF will be calculated in the same manner as the car package.
@@ -77,6 +82,44 @@
 #' require(survival)
 #' res.cox <- coxph(Surv(os_time, os_status) ~ sex+age+l_size+tmb, data = pembrolizumab)
 #' rm_mvsum(res.cox, vif=TRUE)
+#'
+#' # lmer (lme4 mixed effects model) - single random intercept
+#' \donttest{
+#' if (require(lme4)){
+#' lmer_fit <- lme4::lmer(age ~ sex + pdl1 + (1|cohort), data = pembrolizumab)
+#' rm_mvsum(lmer_fit)
+#' }
+#' }
+#'
+#' # lmer with multiple random effects and global p-values
+#' \donttest{
+#' if (require(lme4) && require(geepack)){
+#' data(dietox, package = "geepack")
+#' dietox$Cu <- as.factor(dietox$Cu)
+#' lmer_fit2 <- lme4::lmer(Weight ~ Cu + Time + (1|Pig) + (1|Litter), data = dietox)
+#' rm_mvsum(lmer_fit2, whichp = "both")
+#' }
+#' }
+#'
+#' # glmer (binomial mixed effects model) - odds ratios
+#' \donttest{
+#' if (require(lme4)){
+#' data(cbpp, package = "lme4")
+#' glmer_fit <- lme4::glmer(cbind(incidence, size - incidence) ~ period + (1|herd),
+#'   data = cbpp, family = binomial)
+#' rm_mvsum(glmer_fit)
+#' }
+#' }
+#'
+#' # glmer.nb (negative binomial mixed effects model) - rate ratios
+#' \donttest{
+#' if (require(lme4) && require(geepack)){
+#' data(dietox, package = "geepack")
+#' dietox$Cu <- as.factor(dietox$Cu)
+#' nb_fit <- lme4::glmer.nb(Weight ~ Cu + Time + (1|Pig), data = dietox)
+#' rm_mvsum(nb_fit, whichp = "both")
+#' }
+#' }
 rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
                      whichp=c("levels","global","both"),
                      caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,include_unadjusted=FALSE,
@@ -125,7 +168,7 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     if (length(rmc)>0) tab <- tab[,-rmc ]
   }
   att_tab <- attributes(tab)
-  model_terms <- if (is_mira) fit1$terms else model$terms
+  model_terms <- if (is_mira) fit1$terms else tryCatch(model$terms, error = function(e) terms(model))
   to_indent <- which(!(tab[["Variable"]] %in% attr(model_terms, "term.labels")))
   bold_cells <- cbind(which(tab[["Variable"]] %in% attr(model_terms, "term.labels")), rep(1, length(which(tab[["Variable"]] %in% attr(model_terms, "term.labels")))))
   attr(tab, "to_indent") <- to_indent

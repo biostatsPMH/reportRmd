@@ -30,12 +30,17 @@ mterms.lme <- function(model){
 }
 
 #' @export
-mterms.lmerModLmerTest <- function(model){
+mterms.lmerMod <- function(model){
   if (requireNamespace("nlme", quietly = TRUE)) {
   names(nlme::fixef(model))[!grepl("intercept",
                               names(nlme::fixef(model)),ignore.case = TRUE)]
   } else stop("Summarising mixed effects models requires the nlme package be installed")
 }
+
+#' @export
+mterms.lmerModLmerTest <- mterms.lmerMod
+#' @export
+mterms.glmerMod <- mterms.lmerMod
 
 getVarLevels <- function(model){
   ord <- NULL

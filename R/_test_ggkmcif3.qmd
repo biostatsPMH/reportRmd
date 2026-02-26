@@ -98,3 +98,12 @@ rm_mvsum(fit, tableOnly = F)
 
 ```
 
+
+```{r}
+library(lme4)
+lmer_fit <- lme4::lmer(age ~ sex + pdl1 + (1|cohort), data = pembrolizumab)
+summary(lmer_fit)
+rm_mvsum(lmer_fit)
+lme4::glm
+```
+

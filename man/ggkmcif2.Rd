@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggkmcif3.R
 \name{ggkmcif2}
 \alias{ggkmcif2}
-\title{Main plotting function (refactored with separate CIF functions)}
+\title{Plot KM and CIF curves with ggplot}
 \usage{
 ggkmcif2(
   response,
@@ -48,8 +48,15 @@ ggkmcif2(
 
 \item{returns}{Whether to return list with plot and at risk table}
 
-\item{...}{Additional arguments}
+\item{...}{Additional arguments see see \link{ggkmcif2Parameters}}
 }
 \description{
-Main plotting function (refactored with separate CIF functions)
+This function will plot a KM or CIF curve with option to add the number at
+risk. You can specify if you want confidence bands, the hazard ratio, and
+pvalues, as well as the units of time used.
+}
+\details{
+Note that for proper pdf output of special characters the following code
+needs to be included in the first chunk of the rmd
+knitr::opts_chunk$set(dev="cairo_pdf")
 }

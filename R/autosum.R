@@ -255,7 +255,64 @@ coeffSum.lme <- function(model,CIwidth=.95,digits=2) {
 
 #' @export
 coeffSum.lmerMod <- function(model,CIwidth=.95,digits=2) {
-  stop("Method not implemented for lmer fit from lme4,\nre-fit model using lmeTest package.")
+  # Try to refit with lmerTest for Satterthwaite p-values
+  if (requireNamespace("lmerTest", quietly = TRUE)) {
+    model_lt <- lmerTest::as_lmerModLmerTest(model)
+    return(coeffSum.lmerModLmerTest(model_lt, CIwidth, digits))
+  }
+  # Fall back to Wald z-based inference
+  message("lmerTest package not installed. Using Wald z-based p-values ",
+          "(assuming normal approximation for fixed effects).")
+  ms <- data.frame(summary(model)$coefficients)
+  pt <- 1-(1-CIwidth)/2
+  z_mult <- qnorm(pt)
+  cs <- data.frame(
+    terms=rownames(ms),
+    est=ms$Estimate,
+    p_value = 2*pnorm(abs(ms$Estimate/ms$Std..Error),lower.tail=FALSE)
+  )
+  ci <- data.frame(terms=rownames(ms),
+                   lwr=ms$Estimate - z_mult*ms$Std..Error,
+                   upr=ms$Estimate + z_mult*ms$Std..Error)
+  cs <- merge(cs,ci,all.x = TRUE)
+  attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
+  return(cs)
+}
+
+#' @export
+coeffSum.glmerMod <- function(model,CIwidth=.95,digits=2) {
+  ms <- data.frame(summary(model)$coefficients)
+  pt <- 1-(1-CIwidth)/2
+  z_mult <- qnorm(pt)
+  fam <- model@resp$family
+  if (fam$link %in% c("logit","log")){
+    cs <- data.frame(
+      terms=rownames(ms),
+      est=exp(ms$Estimate),
+      p_value = ms$Pr...z..
+    )
+    ci <- data.frame(terms=rownames(ms),
+                     lwr=exp(ms$Estimate - z_mult*ms$Std..Error),
+                     upr=exp(ms$Estimate + z_mult*ms$Std..Error))
+  } else {
+    cs <- data.frame(
+      terms=rownames(ms),
+      est=ms$Estimate,
+      p_value = ms$Pr...z..
+    )
+    ci <- data.frame(terms=rownames(ms),
+                     lwr=ms$Estimate - z_mult*ms$Std..Error,
+                     upr=ms$Estimate + z_mult*ms$Std..Error)
+  }
+  cs <- merge(cs,ci,all.x = TRUE)
+  if (fam$link == "logit"){
+    attr(cs,'estLabel') <- betaWithCI("OR",CIwidth)
+  } else if (fam$link == "log"){
+    attr(cs,'estLabel') <- betaWithCI("RR",CIwidth)
+  } else {
+    attr(cs,'estLabel') <- betaWithCI("Estimate",CIwidth)
+  }
+  return(cs)
 }
 
 #' @export
@@ -546,6 +603,17 @@ get_model_coef.default <- function(model){
 }
 
 #' @export
+get_model_coef.lmerMod <- function(model){
+  if (requireNamespace("nlme", quietly = TRUE)) {
+    return(nlme::fixef(model))
+  } else stop("Summarising mixed effects models requires the nlme package be installed")
+}
+#' @export
+get_model_coef.lmerModLmerTest <- get_model_coef.lmerMod
+#' @export
+get_model_coef.glmerMod <- get_model_coef.lmerMod
+
+#' @export
 get_model_coef.tidycrr <- function(model){
   return(model$coefs)
 }
@@ -580,6 +648,8 @@ get_model_data.lmerMod <- function(model){
 }
 #' @export
 get_model_data.lmerModLmerTest <- get_model_data.lmerMod
+#' @export
+get_model_data.glmerMod <- get_model_data.lmerMod
 #' @export
 get_model_data.crrRx <- function(model){
   return(model$model)
@@ -653,6 +723,14 @@ get_event_counts.tidycrr <- function(model){
 get_event_counts.glm <- function(model){
   if (model$family$family=="binomial"|model$family$family=="quasibinomial"){
     return(model$y)
+  }
+}
+
+#' @export
+get_event_counts.glmerMod <- function(model){
+  fam <- model@resp$family$family
+  if (fam=="binomial"|fam=="quasibinomial"){
+    return(model@resp$y)
   }
 }
 
@@ -812,6 +890,12 @@ gp.lme <- function(model, ...) {
 
 #' @export
 gp.lmerMod <- function(model, ...) {
+  # Try to refit with lmerTest for F-test based global p-values
+  if (requireNamespace("lmerTest", quietly = TRUE)) {
+    model_lt <- lmerTest::as_lmerModLmerTest(model)
+    return(gp.lmerModLmerTest(model_lt, ...))
+  }
+  # Fall back to chi-squared LRT via drop1
   terms <- attr(terms(model), "term.labels")
   model <- stats::update(model)
   return(gp_from_drop1(model, terms, test = "Chisq",
@@ -829,6 +913,17 @@ gp.lmerModLmerTest <- function(model, ...) {
     extract_pvals = function(gp_result, terms) {
       data.frame(var = rownames(gp_result),
                  global_p = gp_result$`Pr(>F)`)
+    }))
+}
+
+#' @export
+gp.glmerMod <- function(model, ...) {
+  terms <- attr(terms(model), "term.labels")
+  model <- stats::update(model)
+  return(gp_from_drop1(model, terms, test = "Chisq",
+    extract_pvals = function(gp_result, terms) {
+      data.frame(var = rownames(gp_result)[-1],
+                 global_p = gp_result$`Pr(Chi)`[-1])
     }))
 }
 

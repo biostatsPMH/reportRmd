@@ -325,6 +325,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   } else   bold_cells <- cbind(which(result$Covariate == result$var & result$disp!="" ), rep(1, length(which(result$Covariate == result$var))))
   result$var <- NULL
   lbl <- result[, 1]
+  data_lbls <- data_lbls[!is.na(data_lbls[[2]]) & data_lbls[[2]] != data_lbls[[1]], ]
   data <- set_labels(data,data_lbls)
   if (nicenames) {
     result[, 1] <- replaceLbl(data, lbl)
