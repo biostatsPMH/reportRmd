@@ -8,7 +8,7 @@ library(reportRmd)
 library(survival)
 ```
 
-# Test Data
+## TEST Data
 
 ```{r create-data}
 set.seed(42)
@@ -390,3 +390,136 @@ rm_uvsum(response = "age",
          data = test_data,
          unformattedp = TRUE, tableOnly = TRUE)
 ```
+
+
+# Cluster Data
+```{r}
+set.seed(123)
+
+# 60 clusters: 40 observed twice (80 obs) + 20 observed once (20 obs) = 100 obs
+n_twice <- 40
+n_once <- 20
+n_clusters <- n_twice + n_once
+
+ids_twice <- 1:n_twice
+ids_once <- (n_twice + 1):(n_twice + n_once)
+
+# Build id vector
+id <- c(rep(ids_twice, each = 2), ids_once)
+n_obs <- length(id)
+
+# Cluster-level covariates
+age_cluster <- round(rnorm(n_clusters, mean = 60, sd = 12))
+sex_cluster <- sample(c("Female", "Male"), n_clusters, replace = TRUE)
+
+# Expand to observation level
+age <- age_cluster[id]
+sex <- factor(sex_cluster[id])
+
+# Time since baseline: 0 for first obs, positive for second
+time <- numeric(n_obs)
+time[seq(2, n_twice * 2, by = 2)] <- round(runif(n_twice, min = 3, max = 24))
+
+# Continuous outcome (correlated within cluster)
+cluster_effect <- rnorm(n_clusters, sd = 5)
+y_cont <- round(50 + 0.3 * age - 2 * as.numeric(sex == "Male") + 3 * time / 12 +
+                 cluster_effect[id] + rnorm(n_obs, sd = 4), 1)
+
+# Binary outcome
+lp <- -2 + 0.03 * age + 0.5 * as.numeric(sex == "Male") + 0.05 * time + cluster_effect[id] * 0.1
+prob <- plogis(lp)
+y_bin <- rbinom(n_obs, 1, prob)
+
+# Status variable (cluster-level event indicator)
+status_cluster <- rbinom(n_clusters, 1, 0.6)
+status <- status_cluster[id]
+
+test_cluster_data <- data.frame(
+  id = factor(id),
+  time_from_baseline = time,
+  status = status,
+  y_binary = y_bin,
+  y_continuous = y_cont,
+  age = age,
+  sex = sex
+)
+
+```
+
+
+# Testing the Event Counts for Clustered models
+
+## TEST 1: GEE - continuous outcome
+
+```{r}
+gee_cont <- geepack::geeglm(y_continuous ~ age + sex + time_from_baseline,
+                              data = test_cluster_data, id = id,
+                              family = gaussian, corstr = "exchangeable")
+summary(gee_cont)
+rm_mvsum(gee_cont, showN = TRUE, vif = FALSE)
+
+```
+
+
+## TEST 2: GEE - binary outcome
+
+
+```{r}
+gee_bin <- geepack::geeglm(y_binary ~ age + sex + time_from_baseline,
+                             data = test_cluster_data, id = id,
+                             family = binomial, corstr = "exchangeable")
+summary(gee_bin)
+rm_mvsum(gee_bin, showN = TRUE, showEvent = TRUE, vif = FALSE,tableOnly = F)
+
+```
+
+
+## TEST 3: lmer - continuous outcome
+
+
+```{r}
+lmer1 <- lme4::lmer(y_continuous ~ age + sex + time_from_baseline + (1|id),
+                     data = test_cluster_data)
+summary(lmer1)
+rm_mvsum(lmer1, showN = TRUE, vif = FALSE)
+
+```
+
+
+## TEST 4: glmer - binary outcome
+
+
+```{r}
+glmer1 <- lme4::glmer(y_binary ~ age + sex + time_from_baseline + (1|id),
+                       data = test_cluster_data, family = binomial)
+summary(glmer1)
+rm_mvsum(glmer1, showN = TRUE, showEvent = TRUE, vif = FALSE)
+```
+
+
+
+## TEST 5: coxph with cluster id
+
+
+```{r}
+cox1 <- survival::coxph(survival::Surv(time_from_baseline + 0.1, status) ~ age + sex,
+                         data = test_cluster_data, id = id)
+summary(cox1)
+rm_mvsum(cox1, showN = TRUE, showEvent = TRUE, vif = FALSE)
+
+```
+
+
+## TEST 6: Regular glm (no clustering) - for comparison
+
+
+
+
+```{r}
+glm1 <- glm(y_binary ~ age + sex + time_from_baseline,
+             data = test_cluster_data, family = binomial)
+summary(glm1)
+rm_mvsum(glm1, showN = TRUE, showEvent = TRUE, vif = FALSE,tableOnly = T)
+
+```
+

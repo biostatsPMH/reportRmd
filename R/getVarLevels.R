@@ -93,6 +93,7 @@ getVarLevels <- function(model){
 
   # add sample size and events
   md <- get_model_data(model)
+  cluster_ids <- get_cluster_ids(model)
   if (is.null(md)){
     warning("Model data could not be extracted, simplified summary provided")
   } else {
@@ -112,7 +113,7 @@ getVarLevels <- function(model){
   int_terms <- unique(grep("[:]",df$var,value=TRUE))
 
   # Helper: build a frequency/events table for a single variable
-  build_freq_row <- function(varname, vcl, md, ed) {
+  build_freq_row <- function(varname, vcl, md, ed, cluster_ids = NULL, event_vec = NULL) {
     if (is.null(md)) return(data.frame(var = varname))
     # Determine which factor variables to tabulate
     fct_vars <- names(vcl)[vcl == "factor"]
@@ -120,6 +121,13 @@ getVarLevels <- function(model){
       # All numeric: just report total N
       ntbl <- data.frame(var = varname, lvl = NA, Freq = nrow(md))
       if (!is.null(ed)) ntbl <- merge(ntbl, data.frame(var = varname, lvl = NA, Events = nrow(ed)))
+      # Cluster counts for numeric variables
+      if (!is.null(cluster_ids)) {
+        ntbl$n_clusters <- length(unique(cluster_ids))
+        if (!is.null(ed) && !is.null(event_vec)) {
+          ntbl$Events_clusters <- length(unique(cluster_ids[event_vec == 1]))
+        }
+      }
     } else {
       tbl_vars <- paste(fct_vars, collapse = ",")
       ntbl <- eval(parse(text = paste0("data.frame(with(md, table(", tbl_vars, ")))")))
@@ -140,6 +148,35 @@ getVarLevels <- function(model){
         names(etbl) <- sub("Freq", "Events", names(etbl))
         ntbl <- merge(ntbl, etbl)
       }
+      # Cluster counts for factor variables (per level)
+      if (!is.null(cluster_ids)) {
+        if (length(fct_vars) == 1) {
+          cl_tbl <- tapply(cluster_ids, md[[fct_vars]], function(x) length(unique(x)))
+          ntbl$n_clusters <- as.numeric(cl_tbl[match(ntbl[, 1], names(cl_tbl))])
+          if (!is.null(ed) && !is.null(event_vec)) {
+            event_cluster_ids <- cluster_ids[event_vec == 1]
+            ecl_tbl <- tapply(event_cluster_ids, ed[[fct_vars]], function(x) length(unique(x)))
+            ntbl$Events_clusters <- as.numeric(ecl_tbl[match(ntbl[, 1], names(ecl_tbl))])
+            ntbl$Events_clusters[is.na(ntbl$Events_clusters)] <- 0
+          }
+        } else {
+          # Interaction: two factor variables
+          cl_tbl <- tapply(cluster_ids, list(md[[fct_vars[1]]], md[[fct_vars[2]]]),
+                           function(x) length(unique(x)))
+          cl_df <- as.data.frame(as.table(cl_tbl))
+          cl_df$lvl <- paste0(cl_df[, 1], ":", cl_df[, 2])
+          ntbl$n_clusters <- cl_df$Freq[match(ntbl$lvl, cl_df$lvl)]
+          if (!is.null(ed) && !is.null(event_vec)) {
+            event_cluster_ids <- cluster_ids[event_vec == 1]
+            ecl_tbl <- tapply(event_cluster_ids, list(ed[[fct_vars[1]]], ed[[fct_vars[2]]]),
+                              function(x) length(unique(x)))
+            ecl_df <- as.data.frame(as.table(ecl_tbl))
+            ecl_df$lvl <- paste0(ecl_df[, 1], ":", ecl_df[, 2])
+            ntbl$Events_clusters <- ecl_df$Freq[match(ntbl$lvl, ecl_df$lvl)]
+            ntbl$Events_clusters[is.na(ntbl$Events_clusters)] <- 0
+          }
+        }
+      }
     }
     return(ntbl)
   }
@@ -147,15 +184,15 @@ getVarLevels <- function(model){
   freq_list <- list()
   for (i in int_terms) {
     vcl <- vcls[strsplit(i, ":")[[1]]]
-    freq_list[[length(freq_list) + 1]] <- build_freq_row(i, vcl, md, ed)
+    freq_list[[length(freq_list) + 1]] <- build_freq_row(i, vcl, md, ed, cluster_ids, events)
   }
   for (i in setdiff(na.omit(unique(df$var)), int_terms)) {
     vcl <- vcls[i]
-    freq_list[[length(freq_list) + 1]] <- build_freq_row(i, vcl, md, ed)
+    freq_list[[length(freq_list) + 1]] <- build_freq_row(i, vcl, md, ed, cluster_ids, events)
   }
   freq <- dplyr::bind_rows(freq_list)
   freq$n <- freq$Freq
-  freq <- freq[,intersect(names(freq),c("var","lvl","n","Events")),drop=FALSE]
+  freq <- freq[,intersect(names(freq),c("var","lvl","n","Events","n_clusters","Events_clusters")),drop=FALSE]
   out <- suppressMessages(dplyr::full_join(df,freq))
   out <- dplyr::arrange(out,ord)
   vord <- data.frame(var=na.omit(unique(out$var)),
@@ -192,6 +229,8 @@ getVarLevels <- function(model){
             if (!is.na(coeff_lvl) && !is.na(freq_lvl) && grepl(freq_lvl, coeff_lvl, fixed = TRUE)) {
               out$n[ci] <- out$n[fi]
               if ("Events" %in% names(out)) out$Events[ci] <- out$Events[fi]
+              if ("n_clusters" %in% names(out)) out$n_clusters[ci] <- out$n_clusters[fi]
+              if ("Events_clusters" %in% names(out)) out$Events_clusters[ci] <- out$Events_clusters[fi]
               break
             }
           }
@@ -203,7 +242,7 @@ getVarLevels <- function(model){
 
   extra_lvl <- xtr_lvls(out$ref )
   rtn <- out[setdiff(1:nrow(out),extra_lvl),
-             intersect(c("var","lvl","n","ref","Events","terms"),names(out))]
+             intersect(c("var","lvl","n","ref","Events","terms","n_clusters","Events_clusters"),names(out))]
   return(rtn)
 }
 

@@ -109,6 +109,18 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
     ev <- get_event_counts(model)
     if (!is.null(ev)) sum(ev == 1) else NULL
   }
+  has_clusters <- "n_clusters" %in% colnames(cs)
+  model_n_clusters <- NULL
+  model_events_clusters <- NULL
+  if (has_clusters) {
+    cl_ids <- get_cluster_ids(model)
+    if (!is.null(cl_ids)) {
+      model_n_clusters <- length(unique(cl_ids))
+      if (!is.null(ev)) {
+        model_events_clusters <- length(unique(cl_ids[ev == 1]))
+      }
+    }
+  }
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "header"])) {
       v <- cs[i, "var"]
@@ -124,6 +136,14 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
       else {
         cs[i, "n"] <- n
       }
+      if (has_clusters) {
+        # For header rows, use model-level total unique clusters rather than
+        # summing per-level counts (clusters can span multiple factor levels)
+        cs[i, "n_clusters"] <- if (!is.null(model_n_clusters)) model_n_clusters else NA
+        if ("Events_clusters" %in% colnames(cs)) {
+          cs[i, "Events_clusters"] <- if (!is.null(model_events_clusters)) model_events_clusters else NA
+        }
+      }
     }
   }
   cs$ord <- 1:nrow(cs)
@@ -134,6 +154,17 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   if (for_plot) {
     return(cs)
   }
+
+  # Format N and Events as "obs|clusters" strings when clusters are present
+  if (has_clusters) {
+    cs$n <- ifelse(is.na(cs$n), NA,
+                   paste0(cs$n, "|", cs$n_clusters))
+    if ("Events" %in% colnames(cs) && "Events_clusters" %in% colnames(cs)) {
+      cs$Events <- ifelse(is.na(cs$Events), NA,
+                          paste0(cs$Events, "|", cs$Events_clusters))
+    }
+  }
+
   var_col <- c()
   for (i in 1:nrow(cs)) {
     if (!is.na(cs[i, "ref"]) & cs[i, "ref"] == TRUE) {
@@ -168,11 +199,13 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   }
   cols_to_keep <- na.omit(c("Variable", "Est_CI", "p_value",
                     ifelse("global_p" %in% names(cs),"global_p",NA), "n"))
+  n_label <- if (has_clusters) "N (obs|clusters)" else "N"
   new_colnames <- na.omit(c("Variable", estLbl, "p-value",
-                    ifelse("global_p" %in% names(cs),"Global p-value",NA),"N"))
+                    ifelse("global_p" %in% names(cs),"Global p-value",NA), n_label))
   if ("Events" %in% colnames(cs)) {
     cols_to_keep <- c(cols_to_keep, "Events")
-    new_colnames <- c(new_colnames, "Event")
+    event_label <- if (has_clusters) "Event (total|clusters with event)" else "Event"
+    new_colnames <- c(new_colnames, event_label)
   }
   if (vif) {
     cols_to_keep <- c(cols_to_keep, "VIF")
@@ -269,7 +302,7 @@ coeffSum.lmerMod <- function(model,CIwidth=.95,digits=2) {
   cs <- data.frame(
     terms=rownames(ms),
     est=ms$Estimate,
-    p_value = 2*pnorm(abs(ms$Estimate/ms$Std..Error),lower.tail=FALSE)
+    p_value = 2*stats::pnorm(abs(ms$Estimate/ms$Std..Error),lower.tail=FALSE)
   )
   ci <- data.frame(terms=rownames(ms),
                    lwr=ms$Estimate - z_mult*ms$Std..Error,
@@ -748,6 +781,62 @@ get_model_data.mira <- function(model) {
 #' @export
 get_event_counts.mira <- function(model) {
   return(get_event_counts(model$analyses[[1]]))
+}
+
+# Extract cluster IDs from a fitted model ---------------
+#' Extract cluster IDs from a fitted model
+#'
+#' S3 generic to extract the cluster/group identifier vector from a fitted
+#' model.  Returns \code{NULL} for models that do not have a clustering
+#' structure.
+#' @param model A fitted model object.
+#' @return A vector of cluster identifiers (one per observation), or NULL.
+#' @keywords internal
+#' @export
+get_cluster_ids <- function(model) {
+  UseMethod("get_cluster_ids", model)
+}
+
+#' @export
+get_cluster_ids.default <- function(model) {
+  return(NULL)
+}
+
+#' @export
+get_cluster_ids.geeglm <- function(model) {
+  return(model$id)
+}
+
+#' @export
+get_cluster_ids.coxph <- function(model) {
+  if (is.null(model$call$id)) return(NULL)
+  mf <- stats::model.frame(model)
+  if ("(id)" %in% names(mf)) return(mf[["(id)"]])
+  return(NULL)
+}
+
+#' @export
+get_cluster_ids.lmerMod <- function(model) {
+  grp_vars <- names(lme4::ranef(model))
+  if (length(grp_vars) == 0) return(NULL)
+  mf <- model.frame(model)
+  return(mf[[grp_vars[1]]])
+}
+
+#' @export
+get_cluster_ids.lmerModLmerTest <- get_cluster_ids.lmerMod
+#' @export
+get_cluster_ids.glmerMod <- get_cluster_ids.lmerMod
+
+#' @export
+get_cluster_ids.lme <- function(model) {
+  if (is.null(model$groups) || ncol(model$groups) == 0) return(NULL)
+  return(model$groups[[1]])
+}
+
+#' @export
+get_cluster_ids.mira <- function(model) {
+  return(get_cluster_ids(model$analyses[[1]]))
 }
 
 # Calculate a global p-value for categorical variables --------

@@ -160,11 +160,11 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     tab <- combine_uv_mv(tabUV, m_sum, tab)
   }
   if (!showN) {
-    rmc <- which(names(tab)=="N")
+    rmc <- grep("^N(\\s|$)", names(tab))
     if (length(rmc)>0) tab <- tab[,-rmc ]
   }
   if (!showEvent) {
-    rmc <- which(names(tab)=="Event")
+    rmc <- grep("^Event(\\s|$)", names(tab))
     if (length(rmc)>0) tab <- tab[,-rmc ]
   }
   att_tab <- attributes(tab)
