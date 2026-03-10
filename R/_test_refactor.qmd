@@ -444,6 +444,23 @@ test_cluster_data <- data.frame(
   sex = sex
 )
 
+model <- geepack::geeglm(y_binary~age+sex,
+                 data = test_cluster_data,
+                 family = "binomial",
+                 id = test_cluster_data$id)
+summary(model)
+rm_mvsum(model)
+
+# re-order
+test_cluster_data <- test_cluster_data |> 
+  dplyr::arrange(y_continuous)
+model <- geepack::geeglm(y_binary~age+sex,
+                 data = test_cluster_data,
+                 family = "binomial",
+                 id = test_cluster_data$id)
+summary(model)
+rm_mvsum(model)
+
 ```
 
 
@@ -482,6 +499,10 @@ lmer1 <- lme4::lmer(y_continuous ~ age + sex + time_from_baseline + (1|id),
                      data = test_cluster_data)
 summary(lmer1)
 rm_mvsum(lmer1, showN = TRUE, vif = FALSE)
+
+model <- lme4::lmer(y_continuous ~ age + sex + time_from_baseline + (1|id),
+                     data = test_cluster_data)
+summary(lmer1)
 
 ```
 

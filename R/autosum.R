@@ -65,11 +65,13 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   lvls$ord  <- 1:nrow(lvls)
 
   cs <- merge(lvls,m_coeff,all.x = TRUE)
-
   cs <- cs[order(cs$ord),]
   rownames(cs) <- NULL
-  # add variable header rows
   cs$header <- NA
+
+  has_clusters <- "n_clusters" %in% colnames(cs)
+  m_data <- get_model_data(model)
+
   hdr_vars <- names(table(cs$var))[table(cs$var)>1]
   for (v in hdr_vars){
     hdr_rw <- sort(which(cs$var %in% v))[1]
@@ -104,12 +106,11 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
     }
   }
 
-  model_n <- nrow(get_model_data(model))
+  model_n <- nrow(m_data)
   model_events <- {
     ev <- get_event_counts(model)
     if (!is.null(ev)) sum(ev == 1) else NULL
   }
-  has_clusters <- "n_clusters" %in% colnames(cs)
   model_n_clusters <- NULL
   model_events_clusters <- NULL
   if (has_clusters) {
@@ -804,6 +805,8 @@ get_cluster_ids.default <- function(model) {
 
 #' @export
 get_cluster_ids.geeglm <- function(model) {
+  mId <- model$id
+  if (!all(mId == sort(mId))) stop("ERROR: Cluster model was fit with mis-ordered IDs.  Re-fit model after ordering data by cluster id.")
   return(model$id)
 }
 
