@@ -699,7 +699,7 @@ get_model_data.polr <- function(model){
 #' @export
 get_model_data.coxph <- function(model){
   if (is.null(model$data)){
-    df <- try(stats::model.frame(model$call$formula,
+    df <- try(stats::model.frame(formula(model),
                                  eval(parse(text = paste("data=",
                                                          deparse(model$call$data))))), silent = TRUE)
   } else { df <- model$data }
@@ -731,6 +731,7 @@ get_event_counts.default <- function(model){
 #' @export
 get_event_counts.coxph <- function(model){
   md <- get_model_data(model)
+  if (is.null(md)) return(NULL)
   y <- md[[1]]
   if (ncol(y)==2) return(y[,2])
   if (any(grepl("[+]",y))){

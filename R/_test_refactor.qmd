@@ -459,7 +459,16 @@ model <- geepack::geeglm(y_binary~age+sex,
                  family = "binomial",
                  id = test_cluster_data$id)
 summary(model)
-rm_mvsum(model)
+#rm_mvsum(model) # should fail, because of mis-ordered clusters
+
+# order properly
+test_cluster_data <- test_cluster_data |> 
+  dplyr::arrange(id)
+model <- geepack::geeglm(y_binary~age+sex,
+                 data = test_cluster_data,
+                 family = "binomial",
+                 id = test_cluster_data$id)
+summary(model)
 
 ```
 
@@ -542,5 +551,21 @@ glm1 <- glm(y_binary ~ age + sex + time_from_baseline,
 summary(glm1)
 rm_mvsum(glm1, showN = TRUE, showEvent = TRUE, vif = FALSE,tableOnly = T)
 
+```
+
+# Test of cox models with formula
+
+```{r}
+time <- "time_from_baseline"
+status <- "status"
+group <- "sex"
+surv_formula <- as.formula(
+    paste0("Surv(", time, ", ", status, ") ~ ", group)
+  )
+  
+# Cox fit for HR
+coxfit <- coxph(surv_formula, data = test_cluster_data)
+summary(coxfit)
+rm_mvsum(coxfit)
 ```
 

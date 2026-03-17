@@ -199,7 +199,7 @@ mvsum <- function (model, data, digits=getOption("reportRmd.digits",2), showN = 
     beta <- "HR"
     expnt = TRUE
     betanames <- attributes(summary(model)$coef)$dimnames[[1]]
-    ss_data <- try(stats::model.frame(model$call$formula, eval(parse(text = paste("data=",
+    ss_data <- try(stats::model.frame(formula(model), eval(parse(text = paste("data=",
                                                                                   deparse(model$call$data))))), silent = TRUE)
     if (inherits(ss_data,'try-error') & type == "crr") ss_data <- try(model$model)
   }
