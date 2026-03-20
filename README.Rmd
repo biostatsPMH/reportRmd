@@ -82,7 +82,7 @@ xvars=c('age','pdl1','change_ctdna_group'))
 
 ```
 
-### Switching between function
+### Switching between functions
 
 As of v0.1.3 you can now use `xvars` and `grp` as aliases for covs and maincov in `rm_covsum`.
 
@@ -94,7 +94,7 @@ show.tests=TRUE)
 ```
 
 ```{r}
-rm_covsum(data=pembrolizumab, grp = 'sex',
+rm_compactsum(data=pembrolizumab, grp = 'sex',
 xvars=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
 
