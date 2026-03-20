@@ -3301,6 +3301,7 @@ outTable <- function(
         tab[bold_cells] <- sapply(tab[bold_cells], function(x) lbld(x))
       }
     }
+<<<<<<< Updated upstream
 
     if (out_fmt == 'html') {
       names(tab) <- ltgt(names(tab))
@@ -3310,6 +3311,11 @@ outTable <- function(
       if (!is.null(bold_cells)) {
         tab[bold_cells] <- sapply(tab[bold_cells], function(x) hbld(x))
       }
+=======
+    if (out_fmt=='html') {
+      for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
+      if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
+>>>>>>> Stashed changes
     }
 
     # Determine if long table needed

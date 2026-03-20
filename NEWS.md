@@ -26,9 +26,12 @@
 - more comprehensive model summary function to allow plot extensions
 - incorporated tidyselect into main summary functions
 - support for tidycmprsk models
+- ability to output to a scrolling table in HTML formats
+
 
 ## Minor improvements and fixes
 
+- fixes to special characters in HTML output
 - removed ability to force Wald confidence intervals, confidence intervals now computed by the updated confint in base R
 - rm_mvsum and rm_uvsum have been updated in the backend to enable easier extendibility to different model types
 - bug fix in nestTable so variables order properly with repeat level names
