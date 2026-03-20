@@ -94,6 +94,7 @@ for (f in grep('_var',sheets,value=T)){
 
 # Package System Data --------------------
 uvmodels <- readxl::read_excel('data-raw/uvmodels.xlsx')
+save(uvmodels,file = "data/uvmodels.rda")
 usethis::use_data(uvmodels,internal = TRUE,overwrite = TRUE)
 
 ## add documentation

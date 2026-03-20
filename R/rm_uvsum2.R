@@ -80,7 +80,7 @@
 #'  longer supported; this function will always use profile likelihoods as per
 #'  the inclusion of the MASS confidence intervals into base from from R 4.4.0
 #'@seealso
-#'\code{\link{uvsum}},\code{\link{lm}},\code{\link{glm}},
+#'\code{\link{lm}},\code{\link{glm}},
 #'\code{\link[cmprsk:crr]{cmprsk::crr}},
 #'\code{\link[survival:coxph]{survival::coxph}},
 #'\code{\link[nlme:lme]{nlme::lme}},
@@ -125,22 +125,24 @@
 #' pembrolizumab |> rm_uvsum(response = sex,
 #' covs = c(age, cohort))
 rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits",2),
-                      covTitle='',caption=NULL,
-                      tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
-                      whichp=c("levels","global","both"),
-                      chunk_label,
-                      gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
-                      offset=NULL,
-                      strata = 1,
-                      nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
-                      reflevel=NULL,returnModels=FALSE,fontsize,
+                     covTitle='',caption=NULL,
+                     tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
+                     whichp=c("levels","global","both"),
+                     chunk_label,
+                     gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
+                     offset=NULL,
+                     strata = 1,
+                     nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
+                     reflevel=NULL,returnModels=FALSE,fontsize,
                      forceWald = FALSE){
+
   response_var <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
                                           allow_rename = FALSE)
   response <- names(response_var)
   x_vars <- tidyselect::eval_select(expr = enquo(covs), data = data[unique(names(data))],
                                     allow_rename = FALSE)
   x_vars <- names(x_vars)
+
   if (missing(data)) stop('data is a required argument')
   if (missing(covs)) stop('covs is a required argument') else covs <- unique(x_vars)
   if (missing(response)) stop('response is a required argument')
@@ -204,9 +206,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
 
   nomiss <- nrow(na.omit(data[,response,drop=FALSE]))
   if (nrow(data)!=nomiss) warning(paste("Cases with missing response data have been removed.\n",
-                                          nrow(data)-nomiss,"case(s) removed."))
+                                        nrow(data)-nomiss,"case(s) removed."))
   for (v in covs) {
-    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = F)
+    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = FALSE)
     if (inherits(data[[v]],c('Date','POSIXt'))) {
       covs <- setdiff(covs,v)
       message(paste('Dates can not be used as predictors, try creating a time variable.\n The variable',v,'does not appear in the table.'))
@@ -225,35 +227,23 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     }
   }
   if (is.null(strata))
-  if (is.na(strata)) assign(argList[["strata"]], formals()[["strata"]])
+    if (is.na(strata)) assign(argList[["strata"]], formals()[["strata"]])
 
   # remove arguments not used by uvsum2
-  argList$unformattedp <- NULL
-  argList$p.adjust <- NULL
+  valid_args <- names(formals(uvsum2))
+  argList <- argList[names(argList) %in% valid_args]
   argList$data <- eval(data)
   # get the table
   tab <- do.call(uvsum2,argList)
   # If user specifies return models, don't format a table, just return a list of models
+  if (returnModels) return (tab$models)
   to_indent <- attr(tab, "to_indent")
   bold_cells <- attr(tab, "bold_cells")
-  if (returnModels) return (tab$models)
   att_tab <- attributes(tab)
 
-  method <- p.adjust
-  tab[["p-value"]] <- p.adjust(tab[["p-value"]], method = method)
-  if (!unformattedp) {
-    tab[["p-value"]] <- formatp(tab[["p-value"]])
-    if ("Global p-value" %in% names(tab)) tab[["Global p-value"]] <- formatp(tab[["Global p-value"]])
-  }
-
-  # changing UB to Inf, LB to 0
-  # tab[, 2] <- sapply(tab[, 2], process_ci)
-
-  p_col <- (which(names(tab) == "p-value"))
-  bold_cells <- rbind(bold_cells, cbind(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05), rep(p_col, length(which(as.numeric(gsub("[^0-9\\.]", "", tab[["p-value"]])) < 0.05)))))
-  if (nrow(bold_cells) < 1) {
-    bold_cells <- NULL
-  }
+  pv <- format_bold_pvalues(tab, bold_cells,
+                            unformattedp = unformattedp, p.adjust = p.adjust)
+  tab <- pv$tab; bold_cells <- pv$bold_cells
 
   names(tab)[1] <- covTitle
   lbl <- tab[, 1]
@@ -296,10 +286,10 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   }
   if (length(response)==1) {
     if (sum(is.na(data[[response]]))>0) message(paste(sum(is.na(data[[response]])),"observations with missing outcome removed."))
-    data <- subset(data,!is.na(data[[response]]))
+    data <- data[!is.na(data[[response]]), ]
   } else {
     if (sum(is.na(data[[response[1]]])|is.na(data[[response[2]]]))>0) message(paste(sum(is.na(data[[response[1]]])|is.na(data[[response[2]]])),"observations with missing outcome removed."))
-    data <- subset(data,!(is.na(data[[response[1]]])|is.na(data[[response[2]]])))
+    data <- data[!(is.na(data[[response[1]]]) | is.na(data[[response[2]]])), ]
   }
   # Set family if user specifies type
   if (!is.null(type)) {
@@ -333,7 +323,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
       if (!inherits(data[[response[1]]],c("factor","ordered"))) {
         warning("Response variable is not a factor, will be converted to an ordered factor")
         data[[response]] <- factor(data[[response]],
-                                   ordered = T)
+                                   ordered = TRUE)
       }
       if (!is.null(reflevel)) {
         data[[response]] <- stats::relevel(data[[response]],
@@ -401,21 +391,21 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
                  'offset =',offset))
     } else ovars <- intersect(names(data),ovars)
   } else ovars <- NULL
-  if (gee){
-    if (!type %in% c('linear','logistic','poisson')) stop('GEE models currently only implemented for Poisson, logistic or linear regression.')
-    if (is.null(id)) stop('The id argument must be set for gee models to indicate clusters.')
-    if (is.null(corstr)) stop ('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
+  if (gee) {
+    if (!type %in% c('linear','logistic','poisson')) {
+      stop('GEE models currently only implemented for Poisson, logistic or linear regression.')
+    }
+    if (is.null(id)) {
+      stop('The id argument must be set for gee models to indicate clusters.')
+    }
+    if (is.null(corstr)) {
+      stop('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
+    }
   }
-  # Assign the class to response --------
-  data("uvmodels", envir=environment())
 
-  tp_merge <- merge(data.frame(type=type,family=ifelse(is.null(family),NA,family),gee=gee),uvmodels,all.x = T)
-  if (nrow(tp_merge)>1) stop("Can not detect regression type, try specifying family")
-  if (is.na(tp_merge$autoreg_class) | tp_merge$autoreg_class=="raise_error"){
-    stop(paste("Can not detect valid regression type for the combination of type =",type,
-               "family =",family, "and gee=",gee))
-  }
-  class(response) <- tp_merge$autoreg_class
+  # Assign the class to response using model registry --------
+  model_info <- get_model_class(type = type, family = family, gee = gee)
+  class(response) <- model_info$class
   modelList <- NULL
   for (cov in covs) {
     modelList[[cov]] <- autoreg(response, data, cov, id, strata, family, offset, corstr)

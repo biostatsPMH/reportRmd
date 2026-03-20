@@ -154,12 +154,12 @@ replaceLbl <- function(data_arg,cv){
     lbl <- extract_labels(data_arg)
   } else {
     if (!inherits(data_arg,"character")) dn <- paste(deparse1(data_arg),collapse="") else dn <- data_arg
-    if (is.null(get0(dn))) stop("Could not extract labels from data. Try running with nicenames=F, or use the function directly on a data.frame (without manipulation)")
+    if (is.null(get0(dn))) stop("Could not extract labels from data. Try running with nicenames=FALSE, or use the function directly on a data.frame (without manipulation)")
     lbl <- extract_labels(get0(dn))
   }
   vl <- data.frame(variable=cv,ord=1:length(cv))
   if (!is.null(lbl)){
-    cvnew <- merge(vl,lbl,all.x=T)
+    cvnew <- merge(vl,lbl,all.x=TRUE)
     cvnew <- cvnew[order(cvnew$ord),]
     cvnew <- cvnew[!duplicated(cvnew),]
   } else {
@@ -205,7 +205,7 @@ replace_plot_labels <- function(plot) {
     stop("plot must be a ggplot object")
   }
 
-  # extract data
+  # Extract data ----
   data <- plot$data
 
   get_string <- function(mapping){
@@ -220,31 +220,42 @@ replace_plot_labels <- function(plot) {
     if (is.null(label)) nicename(var_name) else label
   }
 
-  # Replace axis labels
+  # Replace axis labels only if not explicitly empty ----
   x_mapping <- plot$mapping$x
   if (!is.null(x_mapping)) {
     x_var <- get_string(x_mapping)
-    plot <- plot + xlab(get_label(x_var))
+    # Only replace if current label is not empty string
+    if (is.null(plot$labels$x) || plot$labels$x != "") {
+      plot <- plot + xlab(get_label(x_var))
+    }
   }
 
   y_mapping <- plot$mapping$y
   if (!is.null(y_mapping)) {
     y_var <- get_string(y_mapping)
-    plot <- plot + ylab(get_label(y_var))
+    # Only replace if current label is not empty string
+    if (is.null(plot$labels$y) || plot$labels$y != "") {
+      plot <- plot + ylab(get_label(y_var))
+    }
   }
 
-  # Replace legend labels
+  # Replace legend labels only if not explicitly empty ----
   aes_list <- NULL
   for (aesthetic in c("colour", "color", "fill", "size", "shape", "linetype", "linewidth","alpha")) {
     aes_mapping <- plot$mapping[[aesthetic]]
     if (!is.null(aes_mapping))  {
       var_name <- get_string(aes_mapping)
-      aes_list[[aesthetic]] <- get_label(var_name)
+      # Only add to replacement list if current label is not empty string
+      current_label <- plot$labels[[aesthetic]]
+      if (is.null(current_label) || current_label != "") {
+        aes_list[[aesthetic]] <- get_label(var_name)
+      }
     }
   }
+
   if (!is.null(aes_list)) {
     plot <- plot +  do.call(labs, aes_list)
   }
+
   return(plot)
 }
-

@@ -1,0 +1,320 @@
+---
+title: "reportRmd Package Architecture"
+format: html
+---
+
+## Overview
+
+reportRmd produces publication-ready summary tables and survival plots from R
+models.  The three user-facing table families are:
+
+| Function | Purpose |
+|----------|---------|
+| `rm_covsum` | Descriptive statistics (means, counts, p-values) for covariates, optionally stratified by a grouping variable |
+| `rm_uvsum` | Univariate regression tables (one model per covariate) |
+| `rm_mvsum` | Multivariable regression table from a single fitted model |
+| `rm_compactsum` | Compact descriptive table with an alternative layout |
+| `outTable` / `nestTable` | Low-level table renderers (HTML via kableExtra, Word via pander) |
+| `ggkmcif2` | Kaplan-Meier and cumulative incidence plots with risk tables |
+
+---
+
+## Source File Map
+
+| File | Contents |
+|------|----------|
+| `main.R` | `rm_covsum`, `rm_uvsum`, `outTable`, `nestTable`, `covsum` (internal), helpers (`covsum_prepare`, `covsum_cramers_v`) |
+| `rm_uvsum2.R` | `uvsum2` (internal workhorse for `rm_uvsum`) |
+| `rm_mvsum2.R` | `rm_mvsum`, `m_summary` (internal workhorse), `combine_uv_mv` |
+| `autosum.R` | S3 generics and methods: `coeffSum`, `gp`, `get_model_data`, `get_event_counts`, `getVarLevels`, `m_summary` |
+| `autoreg.R` | S3 generic `autoreg` and per-model-type fitting methods |
+| `model_registry.R` | `get_model_class()` -- maps (type, family, gee) to an S3 class string |
+| `getVarLevels.R` | `mterms` generic (extract term labels) and `getVarLevels` (build variable/level data frame) |
+| `helper.R` | Formatting utilities: `formatp`, `pstprn`, `psthr`, `round_sprintf`, `niceNum`, `format_bold_pvalues`, `round_numeric_cols` |
+| `rm_compactsum.R` | `rm_compactsum`, `xvar_function` S3 dispatch for compact tables |
+| `ggkmcif3.R` | `ggkmcif2`, survival/CIF plotting with risk tables, `format_ci`, `append_hr_labels` |
+| `lblCode.R` | Variable label helpers (`replaceLbl`, `setLbls`) |
+| `deprecated.R` | Legacy functions (`mvsum`, `uvsum`, `ggkmcif`) kept for backward compatibility |
+
+---
+
+## How rm_uvsum Works
+
+```
+rm_uvsum(response, covs, data, ...)
+  |
+  +-- validates inputs, applies tidyselect
+  +-- calls uvsum2(response, covs, data, ...)
+        |
+        +-- determines model type (linear/logistic/coxph/crr/...) from the response
+        +-- calls get_model_class(type, family, gee) to get an S3 class string
+        |     e.g. type="logistic", family="binomial" -> class "rm_glm"
+        +-- sets class(response) <- "rm_glm"
+        +-- for each covariate:
+        |     calls autoreg(response, data, cov, ...)
+        |       -> dispatches to autoreg.rm_glm() which fits the model
+        |       -> returns a fitted model object (glm, coxph, crrRx, etc.)
+        +-- for each fitted model:
+        |     calls m_summary(model, ...) which internally calls:
+        |       coeffSum(model)    -> extracts estimates, CI, p-values
+        |       getVarLevels(model)-> builds variable/level mapping
+        |       gp(model)          -> computes global p-values (LRT or Wald)
+        +-- row-binds all summaries into one table
+        +-- returns data.frame with attributes (to_indent, bold_cells)
+  |
+  +-- applies format_bold_pvalues() for p-value formatting and bolding
+  +-- calls outTable() to render the final HTML/Word output
+```
+
+## How rm_mvsum Works
+
+```
+rm_mvsum(model, ...)
+  |
+  +-- validates model coefficients (no NAs allowed)
+  +-- calls m_summary(model, CIwidth, digits, vif, whichp)
+        |
+        +-- coeffSum(model)     -> S3 dispatch to extract estimates/CI/p
+        +-- getVarLevels(model) -> builds variable/level data frame
+        +-- gp(model)           -> global p-values (if requested)
+        +-- GVIF(model)         -> variance inflation factors (if requested)
+        +-- assembles and returns the summary data.frame
+  |
+  +-- optionally adds unadjusted estimates (include_unadjusted=TRUE)
+  |     calls rm_uvsum() internally to get univariate results
+  +-- applies format_bold_pvalues()
+  +-- calls outTable() to render
+```
+
+---
+
+## S3 Dispatch System
+
+The package uses S3 dispatch on **model objects** (for `coeffSum`, `gp`,
+`get_model_data`) and on a **tagged response vector** (for `autoreg`).
+
+### Generics and Where They Live
+
+| Generic | File | Dispatches on | Purpose |
+|---------|------|---------------|---------|
+| `autoreg` | autoreg.R | class of `response` (e.g. `rm_glm`) | Fit a univariate model |
+| `coeffSum` | autosum.R | class of fitted model (e.g. `glm`) | Extract estimates, CI, p-values |
+| `gp` | autosum.R | class of fitted model | Compute global p-values |
+| `get_model_data` | autosum.R | class of fitted model | Retrieve the data used to fit the model |
+| `get_event_counts` | autosum.R | class of fitted model | Count events (survival/logistic) |
+| `mterms` | getVarLevels.R | class of fitted model | Extract model term labels |
+| `xvar_function` | rm_compactsum.R | class of variable type tag | Format one variable row for compact tables |
+
+### Currently Supported Model Classes
+
+| Fitted model class | `coeffSum` | `gp` | `get_model_data` | `autoreg` class |
+|---|---|---|---|---|
+| `lm` | `.default` | `.default` | `.lm` | `rm_lm` / `rm_default` |
+| `glm` | `.glm` | `.glm` | `.lm` (inherits) | `rm_glm` |
+| `coxph` | `.coxph` | `.coxph` | `.coxph` | `rm_coxph` |
+| `crrRx` | `.crrRx` | `.crrRx` | `.crrRx` | `rm_crr` |
+| `tidycrr` | `.tidycrr` | `.tidycrr` | `.tidycrr` | `rm_crr` |
+| `lme` | `.lme` | `.lme` | `.lme` | (mv only) |
+| `lmerModLmerTest` | `.lmerModLmerTest` | `.lmerModLmerTest` | `.lmerMod` | (mv only) |
+| `polr` | `.polr` | `.polr` | `.polr` | `rm_ordinal` |
+| `negbin` (MASS) | `.glm` (inherits) | `.negbin` | `.lm` (inherits) | `rm_negbin` |
+| `geeglm` | `.default` | `.geeglm` | (default) | `rm_gee` |
+| `mira` (mice) | `.mira` | (not yet) | `.mira` | (mv only) |
+
+---
+
+## Adding a New Model Type to rm_uvsum and rm_mvsum
+
+To add support for a new model type (e.g. a zero-inflated Poisson), you need to
+touch up to 5 files.  The steps below are ordered from essential to optional.
+
+### Step 1: Register the model type (model_registry.R)
+
+Add an entry to the `registry` list inside `get_model_class()`:
+
+```r
+list(type = "zeroinfl", family = NA, gee = FALSE,
+     class = "rm_zeroinfl", beta = "RR")
+```
+
+This tells `uvsum2` what S3 class to tag the response with and what the
+coefficient label should be.
+
+### Step 2: Write an autoreg method (autoreg.R)
+
+This is only needed for `rm_uvsum`. Create a function that fits a single
+univariate model and returns the fitted object:
+
+```r
+autoreg.rm_zeroinfl <- function(response, data, x_var,
+                                id = NULL, strata = "", family = NULL,
+                                offset = NULL, corstr = "independence") {
+  f <- as.formula(paste(response, "~", x_var))
+  pscl::zeroinfl(f, data = data)
+}
+```
+
+The helper `autoreg_simple_fit()` can simplify this if the model constructor
+follows the standard `fn(formula, data=)` pattern.
+
+### Step 3: Write a coeffSum method (autosum.R)
+
+This extracts estimates, confidence intervals, and p-values from a fitted model.
+It must return a data.frame with columns: `terms`, `est`, `lwr`, `upr`,
+`p_value`, and an `estLabel` attribute.
+
+```r
+coeffSum.zeroinfl <- function(model, CIwidth = .95, digits = 2) {
+  ms <- summary(model)$coefficients$count  # or whichever component
+  ci <- confint(model, level = CIwidth)
+  cs <- data.frame(
+    terms   = rownames(ms),
+    est     = exp(ms[, 1]),   # exponentiate for RR
+    lwr     = exp(ci[, 1]),
+    upr     = exp(ci[, 2]),
+    p_value = ms[, 4]
+  )
+  attr(cs, "estLabel") <- betaWithCI("RR", CIwidth)
+  return(cs)
+}
+```
+
+Key rules:
+- Column names must be exactly `terms`, `est`, `lwr`, `upr`, `p_value`.
+- The `estLabel` attribute controls the column header (e.g. "RR (95%CI)").
+- Exponentiate if the model reports log-scale coefficients and you want
+  OR/HR/RR.
+
+### Step 4: Write a gp method (autosum.R)
+
+This computes global p-values for multi-level factors.  If the model supports
+`stats::drop1()`, use the shared helper:
+
+```r
+gp.zeroinfl <- function(model, ...) {
+  terms <- attr(model$terms, "term.labels")
+  gp_from_drop1(model, terms, test = "Chisq")
+}
+```
+
+If `drop1` does not work for your model, compute LRT or Wald tests manually and
+return a data.frame with columns `var` and `global_p`, plus
+`attr(result, "global_p") <- "LRT"` (or `"Wald test"`).
+
+### Step 5: Write a get_model_data method (autosum.R)
+
+This lets `rm_mvsum` extract the original data from a fitted model for
+nice-name labelling:
+
+```r
+get_model_data.zeroinfl <- function(model) {
+  model$model  # or however the package stores the model frame
+}
+```
+
+If omitted, the `.default` method returns `NULL` and label replacement is
+skipped with a warning.
+
+### Step 6 (if needed): Write a mterms method (getVarLevels.R)
+
+Only needed if `attr(model$terms, "term.labels")` does not work for your model
+class.  Most standard models inherit the default.
+
+```r
+mterms.zeroinfl <- function(model) {
+  attr(model$terms$count, "term.labels")
+}
+```
+
+### Step 7: Wire into uvsum2 type detection (rm_uvsum2.R)
+
+In `uvsum2()`, add your type string to the explicit type-handling block
+(around line 295) so users can pass `type = "zeroinfl"`:
+
+```r
+else if (type == "zeroinfl") {
+  if (is.null(family)) family <- NA
+}
+```
+
+### Checklist
+
+| Step | File | Required for `rm_uvsum`? | Required for `rm_mvsum`? |
+|------|------|:---:|:---:|
+| Register in model_registry | model_registry.R | Yes | No (model already fitted) |
+| `autoreg.rm_*` method | autoreg.R | Yes | No |
+| `coeffSum.*` method | autosum.R | Yes | Yes |
+| `gp.*` method | autosum.R | If global p-values needed | If global p-values needed |
+| `get_model_data.*` method | autosum.R | No | Recommended |
+| `mterms.*` method | getVarLevels.R | Only if default fails | Only if default fails |
+| Type detection in uvsum2 | rm_uvsum2.R | Yes | No |
+
+### Testing
+
+After adding methods, verify with:
+
+```r
+# Univariate
+rm_uvsum(response = 'y', covs = c('x1', 'x2', 'x3'),
+         data = mydata, type = "zeroinfl")
+
+# Multivariable
+fit <- pscl::zeroinfl(y ~ x1 + x2 + x3, data = mydata)
+rm_mvsum(fit)
+```
+
+Run `devtools::test()` to make sure existing tests still pass.
+
+---
+
+## Output Pipeline
+
+Both `rm_uvsum` and `rm_mvsum` end by calling `outTable()`, which detects the
+output format:
+
+- **HTML / PDF**: renders via `knitr::kable()` + `kableExtra` (supports
+  bolding, indentation, spanning headers via `header_above`)
+- **Word**: renders via `pander::pander()` (plain markdown table)
+
+`nestTable()` is a variant of `outTable` for hierarchically nested row headers.
+
+The `tableOnly = TRUE` argument on any `rm_*` function skips rendering and
+returns the raw data.frame, which is useful for further manipulation.
+
+### Adding a Spanning Header Row with `header_above`
+
+Use the `header_above` argument to add a grouped header row above the column
+names. Pass a named numeric vector where each name is a label and each value
+is the number of columns it spans. Use `" "` (a single space) for blank spans.
+
+```r
+# Example: descriptive table with Treatment and Control group columns
+data("pembrolizumab")
+tab <- rm_covsum(data = pembrolizumab,
+                 covs = c("age", "sex"),
+                 maincov = "cohort",
+                 tableOnly = TRUE)
+
+# Suppose the resulting columns are:
+#   Covariate | Full Sample | Cohort A | Cohort B | Cohort C | p-value
+#
+# To add a header that groups the cohort columns:
+outTable(tab,
+         header_above = c(" " = 2, "Cohort" = 3, " " = 1))
+```
+
+This renders as:
+
+```
+                      |          Cohort          |
+  Covariate | Full .. | Cohort A | Cohort B | .. | p-value
+  --------- | ------- | -------- | -------- | -- | -------
+  ...
+```
+
+The values in `header_above` **must sum to the total number of columns** in the
+table. A space `" "` produces a blank span (no visible label or underline).
+
+> **Note:** For HTML and PDF, `header_above` renders as a true spanning row
+> via kableExtra. For Word output, the labels are prepended as the first data
+> row (pandoc markdown does not support cell merging).

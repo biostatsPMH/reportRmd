@@ -2,11 +2,12 @@
 % Please edit documentation in R/main.R
 \name{rm_covsum}
 \alias{rm_covsum}
-\title{Outputs a descriptive covariate table}
+\title{Add header row to table
+Outputs a descriptive covariate table}
 \usage{
 rm_covsum(
   data,
-  covs,
+  covs = NULL,
   maincov = NULL,
   caption = NULL,
   tableOnly = FALSE,
@@ -30,15 +31,21 @@ rm_covsum(
   excludeLevels = NULL,
   numobs = NULL,
   fontsize,
-  chunk_label
+  chunk_label,
+  xvars = NULL,
+  grp = NULL
 )
 }
 \arguments{
 \item{data}{dataframe containing data}
 
-\item{covs}{character vector with the names of columns to include in table}
+\item{covs}{Covariate names to summarize. Accepts either a character vector
+(e.g., \code{c("age", "sex")}) or tidyselect bare names
+(e.g., \code{c(age, sex)}). Can also be specified using the \code{xvars} alias.}
 
-\item{maincov}{covariate to stratify table by}
+\item{maincov}{Grouping variable. Accepts either a character string
+(e.g., \code{"sex"}) or a tidyselect bare name (e.g., \code{sex}).
+Can also be specified using the \code{grp} alias.}
 
 \item{caption}{character containing table caption (default is no caption)}
 
@@ -111,6 +118,10 @@ the covariate}
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
 
 \item{chunk_label}{only used if output is to Word to allow cross-referencing}
+
+\item{xvars}{Alias for \code{covs}. Supports tidyselect.}
+
+\item{grp}{Alias for \code{maincov}. Supports tidyselect.}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in
@@ -133,7 +144,11 @@ Further formatting options are available using tableOnly=TRUE and outputting
 the table with a call to outTable.
 
 A newer version of this function is \link{rm_compactsum} which is more
-flexible and displays few rows of output.
+flexible and displays fewer rows of output.
+
+Tidyselect can be used for \code{covs}, \code{maincov}, \code{xvars}, and
+\code{grp} arguments, allowing bare column names (e.g., \code{c(age, sex)})
+in addition to character strings (e.g., \code{c("age", "sex")}).
 }
 \examples{
 data("pembrolizumab")
@@ -170,7 +185,6 @@ Frontiers in Psychology, 4; 863:1-12. \doi{10.3389/fpsyg.2013.00863}
 \seealso{
 \code{\link{covsum}},\code{\link{fisher.test}},
 \code{\link{chisq.test}}, \code{\link{wilcox.test}},
-\code{\link{kruskal.test}}, \code{\link{anova}}, \code{\link[rstatix:cramer_v]{rstatix::cramer_v}},
-\code{\link[rstatix:eta_squared]{rstatix:eta_squared}}, and \code{\link{outTable}}
+\code{\link{kruskal.test}}, \code{\link{anova}}, and \code{\link{outTable}}
 }
 \keyword{dataframe}

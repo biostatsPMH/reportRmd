@@ -1,3 +1,22 @@
+# reportRmd 0.1.3
+
+## New features
+
+- `rm_mvsum()` and `forestplotMV()` now support `include_unadjusted` parameter to display univariate (unadjusted) estimates alongside multivariable (adjusted) estimates in a single table or plot
+- `forestplotMV()` data parameter is now optional - data will be automatically extracted from the model object if not provided
+- new `extract_package_details()` function to extract R packages used by a script or markdown file, along with citations.
+- new `scrolling_table()` creates scrollable HTML tables for long outputs or keeps regular tables for non-HTML formats
+
+## Minor improvements and fixes
+
+- improved plotting of survival curves
+- Cox proportional hazards clustering: fixed bug when clustering is used in coxph models
+- Date handling in Word tables fixed bug where tables with date columns containing NA values caused errors in Word output
+- rm_compactsum improvements: fixed output formatting issues, fixed bug with difftime variable handling, improved bolding for corrected p-values, better handling of negative numbers
+- rm_uvsum fixes: fixed handling of integer predictors, various bug fixes for edge cases
+- more robust handling of tidy evaluation
+- HTML output improvements: improved display for special characters in HTML rendered tables
+
 # reportRmd 0.1.1
 
 ## New features

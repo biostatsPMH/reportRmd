@@ -9,7 +9,7 @@ scrolling_table(knitrTable, pixelHeight = 500)
 \arguments{
 \item{knitrTable}{output from a call to knitr::kable or outTable}
 
-\item{pixelHeight}{the height of the scroll box in pixels,defulat is 500}
+\item{pixelHeight}{the height of the scroll box in pixels, default is 500}
 }
 \description{
 This function accepts the output of a aa call to knitr::kable or
@@ -19,6 +19,6 @@ scrollable table. Otherwise a regular table will be output for pandoc/latex
 \examples{
 data("pembrolizumab")
 tab <- rm_covsum(data=pembrolizumab,maincov = 'change_ctdna_group',
-covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=F)
+covs=c('age','cohort','sex','pdl1','tmb','l_size'),full=FALSE)
 scrolling_table(tab,pixelHeight=300)
 }

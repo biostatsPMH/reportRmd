@@ -2,14 +2,26 @@
 % Please edit documentation in R/helper.R
 \name{pstprn}
 \alias{pstprn}
-\title{Paste with parentheses}
+\alias{pstprn0}
+\title{Paste vector elements with parentheses}
 \usage{
-pstprn(x)
+pstprn(x, compact = FALSE)
+
+pstprn0(x)
 }
 \arguments{
-\item{x}{a vector}
+\item{x}{Vector of values (first element shown separately)}
+}
+\value{
+Character string with first element followed by remaining elements in parentheses
 }
 \description{
-Paste with parentheses
+Formats a vector as "first (second, third, ...)" where remaining
+elements are comma-separated inside parentheses.
 }
-\keyword{helper}
+\section{Functions}{
+\itemize{
+\item \code{pstprn0()}: Compact version without spaces (for plots)
+
+}}
+\keyword{internal}

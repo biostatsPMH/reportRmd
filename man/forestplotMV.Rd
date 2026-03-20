@@ -6,60 +6,69 @@
 \usage{
 forestplotMV(
   model,
-  data,
+  data = NULL,
+  include_unadjusted = FALSE,
   conf.level = 0.95,
-  orderByRisk = TRUE,
   colours = "default",
   showEst = TRUE,
-  rmRef = FALSE,
+  showRef = TRUE,
   digits = getOption("reportRmd.digits", 2),
   logScale = getOption("reportRmd.logScale", TRUE),
   nxTicks = 5,
   showN = TRUE,
-  showEvent = TRUE
+  showEvent = TRUE,
+  xlim = NULL
 )
 }
 \arguments{
-\item{model}{an object output from the glm or geeglm function, must be from a logistic
-regression}
+\item{model}{an object output from the glm or geeglm function, must be from a
+logistic or log-link regression}
 
-\item{data}{dataframe containing your data}
+\item{data}{dataframe containing your data (required if include_unadjusted = TRUE)}
 
-\item{conf.level}{controls the width of the confidence interval}
+\item{include_unadjusted}{logical, should unadjusted estimates be included?
+Default is FALSE}
 
-\item{orderByRisk}{logical, should the plot be ordered by risk}
+\item{conf.level}{controls the width of the confidence interval (default 0.95)}
 
-\item{colours}{can specify colours for risks less than, 1 and greater than
-1.0. Default is red, black, green}
+\item{colours}{can specify colours for risks less than, equal to, and greater
+than 1.0. Default is green, black, red}
 
-\item{showEst}{logical, should the risks be displayed on the plot in text}
+\item{showEst}{logical, should the risks be displayed on the plot in text?
+Default is TRUE}
 
-\item{rmRef}{logical, should the reference levels be removed for the plot?}
+\item{showRef}{logical, should reference levels be shown? Default is TRUE}
 
-\item{digits}{number of digits to use displaying estimates}
+\item{digits}{number of digits to use displaying estimates (default 2)}
 
-\item{logScale}{logical, should OR/RR be shown on log scale, defaults to
-TRUE, or reportRmd.logScale if set. See https://doi.org/10.1093/aje/kwr156 for why you may prefer a
-linear scale.}
+\item{logScale}{logical, should OR/RR be shown on log scale? Defaults to TRUE.
+See https://doi.org/10.1093/aje/kwr156 for why you may prefer a linear scale}
 
-\item{nxTicks}{Number of tick marks supplied to the log_breaks function to
-produce}
+\item{nxTicks}{Number of tick marks for x-axis (default 5)}
 
-\item{showN}{Show number of observations per variable and category}
+\item{showN}{Show number of observations per variable and category (default TRUE)}
 
-\item{showEvent}{Show number of events per variable and category}
+\item{showEvent}{Show number of events per variable and category (default TRUE)}
+
+\item{xlim}{Numeric vector of length 2 specifying x-axis limits (ex c(0.2, 5))}
 }
 \value{
-a plot object
+a ggplot object
 }
 \description{
-This function will send and take log or logistic regression fit from glm or geeglm
-from mvsum function, and display the OR or RR for each variable on the appropriate log scale.
+This function creates forest plots from fitted regression models, with optional
+inclusion of unadjusted estimates. It uses m_summary for robust data extraction
+and properly handles factor level ordering and reference levels.
 }
 \examples{
 data("pembrolizumab")
-glm_fit = glm(orr~change_ctdna_group+sex+age+l_size,
-data=pembrolizumab,family = 'binomial')
-forestplotMV(glm_fit)
+glm_fit <- glm(orr ~ change_ctdna_group + sex + age + l_size,
+               data = pembrolizumab, family = 'binomial')
+
+# Adjusted only
+forestplotMV(glm_fit, data = pembrolizumab)
+
+# Both adjusted and unadjusted
+forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
 }
 \keyword{plot}

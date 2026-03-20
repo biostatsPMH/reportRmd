@@ -23,6 +23,7 @@ by Pandoc will be used.
 library(reportRmd)
 # knitr::opts_chunk$set(message = FALSE, warning = FALSE,dev="cairo_pdf")
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
 ```
 
 # Overview
@@ -196,6 +197,41 @@ summary_tab <- rm_compactsum(data=pembrolizumab, xvars=c('change_ctdna_group','o
 cat(attr(summary_tab, "description"))
 ```
 
+## Using Tidyselect
+
+Both `rm_covsum` and `rm_compactsum` support tidyselect syntax, allowing you to use
+bare column names instead of character strings. This also enables piping with `|>`:
+
+```{r}
+pembrolizumab |> rm_compactsum(xvars = c(age, pdl1, change_ctdna_group), grp = sex)
+```
+
+The same tidyselect syntax works with `rm_covsum`:
+
+```{r}
+pembrolizumab |> rm_covsum(covs = c(age, pdl1, change_ctdna_group), maincov = sex)
+```
+
+The `xvars`/`grp` aliases can also be used with `rm_covsum` for a consistent interface:
+
+```{r}
+pembrolizumab |> rm_covsum(xvars = c(age, pdl1, change_ctdna_group), grp = sex)
+```
+
+## Adding Header Rows
+
+Header rows can be added to any table using the `header_above` argument in `outTable()`.
+This works for HTML, PDF and Word output. The argument takes a named vector where the names
+are the header labels and the values are the number of columns each label spans.
+
+```{r}
+tab <- rm_covsum(data = pembrolizumab, maincov = cohort,
+                  covs = c(age, pdl1, sex), full = FALSE,
+                  pvalue = FALSE, tableOnly = TRUE)
+
+outTable(tab, header_above = c(" " = 1, "Cohorts A-C" = 3, "Cohorts D,E" = 2))
+```
+
 
 \newpage
 
@@ -282,6 +318,32 @@ data("ctDNA")
  data=ctDNA,showN=TRUE)
 ```
 
+## MICE output
+
+Outputs from multiple imputations can be summarised as follows:
+  
+```{r, echo=T,eval=F}
+
+miss_data <- pembrolizumab
+miss_data$age[sample(1:nrow(pembrolizumab),50,replace=F)] <- NA
+miss_data$cohort[sample(1:nrow(pembrolizumab),50,replace=F)] <- NA
+require(mice)
+ini <- mice::mice(miss_data, maxit = 0)
+pred_matrix <- ini$predictorMatrix
+pred_matrix[1, ] <- 0
+pred_matrix[, 1] <- 0
+imp <- mice::mice(miss_data, m = 5, predictorMatrix = pred_matrix, printFlag = FALSE)
+imputed_datasets <- purrr::map(1:5, \(m) mice::complete(imp, m))
+
+fits <- lapply(imputed_datasets, function(dat) {
+  glm(orr ~ age+cohort, data = dat,family='binomial')
+})
+model <- mice::as.mira(fits)
+rm_mvsum(model)           
+
+
+```
+
 ## Returning Model Objects
 If you want to check the underlying models, set `returnModels = TRUE`
 
@@ -332,6 +394,26 @@ p-values can be adjusted for multiple comparisons using any of the options avail
 rm_mvsum(glm_fit, showN = TRUE, vif=TRUE,p.adjust = 'holm')
 ```
 
+## Including Unadjusted Estimates
+
+As of version 0.1.3, you can include univariate (unadjusted) estimates alongside the multivariable estimates in a single table by setting `include_unadjusted = TRUE`. This provides a convenient way to compare unadjusted and adjusted estimates side-by-side.
+
+```{r}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
+               family='binomial',
+               data = pembrolizumab)
+rm_mvsum(glm_fit, data = pembrolizumab, include_unadjusted = TRUE, showN = TRUE, vif = TRUE)
+```
+
+This feature works with all supported model types including Cox proportional hazards models:
+
+```{r}
+require(survival)
+cox_fit <- coxph(Surv(os_time, os_status) ~ age + sex + baseline_ctdna,
+                 data = pembrolizumab)
+rm_mvsum(cox_fit, data = pembrolizumab, include_unadjusted = TRUE, tableOnly = TRUE)
+```
+
 # Combining univariate and multivariable models
 
 To display both models in a single table run the rm_uvsum and rm_mvsum functions with `tableOnly=TRUE` and combine.
@@ -374,7 +456,7 @@ outTable(mvsumTable)
 
 # Combining tables
 
-Tables can be nested with the `nestTable()` function
+#Tables can be nested with the `nestTable()` function
 
 ```{r}
 cohortA <- rm_uvsum(data=subset(pembrolizumab,cohort=='A'), 
@@ -393,7 +475,7 @@ nestTable(rbind(cohortA,cohortE),head_col = 'Cohort',to_col = 'Covariate')
 
 \newpage
 
-# Scrollable Tables
+## Scrollable Tables
 
 If you are rendering to html format you can use the `scrollTable` function to create a scrollable table. This is useful for tables with many rows. If the output format is not html then a regular table will be displayed.
 
@@ -436,8 +518,24 @@ rm_survtime(data=pembrolizumab,time='os_time',status='os_status', covs='age',
 To combine estimates across strata
 
 ```{r}
-rm_survdiff(data=pembrolizumab,time='os_time',status='os_status', 
+rm_survdiff(data=pembrolizumab,time='os_time',status='os_status',
             covs='sex',strata='cohort',digits=1)
+```
+
+# Cumulative Incidence Function Summary
+
+For competing risk analysis, use `rm_cifsum()` to display cumulative incidence probabilities at specific time points. This requires the cmprsk package and a status variable coded with different event types.
+
+```{r}
+# Using pbc data from survival package as example
+data(pbc, package = "survival")
+# Create competing risk status: 0=censored, 1=transplant, 2=death
+pbc$status_cr <- ifelse(pbc$status == 0, 0, pbc$status)
+
+rm_cifsum(data=pbc, time='time', status='status_cr',
+          group='trt', eventcode=2, cencode=0,
+          eventtimes=c(1000, 2000, 3000),
+          eventtimeunit='days')
 ```
 
 \newpage
@@ -623,6 +721,29 @@ ggsave('images/forestmv.png', scale = 0.5)
 
 ![](images/forestmv.png){width=100%}
 
+### Multivariable Forest Plot with Unadjusted Estimates
+
+As of version 0.1.3, you can include both unadjusted and adjusted estimates in a multivariable forest plot by setting `include_unadjusted = TRUE`:
+
+```{r, eval=F,echo=T}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
+               family='binomial',
+               data = pembrolizumab)
+forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
+```
+
+```{r, eval=F,echo=FALSE}
+glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
+               family='binomial',
+               data = pembrolizumab)
+forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
+ggsave('images/forestmv_unadj.png', scale = 0.5)
+```
+
+![](images/forestmv_unadj.png){width=100%}
+
+This provides a convenient alternative to the `forestplotUVMV` function for comparing unadjusted and adjusted estimates.
+
 ## Combining univariable and multivariable models into a single plot
 
 ```{r, eval=F,echo=T}
@@ -690,6 +811,27 @@ To identify the Excel header given a columns number
 excelColLetters(c(7,28,52))
 ```
 
+## extract_package_details
+
+This function will search the current script or markdown file for R packages and record the package name, functions called, the package version and the citation(s) for the package. By default, function calls and packages that only appear in commented code will be ignored, but they can be included by setting `ignore_comments` = FALSE
+
+```{r, echo=T,eval=F}
+extract_package_details() |> 
+  outTable()
+```
+
+```{r, echo=T,eval=F}
+extract_package_details(ignore_comments = FALSE) |> 
+  outTable()
+```
+
+| Package name | Functions called | Package version | Package citation |
+|-------------|------------------|-----------------|------------------|
+| reportRmd | rm_covsum, rm_compactsum, rm_uvsum, glm, rm_mvsum, Surv, rm_uv_mv, outTable, nestTable, scrolling_table, rm_survsum, rm_survtime, rm_survdiff, rm_cifsum, set_labels, set_var_labels, extract_labels, ggplot, aes, geom_point, replace_plot_labels, clear_labels, plotuv, ggsave, ggkmcif2, forestplotUV, forestplotMV, forestplotUVMV, excelCol, excelColLetters, citation | 0.1.3 | Avery L, Del Bel R, Espin-Garcia O, Lajkosz K, Ong C, Pittman T, Santiago A, Weiss J, Xu W (2026). *reportRmd: Tidy Presentation of Clinical Reporting*. R package version 0.1.3, <https://biostatspmh.github.io/reportRmd/>. |
+| rmarkdown | run | 2.29 | Allaire J, Xie Y, Dervieux C, McPherson J, Luraschi J, Ushey K, Atkins A, Wickham H, Cheng J, Chang W, Iannone R (2024). *rmarkdown: Dynamic Documents for R*. R package version 2.29, <https://github.com/rstudio/rmarkdown>. Xie Y, Allaire J, Grolemund G (2018). *R Markdown: The Definitive Guide*. Chapman and Hall/CRC. Xie Y, Dervieux C, Riederer E (2020). *R Markdown Cookbook*. Chapman and Hall/CRC. |
+| survival | coxph | 3.8.3 | Therneau T (2024). *A Package for Survival Analysis in R*. R package version 3.8-3, <https://CRAN.R-project.org/package=survival>. Therneau TM, Grambsch PM (2000). *Modeling Survival Data: Extending the Cox Model*. Springer. |
+| R |  | 4.4.2 | R Core Team (2024). *R: A Language and Environment for Statistical Computing*. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>. |
+
 \newpage
 
 # Options
@@ -697,7 +839,6 @@ excelColLetters(c(7,28,52))
 The following options can be set:
 
 -   reportRmd.digits, default is 2. Sets the default number of digits in output functions. Does not affect p-values.
--   reportRmd.forceWald, default is FALSE. If set to TRUE then Wald CI, as opposed to likelihood profile CI will be used in the rm_uvsum function.
 -   reportRmd.logScale, default is TRUE. The scale of the forest plots will default to log unless otherwise specified.
 
 Example:
@@ -757,4 +898,5 @@ A data frame with 270 rows and 5 variables:
 - **ctdna_status** Change in ctDNA since baseline
 - **time** Number of weeks on treatment
 - **size_change** Percentage change in tumour measurement
+
 

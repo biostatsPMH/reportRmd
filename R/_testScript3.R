@@ -1,3 +1,36 @@
+# TEsting rm_compactsum
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/checked_data.rda")
+load_all()
+
+library(tidyverse)
+demo_vars <- c( 'mcspc_type', 'sites_of_metastases___1', 'sites_of_metastases___2', 'sites_of_metastases___4', 'sites_of_metastases___5')
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/checked_data.rda")
+study_data$sites_of_metastases___1
+result <- study_data |>
+  filter(is.na(redcap_repeat_instance )) |>
+  rm_compactsum(xvars = demo_vars,nicenames = T,tableOnly = T)
+result
+result$data$sites_of_metastases___1
+replaceLbl(result$data,result$lbl)
+replaceLbl(study_data,result$lbl)
+
+treatment_regimes <- read.csv("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/treatment_regimes.csv")
+data = treatment_regimes
+xvars=c("ADT","ARPI","Docetaxel","treatments")
+grp="mcspc_diagnosis"
+result<- treatment_regimes |>
+  rm_compactsum(xvars=c(ADT,ARPI,Docetaxel,treatments),
+  grp=mcspc_diagnosis,
+  full=F,pvalue = F)
+
+load("/Users/lisaavery/Library/CloudStorage/OneDrive-UHN/Jiang/mCSPC/study_data_08Jan2026.rda")
+study_data$sites_of_metastases___1
+result <- study_data |>
+  filter(is.na(redcap_repeat_instance )) |>
+  rm_compactsum(xvars = demo_vars,nicenames = T,tableOnly = T)
+result
+result$data$sites_of_metastases___1
+replaceLbl(result$data,result$lbl)
 
 # Testing for getVarLevels and coeffSum ------------
 
@@ -39,11 +72,12 @@ getVarLevels(auto_binom)
 m_summary(auto_binom)
 
 mv_binom <- glm(orr~age+sex+cohort,family = 'binomial',data = pembrolizumab)
+m_summary(mv_binom)
 gp(mv_binom)
 coeffSum(mv_binom)
 getVarLevels(mv_binom)
-m_summary(mv_binom)
 
+model <- glm(orr~age:sex+cohort,family = 'binomial',data = pembrolizumab)
 mv_binom2 <- glm(orr~age:sex+cohort,family = 'binomial',data = pembrolizumab)
 gp(mv_binom2)
 coeffSum(mv_binom2)
@@ -151,6 +185,7 @@ getVarLevels(auto_cox)
 m_summary(auto_cox)
 
 mv_cox <- survival::coxph(Surv(os_time,os_status) ~ age+sex+cohort, data = pembrolizumab)
+model <- survival::coxph(Surv(os_time,os_status) ~ age+sex+cohort, data = pembrolizumab)
 gp(mv_cox)
 coeffSum(mv_cox)
 getVarLevels(mv_cox)
@@ -164,7 +199,6 @@ getVarLevels(mv_cox2)
 m_summary(mv_cox2)
 
 
-#
 uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
 uvsum2_cox <- rm_uvsum2(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL,strata = "")
 uvsum_cox <- rm_uvsum(response=c("os_time","os_status"), covs = c("age", "sex", "cohort"), data = pembrolizumab,family=NULL,offset=NULL,id=NULL)
@@ -185,12 +219,15 @@ getVarLevels(auto_crr)
 m_summary(auto_crr)
 
 mv_crr <-crrRx(as.formula('os_time+os_status2~age+sex+cohort'),data=pembrolizumab)
+model<-crrRx(as.formula('os_time+os_status2~age+sex+cohort'),data=pembrolizumab)
 gp(mv_crr)
 coeffSum(mv_crr)
 getVarLevels(mv_crr)
 m_summary(mv_crr)
 
 mv_crr2 <-crrRx(as.formula('os_time+os_status2~age*sex+age:cohort'),data=pembrolizumab)
+
+test <- update(mv_crr2,~.age)
 gp(mv_crr2)
 coeffSum(mv_crr2)
 getVarLevels(mv_crr2)
@@ -330,12 +367,13 @@ model <- mv_gee
 mv_lm_gee <- geepack::geeglm(pdl1 ~ age+sex+cohort,data = pembrolizumab,
                              id=pembrolizumab$id, # always need to specify for gee models
                              family = gaussian)
-rm_mvsum2(mv_lm_gee)
+rm_mvsum(mv_lm_gee)
 
 # geeglm will fail if the interactions are too complex
 mv_lm2_gee <- geepack::geeglm(pdl1 ~ age*sex+cohort+l_size,data = pembrolizumab,
                               id=pembrolizumab$id,
                               family = gaussian)
+model <- mv_lm2_gee
 rm_mvsum2(mv_lm2_gee)
 
 data("pembrolizumab")
@@ -576,3 +614,122 @@ rm_compactsum(data=dt, xvars="start_date") # Error in round(summary(subdata[[cov
 
 summary(dt$start_date)
 summary(as.numeric(dt$total_time) )
+
+
+
+# survival data for testing -----
+set.seed(123)
+
+library(survival)
+library(dplyr)
+
+# -----------------------------
+# Parameters
+# -----------------------------
+n_patients <- 300
+
+beta_age    <- 0.03
+beta_sex    <- 0.4
+beta_tumour <- 0.15
+
+baseline_hazard <- 0.01
+
+# -----------------------------
+# Patient-level covariates
+# -----------------------------
+patients <- data.frame(
+  id  = 1:n_patients,
+  age = rnorm(n_patients, mean = 65, sd = 8),
+  sex = rbinom(n_patients, 1, 0.5)  # 0 = female, 1 = male
+)
+
+# -----------------------------
+# Simulate longitudinal tumour size + survival
+# -----------------------------
+long_data <- list()
+
+for (i in 1:n_patients) {
+
+  age <- patients$age[i]
+  sex <- patients$sex[i]
+
+  # Visit times
+  n_visits <- sample(3:7, 1)
+  visit_times <- sort(runif(n_visits, 0, 10))
+
+  # Tumour size trajectory
+  tumour_size <- rnorm(1, 3, 0.5) +
+    0.2 * visit_times +
+    rnorm(n_visits, 0, 0.3)
+
+  # Linear predictor (time-varying)
+  linpred <- beta_age * age +
+             beta_sex * sex +
+             beta_tumour * tumour_size
+
+  # Approximate cumulative hazard
+  dt <- c(visit_times[1], diff(visit_times))
+  hazard <- baseline_hazard * exp(linpred)
+  cumhaz <- cumsum(hazard * dt)
+
+  # Event generation
+  u <- runif(1)
+  event_time <- visit_times[n_visits]
+  event <- 0
+
+  if (any(cumhaz > -log(u))) {
+    event_time <- visit_times[min(which(cumhaz > -log(u)))]
+    event <- 1
+  }
+
+  # Start–stop data
+  for (j in 1:n_visits) {
+
+    start <- ifelse(j == 1, 0, visit_times[j - 1])
+    stop  <- visit_times[j]
+
+    long_data[[length(long_data) + 1]] <- data.frame(
+      id = i,
+      start = start,
+      stop = stop,
+      event = as.integer(event == 1 & stop == event_time),
+      age = age,
+      sex = sex,
+      tumour_size = tumour_size[j]
+    )
+  }
+}
+
+tv_data <- bind_rows(long_data)
+head(tv_data)
+
+test1 <- coxph(Surv(start,stop,event) ~ age + sex + tumour_size,
+data=tv_data)
+summary(test1)
+rm_mvsum(test1)
+
+test2 <- coxph(Surv(start,stop,event) ~ age + sex + tumour_size,
+cluster = id,
+data=tv_data)
+summary(test2)
+rm_mvsum(test2)
+
+
+models <- grep("mv_",ls(),value=T)
+
+for (m in models){
+  # print(m)
+  model <- get0(m)
+  av <- as.character(model$call)
+  # print(av)
+  av_f <- av[which(grepl("~",av))]
+  cat(av_f,"\n")
+  # cat("formula: ")
+  # print(model$formula)
+
+}
+
+for (m in models){
+  model <- get0(m)
+  print(get_model_args(model))
+}

@@ -244,7 +244,7 @@ test_that("uvsum2 outputs geeglm models correctly",{
   # gee2 <- geeglm(mf2, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   output = uvsum2(response = 'Weight',covs=c('Cu','Time'), gee=T,
                  data=dietox, id='Pig', family=gaussian("identity"), corstr="ar1",whichp='both')
-  names = c('Variable','Estimate(95%CI)','p-value','N')
+  names = c('Variable','Estimate(95%CI)','p-value','N (obs|clusters)')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')
   est = c(NA,"Reference","-0.49 (-3.50, 2.52)","1.78 (-1.89, 5.45)", "6.73 (6.58, 6.88)")
   expect_equal(output[,1],covs)
@@ -254,9 +254,9 @@ test_that("uvsum2 outputs geeglm models correctly",{
 
 test_that("rm_mvsum outputs geeglm models correctly",{
   mf1 <- formula(Weight ~ Cu+Time)
-  gee1 <- geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
+  gee1 <- geepack::geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   output = rm_mvsum(gee1,data=dietox,showN = T,tableOnly = T,whichp='both',vif=F)
-  names = c('Covariate','Estimate(95%CI)','p-value','N')
+  names = c('Covariate','Estimate(95%CI)','p-value','N (obs|clusters)')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')
   est = c(NA,"Reference","-0.47 (-3.29, 2.35)","1.21 (-2.30, 4.71)", "6.73 (6.58, 6.88)")
   expect_equal(output[,1],covs)
@@ -282,4 +282,105 @@ test_that("rm_mvsum outputs geeglm models correctly",{
 
 #uvsum2(response = c('time','crr_status'),covs=c('age','sex'),data=lung)
 #uvsum2(response = c('time','status'),covs=c('age','sex'),data=lung)
+
+#-------------------------------------------------------------------------------------
+# lmer (lme4) tests
+#-------------------------------------------------------------------------------------
+
+test_that("rm_mvsum outputs lmer model with one obs per id correctly", {
+  data("pembrolizumab")
+  model <- lme4::lmer(age ~ sex + pdl1 + (1|cohort), data = pembrolizumab)
+  output <- rm_mvsum(model, tableOnly = TRUE, vif = FALSE)
+  covs <- c("Patient Sex", "Female", "Male", "PD L1 percent")
+  est <- c(NA, "Reference", "2.05 (-4.62, 8.73)", "-0.06 (-0.16, 0.04)")
+  names <- c("Covariate", "Estimate(95%CI)", "p-value", "N (obs|clusters)")
+  expect_equal(output[,1], covs)
+  expect_equal(output[,2], est)
+  expect_equal(names(output), names)
+})
+
+test_that("rm_mvsum handles lmer model with rank-deficient (dropped) coefficient", {
+  data("pembrolizumab")
+  pembrolizumab$sex2 <- pembrolizumab$sex
+  model <- suppressMessages(
+    lme4::lmer(age ~ sex + sex2 + pdl1 + (1|cohort), data = pembrolizumab)
+  )
+  # lme4 silently drops rank-deficient columns rather than keeping NA coefficients
+  output <- suppressWarnings(rm_mvsum(model, tableOnly = TRUE, vif = FALSE))
+  # The dropped variable (sex2) should not appear in the output
+  expect_false(any(grepl("sex2", output[,1])))
+  # The remaining estimates should still be correct
+  covs <- c("Patient Sex", "Female", "Male", "PD L1 percent")
+  est <- c(NA, "Reference", "2.05 (-4.62, 8.73)", "-0.06 (-0.16, 0.04)")
+  expect_equal(output[,1], covs)
+  expect_equal(output[,2], est)
+})
+
+test_that("rm_mvsum outputs lmer model with multiple random effects correctly", {
+  data(dietox, package = "geepack")
+  dietox$Cu <- as.factor(dietox$Cu)
+  model <- lme4::lmer(Weight ~ Cu + Time + (1|Pig) + (1|Litter), data = dietox)
+  output <- rm_mvsum(model, tableOnly = TRUE, vif = FALSE, whichp = "both")
+  covs <- c("Cu", "Cu000", "Cu035", "Cu175", "Time")
+  est <- c(NA, "Reference", "-0.59 (-4.09, 2.90)", "1.70 (-1.81, 5.21)",
+           "6.94 (6.88, 7.01)")
+  names <- c("Covariate", "Estimate(95%CI)", "p-value", "N (obs|clusters)")
+  expect_equal(output[,1], covs)
+  expect_equal(output[,2], est)
+  expect_equal(names(output), names)
+})
+
+#-------------------------------------------------------------------------------------
+# glmer (lme4) tests
+#-------------------------------------------------------------------------------------
+
+test_that("rm_mvsum outputs glmer binomial model with ORs correctly", {
+  data(cbpp, package = "lme4")
+  model <- lme4::glmer(cbind(incidence, size - incidence) ~ period + (1|herd),
+                        data = cbpp, family = binomial)
+  output <- rm_mvsum(model, tableOnly = TRUE, vif = FALSE, whichp = "both",
+                     showEvent = FALSE)
+  covs <- c("period", "1", "2", "3", "4")
+  est <- c(NA, "Reference", "0.37 (0.20, 0.67)", "0.32 (0.17, 0.61)",
+           "0.21 (0.09, 0.47)")
+  names <- c("Covariate", "OR(95%CI)", "p-value", "N (obs|clusters)")
+  expect_equal(output[,1], covs)
+  expect_equal(output[,2], est)
+  expect_equal(names(output), names)
+})
+
+test_that("rm_mvsum outputs glmer poisson model with RRs correctly", {
+  data(dietox, package = "geepack")
+  dietox$Cu <- as.factor(dietox$Cu)
+  set.seed(42)
+  dietox$count <- rpois(nrow(dietox), lambda = exp(0.5 + 0.01 * dietox$Time))
+  model <- suppressWarnings(
+    lme4::glmer(count ~ Cu + Time + (1|Pig), data = dietox, family = poisson)
+  )
+  output <- rm_mvsum(model, tableOnly = TRUE, vif = FALSE, whichp = "both")
+  covs <- c("Cu", "Cu000", "Cu035", "Cu175", "Time")
+  est <- c(NA, "Reference", "0.97 (0.86, 1.10)", "0.97 (0.86, 1.10)",
+           "1.01 (1.00, 1.03)")
+  names <- c("Covariate", "RR(95%CI)", "p-value", "N (obs|clusters)")
+  expect_equal(output[,1], covs)
+  expect_equal(output[,2], est)
+  expect_equal(names(output), names)
+})
+
+test_that("rm_mvsum outputs glmer.nb model with RRs correctly", {
+  set.seed(101)
+  dd <- data.frame(
+    y = rnbinom(100, mu = 4, size = 1),
+    x = rnorm(100),
+    g = factor(rep(1:10, each = 10))
+  )
+  model <- suppressWarnings(lme4::glmer.nb(y ~ x + (1|g), data = dd))
+  output <- rm_mvsum(model, tableOnly = TRUE, vif = FALSE)
+  covs <- c("x")
+  est <- c("0.92 (0.71, 1.20)")
+  names <- c("Covariate", "RR(95%CI)", "p-value", "N (obs|clusters)")
+  expect_equal(output[,1], covs)
+  expect_equal(output[,2], est)
+  expect_equal(names(output), names)
+})
 

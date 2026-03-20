@@ -2,16 +2,34 @@
 % Please edit documentation in R/helper.R
 \name{psthr}
 \alias{psthr}
-\title{Round and paste with parentheses}
+\alias{psthr0}
+\title{Round and paste with parentheses (smart formatting)}
 \usage{
-psthr(x, y = 2)
+psthr(x, y = 2, compact = FALSE)
+
+psthr0(x, digits = 2)
 }
 \arguments{
-\item{x}{a numeric vector}
+\item{x}{Numeric vector to round and format}
 
-\item{y}{integer corresponding to the number of digits to round by}
+\item{y}{Number of digits/significant figures (default 2)}
+
+\item{compact}{If TRUE, omit spaces for compact display (e.g. plots)}
+}
+\value{
+Character string with first element followed by remaining elements in parentheses
 }
 \description{
-Round and paste with parentheses
+Rounds numeric values and formats as "value (lower, upper)" with
+intelligent formatting:
+\itemize{
+\item Values with |x| < 0.01 or |x| > 1000: scientific notation
+\item Other values: standard rounding with trailing zeros
 }
-\keyword{helper}
+}
+\section{Functions}{
+\itemize{
+\item \code{psthr0()}: Compact version without spaces (for plots)
+
+}}
+\keyword{internal}
