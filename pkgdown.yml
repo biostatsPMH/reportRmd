@@ -1,0 +1,6 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  reportRmd: reportRmd.html
+last_built: 2026-03-20T19:57Z
