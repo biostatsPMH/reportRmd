@@ -31,14 +31,6 @@ Installing from CRAN:
 install.packages('reportRmd')
 ```
 
-You can install the development version of reportRmd from
-[GitHub](https://github.com/) with:
-
-``` r
-# install.packages("devtools")
-devtools::install_github("biostatsPMH/reportRmd", ref="development", build_vignettes = TRUE)
-```
-
 ## New Features (v0.1.3)
 
 - `rm_mvsum()` and `forestplotMV()` now support
@@ -49,16 +41,7 @@ devtools::install_github("biostatsPMH/reportRmd", ref="development", build_vigne
 
 ## Documentation
 
-For the CRAN version:
-
 [Online Documentation](https://biostatsPMH.github.io/reportRmd/)
-
-For the Development version run the following and select HTML on the
-webpage
-
-``` r
-browseVignettes("reportRmd")
-```
 
 ## Examples
 
@@ -623,7 +606,7 @@ baseline to cycle 3 - Increase from baseline</span>
 
 </table>
 
-### Switching between function
+### Switching between functions
 
 As of v0.1.3 you can now use `xvars` and `grp` as aliases for covs and
 maincov in `rm_covsum`.
@@ -1030,7 +1013,7 @@ Missing
 </table>
 
 ``` r
-rm_covsum(data=pembrolizumab, grp = 'sex',
+rm_compactsum(data=pembrolizumab, grp = 'sex',
 xvars=c('age','pdl1','change_ctdna_group'),
 show.tests=TRUE)
 ```
@@ -1067,7 +1050,12 @@ p-value
 
 <th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 
-StatTest
+Missing
+</th>
+
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+
+pTest
 </th>
 
 </tr>
@@ -1085,14 +1073,17 @@ StatTest
 
 <td style="text-align:right;">
 
+59.1 (49.5-68.7)
 </td>
 
 <td style="text-align:right;">
 
+56.6 (45.8-67.8)
 </td>
 
 <td style="text-align:right;">
 
+61.2 (52.0-69.4)
 </td>
 
 <td style="text-align:right;">
@@ -1102,71 +1093,12 @@ StatTest
 
 <td style="text-align:right;">
 
+0
+</td>
+
+<td style="text-align:right;">
+
 Wilcoxon Rank Sum
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Mean (sd)
-</td>
-
-<td style="text-align:right;">
-
-57.9 (12.8)
-</td>
-
-<td style="text-align:right;">
-
-56.9 (12.6)
-</td>
-
-<td style="text-align:right;">
-
-59.3 (13.1)
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Median (Min,Max)
-</td>
-
-<td style="text-align:right;">
-
-59.1 (21.1, 81.8)
-</td>
-
-<td style="text-align:right;">
-
-56.6 (34.1, 78.2)
-</td>
-
-<td style="text-align:right;">
-
-61.2 (21.1, 81.8)
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
 </td>
 
 </tr>
@@ -1180,19 +1112,27 @@ Median (Min,Max)
 
 <td style="text-align:right;">
 
+0.0 (0.0-10.0)
 </td>
 
 <td style="text-align:right;">
 
+0.5 (0.0-13.8)
 </td>
 
 <td style="text-align:right;">
 
+0.0 (0.0-4.5)
 </td>
 
 <td style="text-align:right;">
 
 0.76
+</td>
+
+<td style="text-align:right;">
+
+1
 </td>
 
 <td style="text-align:right;">
@@ -1204,118 +1144,25 @@ Wilcoxon Rank Sum
 
 <tr>
 
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Mean (sd)
-</td>
-
-<td style="text-align:right;">
-
-13.9 (29.2)
-</td>
-
-<td style="text-align:right;">
-
-15.0 (30.5)
-</td>
-
-<td style="text-align:right;">
-
-12.1 (27.3)
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Median (Min,Max)
-</td>
-
-<td style="text-align:right;">
-
-0 (0, 100)
-</td>
-
-<td style="text-align:right;">
-
-0.5 (0.0, 100.0)
-</td>
-
-<td style="text-align:right;">
-
-0 (0, 100)
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Missing
-</td>
-
-<td style="text-align:right;">
-
-1
-</td>
-
-<td style="text-align:right;">
-
-0
-</td>
-
-<td style="text-align:right;">
-
-1
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
 <td style="text-align:left;">
 
 <span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3</span>
+baseline to cycle 3 - Increase from baseline</span>
 </td>
 
 <td style="text-align:right;">
 
+40 (55%)
 </td>
 
 <td style="text-align:right;">
 
+21 (52%)
 </td>
 
 <td style="text-align:right;">
 
+19 (58%)
 </td>
 
 <td style="text-align:right;">
@@ -1325,103 +1172,12 @@ baseline to cycle 3</span>
 
 <td style="text-align:right;">
 
-Chi Sq
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Decrease from baseline
-</td>
-
-<td style="text-align:right;">
-
-33 (45)
-</td>
-
-<td style="text-align:right;">
-
-19 (48)
-</td>
-
-<td style="text-align:right;">
-
-14 (42)
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Increase from baseline
-</td>
-
-<td style="text-align:right;">
-
-40 (55)
-</td>
-
-<td style="text-align:right;">
-
-21 (52)
-</td>
-
-<td style="text-align:right;">
-
-19 (58)
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-</tr>
-
-<tr>
-
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-
-Missing
-</td>
-
-<td style="text-align:right;">
-
 21
 </td>
 
 <td style="text-align:right;">
 
-18
-</td>
-
-<td style="text-align:right;">
-
-3
-</td>
-
-<td style="text-align:right;">
-
-</td>
-
-<td style="text-align:right;">
-
+ChiSq
 </td>
 
 </tr>
@@ -2925,10 +2681,20 @@ estimates for comparison:
 ``` r
 require(ggplot2)
 #> Loading required package: ggplot2
+#> Warning: package 'ggplot2' was built under R version 4.4.3
 # Multivariable only
 forestplotMV(glm_fit)
+#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+#> ℹ Please use `linewidth` instead.
+#> ℹ The deprecated feature was likely used in the ggplot2 package.
+#>   Please report the issue at <https://github.com/tidyverse/ggplot2/issues>.
+#> This warning is displayed once per session.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
 #> Warning: Vectorized input to `element_text()` is not officially supported.
 #> ℹ Results may be unexpected or may change in future versions of ggplot2.
+#> Note: Very wide confidence intervals detected. X-axis capped for readability.
+#> `height` was translated to `width`.
 ```
 
 <img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
@@ -2941,6 +2707,8 @@ forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
 #> Note: Adjusted model N=73 may differ from unadjusted model N=93 due to missing data in covariates
 #> Warning: Vectorized input to `element_text()` is not officially supported.
 #> ℹ Results may be unexpected or may change in future versions of ggplot2.
+#> Note: Very wide confidence intervals detected. X-axis capped for readability.
+#> `height` was translated to `width`.
 ```
 
 <img src="man/figures/README-unnamed-chunk-11-2.png" width="100%" />
