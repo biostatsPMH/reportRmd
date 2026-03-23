@@ -392,7 +392,6 @@ sanitizestr <- function(str) {
 #'
 #' Wraps strings in LaTeX bold formatting (\\textbf{}).
 #'
-<<<<<<< Updated upstream
 #' @param strings Vector of strings to bold
 #' @return Vector of strings wrapped in \\textbf{}
 #' @keywords internal
@@ -402,14 +401,7 @@ lbld <- function(strings) {
     if (is.null(x)) return(x)
     if (is.na(x)) return(x)
     return(paste0("\\textbf{", x, "}"))
-  }, USE.NAMES = FALSE)
-=======
-#'@param strings A vector of strings to bold.
-#' @keywords helper
-hbld<-function(strings){sapply(strings,function(x){
-  if(is.null(x)) return(x)
-  if(is.na(x)) return(x)
-  return(paste('<span style="font-weight: bold;">',x,"</span>",sep=""))})}
+  }, USE.NAMES = FALSE)}
 
 
 #' Replace dollar signs with html for proper HTML output
@@ -423,7 +415,6 @@ rmds <- function(s){
      x <- gsub(">",'&gt;',x)
     gsub("[$]",'<span style="display: inline">&#36</span>',x)
   })
->>>>>>> Stashed changes
 }
 
 #' Bold strings for HTML output
