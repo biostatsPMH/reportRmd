@@ -106,3 +106,88 @@ rm_mvsum(lmer_fit)
 lme4::glm
 ```
 
+# Test predsum
+```{r}
+# my predsum tests ----
+set.seed(1)
+n <- 500
+true  <- rbinom(n, 1, 0.4)
+score <- plogis(-0.5 + 1.8 * true + rnorm(n))
+cut   <- 0.5
+
+predsum(true, score, cutoff = cut, tableOnly = TRUE, output = "epi")
+predsum(true, score, cutoff = cut, tableOnly = TRUE, output = "data-science")
+ps <- predsum(true, score, cutoff = cut, tableOnly = TRUE, output = "all")
+ps_sep <- predsum(true, score, cutoff = cut, tableOnly = TRUE,
+                  output = "all", ci_separate = TRUE,digits = 3)
+get <- \(stat) as.numeric(ps_sep[ps_sep$Statistic == stat, c("Estimate","lower","upper")])
+
+# AUC + Delong CI vs pROC
+# install.packages("pROC")
+library(pROC)
+r <- roc(true, score, quiet = TRUE)
+ci_proc <- as.numeric(ci.auc(r, method = "delong"))  # lower, auc, upper
+cbind(predsum = get("AUC"), pROC = ci_proc[c(2,1,3)])
+
+# Sensitivity / Specificity / PPV / NPV + Clopper-Pearson vs epiR
+# install.packages("epiR")
+library(epiR)
+pred_bin <- as.integer(score >= cut)
+# epiR wants a 2x2 with test+/test- as rows, disease+/- as cols
+tab <- table(factor(pred_bin, levels = c(1,0)),
+             factor(true,     levels = c(1,0)))
+er <- epi.tests(tab, conf.level = 0.95)
+er$detail |>
+  subset(statistic %in% c("se","sp","pv.pos","pv.neg","diag.ac","ap")) |>
+  print()
+# Compare to:
+rbind(
+  Sensitivity = get("Sensitivity"),
+  Specificity = get("Specificity"),
+  PPV         = get("PPV"),
+  NPV         = get("NPV"),
+  Accuracy    = get("Accuracy"),
+  Prevalence  = get("Prevalence")
+)
+
+# Brier score vs DescTools
+# install.packages("DescTools")
+DescTools::BrierScore(x = true, pred = score)
+get("Brier")[1]
+
+# F1 vs MLmetrics
+# install.packages("MLmetrics")
+MLmetrics::F1_Score(y_true = true, y_pred = pred_bin, positive = "1")
+get("F1")[1]
+
+# AUC-PR vs PRROC
+# install.packages("PRROC")
+library(PRROC)
+pr <- pr.curve(scores.class0 = score[true == 1],
+               scores.class1 = score[true == 0],
+               curve = FALSE)
+pr$auc.integral   # trapezoidal — matches predsum
+get("AUC-PR")[1]
+
+# Clopper-Pearson sanity vs binom.test
+tp_fn <- sum(true == 1)
+binom.test(sum(pred_bin == 1 & true == 1), tp_fn)$conf.int
+get("Sensitivity")[2:3]
+
+# Bootstrap mode — check it runs and AUC CI is close to Delong
+psb <- predsum(true, score, cutoff = cut, ci = "bootstrap",
+               nboot = 2000, tableOnly = TRUE, output = "all",
+               ci_separate = TRUE)
+psb[psb$Statistic == "AUC", ]
+
+# Factor input + custom positive
+tf <- factor(ifelse(true == 1, "case", "control"), levels = c("control","case"))
+predsum(tf, score, cutoff = cut, tableOnly = TRUE)   # positive = "case" by default
+predsum(tf, score, cutoff = cut, positive = "control", tableOnly = TRUE)
+
+# Dichotomous predictions — AUC / AUC-PR / Cut-off should be absent
+predsum(true, pred_bin, tableOnly = TRUE, output = "all")$Statistic
+
+
+```
+

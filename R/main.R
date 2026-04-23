@@ -3017,7 +3017,7 @@ plotuv <- function(
 }
 
 
-# Rmarkdown Reporting ----
+# Rmarkdown Reporting
 #' Print tables to PDF/Latex HTML or Word
 #'
 #' Output the table nicely to whatever format is appropriate. This is the output
@@ -3071,22 +3071,22 @@ plotuv <- function(
 #' @importFrom utils head
 #' @export
 outTable <- function(
-  tab,
-  row.names = NULL,
-  to_indent = numeric(0),
-  bold_headers = TRUE,
-  rows_bold = numeric(0),
-  bold_cells = NULL,
-  caption = NULL,
-  digits = getOption("reportRmd.digits", 2),
-  align,
-  applyAttributes = TRUE,
-  keep.rownames = FALSE,
-  nicenames = TRUE,
-  fontsize,
-  chunk_label,
-  format = NULL,
-  header_above = NULL
+    tab,
+    row.names = NULL,
+    to_indent = numeric(0),
+    bold_headers = TRUE,
+    rows_bold = numeric(0),
+    bold_cells = NULL,
+    caption = NULL,
+    digits = getOption("reportRmd.digits", 2),
+    align,
+    applyAttributes = TRUE,
+    keep.rownames = FALSE,
+    nicenames = TRUE,
+    fontsize,
+    chunk_label,
+    format = NULL,
+    header_above = NULL
 ) {
   # Input validation
   if (!inherits(tab, "data.frame")) {
@@ -3221,6 +3221,7 @@ outTable <- function(
       lapply(as.character) |>
       as.data.frame(stringsAsFactors = FALSE, check.names = FALSE)
     names(tab) <- col_names
+
     # Prepend header_above as a data row for Word output
     if (!is.null(header_above)) {
       spans <- as.integer(header_above)
@@ -3243,29 +3244,6 @@ outTable <- function(
         cbind(1, seq_along(orig_colnames)),
         bold_cells
       )
-      # hdr_row <- character(ncol(tab))
-      # pos <- 1
-      # for (i in seq_along(header_above)) {
-      #   span <- header_above[i]
-      #   label <- names(header_above)[i]
-      #   if (!is.null(label) && trimws(label) != "") {
-      #     hdr_row[pos] <- label
-      #   }
-      #   pos <- pos + span
-      # }
-      # hdr_df <- as.data.frame(as.list(hdr_row), stringsAsFactors = FALSE)
-      # names(hdr_df) <- col_names
-      # tab <- rbind(hdr_df, tab)
-      # # Shift row indices to account for the new first row
-      # to_indent <- to_indent + 1
-      # if (!is.null(bold_cells)) {
-      #   bold_cells[, 1] <- bold_cells[, 1] + 1
-      # }
-      # hdr_bold <- which(trimws(hdr_row) != "")
-      # if (length(hdr_bold) > 0) {
-      #   hdr_bold_cells <- cbind(rep(1, length(hdr_bold)), hdr_bold)
-      #   bold_cells <- rbind(hdr_bold_cells, bold_cells)
-      # }
     }
     tab[is.na(tab)] <- '&nbsp;'
     tab[tab == ''] <- '&nbsp;'
@@ -3301,7 +3279,6 @@ outTable <- function(
         tab[bold_cells] <- sapply(tab[bold_cells], function(x) lbld(x))
       }
     }
-<<<<<<< Updated upstream
 
     if (out_fmt == 'html') {
       names(tab) <- ltgt(names(tab))
@@ -3311,11 +3288,6 @@ outTable <- function(
       if (!is.null(bold_cells)) {
         tab[bold_cells] <- sapply(tab[bold_cells], function(x) hbld(x))
       }
-=======
-    if (out_fmt=='html') {
-      for (v in 1:ncol(tab)) tab[[v]] <- rmds(tab[[v]])
-      if (!is.null(bold_cells)) tab[bold_cells] <- sapply(tab[bold_cells],function(x) hbld(x))
->>>>>>> Stashed changes
     }
 
     # Determine if long table needed
@@ -3359,7 +3331,6 @@ outTable <- function(
     kout
   }
 }
-
 #' Combine two table columns into a single column with levels of one nested
 #' within levels of the other.
 #'
@@ -4059,7 +4030,7 @@ rm_uv_mv <- function(
 }
 
 
-# Survival Summaries --------------------------------------------------------------
+# Survival Summaries --
 
 #' Display event counts, expected event counts and logrank test of differences
 #'

@@ -40,5 +40,4 @@
 ^pkgdown\.yml$
 ^pkgdown$
 ^\.git$
-^R/\.claude$
 DOCUMENTATION_WORKFLOW.md
