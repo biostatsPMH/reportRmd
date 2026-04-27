@@ -1237,7 +1237,7 @@ covsum <- function(
           }
           sumCov <- try(round(summary(subdata[[cov]]), digits))
 
-          if (sumCov[4] == "NaN") {
+          if (is.nan(sumCov[4]) | is.na(sumCov[4])) {
             meansd <- ""
             mmm <- ""
             if (all.stats) {
@@ -1262,11 +1262,11 @@ covsum <- function(
                     origin = "1970-01-01"
                   ) ==
                     as.Date(
-                      floor(c(
+                      floor(as.numeric(c(
                         sumCov["Median"],
                         sumCov["1st Qu."],
                         sumCov["3rd Qu."]
-                      )),
+                      ))),
                       origin = "1970-01-01"
                     )
                 )
@@ -1308,11 +1308,11 @@ covsum <- function(
                     origin = "1970-01-01"
                   ) ==
                     as.Date(
-                      floor(c(
+                      floor(as.numeric(c(
                         sumCov["Median"],
                         sumCov["Min."],
                         sumCov["Max."]
-                      )),
+                      ))),
                       origin = "1970-01-01"
                     )
                 )
@@ -1357,7 +1357,7 @@ covsum <- function(
                       origin = "1970-01-01"
                     ) ==
                       as.Date(
-                        as.numeric(floor(c(sumCov["Min."], sumCov["Max."]))),
+                        floor(as.numeric(c(sumCov["Min."], sumCov["Max."]))),
                         origin = "1970-01-01"
                       )
                   )

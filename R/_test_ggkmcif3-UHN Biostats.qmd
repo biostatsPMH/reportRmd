@@ -197,29 +197,14 @@ Check dates for Tyler
  
 library(devtools)
 load_all()
- 
-tmp <- read.csv("../../tmp.csv");
+sink("test_output.txt") 
+tmp <- read.csv("/Users/lisaavery/Desktop/tmp.csv");
 tmp$date_cam <- as.Date(tmp$date_cam, format = c("%Y-%m-%d"));
-#tmp$date_cam <- format(tmp$date_cam, "%Y/%m/%d");
-#tmp$date_cam <- format(tmp$date_cam, "%B %d, %Y");
+rm_covsum(data = tmp, covs = c("date_cam"), percentage = c("col"), show.tests = F, pvalue = F, effSize = F, full = F, IQR = F, nicenames = F,tableOnly = T)
+tmp$date_cam <- format(tmp$date_cam, "%Y/%m/%d");
+rm_covsum(data = tmp, covs = c("date_cam"), percentage = c("col"), show.tests = F, pvalue = F, effSize = F, full = F, IQR = F, nicenames = F,tableOnly = T)
+tmp$date_cam <- format(tmp$date_cam, "%B %d, %Y");
 #str(tmp);
- 
-# Gives error
-rm_covsum(data = tmp, covs = c("date_cam"), percentage = c("col"), show.tests = F, pvalue = F, effSize = F, full = F, IQR = F, nicenames = F)
-
-Sys.setlocale("LC_TIME", "C")
-rm_covsum(data = tmp, covs = c("date_cam"), percentage = c("col"), show.tests = F, pvalue = F, effSize = F, full = F, IQR = F, nicenames = F)
-
-# Isolate the failing call ----
-sumCov <- summary(tmp$date_cam)
-print(sumCov)        # See what format the strings are in ----
-print(class(sumCov)) # Likely "table" or named character ----
-
-round(sumCov, 1)     # This is what blows up ----
-
-# Test the exact comparison that covsum makes ----
-sumCov <- summary(tmp$date_cam)
-sumCov[4] == "NaN"
-
+ sink()
 ```
 
