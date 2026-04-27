@@ -15,7 +15,6 @@
 #'cases with observations on the response and covariate. For gee models the data
 #'are re-ordered so that the ids appear sequentially and proper estimates are
 #'given.
-#' @seealso [uvsum2()] for the current implementation
 #' @return Same as `uvsum2()`
 #' @noRd
 uvsum <- function(..., markup, sanitize, forceWald) {

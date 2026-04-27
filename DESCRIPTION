@@ -32,7 +32,7 @@ Suggests:
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports: 
     aod,
     boot,
@@ -52,7 +52,7 @@ Imports:
     survival,
     tidyr,
     tidyselect
-Collate: 'imports.R' 'helper.R' 'model_registry.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'ggkmcif3.R' 'rm_mvsum2.R' 'deprecated.R' 
+Collate: 'imports.R' 'helper.R' 'model_registry.R' 'main.R' 'globals.R' 'data.R' 'lblCode.R' 'rm_compactsum.R' 'rm_uvsum2.R' 'autoreg.R' 'autosum.R' 'getVarLevels.R' 'ggkmcif3.R' 'rm_mvsum2.R' 'deprecated.R' 'predsum.R' 
 Depends: 
     R (>= 4.2)
 LazyData: no

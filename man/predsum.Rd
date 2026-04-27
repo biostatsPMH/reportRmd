@@ -72,13 +72,10 @@ Clopper-Pearson intervals are used for proportion-based metrics
 Delong variance estimator on the logit scale. Brier score, F1 and AUC-PR
 have no closed-form interval and are obtained by percentile bootstrap;
 when \code{ci = "clopper-pearson"} this is done automatically and a
-message is emitted. A single set of bootstrap resamples is shared across
-these metrics so the resulting intervals are jointly valid.
+message is emitted.
 
-When \code{predicted} is dichotomous, AUC, AUC-PR and the cut-off row are
-omitted. The Brier score is also omitted in that case: with 0/1
-predictions it reduces algebraically to \code{1 - accuracy} and therefore
-adds no information beyond what the accuracy row already reports.
+When \code{predicted} is dichotomous, AUC, AUC-PR, Brier and the cut-off row are
+omitted.
 }
 \examples{
 # Simulate true labels and model scores
