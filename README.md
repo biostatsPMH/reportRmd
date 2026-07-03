@@ -31,6 +31,15 @@ Installing from CRAN:
 install.packages('reportRmd')
 ```
 
+For users on Windows R 4.5+:
+
+Changes to the handling of Dates causes an error when summarising date
+variables in rm_covsum. Please install the development version.
+
+``` r
+ pak::pak("biostatsPMH/reportRmd@development", upgrade = TRUE)
+```
+
 ## New Features (v0.1.3)
 
 - `rm_mvsum()` and `forestplotMV()` now support
@@ -2671,7 +2680,7 @@ data=pembrolizumab)
 #> ℹ Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" alt="" width="100%" />
 
 ### Plotting odds ratios
 
@@ -2681,7 +2690,6 @@ estimates for comparison:
 ``` r
 require(ggplot2)
 #> Loading required package: ggplot2
-#> Warning: package 'ggplot2' was built under R version 4.4.3
 # Multivariable only
 forestplotMV(glm_fit)
 #> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
@@ -2697,7 +2705,7 @@ forestplotMV(glm_fit)
 #> `height` was translated to `width`.
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" alt="" width="100%" />
 
 ``` r
 
@@ -2711,7 +2719,7 @@ forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
 #> `height` was translated to `width`.
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-2.png" alt="" width="100%" />
 
 ### Plotting bivariate relationships
 
@@ -2726,7 +2734,7 @@ covs=c('age','cohort','pdl1','change_ctdna_group'))
 #> Boxplots not shown for categories with fewer than 20 observations.
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" alt="" width="100%" />
 
 ### Replacing variable names with labels in ggplot
 
@@ -2744,4 +2752,4 @@ ggplot(aes(x=hp, y=mpg, color=cyl, shape=cyl)) +
 replace_plot_labels(p)
 ```
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="" width="100%" />

@@ -6,7 +6,7 @@
 #' Internal function that maps model type, family, and GEE usage to the
 #' appropriate S3 class for autoreg() dispatch.
 #'
-#' @param type Model type (linear, logistic, poisson, negbin, ordinal, boxcox, coxph, crr)
+#' @param type Model type (linear, logistic, firth, poisson, negbin, ordinal, boxcox, coxph, crr)
 #' @param family Model family (gaussian, binomial, poisson, or NULL)
 #' @param gee Logical indicating if GEE model
 #' @return Character string of S3 class name
@@ -22,6 +22,8 @@ get_model_class <- function(type, family = NULL, gee = FALSE) {
          class = "rm_lm",     beta = "Estimate"),
     list(type = "logistic", family = "binomial", gee = FALSE,
          class = "rm_glm",    beta = "OR"),
+    list(type = "firth",    family = "binomial", gee = FALSE,
+         class = "rm_logistf", beta = "OR"),
     list(type = "poisson",  family = "poisson",  gee = FALSE,
          class = "rm_glm",    beta = "RR"),
     list(type = "negbin",   family = NA,         gee = FALSE,
@@ -98,6 +100,7 @@ get_beta_label <- function(model_class) {
   labels <- c(
     rm_lm = "Estimate",
     rm_glm = "OR",      # Default for rm_glm, context-dependent
+    rm_logistf = "OR",
     rm_negbin = "RR",
     rm_ordinal = "OR",
     rm_boxcox = "Estimate",

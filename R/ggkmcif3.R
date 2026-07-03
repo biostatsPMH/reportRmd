@@ -1046,7 +1046,7 @@ create_base_plot <- function(
     ggplot2::scale_x_continuous(
       paste0("\n", xlab),
       breaks = times,
-      limits = c(0, maxxval)
+      # limits = c(0, maxxval)
     ) +
     ggplot2::coord_cartesian(xlim = c(0, maxxlim)) +
     ggplot2::scale_y_continuous(paste0(ylab, "\n"), limits = ylim)

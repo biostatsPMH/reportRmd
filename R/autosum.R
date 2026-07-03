@@ -10,7 +10,15 @@
 #'without robust variances with and without each variable and a LRT is
 #'presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 #'Wald global p-values are returned. For negative binomial models a deviance
-#'test is used.
+#'test is used. For logistf models, global p-values are penalized likelihood
+#'ratio tests computed by re-fitting the model without each variable and
+#'comparing penalized likelihood ratios.
+#'
+#'For logistf models the displayed odds ratios use the profile penalized
+#'likelihood confidence limits stored in the model (or Wald limits, if the
+#'model was fit with pl=FALSE). Because logistf fixes the confidence level at
+#'the time of fitting, requesting a CIwidth different to 1-model$alpha will
+#'cause the model to be re-fit at the requested level.
 #'
 #'If the variance inflation factor is requested (VIF=TRUE) then a generalised VIF
 #'will be calculated in the same manner as the car package.
@@ -44,6 +52,18 @@
 #' m_summary(mv_binom, whichp = "both", for_plot = TRUE)}
 m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
                       for_plot = FALSE){
+
+  # logistf stores the design-matrix column names in $terms rather than a
+  # terms object. getVarLevels expects attr(model$terms, "term.labels"), so
+  # replace it with the formula-based terms object. The column names are
+  # retained in $coeff_names so vcov.logistf (below) can still label the
+  # variance-covariance matrix.
+  if (inherits(model, "logistf")) {
+    model$coeff_names <- model$terms
+    tt <- stats::terms(model)
+    if (is.null(tt)) tt <- stats::terms(stats::formula(model))
+    model$terms <- tt
+  }
 
   m_coeff <- coeffSum(model,CIwidth,digits)
   m_coeff$Est_CI <- apply(m_coeff[,c('est','lwr','upr')],MARGIN = 1,function(x) psthr(x,digits))
@@ -516,6 +536,46 @@ coeffSum.glm <- function(model,CIwidth=.95,digits=2) {
 }
 
 #' @export
+coeffSum.logistf <- function(model,CIwidth=.95,digits=2) {
+  est <- model$coefficients
+  # logistf stores confidence limits (profile penalized likelihood by
+  # default) computed at the alpha level fixed when the model was fit;
+  # confint.logistf ignores its level argument, so the model must be re-fit
+  # if a different CI width is requested
+  if (isTRUE(all.equal(1 - model$alpha, CIwidth))) {
+    lwr <- model$ci.lower
+    upr <- model$ci.upper
+  } else {
+    refit <- try(stats::update(model, alpha = 1 - CIwidth), silent = TRUE)
+    if (inherits(refit, "try-error")) {
+      refit <- try(stats::update(model, alpha = 1 - CIwidth,
+                                 data = stats::model.frame(model)),
+                   silent = TRUE)
+    }
+    if (!inherits(refit, "try-error")) {
+      lwr <- refit$ci.lower
+      upr <- refit$ci.upper
+    } else {
+      message("logistf model could not be re-fit at the requested CIwidth; Wald confidence intervals are reported.")
+      z_mult <- stats::qnorm(1 - (1 - CIwidth)/2)
+      se <- sqrt(diag(model$var))
+      lwr <- est - z_mult*se
+      upr <- est + z_mult*se
+    }
+  }
+  cs <- data.frame(
+    terms = names(est),
+    est = exp(est),
+    lwr = exp(lwr),
+    upr = exp(upr),
+    p_value = model$prob
+  )
+  rownames(cs) <- NULL
+  attr(cs,'estLabel') <- betaWithCI("OR",CIwidth)
+  return(cs)
+}
+
+#' @export
 coeffSum.polr <- function(model,CIwidth=.95,digits=2) {
   ms <- summary(model)$coefficients
   ci <- try(exp(confint(model,level = CIwidth)),silent = TRUE)
@@ -710,6 +770,52 @@ get_model_data.coxph <- function(model){
   return(df)
 }
 
+#' @export
+get_model_data.logistf <- function(model){
+  if (!is.null(model$model)) return(model$model)
+  df <- try(stats::model.frame(model$formula,
+                               data = eval(model$call$data,
+                                           environment(model$formula))),
+            silent = TRUE)
+  if (inherits(df,'try-error')) {
+    warning("Model data could not be extracted")
+    return(NULL)
+  }
+  return(df)
+}
+
+# logistf does not provide a model.frame method, and model.frame.default
+# fails when called with the extra arguments stats::model.matrix passes,
+# which blocks GVIF calculation. Returning the stored model frame fixes
+# this without altering behaviour elsewhere.
+#' @export
+model.frame.logistf <- function(formula, ...){
+  if (!is.null(formula$model)) return(formula$model)
+  stats::model.frame(formula$formula,
+                     data = eval(formula$call$data,
+                                 environment(formula$formula)))
+}
+
+# logistf does not supply a model.matrix method; the default cannot build the
+# design matrix because $terms is a character vector rather than a terms
+# object. GVIF requires both the design matrix (for the 'assign' attribute)
+# and vcov, so construct the matrix from the formula-based terms.
+#' @export
+model.matrix.logistf <- function(object, ...){
+  stats::model.matrix(stats::terms(object), stats::model.frame(object))
+}
+
+# logistf's own vcov method labels the matrix using object$terms, which fails
+# once $terms has been replaced with a terms object. Use the retained column
+# names (or the coefficient names) instead.
+#' @export
+vcov.logistf <- function(object, ...){
+  v <- object$var
+  nms <- if (!is.null(object$coeff_names)) object$coeff_names else names(object$coefficients)
+  colnames(v) <- rownames(v) <- nms
+  return(v)
+}
+
 # may need to add other methods
 
 # Extract event counts from a fitted model ---------------
@@ -759,6 +865,16 @@ get_event_counts.glm <- function(model){
   if (model$family$family=="binomial"|model$family$family=="quasibinomial"){
     return(model$y)
   }
+}
+
+#' @export
+get_event_counts.logistf <- function(model){
+  if (!is.null(model$y)) return(as.numeric(model$y))
+  md <- get_model_data(model)
+  if (is.null(md)) return(NULL)
+  y <- stats::model.response(md)
+  if (is.factor(y)) return(as.numeric(y)-1)
+  return(as.numeric(y))
 }
 
 #' @export
@@ -972,6 +1088,36 @@ gp.glm <- function(model, ...) {
   model <- stats::update(model, data = data)
   terms <- attr(model$terms, "term.labels")
   return(gp_from_drop1(model, terms, test = "LRT"))
+}
+
+#' @export
+gp.logistf <- function(model, ...) {
+  # Penalized likelihood ratio tests, computed as the difference in
+  # penalized likelihood ratios (PLR) between the full model and a re-fitted
+  # model excluding each variable. This is equivalent to
+  # anova(model, reduced, method = "PLR") in the logistf package, and is used
+  # in preference to drop1.logistf / logistftest, which restrict coefficients
+  # under the full-model penalty and can fail numerically.
+  terms <- attr(stats::terms(model), "term.labels")
+  gp_vals <- data.frame(var = terms, global_p = NA)
+  rownames(gp_vals) <- NULL
+  md <- get_model_data(model)
+  plr <- function(m) -2 * (m$loglik['null'] - m$loglik['full'])
+  msg <- FALSE
+  for (t in terms) {
+    reduced <- try(stats::update(model,
+                                 formula. = stats::as.formula(paste(". ~ . -", t)),
+                                 data = md, pl = FALSE),
+                   silent = TRUE)
+    if (!inherits(reduced, "try-error")) {
+      chisq <- max(plr(model) - plr(reduced), 0)
+      degf <- model$df - reduced$df
+      gp_vals$global_p[which(gp_vals$var == t)] <- 1 - stats::pchisq(chisq, degf)
+    } else msg <- TRUE
+  }
+  if (msg) message("Global p values could not be evaluated.")
+  attr(gp_vals, "global_p") <- "Penalized LRT"
+  return(gp_vals)
 }
 
 #' @export

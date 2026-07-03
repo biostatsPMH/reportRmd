@@ -35,6 +35,14 @@ Installing from CRAN:
 install.packages('reportRmd')
 ```
 
+For users on Windows R 4.5+:
+
+Changes to the handling of Dates causes an error when summarising date variables in rm_covsum. Please install the development version.
+
+``` r
+ pak::pak("biostatsPMH/reportRmd@development", upgrade = TRUE)
+```
+
 ## New Features (v0.1.3)
 
 - `rm_mvsum()` and `forestplotMV()` now support `include_unadjusted=TRUE` to display univariate (unadjusted) and multivariable (adjusted) estimates side-by-side

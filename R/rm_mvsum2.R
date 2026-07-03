@@ -147,6 +147,13 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     message("Unadjusted estimates are not supported for multiply imputed models.")
     include_unadjusted <- FALSE
   }
+  if (include_unadjusted && inherits(model, "logistf")) {
+    message("Unadjusted estimates are not supported for logistf models. ",
+            "Univariate models would be fit with ordinary (unpenalized) ",
+            "logistic regression, which is not comparable to the penalized ",
+            "multivariable estimates and may fail under separation.")
+    include_unadjusted <- FALSE
+  }
   if (include_unadjusted) {
     m_sum <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = TRUE)
     ma <- get_model_args(model)

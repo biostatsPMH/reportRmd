@@ -7,7 +7,7 @@
 get_model_class(type, family = NULL, gee = FALSE)
 }
 \arguments{
-\item{type}{Model type (linear, logistic, poisson, negbin, ordinal, boxcox, coxph, crr)}
+\item{type}{Model type (linear, logistic, firth, poisson, negbin, ordinal, boxcox, coxph, crr)}
 
 \item{family}{Model family (gaussian, binomial, poisson, or NULL)}
 

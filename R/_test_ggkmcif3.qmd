@@ -198,6 +198,7 @@ Check dates for Tyler
 library(devtools)
 load_all()
  
+library(reportRmd)
 tmp <- read.csv("../../tmp.csv");
 tmp$date_cam <- as.Date(tmp$date_cam, format = c("%Y-%m-%d"));
 #tmp$date_cam <- format(tmp$date_cam, "%Y/%m/%d");

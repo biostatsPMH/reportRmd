@@ -45,7 +45,15 @@ LRT is used to obtain a global p-value. For coxph models the model is re-run
 without robust variances with and without each variable and a LRT is
 presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned. For negative binomial models a deviance
-test is used.
+test is used. For logistf models, global p-values are penalized likelihood
+ratio tests computed by re-fitting the model without each variable and
+comparing penalized likelihood ratios.
+
+For logistf models the displayed odds ratios use the profile penalized
+likelihood confidence limits stored in the model (or Wald limits, if the
+model was fit with pl=FALSE). Because logistf fixes the confidence level at
+the time of fitting, requesting a CIwidth different to 1-model$alpha will
+cause the model to be re-fit at the requested level.
 
 If the variance inflation factor is requested (VIF=TRUE) then a generalised VIF
 will be calculated in the same manner as the car package.
