@@ -97,7 +97,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
     hdr_rw <- sort(which(cs$var %in% v))[1]
     cs <- dplyr::add_row(cs,.before = hdr_rw,var=v,header=TRUE)
   }
-  for (i in 1:nrow(cs)) {
+  for (i in seq_len(nrow(cs))) {
     if (is.na(cs[i, "terms"]) & !is.na(cs[i, "header"])) {
       cs[i, "terms"] <- cs[i, "var"]
     }
@@ -142,7 +142,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
       }
     }
   }
-  for (i in 1:nrow(cs)) {
+  for (i in seq_len(nrow(cs))) {
     if (!is.na(cs[i, "header"])) {
       v <- cs[i, "var"]
       n <- sum(cs[which(cs[, "var"] == v), "n"], na.rm = TRUE)
@@ -187,7 +187,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   }
 
   var_col <- c()
-  for (i in 1:nrow(cs)) {
+  for (i in seq_len(nrow(cs))) {
     if (!is.na(cs[i, "ref"]) & cs[i, "ref"] == TRUE) {
       cs[i, "Est_CI"] <- "Reference"
     }
@@ -203,7 +203,7 @@ m_summary <- function(model,CIwidth=.95,digits=2,vif = FALSE,whichp="levels",
   }
   cs <- cbind(data.frame(Variable = var_col), cs)
   if (whichp == "both" & ("global_p" %in% names(cs))) {
-    for (i in 1:nrow(cs)) {
+    for (i in seq_len(nrow(cs))) {
       if (!is.na(cs[i, "header"])) {
         cs[i, "p_value"] <- cs[i, "global_p"]
       }
@@ -285,17 +285,16 @@ process_ci <- function(ci_string, digits = 2) {
 #' @keywords internal
 #' @export
 coeffSum <- function(model,CIwidth=.95,digits=2) {
-  CIwidth=CIwidth;digits=digits
   UseMethod("coeffSum",model)
 }
 
 #' @export
 coeffSum.lme <- function(model,CIwidth=.95,digits=2) {
   ms <- data.frame(summary(model)$tTable)
-  pt <- 1-(1-CIwidth)/2
+  p_lvl <- 1-(1-CIwidth)/2
   ci <- data.frame(terms=rownames(ms),
-                   lwr=ms$Value-qt(pt,df=ms$DF)*ms$Std.Error,
-                   upr=ms$Value+qt(pt,df=ms$DF)*ms$Std.Error)
+                   lwr=ms$Value-qt(p_lvl,df=ms$DF)*ms$Std.Error,
+                   upr=ms$Value+qt(p_lvl,df=ms$DF)*ms$Std.Error)
   cs <- data.frame(
     terms=rownames(ms),
     est=ms$Value,
@@ -318,8 +317,8 @@ coeffSum.lmerMod <- function(model,CIwidth=.95,digits=2) {
   message("lmerTest package not installed. Using Wald z-based p-values ",
           "(assuming normal approximation for fixed effects).")
   ms <- data.frame(summary(model)$coefficients)
-  pt <- 1-(1-CIwidth)/2
-  z_mult <- qnorm(pt)
+  p_lvl <- 1-(1-CIwidth)/2
+  z_mult <- qnorm(p_lvl)
   cs <- data.frame(
     terms=rownames(ms),
     est=ms$Estimate,
@@ -336,8 +335,8 @@ coeffSum.lmerMod <- function(model,CIwidth=.95,digits=2) {
 #' @export
 coeffSum.glmerMod <- function(model,CIwidth=.95,digits=2) {
   ms <- data.frame(summary(model)$coefficients)
-  pt <- 1-(1-CIwidth)/2
-  z_mult <- qnorm(pt)
+  p_lvl <- 1-(1-CIwidth)/2
+  z_mult <- qnorm(p_lvl)
   fam <- model@resp$family
   if (fam$link %in% c("logit","log")){
     cs <- data.frame(
@@ -372,13 +371,13 @@ coeffSum.glmerMod <- function(model,CIwidth=.95,digits=2) {
 #' @export
 coeffSum.lmerModLmerTest <- function(model,CIwidth=.95,digits=2) {
   ms <- data.frame(summary(model)$coefficients)
-  pt <- 1-(1-CIwidth)/2
+  p_lvl <- 1-(1-CIwidth)/2
   df <- sw_df(model)
   ms$t_value <- ms$Estimate/ms$Std..Error
-  ms$p_value <- 2*pt(abs(ms$t_value),df,lower.tail=FALSE)
+  ms$p_value <- 2*stats::pt(abs(ms$t_value),df,lower.tail=FALSE)
   ci <- data.frame(terms=rownames(ms),
-                   lwr=ms$Estimate-qt(pt,df)*ms$Std..Error,
-                   upr=ms$Estimate+qt(pt,df)*ms$Std..Error)
+                   lwr=ms$Estimate-qt(p_lvl,df)*ms$Std..Error,
+                   upr=ms$Estimate+qt(p_lvl,df)*ms$Std..Error)
   cs <- data.frame(
     terms=rownames(ms),
     est=ms$Estimate,

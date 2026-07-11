@@ -67,7 +67,7 @@ rm_mvsum(lm(y ~ x1 + x2 + x3, data = testdata), include_unadjusted = TRUE)
 ```
 
 ```{r}
-library(reportRmd)
+
 data("pembrolizumab")
 
 # Model with NA coefficients (sex:cohort has empty cells causing aliasing)
@@ -103,7 +103,7 @@ library(lme4)
 lmer_fit <- lme4::lmer(age ~ sex + pdl1 + (1|cohort), data = pembrolizumab)
 summary(lmer_fit)
 rm_mvsum(lmer_fit)
-lme4::glm
+
 ```
 
 # Test predsum
@@ -198,7 +198,7 @@ Check dates for Tyler
 library(devtools)
 load_all()
  
-library(reportRmd)
+
 tmp <- read.csv("../../tmp.csv");
 tmp$date_cam <- as.Date(tmp$date_cam, format = c("%Y-%m-%d"));
 #tmp$date_cam <- format(tmp$date_cam, "%Y/%m/%d");

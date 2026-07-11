@@ -14,13 +14,11 @@
 xcn <- function(v) {
   sapply(v, function(x) {
     col_head <- toupper(x)
-    if (nchar(col_head) > 1) {
-      l1 <- substr(col_head, 1, 1)
-      l2 <- substr(col_head, 2, 2)
-      rtn <- 26 * which(LETTERS == l1) + which(LETTERS == l2)
-    } else {
-      rtn <- which(LETTERS == col_head)
-    }
+    letters_vec <- strsplit(col_head, "")[[1]]
+    vals <- match(letters_vec, LETTERS)
+    # bijective base-26: A=1, ..., Z=26, AA=27, ...
+    rtn <- 0
+    for (val in vals) rtn <- rtn * 26 + val
     return(rtn)
   })
 }
@@ -227,7 +225,7 @@ covnm <- function(betanames, call) {
 #' @keywords internal
 #' @noRd
 alleql <- function(x, y) {
-  !any((x == y) == FALSE)
+  isTRUE(all.equal(x, y))
 }
 
 #' Group sequential elements with same values
@@ -403,19 +401,6 @@ lbld <- function(strings) {
     return(paste0("\\textbf{", x, "}"))
   }, USE.NAMES = FALSE)}
 
-
-#' Replace dollar signs with html for proper HTML output
-#'
-#'@param s a character vector
-#'@keywords helper
-rmds <- function(s){
-  sapply(s,function(x){
-    x <- gsub("<0.001",'&lt;0.001',x)
-     x <- gsub("<",'&lt;',x)
-     x <- gsub(">",'&gt;',x)
-    gsub("[$]",'<span style="display: inline">&#36</span>',x)
-  })
-}
 
 #' Bold strings for HTML output
 #'
@@ -884,7 +869,7 @@ lpvalue2 <- function(x, digits) {
   }
 }
 
-.extract_ggplot_colors <- function(p, grp.levels){
+.extract_ggplot_colours <- function(p, grp.levels){
   g <- ggplot2::ggplot_build(p)
   .cols <- unlist(unique(g$data[[1]]["colour"]))
   if(!is.null(grp.levels)){
@@ -948,7 +933,7 @@ survfit_confint <- function(p, se, logse=TRUE, conf.type, conf.int=0.95,
 }
 
 
-color_palette_surv_ggplot <- function(length){
+colour_palette_surv_ggplot <- function(length){
   if(length==1) return("black")
   if(length==2) return(c("#D53E4F","#3288BD"))
   if(length==3) return(c("#D53E4F","#ABDDA4","#3288BD"))
@@ -962,11 +947,11 @@ color_palette_surv_ggplot <- function(length){
   if(length>10) {message("10 colours maximum in default")}
   return(rep(c("black","#9E0142","#D53E4F","#F46D43","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD","#5E4FA2"),length.out=length))
 }
-
+color_palette_surv_ggplot <- colour_palette_surv_ggplot
 
 # (forestplot2) ---------------------------------------------------------
 format_glm = function(glm_fit,conf.level = 0.95,digits=c(2,3),orderByRisk=TRUE){
-  if (! class(glm_fit)[1] %in% c('glm','geeglm','polr')) stop('Only objects of class glm, geeglm and polr are accepted.')
+  if (!inherits(glm_fit, c('glm','geeglm','polr'))) stop('Only objects of class glm, geeglm and polr are accepted.')
 
   #extracting ORs and p values
   Z = stats::qnorm(1-(1-conf.level)/2)
@@ -974,7 +959,7 @@ format_glm = function(glm_fit,conf.level = 0.95,digits=c(2,3),orderByRisk=TRUE){
   tab <- cbind(variable= rownames(tab),tab)
   rownames(tab) <- NULL
 
-  if (class(glm_fit)[1] %in% c("glm", "geeglm")){
+  if (inherits(glm_fit, c("glm", "geeglm"))){
     names(tab) =  c("variable","estimate",  "std.error" ,"statistic", "p.value")
     tab = tab[-which(tab$variable=='(Intercept)'),]
   }  else {
@@ -1019,12 +1004,6 @@ format_glm = function(glm_fit,conf.level = 0.95,digits=c(2,3),orderByRisk=TRUE){
     tab$estimate.label = ifelse(is.na(tab$estimate), '1.0 (Reference)',
                                 paste0(niceNum(tab$estimate), ' (',niceNum(tab$conf.low),', ',niceNum(tab$conf.high),')'))
 
-    varOrders <- tapply(X = tab$var.order,
-                        INDEX=tab$var.name,
-                        FUN = function(x) min(x,na.rm=TRUE))
-    varOrderLookup <- data.frame(var.name=names(varOrders),var.order=varOrders)
-
-
     varOrderLookup <- stats::na.omit(tab[,c("var.name","var.order")])
 
     for (i in 1:nrow(varOrderLookup)){
@@ -1054,7 +1033,6 @@ getvarname = function(betaname){
 }
 
 lbl_count <- function(y){
-  q75 <- summary(y)[5]
   return(data.frame(y=max(y),  label=paste('n =',length(y))))
 }
 
@@ -1106,7 +1084,7 @@ reportRx_pal <- function(
   function(n) {
     if (n>10) warning('Ten colour maximum, colours will be recycled.')
 
-    colour_list <- color_palette_surv_ggplot(n)
+    colour_list <- colour_palette_surv_ggplot(n)
 
     colour_list <- unname(unlist(colour_list))
     if (direction >= 0) colour_list else rev(colour_list)

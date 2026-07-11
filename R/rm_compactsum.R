@@ -282,7 +282,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     if (inherits(data[[xvar]],"haven_labelled")){
       lbl <- attr(data[[xvar]],"labels")
       attributes(data[[xvar]]) <- NULL
-      newx <- factor(data[[xvar]],levels=lbl,labels=names(lbl))
+      data[[xvar]] <- factor(data[[xvar]],levels=lbl,labels=names(lbl))
     }
   }
   if (dt_msg) message("no statistical tests will be applied to date variables, date variables will be summarised with median")
@@ -484,7 +484,6 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
 
   if (!missing(grp)) {
     group_var <- data[[grp]]
-    grp <- as.factor(grp)
     n_levels <- nlevels(group_var)
     grp_levels <- levels(group_var)
     columns <- lapply(as.list(grp_levels), binary_xvar_helper, data = data, xvar = xvar, grp = grp, digits.cat = digits.cat, percentage = percentage)
@@ -795,7 +794,6 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
 
   if (!missing(grp)) {
     group_var <- temp[[grp]]
-    grp <- as.factor(grp)
     n_levels <- nlevels(group_var)
     grp_levels <- levels(group_var)
     columns <- lapply(as.list(grp_levels), binary_xvar_helper, temp, xvar = xvar, grp = grp, digits.cat = digits.cat, percentage = percentage)
@@ -827,7 +825,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
 }
 
 assign_method <- function(data,xvar,use_mean){
-  if (grepl(class(data[[xvar]]),"factor") & length(unique(na.omit(data[[xvar]]))) <= 2) {
+  if (inherits(data[[xvar]], "factor") & length(unique(na.omit(data[[xvar]]))) <= 2) {
     return("rm_two_level")
   }
   else if (inherits(data[[xvar]],"factor")) {
@@ -844,7 +842,7 @@ assign_method <- function(data,xvar,use_mean){
       return("rm_median")
     }
     else {
-      if (grepl(class(use_mean), "character")) {
+      if (is.character(use_mean)) {
         if (xvar %in% use_mean) {
           return("rm_mean")
         }
@@ -852,7 +850,7 @@ assign_method <- function(data,xvar,use_mean){
           return("rm_median")
         }
       }
-      else if (grepl(class(use_mean), "logical")) {
+      else if (is.logical(use_mean)) {
         if (identical(use_mean, TRUE)) {
           return("rm_mean")
         }
@@ -1307,8 +1305,6 @@ calc_omegaSq <- function(anova_test, CIwidth = 0.95){
   output = c("omega squared"=omega,lower=b_ci$basic[4],upper=b_ci$basic[5])
   return(output)
 }
-
-pstprn <- reportRmd:::pstprn
 
 format_delta <- function(x,digits=2){
   out <- sapply(x, function(x){

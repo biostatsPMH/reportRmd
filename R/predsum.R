@@ -312,14 +312,8 @@ predsum <- function(true,
   }
 
   # Render or return
-  if (!tableOnly) {
-    if (!requireNamespace("reportRmd", quietly = TRUE)) {
-      stop("Package 'reportRmd' required when tableOnly = FALSE.")
-    }
-    print(reportRmd::outTable(df))
-    return(invisible(df))
-  }
-  df
+  if (tableOnly) return(df)
+  outTable(df)
 }
 
 

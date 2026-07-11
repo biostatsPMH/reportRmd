@@ -62,9 +62,11 @@ excelCol <- function(...) {
 #' ## Go back to the column names
 #' excelColLetters(colIndices)
 excelColLetters <- function(columnIndices) {
-  if (!is.integer(as.integer(columnIndices))) {
-    stop('columnIndices must be a vector of numeric column indices')
+  suppressWarnings(idx <- as.integer(columnIndices))
+  if (any(is.na(idx)) || any(idx < 1)) {
+    stop('columnIndices must be a vector of positive integer column indices')
   }
+  columnIndices <- idx
   out <- sapply(columnIndices, function(x) {
     rmd <- x %% 26
     quo <- x %/% 26
@@ -252,7 +254,7 @@ geoR_boxcoxfit <- function(
   variance.y <- (temp^((2 / lambda.fit[1]) - 2)) * sigmasq
   if (beta.size == 1) {
     fitted.y <- unique(fitted.y)
-    variance.y <- unique(fitted.y)
+    variance.y <- unique(variance.y)
   }
   beta <- drop(beta)
   if (length(beta) > 1) {
@@ -365,21 +367,6 @@ covsum_cramers_v <- function(x, y, N) {
     ),
     silent = TRUE
   )
-}
-
-# Internal helper: format proportion strings for covsum
-# Takes a numeric vector of counts and digits.cat, returns
-# character vector like "count (prop%)"
-# @keywords internal
-# @noRd
-covsum_format_prop <- function(counts, digits.cat) {
-  counts <- as.numeric(counts)
-  prop <- round(counts / sum(counts), 2 + digits.cat) * 100
-  prop <- sapply(prop, function(x) {
-    if (!is.nan(x)) x else 0
-  })
-  prop.fmt <- sprintf(paste0("%.", digits.cat, "f"), prop)
-  paste(counts, " (", prop.fmt, ")", sep = "")
 }
 
 # Internal helper: prepare and transform data/settings for covsum
@@ -503,232 +490,6 @@ covsum_prepare <- function(
     sanitizestr = sanitizestr,
     nicename = nicename
   )
-}
-
-# Internal helper: compute p-value and effect size for categorical covariates
-# @keywords internal
-# @noRd
-covsum_cat_pvalue <- function(
-  data,
-  maincov,
-  cov,
-  excludeLevel,
-  N,
-  testcat,
-  missing_testcat,
-  lowcounts,
-  effSize,
-  pvalue,
-  lpvalue
-) {
-  p <- NULL
-  p_type <- NULL
-  e <- NULL
-  e_type <- NULL
-
-  if (pvalue) {
-    pdata = data[!(data[[cov]] %in% excludeLevel), ]
-    lowcounts <- sum(
-      table(pdata[[maincov]], pdata[[cov]], exclude = excludeLevel) < 5
-    ) >
-      0
-    if (!missing_testcat & testcat == "Chi-squared" & lowcounts) {
-      warning(
-        paste(
-          "Low counts are present in",
-          cov,
-          "variable consider Fisher's test."
-        ),
-        call. = FALSE
-      )
-    }
-    if ((missing_testcat & lowcounts) | testcat == "Fisher") {
-      p_type <- "Fisher Exact"
-      p <- try(
-        stats::fisher.test(pdata[[maincov]], pdata[[cov]])$p.value,
-        silent = TRUE
-      )
-      if (effSize) {
-        e_type <- "Cramer's V"
-        e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
-      }
-      if (is.error(p)) {
-        message(
-          "Using MC sim. Use set.seed() prior to function for reproducible results."
-        )
-        p <- try(
-          stats::fisher.test(
-            pdata[[maincov]],
-            pdata[[cov]],
-            simulate.p.value = TRUE
-          )$p.value,
-          silent = TRUE
-        )
-        p_type <- "MC sim"
-        if (effSize) {
-          e_type <- "Cramer's V"
-          e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
-        }
-      }
-    } else {
-      p_type = "Chi Sq"
-      p = try(
-        stats::chisq.test(pdata[[maincov]], pdata[[cov]])$p.value,
-        silent = TRUE
-      )
-      if (effSize) {
-        e_type <- "Cramer's V"
-        e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
-      }
-    }
-    if (is.error(p)) {
-      p <- NA
-    }
-    p <- lpvalue(p)
-    if (effSize) {
-      if (is.error(e)) {
-        e <- NA
-      }
-      e <- lpvalue(e)
-    }
-  }
-
-  list(p = p, p_type = p_type, e = e, e_type = e_type)
-}
-
-# Internal helper: compute p-value and effect size for continuous covariates
-# @keywords internal
-# @noRd
-covsum_cont_pvalue <- function(
-  data,
-  maincov,
-  cov,
-  N,
-  testcont,
-  effSize,
-  pvalue,
-  lpvalue
-) {
-  p <- NULL
-  p_type <- NULL
-  e <- NULL
-  e_type <- NULL
-
-  if (pvalue) {
-    if (testcont[1] == "rank-sum test") {
-      if (length(unique(data[[maincov]])) == 2) {
-        p_type = "Wilcoxon Rank Sum"
-        p <- try(
-          stats::wilcox.test(
-            data[[cov]] ~
-              data[[maincov]]
-          )$p.value,
-          silent = TRUE
-        )
-        if (effSize) {
-          e_type <- "Wilcoxon r"
-          e <- try(
-            ifelse(
-              is.finite(qnorm(
-                stats::wilcox.test(
-                  data[[cov]] ~ data[[maincov]],
-                  data = data
-                )$p.value /
-                  2
-              )),
-              abs(qnorm(
-                stats::wilcox.test(
-                  data[[cov]] ~ data[[maincov]],
-                  data = data
-                )$p.value /
-                  2
-              )) /
-                sqrt(N),
-              abs(qnorm(0.0001 / 2)) / sqrt(N)
-            ),
-            silent = TRUE
-          )
-        }
-      } else {
-        p_type = "Kruskal Wallis"
-        p <- try(
-          stats::kruskal.test(
-            data[[cov]] ~
-              data[[maincov]]
-          )$p.value,
-          silent = TRUE
-        )
-        if (effSize) {
-          e_type <- "Eta sq"
-          e <- try(
-            summary(stats::aov(data[[cov]] ~ data[[maincov]]))[[1]]$`Sum Sq`[
-              1
-            ] /
-              (summary(stats::aov(data[[cov]] ~ data[[maincov]]))[[1]]$`Sum Sq`[
-                1
-              ] +
-                summary(stats::aov(data[[cov]] ~ data[[maincov]]))[[
-                  1
-                ]]$`Sum Sq`[2])
-          )
-        }
-      }
-    } else {
-      if (length(unique(data[[maincov]])) == 2) {
-        p_type = "t-test"
-        p <- try(
-          stats::t.test(data[[cov]] ~ data[[maincov]])$p.value,
-          silent = TRUE
-        )
-        if (effSize) {
-          e_type <- "Cohen's d"
-          e <- try(
-            abs(
-              2 *
-                stats::t.test(data[[cov]] ~ data[[maincov]])$statistic /
-                sqrt(N)
-            ),
-            silent = TRUE
-          )
-        }
-      } else {
-        p_type = "ANOVA"
-        p <- try(
-          stats::anova(stats::lm(
-            data[[cov]] ~
-              data[[maincov]]
-          ))[5][[1]][1],
-          silent = TRUE
-        )
-        if (effSize) {
-          e_type <- "Eta sq"
-          e <- try(
-            summary(stats::aov(data[[cov]] ~ data[[maincov]]))[[1]]$`Sum Sq`[
-              1
-            ] /
-              (summary(stats::aov(data[[cov]] ~ data[[maincov]]))[[1]]$`Sum Sq`[
-                1
-              ] +
-                summary(stats::aov(data[[cov]] ~ data[[maincov]]))[[
-                  1
-                ]]$`Sum Sq`[2])
-          )
-        }
-      }
-    }
-    if (is.error(p)) {
-      p <- NA
-    }
-    p <- lpvalue(p)
-    if (effSize) {
-      if (is.error(e)) {
-        e <- NA
-      }
-      e <- lpvalue(e)
-    }
-  }
-
-  list(p = p, p_type = p_type, e = e, e_type = e_type)
 }
 
 #' Get covariate summary dataframe
@@ -1688,7 +1449,7 @@ order_forest_data <- function(tab) {
   # Determine ordering across variables
   var_order <- order_tab |>
     dplyr::group_by(variable) |>
-    dplyr::summarise(max_est = max(estimate, na.rm = TRUE), .groups = "drop") |>
+    dplyr::summarise(max_est = suppressWarnings(max(estimate, na.rm = TRUE)), .groups = "drop") |>
     dplyr::arrange(dplyr::desc(max_est)) |>
     dplyr::mutate(var_order = dplyr::row_number())
 
@@ -2166,6 +1927,8 @@ build_forest_ggplot <- function(
     "a",
     ifelse(tab$x.val == 1, "b", "c")
   )
+  # Non-estimable estimates (NA) have no defined side; treat as neutral
+  tab$colour[is.na(tab$colour)] <- "b"
 
   if (length(colours) == 1) {
     colours <- c(a = "#006B3C", b = "black", c = "#FF0800")
@@ -2516,8 +2279,7 @@ build_log_scale <- function(tab, xlim, nxTicks) {
 #'  used. If use_labels=FALSE the variable names will be used.
 #'@keywords plot
 #'@returns a list containing plots for each variable in covs
-#'@importFrom ggplot2 ggplot aes_string geom_boxplot geom_point geom_text
-#'  stat_summary scale_x_discrete stat theme labs .data
+#'@importFrom ggplot2 ggplot aes_string geom_boxplot geom_point geom_text stat_summary scale_x_discrete stat theme labs .data
 #'@importFrom ggpubr ggarrange
 #'@importFrom stats median
 #'@export
@@ -2770,7 +2532,7 @@ plotuv <- function(
               p <- p +
                 geom_jitter(
                   data = black_points,
-                  color = "black",
+                  colour = "black",
                   size = 0.4,
                   alpha = 0.9
                 )
@@ -2950,7 +2712,7 @@ plotuv <- function(
               p <- p +
                 geom_jitter(
                   data = black_points,
-                  color = "black",
+                  colour = "black",
                   size = 0.4,
                   alpha = 0.9
                 )

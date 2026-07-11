@@ -136,16 +136,17 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
                      reflevel=NULL,returnModels=FALSE,fontsize,
                      forceWald = FALSE){
 
+  if (missing(data)) stop('data is a required argument')
+  if (missing(covs)) stop('covs is a required argument')
+  if (missing(response)) stop('response is a required argument')
+
   response_var <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
                                           allow_rename = FALSE)
   response <- names(response_var)
   x_vars <- tidyselect::eval_select(expr = enquo(covs), data = data[unique(names(data))],
                                     allow_rename = FALSE)
   x_vars <- names(x_vars)
-
-  if (missing(data)) stop('data is a required argument')
-  if (missing(covs)) stop('covs is a required argument') else covs <- unique(x_vars)
-  if (missing(response)) stop('response is a required argument')
+  covs <- unique(x_vars)
 
   if (!all(response %in% names(data))) stop("response is not a variable in data")
   if (!all(covs %in% names(data))) stop(paste("The following covs not found in data:",setdiff(covs,names(data))))
@@ -167,7 +168,7 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     for (var in empty) {
       assign(var, formals()[[var]])
     }
-    warning(paste0("empty string arguments "), paste(empty, collapse = ", "), " will be ignored")
+    warning(paste0("empty string arguments ", paste(empty, collapse = ", "), " will be ignored"))
   }
 
   if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
@@ -180,11 +181,11 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     strata <- formals()[["strata"]]
     argList[["strata"]] <- formals()[["strata"]]
   }
-  if (is.na(strata)) {
+  if (length(strata) == 1 && is.na(strata)) {
     strata <- formals()[["strata"]]
     argList[["strata"]] <- formals()[["strata"]]
   }
-  if (strata==1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
+  if (length(strata) == 1 && strata == 1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
   if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
 
   argList$covs <- x_vars
@@ -226,9 +227,6 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
       covs <- setdiff(covs,v)
     }
   }
-  if (is.null(strata))
-    if (is.na(strata)) assign(argList[["strata"]], formals()[["strata"]])
-
   # remove arguments not used by uvsum2
   valid_args <- names(formals(uvsum2))
   argList <- argList[names(argList) %in% valid_args]
@@ -363,7 +361,6 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     } else {
       if (!inherits(data[[response[1]]],"numeric")) stop('Response variable must be numeric')
       type <- "linear"
-      beta <- "Estimate"
       family='gaussian'
     }
   }

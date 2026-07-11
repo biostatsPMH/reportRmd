@@ -1797,7 +1797,7 @@ ggkmcif2 <- function(
     } else {
       2
     }
-    col <- color_palette_surv_ggplot(col_length)
+    col <- colour_palette_surv_ggplot(col_length)
   }
 
   # Initialize common variables
@@ -2281,24 +2281,11 @@ ggkmcif2Parameters <- function(
 
 # Additional Required Functions
 
-#' Function to extract ggplot colours
-#' @noRd
-.extract_ggplot_colours <- function(p, grp.levels) {
-  # Extract colours from ggplot object
-  g <- ggplot_build(p)
-  colours <- unique(g$data[[1]]$colour)
-  if (length(colours) < length(grp.levels)) {
-    colours <- rep(colours, length.out = length(grp.levels))
-  }
-  colours[1:length(grp.levels)]
-}
-
-#' Function to set large dash as y-axis text
-#' @noRd
-.set_large_dash_as_ytext <- function(plot) {
-  # Handle large dash formatting for y-axis text
-  plot + ggplot2::theme(axis.text.y = ggplot2::element_text(family = "mono"))
-}
+# Note: .extract_ggplot_colours() and .set_large_dash_as_ytext() are defined
+# once in helper.R and reused here. Previous duplicate definitions in this file
+# diverged from those (the .set_large_dash_as_ytext copy used family = "mono"
+# rather than enlarging the dash), so their effect depended on file load order.
+# They have been removed to keep a single, unambiguous definition.
 
 calculate_text_height_base <- function(
   text = "Ag",

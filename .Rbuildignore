@@ -41,6 +41,6 @@
 ^pkgdown$
 ^\.git$
 DOCUMENTATION_WORKFLOW.md
-
+^_
 ^\.positai$
 ^\.claude$
