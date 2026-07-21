@@ -333,6 +333,31 @@ formatp <- function(pvalues) {
   return(p_out)
 }
 
+#' Select the p-value formatter to use
+#'
+#' Returns the canonical \code{formatp} unless \code{unformattedp} is TRUE, in
+#' which case an identity formatter is returned. This centralises the
+#' \code{if (unformattedp) formatp <- ...} override that several rm_ functions
+#' previously redefined inline.
+#'
+#' @param unformattedp logical; if TRUE, p-values are returned unformatted.
+#' @param as_numeric logical; if TRUE (and unformattedp is TRUE), the identity
+#'   formatter coerces to numeric. Used by rm_mvsum, which expects numeric
+#'   unformatted p-values.
+#' @return A function taking a vector of p-values.
+#' @keywords internal
+#' @noRd
+resolve_formatp <- function(unformattedp = FALSE, as_numeric = FALSE) {
+  if (!unformattedp) {
+    return(formatp)
+  }
+  if (as_numeric) {
+    function(x, ...) as.numeric(x)
+  } else {
+    function(x, ...) x
+  }
+}
+
 
 # LaTeX and HTML Formatting Functions ----
 
