@@ -193,8 +193,8 @@ predsum(true, pred_bin, tableOnly = TRUE, output = "all")$Statistic
 
 Check dates for Tyler
 
-```{r}
- 
+```{r} 
+#| eval: false
 library(devtools)
 load_all()
  
