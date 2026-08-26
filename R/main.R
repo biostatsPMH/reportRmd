@@ -4033,7 +4033,10 @@ rm_survdiff <- function(
 #'
 #' @param data data frame containing survival data
 #' @param time string indicating survival time variable
-#' @param status string indicating event status variable
+#' @param status string indicating the event status variable. The status
+#'   variable may be numeric, character, or factor; censoring and event values
+#'   can be specified using \code{cencode} and \code{eventcode}.
+#'
 #' @param group string or character vector indicating the variable(s) to group
 #'   observations by. If this is left as NULL (the default) then summaries are
 #'   provided for the entire cohort.
@@ -4062,6 +4065,16 @@ rm_survdiff <- function(
 #' @param caption table caption for markdown output
 #' @param tableOnly should a dataframe or a formatted object be returned
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
+#' @param cencode value of the status variable indicating censoring. May be
+#'   numeric, character, or factor-compatible. Default is 0.
+#' @param eventcode value of the status variable indicating the event of
+#'   interest. May be numeric, character, or factor-compatible. Default is 1.
+#' @param add.reverse.KM boolean indicating if median follow-up and its
+#'   confidence interval should be estimated using the reverse Kaplan-Meier
+#'   method and displayed in the table; default is FALSE.
+#' @param digits.reverse.KM number of digits used to display the median
+#'   follow-up and confidence interval estimated using the reverse
+#'   Kaplan-Meier method; default is 1.
 #' @importFrom  survival survfit Surv
 #' @seealso \code{\link[survival:survfit]{survival::survfit}}
 #' @return A character vector of the survival table source code, unless
@@ -4089,229 +4102,775 @@ rm_survdiff <- function(
 #' rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 #' group=c('sex','change_ctdna_group'),survtimes=c(12,24),survtimeunit='mo')
 #'
+#'
+#' Character event status and reverse Kaplan-Meier median follow-up
+#' pembrolizumab$status_chr <- ifelse(pembrolizumab$os_status == 1, "Death",
+#'   "Censored")
+#' rm_survsum(data = pembrolizumab, time = "os_time", status = "status_chr",
+#'   group = "sex", cencode = "Censored", eventcode = "Death",
+#'   survtimes = c(12, 24), survtimeunit = "mo", add.reverse.KM = TRUE)
+
 rm_survsum <- function(
-  data,
-  time,
-  status,
-  group = NULL,
-  survtimes = NULL,
-  survtimeunit,
-  survtimesLbls = NULL,
-  CIwidth = 0.95,
-  unformattedp = FALSE,
-  conf.type = "log",
-  na.action = "na.omit",
-  showCounts = TRUE,
-  showLogrank = TRUE,
-  eventProb = FALSE,
-  digits = getOption("reportRmd.digits", 2),
-  caption = NULL,
-  tableOnly = FALSE,
-  fontsize
+    data,
+    time,
+    status,
+    group = NULL,
+    survtimes = NULL,
+    survtimeunit = NULL,
+    survtimesLbls = NULL,
+    CIwidth = 0.95,
+    unformattedp = FALSE,
+    conf.type = "log",
+    na.action = "na.omit",
+    showCounts = TRUE,
+    showLogrank = TRUE,
+    eventProb = FALSE,
+    digits = getOption("reportRmd.digits", 2),
+    caption = NULL,
+    tableOnly = FALSE,
+    add.reverse.KM = FALSE,
+    fontsize = NULL,
+    cencode = 0,
+    eventcode = 1,
+    digits.reverse.KM = 1
 ) {
+
+  ## ---------------------------
+  ## Input checks
+  ## ---------------------------
+
   if (missing(data)) {
     stop("data is a required argument")
   }
+
   if (missing(time)) {
     stop("time is a required argument")
   }
-  if (missing(survtimeunit)) {
-    if (!is.null(survtimes)) {
-      stop(
-        "survtimeunit must be specified if survtimes are set. Example survtimeunit=\"year\""
-      )
-    }
+
+  if (missing(status)) {
+    stop("status is a required argument")
   }
-  if (!is.null(survtimes)) {
-    timelbl <- paste0("Time (", survtimeunit, ")")
-  }
+
   if (!inherits(data, "data.frame")) {
     stop("data must be supplied as a data frame")
   }
-  if (!inherits(time, "character") | length(time) > 1) {
+
+  if (!is.character(time) || length(time) != 1L) {
     stop("time must be supplied as a string indicating a variable in data")
   }
-  if (!inherits(status, "character") | length(status) > 1) {
+
+  if (!is.character(status) || length(status) != 1L) {
     stop("status must be supplied as a string indicating a variable in data")
   }
+
+  if (!is.null(group) &&
+      (!is.character(group) || length(group) < 1L)) {
+    stop("group must be supplied as a string or character vector")
+  }
+
+  missing_vars <- setdiff(c(time, status, group), names(data))
+
+  if (length(missing_vars) > 0L) {
+    stop(
+      paste(
+        "These variables are not in the data:\n",
+        paste(missing_vars, collapse = ", ")
+      )
+    )
+  }
+
+  if (!is.numeric(data[[time]])) {
+    stop("The survival time variable must be numeric")
+  }
+
   if (!is.null(survtimes)) {
+    if (!is.numeric(survtimes) || anyNA(survtimes)) {
+      stop("survtimes must be a numeric vector with no missing values")
+    }
+
+    if (is.null(survtimeunit)) {
+      stop(
+        paste0(
+          "survtimeunit must be specified if survtimes are set. ",
+          "Example survtimeunit=\"year\""
+        )
+      )
+    }
+
     if (is.null(survtimesLbls)) {
       survtimesLbls <- survtimes
     }
   }
+
   if (length(survtimesLbls) != length(survtimes)) {
     stop(
-      "If supplied, the survtimesLbls vector must be the same length as survtime"
+      "If supplied, the survtimesLbls vector must be the same length as survtimes"
     )
   }
+
+  if (length(CIwidth) != 1L ||
+      is.na(CIwidth) ||
+      CIwidth <= 0 ||
+      CIwidth >= 1) {
+    stop("CIwidth must be a single number between 0 and 1")
+  }
+
+  if (length(cencode) != 1L || is.na(cencode)) {
+    stop("cencode must be a single non-missing value")
+  }
+
+  if (length(eventcode) != 1L || is.na(eventcode)) {
+    stop("eventcode must be a single non-missing value")
+  }
+
+  if (length(digits.reverse.KM) != 1L ||
+      is.na(digits.reverse.KM) ||
+      digits.reverse.KM < 0 ||
+      digits.reverse.KM != floor(digits.reverse.KM)) {
+    stop("digits.reverse.KM must be a non-negative integer")
+  }
+
+  if (!is.logical(eventProb) || length(eventProb) != 1L || is.na(eventProb)) {
+    stop("eventProb must be TRUE or FALSE")
+  }
+
+  ## ---------------------------
+  ## Prepare status variable
+  ## ---------------------------
+
+  data <- as.data.frame(data)
+
+  status_raw <- data[[status]]
+
+  # Convert factors to their labels, rather than their underlying integer codes.
+  status_cmp <- status_raw
+  cencode_cmp <- cencode
+  eventcode_cmp <- eventcode
+
+  if (is.factor(status_cmp)) {
+    status_cmp <- as.character(status_cmp)
+  }
+
+  if (is.factor(cencode_cmp)) {
+    cencode_cmp <- as.character(cencode_cmp)
+  }
+
+  if (is.factor(eventcode_cmp)) {
+    eventcode_cmp <- as.character(eventcode_cmp)
+  }
+
+  # Preserve sensible behaviour for logical 0/1 statuses.
+  if (is.logical(status_cmp)) {
+    status_cmp <- as.integer(status_cmp)
+  }
+
+  if (is.logical(cencode_cmp)) {
+    cencode_cmp <- as.integer(cencode_cmp)
+  }
+
+  if (is.logical(eventcode_cmp)) {
+    eventcode_cmp <- as.integer(eventcode_cmp)
+  }
+
+  # If any of the codes are character, compare everything as character.
+  if (is.character(status_cmp) ||
+      is.character(cencode_cmp) ||
+      is.character(eventcode_cmp)) {
+    status_cmp <- as.character(status_cmp)
+    cencode_cmp <- as.character(cencode_cmp)
+    eventcode_cmp <- as.character(eventcode_cmp)
+  }
+
+  if (identical(cencode_cmp, eventcode_cmp)) {
+    stop("cencode and eventcode must specify different values")
+  }
+
+  is_censor <- !is.na(status_cmp) & status_cmp == cencode_cmp
+  is_event <- !is.na(status_cmp) & status_cmp == eventcode_cmp
+
+  invalid_status <- !is.na(status_cmp) & !(is_censor | is_event)
+
+  if (any(invalid_status)) {
+    bad_values <- unique(status_cmp[invalid_status])
+
+    stop(
+      paste0(
+        "The status variable contains values other than cencode and eventcode: ",
+        paste(bad_values, collapse = ", ")
+      )
+    )
+  }
+
+  # Always create an internal 0/1 status.
+  status_internal <- ".rm_surv_status"
+
+  while (status_internal %in% names(data)) {
+    status_internal <- paste0(status_internal, "_")
+  }
+
+  data[[status_internal]] <- NA_integer_
+  data[[status_internal]][is_censor] <- 0L
+  data[[status_internal]][is_event] <- 1L
+
+  ## ---------------------------
+  ## Helpers
+  ## ---------------------------
+  quote_name <- function(x) {
+    paste0("`", gsub("`", "\\`", x, fixed = TRUE), "`")
+  }
+
+  rhs <- if (is.null(group)) {
+    "1"
+  } else {
+    paste(vapply(group, quote_name, character(1)), collapse = " + ")
+  }
+
+  make_surv_formula <- function(status_name) {
+    as.formula(
+      paste0(
+        "survival::Surv(",
+        quote_name(time),
+        ", ",
+        quote_name(status_name),
+        ") ~ ",
+        rhs
+      )
+    )
+  }
+
+  surv_formula <- make_surv_formula(status_internal)
+
   if (unformattedp) {
-    formatp <- function(x, ...) {
-      x
+    format_p <- function(x, ...) x
+  } else {
+    format_p <- formatp
+  }
+
+  format_median_ci <- function(x, ndigits) {
+
+    x_names <- if (is.matrix(x)) {
+      colnames(x)
+    } else {
+      names(x)
     }
+
+    median_col <- match("median", x_names)
+    lcl_col <- grep("LCL$", x_names)[1]
+    ucl_col <- grep("UCL$", x_names)[1]
+
+    cols <- c(median_col, lcl_col, ucl_col)
+
+    if (anyNA(cols)) {
+      stop("Could not identify median survival confidence interval columns")
+    }
+
+    if (is.matrix(x)) {
+      ans <- apply(
+        x[, cols, drop = FALSE],
+        1,
+        function(z) psthr(z, y = ndigits)
+      )
+    } else {
+      ans <- psthr(x[cols], y = ndigits)
+    }
+
+    gsub("NA", "Not Estimable", ans, fixed = TRUE)
   }
-  data <- data.frame(data)
-  n_cols <- c("n.risk", "n.event", "n.censor")
-  missing_vars = na.omit(setdiff(c(time, status, group), names(data)))
-  if (length(missing_vars) > 0) {
-    stop(paste(
-      "These variables are not in the data:\n",
-      paste0(missing_vars, collapse = csep())
-    ))
+
+  extract_counts <- function(x) {
+
+    x_names <- if (is.matrix(x)) {
+      colnames(x)
+    } else {
+      names(x)
+    }
+
+    event_col <- intersect(c("events", "n.event"), x_names)[1]
+    total_col <- intersect(c("records", "n.start", "n.max"), x_names)[1]
+
+    if (is.na(event_col) || is.na(total_col)) {
+      stop("Could not identify event and total counts from the survfit object")
+    }
+
+    if (is.matrix(x)) {
+      events <- x[, event_col]
+      totals <- x[, total_col]
+    } else {
+      events <- x[event_col]
+      totals <- x[total_col]
+    }
+
+    paste0(events, "/", totals)
   }
+
+  ## ---------------------------
+  ## Main Kaplan-Meier fit
+  ## ---------------------------
   sfit <- survival::survfit(
-    as.formula(paste0(
-      "survival::Surv(",
-      time,
-      ",",
-      status,
-      ") ~",
-      ifelse(is.null(group), "1", paste(group, collapse = "+"))
-    )),
+    surv_formula,
     data = data,
     conf.type = conf.type,
-    conf.int = CIwidth
+    conf.int = CIwidth,
+    na.action = na.action
   )
+
   nFit <- sum(sfit$n, na.rm = TRUE)
-  if (nrow(data) - nFit == 1) {
+  nMissing <- nrow(data) - nFit
+
+  if (nMissing == 1L) {
     message("1 observation with missing data was removed.")
-  } else if (nrow(data) > nFit) {
-    message(paste(
-      nrow(data) - nFit,
-      "observations with missing data were removed."
-    ))
+  } else if (nMissing > 1L) {
+    message(nMissing, " observations with missing data were removed.")
   }
+
+  mtbl <- summary(sfit)$table
+  grouped_fit <- is.matrix(mtbl)
+
+  if (grouped_fit) {
+    group_rows <- rownames(mtbl)
+  } else {
+    group_rows <- "Overall"
+  }
+
+  ## ---------------------------
+  ## Checking for estimates beyond max follow-up
+  ## ---------------------------
   if (!is.null(survtimes)) {
-    ofit <- summary(sfit, times = survtimes, extend = !is.null(survtimes))
-    colsToExtract <- which(
-      names(sfit) %in% c("strata", "time", "sr", "surv", "lower", "upper")
-    )
-    tb <- data.frame(do.call(cbind, ofit[colsToExtract]))
-    if (eventProb == FALSE) {
-      tb$sr <- apply(tb[, c("surv", "lower", "upper")], 1, psthr, digits)
-    }
-    if (eventProb == TRUE) {
-      tb$surv <- 1 - tb$surv
-      tb$lower_temp <- tb$lower
-      tb$upper_temp <- tb$upper
-      tb$upper <- 1 - tb$lower_temp
-      tb$lower <- 1 - tb$upper_temp
-      tb$sr <- apply(tb[, c("surv", "lower", "upper")], 1, psthr, digits)
-    }
-    if (!is.null(group)) {
-      tb$strata <- factor(
-        tb$strata,
-        levels = unique(as.numeric(ofit$strata)),
-        labels = levels(ofit$strata)
-      )
-      w <- matrix(
-        nrow = length(unique(tb$strata)),
-        ncol = length(unique(tb$time)),
-        dimnames = list(unique(tb$strata), unique(tb$time))
-      )
-      for (i in 1:nrow(tb)) {
-        w[
-          which(rownames(w) == tb$strata[i]),
-          which(colnames(w) == tb$time[i])
-        ] <- tb$sr[i]
-      }
+
+    probability_label <- if (eventProb) {
+      "Event probabilities"
     } else {
-      w <- matrix(nrow = 1, ncol = length(unique(tb$time)))
-      colnames(w) <- unique(tb$time)
-      for (i in 1:nrow(tb)) {
-        w[1, which(colnames(w) == tb$time[i])] <- tb$sr[i]
+      "Survival probabilities"
+    }
+
+    if (is.null(group)) {
+      max_followup <- max(sfit$time, na.rm = TRUE)
+      beyond_followup <- survtimes > max_followup
+      if (any(beyond_followup)) {
+        unavailable_times <- sort(unique(
+          survtimes[beyond_followup]
+        ))
+        message(
+          paste0(
+            "Requested survival time(s) ",
+            paste(unavailable_times, collapse = ", "),
+            " exceed the maximum follow-up time of ",
+            max_followup,
+            ".",
+            probability_label,
+            " could not be estimated and were set to 'Not Estimable'."
+          )
+        )
+      }
+
+    } else {
+      # sfit$time contains the times for each stratum concatenated together;
+      # sfit$strata gives the number belonging to each stratum.
+      fit_strata <- rep(
+        names(sfit$strata),
+        sfit$strata
+      )
+
+      max_followup <- tapply(
+        sfit$time,
+        fit_strata,
+        max,
+        na.rm = TRUE
+      )
+
+      for (stratum_i in names(max_followup)) {
+        unavailable_times <- survtimes[
+          survtimes > max_followup[stratum_i]
+        ]
+        if (length(unavailable_times) > 0L) {
+          unavailable_times <- sort(unique(unavailable_times))
+          message(
+            paste0(
+              "For stratum '",
+              stratum_i,
+              "', requested survival time(s) ",
+              paste(unavailable_times, collapse = ", "),
+              " exceed the maximum follow-up time of ",
+              max_followup[stratum_i],
+              ". ",
+              probability_label,
+              " could not be estimated and were set to 'Not Estimable'."
+            )
+          )
+        }
       }
     }
+  }
+
+  ## ---------------------------
+  ## Survival/event probabilities
+  ## at requested times
+  ## ---------------------------
+  if (!is.null(survtimes)) {
+
+    # Initialise all cells as non-estimable.
+    w <- matrix(
+      "Not Estimable",
+      nrow = length(group_rows),
+      ncol = length(survtimes)
+    )
+
+    rownames(w) <- group_rows
+
+    ofit <- tryCatch(
+      summary(
+        sfit,
+        times = survtimes,
+        extend = FALSE
+      ),
+      error = function(e) NULL
+    )
+
+    if (!is.null(ofit) && length(ofit$time) > 0L) {
+
+      tb <- data.frame(
+        time = ofit$time,
+        surv = ofit$surv,
+        lower = ofit$lower,
+        upper = ofit$upper,
+        stringsAsFactors = FALSE
+      )
+
+      if (!is.null(ofit$strata)) {
+        tb$strata <- as.character(ofit$strata)
+      } else {
+        tb$strata <- group_rows[1]
+      }
+
+      if (eventProb) {
+        lower_old <- tb$lower
+
+        tb$surv <- 1 - tb$surv
+        tb$lower <- 1 - tb$upper
+        tb$upper <- 1 - lower_old
+      }
+
+      tb$sr <- apply(
+        tb[, c("surv", "lower", "upper"), drop = FALSE],
+        1,
+        function(z) psthr(z, y = digits)
+      )
+
+      tb$sr <- gsub(
+        "NA",
+        "Not Estimable",
+        tb$sr,
+        fixed = TRUE
+      )
+
+      for (i in seq_len(nrow(tb))) {
+
+        row_i <- if (grouped_fit) {
+          match(tb$strata[i], group_rows)
+        } else {
+          1L
+        }
+
+        col_i <- which(survtimes == tb$time[i])
+
+        if (!is.na(row_i) && length(col_i) > 0L) {
+          w[row_i, col_i] <- tb$sr[i]
+        }
+      }
+    }
+
   } else {
     w <- NULL
   }
-  mtbl <- summary(sfit)$table
-  if (inherits(mtbl, "matrix")) {
-    m_CI <- apply(
-      mtbl[, grep("median|LCL|UCL", colnames(mtbl))],
-      1,
-      function(x) psthr(x, y = digits)
-    )
-    m_CI <- gsub("NA", "Not Estimable", m_CI)
-    lr <- survival::survdiff(
-      as.formula(paste0(
-        "survival::Surv(",
-        time,
-        ",",
-        status,
-        ") ~",
-        paste0(group, collapse = "+")
-      )),
-      data = data
-    )
-    nt <- paste0(lr$obs, "/", lr$n)
-    w <- cbind(nt, m_CI, w)
-    df <- length(lr$obs) - 1
-    gl <- rownames(w)
-    for (v in group) {
-      gl <- gsub(paste0(v, "="), "", gl)
+
+  ## ---------------------------
+  ## Median survival
+  ## ---------------------------
+  m_CI <- format_median_ci(mtbl, digits)
+
+  ## ---------------------------
+  ## Reverse Kaplan-Meier
+  ## median follow-up
+  ## ---------------------------
+  reverse_CI <- NULL
+
+  if (add.reverse.KM) {
+
+    reverse_status <- ".rm_reverse_status"
+
+    while (reverse_status %in% names(data)) {
+      reverse_status <- paste0(reverse_status, "_")
     }
-    tab <- cbind(gl, data.frame(w))
-    rownames(tab) <- NULL
-    nm <- c("Group", "Events/Total", paste0("Median (", CIwidth * 100, "%CI)"))
-    if (!is.null(survtimes)) {
-      nm <- c(
-        nm,
-        paste0(survtimesLbls, survtimeunit, " (", CIwidth * 100, "% CI)")
+
+    data[[reverse_status]] <- ifelse(
+      is.na(data[[status_internal]]),
+      NA_integer_,
+      1L - data[[status_internal]]
+    )
+
+    reverse_fit <- survival::survfit(
+      make_surv_formula(reverse_status),
+      data = data,
+      conf.type = conf.type,
+      conf.int = CIwidth,
+      na.action = na.action
+    )
+
+    reverse_tbl <- summary(reverse_fit)$table
+
+    reverse_CI <- format_median_ci(
+      reverse_tbl,
+      digits.reverse.KM
+    )
+
+    # Ensure reverse-KM estimates line up with the rows of the
+    # primary survival table.
+    if (grouped_fit) {
+
+      if (is.matrix(reverse_tbl)) {
+        names(reverse_CI) <- rownames(reverse_tbl)
+        reverse_CI <- reverse_CI[group_rows]
+        reverse_CI <- unname(reverse_CI)
+
+        reverse_CI[is.na(reverse_CI)] <- "Not Estimable"
+
+      } else if (length(group_rows) == 1L) {
+        reverse_CI <- rep(reverse_CI, 1L)
+      }
+    }
+  }
+
+  ## ---------------------------
+  ## Counts
+  ## ---------------------------
+  counts <- NULL
+
+  if (showCounts) {
+    counts <- extract_counts(mtbl)
+  }
+
+  ## ---------------------------
+  ## Build table
+  ## ---------------------------
+  CIlabel <- format(
+    CIwidth * 100,
+    trim = TRUE,
+    scientific = FALSE
+  )
+
+  median_name <- paste0(
+    "Median (",
+    CIlabel,
+    "% CI)"
+  )
+
+  reverse_name <- if (!is.null(survtimeunit)) {
+    paste0(
+      "Median follow-up (",
+      survtimeunit,
+      "; ",
+      CIlabel,
+      "% CI)"
+    )
+  } else {
+    paste0(
+      "Median follow-up (",
+      CIlabel,
+      "% CI)"
+    )
+  }
+
+  time_names <- if (!is.null(survtimes)) {
+    paste0(
+      survtimesLbls,
+      survtimeunit,
+      " (",
+      CIlabel,
+      "% CI)"
+    )
+  } else {
+    NULL
+  }
+
+  if (grouped_fit) {
+
+    gl <- group_rows
+
+    for (v in group) {
+      gl <- gsub(
+        paste0(v, "="),
+        "",
+        gl,
+        fixed = TRUE
       )
     }
-    names(tab) <- nm
-    if (showLogrank == TRUE) {
-      tab <- rbind(
-        tab,
-        c(
-          rep("", length(survtimes)),
+
+    table_cols <- list(gl)
+    table_names <- "Group"
+
+    if (add.reverse.KM) {
+      table_cols <- c(table_cols, list(reverse_CI))
+      table_names <- c(table_names, reverse_name)
+    }
+
+    if (showCounts) {
+      table_cols <- c(table_cols, list(counts))
+      table_names <- c(table_names, "Events/Total")
+    }
+
+    table_cols <- c(table_cols, list(m_CI))
+    table_names <- c(table_names, median_name)
+
+    if (!is.null(w)) {
+      for (j in seq_len(ncol(w))) {
+        table_cols <- c(table_cols, list(w[, j]))
+      }
+
+      table_names <- c(table_names, time_names)
+    }
+
+    tab <- as.data.frame(
+      do.call(cbind, table_cols),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+
+    names(tab) <- table_names
+    rownames(tab) <- NULL
+
+    ## ---------------------------
+    ## Log-rank test
+    ## ---------------------------
+
+    if (showLogrank && nrow(mtbl) > 1L) {
+
+      lr <- survival::survdiff(
+        surv_formula,
+        data = data,
+        na.action = na.action
+      )
+
+      df <- length(lr$n) - 1L
+
+      lr_row <- rep("", ncol(tab))
+      p_row <- rep("", ncol(tab))
+
+      if (ncol(tab) >= 3L) {
+
+        lr_row[(ncol(tab) - 2L):ncol(tab)] <- c(
           "Log Rank Test",
           "ChiSq",
-          paste(niceNum(lr$chisq, 1), "on", df, "df")
+          paste(
+            niceNum(lr$chisq, 1),
+            "on",
+            df,
+            "df"
+          )
         )
-      )
+
+        p_row[(ncol(tab) - 1L):ncol(tab)] <- c(
+          "p-value",
+          format_p(
+            stats::pchisq(
+              lr$chisq,
+              df,
+              lower.tail = FALSE
+            )
+          )
+        )
+
+      } else {
+
+        lr_row[1] <- "Log Rank Test"
+        lr_row[2] <- paste(
+          "ChiSq =",
+          niceNum(lr$chisq, 1),
+          "on",
+          df,
+          "df"
+        )
+
+        p_row[1] <- "p-value"
+        p_row[2] <- format_p(
+          stats::pchisq(
+            lr$chisq,
+            df,
+            lower.tail = FALSE
+          )
+        )
+      }
+
       tab <- rbind(
         tab,
-        c(
-          rep("", length(survtimes) + 1),
-          "p-value",
-          formatp(pchisq(lr$chisq, df, lower.tail = FALSE))
-        )
+        setNames(as.list(lr_row), names(tab)),
+        setNames(as.list(p_row), names(tab))
       )
+
+      rownames(tab) <- NULL
     }
+
   } else {
-    m_CI <- psthr(mtbl[grep("median|LCL|UCL", names(mtbl))], y = digits)
-    m_CI <- gsub("NA", "Not Estimable", m_CI)
-    nt <- paste0(mtbl["events"], "/", mtbl["n.start"])
-    w <- cbind(nt, m_CI, w)
-    tab <- data.frame(w)
-    rownames(tab) <- NULL
-    nm <- c(
-      "Events/Total",
-      paste0(
-        "Median (",
-        CIwidth *
-          100,
-        "%CI)"
-      )
-    )
-    if (!is.null(survtimes)) {
-      nm <- c(
-        nm,
-        paste0(survtimesLbls, survtimeunit, " (", CIwidth * 100, "% CI)")
-      )
+
+    table_cols <- list()
+    table_names <- character()
+
+    if (add.reverse.KM) {
+      table_cols <- c(table_cols, list(reverse_CI))
+      table_names <- c(table_names, reverse_name)
     }
-    names(tab) <- nm
+
+    if (showCounts) {
+      table_cols <- c(table_cols, list(counts))
+      table_names <- c(table_names, "Events/Total")
+    }
+
+    table_cols <- c(table_cols, list(m_CI))
+    table_names <- c(table_names, median_name)
+
+    if (!is.null(w)) {
+      for (j in seq_len(ncol(w))) {
+        table_cols <- c(table_cols, list(w[, j]))
+      }
+
+      table_names <- c(table_names, time_names)
+    }
+
+    tab <- as.data.frame(
+      do.call(cbind, table_cols),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
+    )
+
+    names(tab) <- table_names
+    rownames(tab) <- NULL
   }
+
+  ## ---------------------------
+  ## Output
+  ## ---------------------------
   if (tableOnly) {
     return(tab)
   }
-  outTable(
+
+  out_args <- list(
     tab,
     caption = caption,
-    align = paste0("l", paste0(rep("r", ncol(tab) - 1), collapse = ""))
+    align = paste0(
+      "l",
+      paste0(
+        rep("r", ncol(tab) - 1L),
+        collapse = ""
+      )
+    )
   )
+
+  if (!is.null(fontsize)) {
+    out_args$fontsize <- fontsize
+  }
+
+  do.call(outTable, out_args)
 }
+
 
 
 #' Summarize cumulative incidence by group
@@ -4322,13 +4881,17 @@ rm_survsum <- function(
 #'
 #' @param data data frame containing survival data
 #' @param time string indicating survival time variable
-#' @param status string indicating event status variable; must have at least 3
-#'   levels, e.g. 0 = censor, 1 = event, 2 = competing risk
-#' @param group string or character vector indicating the variable to group
-#'   observations by
-#' @param eventcode numerical variable indicating event, default is 1
-#' @param cencode numerical variable indicating censored observation, default is
-#'   0
+#' @param status string indicating the event status variable. The status
+#'   variable may be numeric, character, or factor and must identify the event
+#'   of interest and at least one competing event. Censoring and the event of
+#'   interest are specified using \code{cencode} and \code{eventcode}.
+#' @param group string or character vector indicating the variable(s) to group
+#'   observations by. If this is left as NULL (the default), summaries are
+#'   provided for the entire cohort.
+#' @param eventcode value of the status variable indicating the event of
+#'   interest. May be numeric, character, or factor-compatible. Default is 1.
+#' @param cencode value of the status variable indicating censoring. May be
+#'   numeric, character, or factor-compatible. Default is 0.
 #' @param eventtimes numeric vector specifying when event probabilities should
 #'   be calculated
 #' @param eventtimeunit unit of time to suffix to the time column label if event
@@ -4341,14 +4904,19 @@ rm_survsum <- function(
 #'   in conjunction with the digits argument.
 #' @param na.action default is to omit missing values, but can be set to throw
 #'   and error using na.action='na.fail'
-#' @param showCounts boolean indicating if the at risk, events and censored
-#'   columns should be output, default is TRUE
+#' @param showCounts boolean indicating if the event and total counts should be
+#'   displayed; default is TRUE
 #' @param showGraystest boolean indicating Gray's test should be included in the
 #'   final table, default is TRUE
 #' @param digits the number of digits to report in the event probabilities,
 #'   default is 2.
 #' @param caption table caption for markdown output
 #' @param tableOnly should a dataframe or a formatted object be returned
+#' @param nocensored boolean indicating that the dataset genuinely contains no
+#'   censored observations. If the value specified by \code{cencode} is not
+#'   observed, the function will stop unless \code{nocensored = TRUE}; this
+#'   provides protection against an incorrectly specified censoring value.
+#'   Default is FALSE.
 #'
 #' @return A character vector of the event table source code, unless
 #'   tableOnly=TRUE in which case a data frame is returned
@@ -4371,256 +4939,1173 @@ rm_survsum <- function(
 #' rm_cifsum(data=pbc,time='time',status='status',group=c('trt','sex'),
 #' eventtimes=c(1825,3650),eventtimeunit='day')
 #'
+#'#'
+#' # Character event status
+#' pbc$status_chr <- factor(pbc$status, levels = c(0, 1, 2),
+#'   labels = c("Censored", "Transplant", "Death"))
+#'
+#' rm_cifsum(data = pbc, time = "time", status = "status_chr", group = "trt",
+#'   eventcode = "Death", cencode = "Censored", eventtimes = c(1825, 3650),
+#'   eventtimeLbls = c(5, 10), eventtimeunit = "yr")
+
+# status can now be character or factor
+# function will work if no censored observations are observed (would previously fail)
+# added nocensored = TRUE to handle the aforementioned scenario
+# display message for follow up times beyond max
+
+
 rm_cifsum <- function(
-  data,
-  time,
-  status,
-  group = NULL,
-  eventcode = 1,
-  cencode = 0,
-  eventtimes,
-  eventtimeunit,
-  eventtimeLbls = NULL,
-  CIwidth = 0.95,
-  unformattedp = FALSE,
-  na.action = "na.omit",
-  showCounts = TRUE,
-  showGraystest = TRUE,
-  digits = 2,
-  caption = NULL,
-  tableOnly = FALSE
+    data,
+    time,
+    status,
+    group = NULL,
+    eventcode = 1,
+    cencode = 0,
+    eventtimes,
+    eventtimeunit,
+    eventtimeLbls = NULL,
+    CIwidth = 0.95,
+    unformattedp = FALSE,
+    na.action = "na.omit",
+    showCounts = TRUE,
+    showGraystest = TRUE,
+    digits = 2,
+    caption = NULL,
+    tableOnly = FALSE,
+    nocensored = FALSE
 ) {
+
+  ## ============================================================
+  ## Input checks
+  ## ============================================================
   if (missing(data)) {
     stop("data is a required argument")
   }
+
   if (missing(time)) {
     stop("time is a required argument")
   }
+
+  if (missing(status)) {
+    stop("status is a required argument")
+  }
+
   if (missing(eventtimes)) {
     stop("eventtimes is a required argument")
   }
+
   if (missing(eventtimeunit)) {
-    stop("eventtimeunit is a required argument. Example eventtimeunit=\"year\"")
+    stop(
+      'eventtimeunit is a required argument. Example eventtimeunit="year"'
+    )
   }
-  if (!is.null(eventtimes)) {
-    timelbl <- paste0("Time (", eventtimeunit, ")")
-  }
+
   if (!inherits(data, "data.frame")) {
     stop("data must be supplied as a data frame")
   }
-  if (!inherits(time, "character") | length(time) > 1) {
-    stop("time must be supplied as a string indicating a variable in data")
+
+  if (!is.character(time) || length(time) != 1L) {
+    stop(
+      "time must be supplied as a string indicating a variable in data"
+    )
   }
-  if (!inherits(status, "character") | length(status) > 1) {
-    stop("status must be supplied as a string indicating a variable in data")
+
+  if (!is.character(status) || length(status) != 1L) {
+    stop(
+      "status must be supplied as a string indicating a variable in data"
+    )
   }
-  if (!is.null(eventtimes)) {
-    if (is.null(eventtimeLbls)) {
-      eventtimeLbls <- eventtimes
-    }
+
+  if (!is.null(group) &&
+      (!is.character(group) || length(group) < 1L)) {
+    stop(
+      "group must be supplied as a string or character vector"
+    )
   }
+
+  missing_vars <- setdiff(
+    c(time, status, group),
+    names(data)
+  )
+
+  if (length(missing_vars) > 0L) {
+    stop(
+      paste(
+        "These variables are not in the data:\n",
+        paste0(
+          missing_vars,
+          collapse = reportRmd:::csep()
+        )
+      )
+    )
+  }
+
+  if (
+    !is.numeric(eventtimes) ||
+    length(eventtimes) == 0L ||
+    anyNA(eventtimes) ||
+    any(!is.finite(eventtimes))
+  ) {
+    stop(
+      "eventtimes must be a non-empty numeric vector with no missing or infinite values"
+    )
+  }
+
+  if (any(eventtimes < 0)) {
+    stop("eventtimes cannot contain negative values")
+  }
+
+  if (anyDuplicated(eventtimes)) {
+    stop("eventtimes must not contain duplicate values")
+  }
+
+  if (is.null(eventtimeLbls)) {
+    eventtimeLbls <- eventtimes
+  }
+
   if (length(eventtimeLbls) != length(eventtimes)) {
     stop(
       "If supplied, the eventtimeLbls vector must be the same length as eventtimes"
     )
   }
-  if (length(unique(data[[status]])) == 2) {
-    stop(
-      "Only two unique statuses exist in the data. Consider using rm_survsum when competing risks are absent."
-    )
+
+  if (
+    length(CIwidth) != 1L ||
+    is.na(CIwidth) ||
+    CIwidth <= 0 ||
+    CIwidth >= 1
+  ) {
+    stop("CIwidth must be a single number between 0 and 1")
   }
+
+  if (
+    length(eventcode) != 1L ||
+    is.na(eventcode)
+  ) {
+    stop("eventcode must be a single non-missing value.")
+  }
+
+  if (
+    length(cencode) != 1L ||
+    is.na(cencode)
+  ) {
+    stop("cencode must be a single non-missing value.")
+  }
+
+  if (
+    !is.logical(nocensored) ||
+    length(nocensored) != 1L ||
+    is.na(nocensored)
+  ) {
+    stop("nocensored must be TRUE or FALSE")
+  }
+
+  if (
+    !is.logical(showCounts) ||
+    length(showCounts) != 1L ||
+    is.na(showCounts)
+  ) {
+    stop("showCounts must be TRUE or FALSE")
+  }
+
+  if (
+    !is.logical(showGraystest) ||
+    length(showGraystest) != 1L ||
+    is.na(showGraystest)
+  ) {
+    stop("showGraystest must be TRUE or FALSE")
+  }
+
+  if (
+    !is.logical(unformattedp) ||
+    length(unformattedp) != 1L ||
+    is.na(unformattedp)
+  ) {
+    stop("unformattedp must be TRUE or FALSE")
+  }
+
+  ## p-value formatting
   if (unformattedp) {
-    formatp <- function(x, ...) {
+    format_p <- function(x, ...) {
       x
     }
+  } else {
+    format_p <- reportRmd:::formatp
   }
-  missing_vars = na.omit(setdiff(c(time, status, group), names(data)))
-  if (length(missing_vars) > 0) {
-    stop(paste(
-      "These variables are not in the data:\n",
-      paste0(missing_vars, collapse = csep())
-    ))
-  }
+
+
+  ## ============================================================
+  ## Apply missing-data handling
+  ## ============================================================
+  data <- data.frame(data)
+
+  n.full <- nrow(data)
+
+  analysis_vars <- unique(
+    c(time, status, group)
+  )
+
+  na_fun <- match.fun(na.action)
+
+  data <- na_fun(
+    data[, analysis_vars, drop = FALSE]
+  )
 
   data <- data.frame(data)
-  n.full <- nrow(data)
-  data <- na.omit(data[, c(time, status, group)])
+
   n.non.missing <- nrow(data)
-  if (n.full - n.non.missing == 1) {
-    message("1 observation with missing data was removed.")
+
+  if (n.full - n.non.missing == 1L) {
+    message(
+      "1 observation with missing data was removed."
+    )
   } else if (n.full > n.non.missing) {
-    message(paste(
-      n.full - n.non.missing,
-      "observations with missing data were removed."
-    ))
+    message(
+      paste(
+        n.full - n.non.missing,
+        "observations with missing data were removed."
+      )
+    )
   }
 
+  if (nrow(data) == 0L) {
+    stop(
+      "No observations remain after applying the missing-data handling."
+    )
+  }
+
+  if (anyNA(data[, analysis_vars, drop = FALSE])) {
+    stop(
+      paste0(
+        "Missing values remain after applying na.action. ",
+        "Use an na.action that removes missing observations ",
+        "or correct the missing data."
+      )
+    )
+  }
+
+
+  ## ============================================================
+  ## Validate follow-up time
+  ## ============================================================
+  if (!is.numeric(data[[time]])) {
+    stop("The time variable must be numeric.")
+  }
+
+  if (any(!is.finite(data[[time]]))) {
+    stop(
+      "The time variable cannot contain infinite values."
+    )
+  }
+
+  if (any(data[[time]] < 0)) {
+    stop(
+      "The time variable cannot contain negative values."
+    )
+  }
+
+
+  ## ============================================================
+  ## Validate and internally recode status
+  ## ============================================================
+  status_values <- data[[status]]
+
+  if (
+    !is.numeric(status_values) &&
+    !is.character(status_values) &&
+    !is.factor(status_values)
+  ) {
+    stop(
+      "The status variable must be numeric, character, or factor."
+    )
+  }
+
+  # Use character values as a common representation so that
+  # factors are matched by their labels rather than their
+  # underlying integer codes.
+  status_values_chr <- as.character(status_values)
+  eventcode_chr <- as.character(eventcode)
+  cencode_chr <- as.character(cencode)
+
+  if (identical(eventcode_chr, cencode_chr)) {
+    stop(
+      "eventcode and cencode must be different."
+    )
+  }
+
+  observed_statuses <- unique(
+    status_values_chr
+  )
+
+  if (!(eventcode_chr %in% observed_statuses)) {
+    stop(
+      paste0(
+        "eventcode '",
+        eventcode_chr,
+        "' was not found in the observed status values. ",
+        "Observed values are: ",
+        paste(
+          sort(observed_statuses),
+          collapse = ", "
+        ),
+        "."
+      )
+    )
+  }
+
+
+  ## ============================================================
+  ## Confirm censoring status
+  ## ============================================================
+  censor_observed <-
+    cencode_chr %in% observed_statuses
+
+  if (!censor_observed && !nocensored) {
+    stop(
+      paste0(
+        "No censored observations were identified using cencode '",
+        cencode_chr,
+        "'. Please verify that cencode was specified correctly. ",
+        "Observed status values are: ",
+        paste(
+          sort(observed_statuses),
+          collapse = ", "
+        ),
+        ". If the dataset genuinely contains no censored observations, ",
+        "rerun the function with nocensored = TRUE."
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (!censor_observed && nocensored) {
+    message(
+      paste0(
+        "No censored observations were identified. ",
+        "Proceeding because nocensored = TRUE."
+      )
+    )
+  }
+
+  if (censor_observed && nocensored) {
+    stop(
+      paste0(
+        "nocensored = TRUE was specified, but observations matching cencode '",
+        cencode_chr,
+        "' were found. Set nocensored = FALSE or verify the status coding."
+      ),
+      call. = FALSE
+    )
+  }
+
+
+  ## ============================================================
+  ## Identify event types
+  ## ============================================================
+  observed_event_codes <- setdiff(
+    observed_statuses,
+    cencode_chr
+  )
+
+  competing_event_codes <- setdiff(
+    observed_event_codes,
+    eventcode_chr
+  )
+
+  if (length(competing_event_codes) == 0L) {
+    stop(
+      paste0(
+        "No competing event was observed. ",
+        "Consider using rm_survsum when competing risks are absent."
+      )
+    )
+  }
+
+
+  ## ============================================================
+  ## Internally recode statuses for cmprsk
+  ##
+  ## Censoring = 0
+  ## Events = 1, 2, ...
+  ## ============================================================
+  status_code_map <- stats::setNames(
+    c(
+      0L,
+      seq_along(observed_event_codes)
+    ),
+    c(
+      cencode_chr,
+      observed_event_codes
+    )
+  )
+
+  data[[status]] <- unname(
+    status_code_map[status_values_chr]
+  )
+
+  eventcode_internal <- unname(
+    status_code_map[eventcode_chr]
+  )
+
+  cencode_internal <- 0L
+
+
+  ## ============================================================
+  ## Prepare grouping variable
+  ## ============================================================
   if (!is.null(group)) {
-    if (length(group) == 1) {
-      data[[group]] <- as.factor(data[[group]])
-      fit <- cmprsk::cuminc(
-        ftime = data[[time]],
-        fstatus = data[[status]],
-        group = data[[group]],
-        cencode = 0
+
+    if (length(group) == 1L) {
+
+      data[[group]] <- droplevels(
+        as.factor(data[[group]])
+      )
+
+    } else {
+
+      group_internal <- ".rm_cif_group"
+
+      while (group_internal %in% names(data)) {
+        group_internal <- paste0(
+          group_internal,
+          "_"
+        )
+      }
+
+      data[[group_internal]] <- interaction(
+        data[, group, drop = FALSE],
+        drop = TRUE,
+        sep = ", "
+      )
+
+      group <- group_internal
+    }
+
+    if (
+      showGraystest &&
+      nlevels(data[[group]]) < 2L
+    ) {
+      stop(
+        paste0(
+          "Gray's test requires at least two groups. ",
+          "Set showGraystest = FALSE if only one group is present."
+        )
       )
     }
-    if (length(group) > 1) {
-      data[["group.combined"]] <- as.factor(apply(
-        data[, group],
-        1,
-        paste0,
-        collapse = ", "
-      ))
-      fit <- cmprsk::cuminc(
-        ftime = data[[time]],
-        fstatus = data[[status]],
-        group = data[["group.combined"]],
-        cencode = 0
-      )
-      group <- "group.combined"
-    }
-  } else {
+  }
+
+
+  ## ============================================================
+  ## Fit cumulative incidence curves
+  ## ============================================================
+  if (!is.null(group)) {
+
     fit <- cmprsk::cuminc(
       ftime = data[[time]],
       fstatus = data[[status]],
-      cencode = 0
+      group = data[[group]],
+      cencode = cencode_internal
+    )
+
+  } else {
+
+    fit <- cmprsk::cuminc(
+      ftime = data[[time]],
+      fstatus = data[[status]],
+      cencode = cencode_internal
     )
   }
 
-  event.comb <- data.frame()
-  for (i in 1:length(eventtimes)) {
-    dat <- data.frame(cmprsk::timepoints(fit, eventtimes[i]))
-    dat2 <- dat[
-      which(
-        as.numeric(substr(
-          rownames(dat),
-          nchar(rownames(dat)) - 1,
-          nchar(rownames(dat))
-        )) ==
-          eventcode
-      ),
-    ]
-    names(dat2) <- c("cif", "var")
-    dat2$lower <- dat2$cif**exp(
-      (-1 * abs(qnorm((1 - CIwidth) / 2)) * sqrt(dat2$var)) /
-        (dat2$cif * log(dat2$cif))
+
+  ## ============================================================
+  ## Maximum observed follow-up
+  ## ============================================================
+  if (is.null(group)) {
+
+    max_followup <- max(
+      data[[time]]
     )
-    dat2$upper <- dat2$cif**exp(
-      (abs(qnorm((1 - CIwidth) / 2)) * sqrt(dat2$var)) /
-        (dat2$cif * log(dat2$cif))
+
+  } else {
+
+    max_followup <- tapply(
+      data[[time]],
+      data[[group]],
+      max
     )
-    if (!is.null(group)) {
-      dat2$strata <- levels(data[[group]])
+  }
+
+
+  ## ============================================================
+  ## Helper for CIF confidence intervals
+  ## ============================================================
+  get_cif_ci <- function(cif, var, conf.level) {
+
+    if (
+      is.na(cif) ||
+      is.na(var)
+    ) {
+      return(
+        c(
+          lower = NA_real_,
+          upper = NA_real_
+        )
+      )
     }
-    dat2$time <- rep(eventtimes[i], nrow(dat2))
 
-    event.comb <- rbind(event.comb, dat2)
+    # Avoid undefined log-log calculations at the boundaries.
+    if (cif <= 0) {
+      return(
+        c(
+          lower = 0,
+          upper = 0
+        )
+      )
+    }
+
+    if (cif >= 1) {
+      return(
+        c(
+          lower = 1,
+          upper = 1
+        )
+      )
+    }
+
+    z <- abs(
+      stats::qnorm(
+        (1 - conf.level) / 2
+      )
+    )
+
+    lower <- cif^exp(
+      (-z * sqrt(var)) /
+        (cif * log(cif))
+    )
+
+    upper <- cif^exp(
+      (z * sqrt(var)) /
+        (cif * log(cif))
+    )
+
+    c(
+      lower = max(0, lower),
+      upper = min(1, upper)
+    )
   }
 
+
+  ## ============================================================
+  ## Extract cumulative incidence estimates at requested times
+  ## ============================================================
+  event.comb <- data.frame()
+
+  for (i in seq_along(eventtimes)) {
+
+    tp <- cmprsk::timepoints(
+      fit,
+      eventtimes[i]
+    )
+
+    dat <- data.frame(tp)
+
+    curve_names <- rownames(dat)
+
+    cause_codes <- sub(
+      ".*[[:space:]]",
+      "",
+      curve_names
+    )
+
+    target_rows <-
+      cause_codes ==
+      as.character(eventcode_internal)
+
+    dat2 <- dat[
+      target_rows,
+      ,
+      drop = FALSE
+    ]
+
+    if (ncol(dat2) != 2L) {
+      stop(
+        paste0(
+          "Unexpected output returned by cmprsk::timepoints(). ",
+          "Expected cumulative incidence estimates and variances."
+        )
+      )
+    }
+
+    names(dat2) <- c(
+      "cif",
+      "var"
+    )
+
+    if (!is.null(group)) {
+
+      strata_names <- sub(
+        "[[:space:]][^[:space:]]+$",
+        "",
+        curve_names[target_rows]
+      )
+
+      dat2$strata <- strata_names
+
+      # If the event of interest never occurred in a stratum,
+      # cmprsk may not return that stratum/cause combination.
+      # Its cumulative incidence is therefore zero.
+      missing_strata <- setdiff(
+        levels(data[[group]]),
+        dat2$strata
+      )
+
+      if (length(missing_strata) > 0L) {
+
+        missing_dat <- data.frame(
+          cif = rep(
+            0,
+            length(missing_strata)
+          ),
+          var = rep(
+            0,
+            length(missing_strata)
+          ),
+          strata = missing_strata,
+          stringsAsFactors = FALSE
+        )
+
+        dat2 <- rbind(
+          dat2,
+          missing_dat
+        )
+      }
+    }
+
+    dat2$time <- rep(
+      eventtimes[i],
+      nrow(dat2)
+    )
+
+    ci_values <- t(
+      vapply(
+        seq_len(nrow(dat2)),
+        function(j) {
+          get_cif_ci(
+            dat2$cif[j],
+            dat2$var[j],
+            CIwidth
+          )
+        },
+        numeric(2)
+      )
+    )
+
+    dat2$lower <- ci_values[, "lower"]
+    dat2$upper <- ci_values[, "upper"]
+
+    event.comb <- rbind(
+      event.comb,
+      dat2
+    )
+  }
+
+
+  ## ============================================================
+  ## Format CIF estimates
+  ## ============================================================
   event.comb$sr <- apply(
-    event.comb[, c("cif", "lower", "upper")],
+    event.comb[
+      ,
+      c(
+        "cif",
+        "lower",
+        "upper"
+      ),
+      drop = FALSE
+    ],
     1,
-    psthr,
+    reportRmd:::psthr,
     digits
   )
 
-  if (!is.null(group)) {
-    w <- matrix(
-      nrow = length(unique(event.comb$strata)),
-      ncol = length(unique(event.comb$time)),
-      dimnames = list(unique(event.comb$strata), unique(event.comb$time))
-    )
-    for (i in 1:nrow(event.comb)) {
-      w[
-        which(rownames(w) == event.comb$strata[i]),
-        which(colnames(w) == event.comb$time[i])
-      ] <- event.comb$sr[i]
+
+  ## ============================================================
+  ## Requested times beyond available follow-up
+  ## ============================================================
+  if (is.null(group)) {
+
+    beyond_followup <-
+      event.comb$time >
+      max_followup
+
+    if (any(beyond_followup)) {
+
+      unavailable_times <- sort(
+        unique(
+          event.comb$time[
+            beyond_followup
+          ]
+        )
+      )
+
+      message(
+        paste0(
+          "Requested event time(s) ",
+          paste(
+            unavailable_times,
+            collapse = ", "
+          ),
+          " exceed the maximum follow-up time of ",
+          max_followup,
+          ". Event probabilities could not be estimated and were set to 'Not Estimable'."
+        )
+      )
     }
 
-    if (showCounts == TRUE) {
-      num.event <- vector()
-      num.total <- vector()
-      for (i in 1:length(levels(data[[group]]))) {
+  } else {
+
+    event.comb$max_followup <- unname(
+      max_followup[
+        as.character(
+          event.comb$strata
+        )
+      ]
+    )
+
+    beyond_followup <-
+      event.comb$time >
+      event.comb$max_followup
+
+    if (any(beyond_followup)) {
+
+      affected_strata <- unique(
+        as.character(
+          event.comb$strata[
+            beyond_followup
+          ]
+        )
+      )
+
+      for (stratum_i in affected_strata) {
+
+        affected_rows <-
+          beyond_followup &
+          as.character(
+            event.comb$strata
+          ) == stratum_i
+
+        unavailable_times <- sort(
+          unique(
+            event.comb$time[
+              affected_rows
+            ]
+          )
+        )
+
+        stratum_max <- unique(
+          event.comb$max_followup[
+            affected_rows
+          ]
+        )
+
+        message(
+          paste0(
+            "For stratum '",
+            stratum_i,
+            "', requested event time(s) ",
+            paste(
+              unavailable_times,
+              collapse = ", "
+            ),
+            " exceed the maximum follow-up time of ",
+            stratum_max,
+            ". Event probabilities could not be estimated and were set to 'Not Estimable'."
+          )
+        )
+      }
+    }
+  }
+
+  # Actually set unavailable estimates to Not Estimable.
+  if (any(beyond_followup)) {
+
+    event.comb$cif[
+      beyond_followup
+    ] <- NA_real_
+
+    event.comb$var[
+      beyond_followup
+    ] <- NA_real_
+
+    event.comb$lower[
+      beyond_followup
+    ] <- NA_real_
+
+    event.comb$upper[
+      beyond_followup
+    ] <- NA_real_
+
+    event.comb$sr[
+      beyond_followup
+    ] <- "Not Estimable"
+  }
+
+
+  ## ============================================================
+  ## Construct output table
+  ## ============================================================
+  if (!is.null(group)) {
+
+    strata_levels <- levels(
+      data[[group]]
+    )
+
+    w <- matrix(
+      "Not Estimable",
+      nrow = length(strata_levels),
+      ncol = length(eventtimes),
+      dimnames = list(
+        strata_levels,
+        as.character(eventtimes)
+      )
+    )
+
+    for (i in seq_len(nrow(event.comb))) {
+
+      row_i <- match(
+        as.character(
+          event.comb$strata[i]
+        ),
+        rownames(w)
+      )
+
+      col_i <- match(
+        event.comb$time[i],
+        eventtimes
+      )
+
+      if (
+        !is.na(row_i) &&
+        !is.na(col_i)
+      ) {
+        w[
+          row_i,
+          col_i
+        ] <- event.comb$sr[i]
+      }
+    }
+
+
+    ## ----------------------------------------------------------
+    ## Counts by group
+    ## ----------------------------------------------------------
+    if (showCounts) {
+
+      num.event <- numeric(
+        length(strata_levels)
+      )
+
+      num.total <- numeric(
+        length(strata_levels)
+      )
+
+      for (i in seq_along(strata_levels)) {
+
         datai <- data[
-          data[[group]] == levels(data[[group]])[i] & !is.na(data[[group]]),
+          data[[group]] ==
+            strata_levels[i],
+          ,
+          drop = FALSE
         ]
 
-        num.event.i <- nrow(datai[
-          !is.na(datai[[time]]) & datai[[status]] == eventcode,
-        ])
-        num.total.i <- nrow(datai[
-          !is.na(datai[[time]] & !is.na(datai[[status]])),
-        ])
+        num.event[i] <- sum(
+          datai[[status]] ==
+            eventcode_internal
+        )
 
-        num.event <- c(num.event, num.event.i)
-        num.total <- c(num.total, num.total.i)
+        num.total[i] <- nrow(
+          datai
+        )
       }
-      event.total <- paste0(num.event, "/", num.total)
-      tab <- data.frame(cbind(levels(data[[group]]), event.total, w))
+
+      event.total <- paste0(
+        num.event,
+        "/",
+        num.total
+      )
+
+      tab <- data.frame(
+        cbind(
+          strata_levels,
+          event.total,
+          w
+        ),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+
       names(tab) <- c(
         "Strata",
         "Event/Total",
-        paste0(eventtimeLbls, eventtimeunit, " (", CIwidth * 100, "% CI)")
+        paste0(
+          eventtimeLbls,
+          eventtimeunit,
+          " (",
+          CIwidth * 100,
+          "% CI)"
+        )
       )
+
     } else {
-      tab <- data.frame(cbind(levels(data[[group]]), w))
+
+      tab <- data.frame(
+        cbind(
+          strata_levels,
+          w
+        ),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+
       names(tab) <- c(
         "Strata",
-        paste0(eventtimeLbls, eventtimeunit, " (", CIwidth * 100, "% CI)")
+        paste0(
+          eventtimeLbls,
+          eventtimeunit,
+          " (",
+          CIwidth * 100,
+          "% CI)"
+        )
       )
     }
-  } else {
-    if (showCounts == TRUE) {
-      w <- matrix(nrow = 1, ncol = length(unique(event.comb$time)))
-      colnames(w) <- unique(event.comb$time)
-      for (i in 1:nrow(event.comb)) {
-        w[1, which(colnames(w) == event.comb$time[i])] <- event.comb$sr[i]
-      }
 
-      datai <- data[which(!is.na(data[[time]]) & !is.na(data[[status]])), ]
-      num.event <- nrow(datai[
-        !is.na(datai[[time]]) & datai[[status]] == eventcode,
-      ])
-      num.total <- nrow(datai)
-      event.total <- paste0(num.event, "/", num.total)
-      tab <- data.frame(cbind(event.total, w))
+
+  } else {
+
+    w <- matrix(
+      "Not Estimable",
+      nrow = 1L,
+      ncol = length(eventtimes),
+      dimnames = list(
+        NULL,
+        as.character(eventtimes)
+      )
+    )
+
+    for (i in seq_len(nrow(event.comb))) {
+
+      col_i <- match(
+        event.comb$time[i],
+        eventtimes
+      )
+
+      if (!is.na(col_i)) {
+        w[
+          1L,
+          col_i
+        ] <- event.comb$sr[i]
+      }
+    }
+
+
+    ## ----------------------------------------------------------
+    ## Overall counts
+    ## ----------------------------------------------------------
+    if (showCounts) {
+
+      num.event <- sum(
+        data[[status]] ==
+          eventcode_internal
+      )
+
+      num.total <- nrow(
+        data
+      )
+
+      event.total <- paste0(
+        num.event,
+        "/",
+        num.total
+      )
+
+      tab <- data.frame(
+        cbind(
+          event.total,
+          w
+        ),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+
       names(tab) <- c(
         "Event/Total",
-        paste0(eventtimeLbls, eventtimeunit, " (", CIwidth * 100, "% CI)")
+        paste0(
+          eventtimeLbls,
+          eventtimeunit,
+          " (",
+          CIwidth * 100,
+          "% CI)"
+        )
       )
+
     } else {
-      tab <- data.frame(w)
-      names(tab) <- c(paste0(
+
+      tab <- data.frame(
+        w,
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+
+      names(tab) <- paste0(
         eventtimeLbls,
         eventtimeunit,
         " (",
         CIwidth * 100,
         "% CI)"
-      ))
+      )
     }
   }
 
-  if (!is.null(group) & showGraystest == TRUE) {
-    gray <- fit$Tests[which(as.numeric(rownames(fit$Tests)) == eventcode), ]
+
+  ## ============================================================
+  ## Gray's test
+  ## ============================================================
+  if (
+    !is.null(group) &&
+    showGraystest
+  ) {
+
+    if (
+      is.null(fit$Tests) ||
+      nrow(fit$Tests) == 0L
+    ) {
+      stop(
+        paste0(
+          "Gray's test could not be calculated. ",
+          "Ensure that at least two groups are present."
+        )
+      )
+    }
+
+    gray <- fit$Tests[
+      rownames(fit$Tests) ==
+        as.character(
+          eventcode_internal
+        ),
+      ,
+      drop = FALSE
+    ]
+
+    if (nrow(gray) == 0L) {
+      stop(
+        "Gray's test was not returned for the selected event."
+      )
+    }
+
+    gray_row <- rep(
+      "",
+      ncol(tab)
+    )
+
+    p_row <- rep(
+      "",
+      ncol(tab)
+    )
+
+    if (ncol(tab) >= 3L) {
+
+      gray_row[
+        ncol(tab) - 2L
+      ] <- "Gray's Test"
+
+      gray_row[
+        ncol(tab) - 1L
+      ] <- "ChiSq"
+
+      gray_row[
+        ncol(tab)
+      ] <- paste(
+        reportRmd:::niceNum(
+          gray[1, "stat"],
+          1
+        ),
+        "on",
+        round(
+          gray[1, "df"]
+        ),
+        "df"
+      )
+
+      p_row[
+        ncol(tab) - 1L
+      ] <- "p-value"
+
+      p_row[
+        ncol(tab)
+      ] <- format_p(
+        gray[1, "pv"]
+      )
+
+    } else {
+
+      gray_row[1L] <-
+        "Gray's Test"
+
+      gray_row[
+        ncol(tab)
+      ] <- paste(
+        "ChiSq",
+        reportRmd:::niceNum(
+          gray[1, "stat"],
+          1
+        ),
+        "on",
+        round(
+          gray[1, "df"]
+        ),
+        "df"
+      )
+
+      p_row[1L] <-
+        "p-value"
+
+      p_row[
+        ncol(tab)
+      ] <- format_p(
+        gray[1, "pv"]
+      )
+    }
+
     tab <- rbind(
       tab,
-      c(
-        rep("", ncol(tab) - 3),
-        "Gray's Test",
-        "ChiSq",
-        paste(niceNum(gray[1], 1), "on", round(gray[3]), "df")
-      )
+      gray_row,
+      p_row
     )
-    tab <- rbind(tab, c(rep("", ncol(tab) - 2), "p-value", formatp(gray[2])))
+
+    rownames(tab) <- NULL
   }
+
+
+  ## ============================================================
+  ## Return/output
+  ## ============================================================
   if (tableOnly) {
     return(tab)
   }
-  outTable(
+
+  reportRmd:::outTable(
     tab,
     caption = caption,
-    align = paste0("l", paste0(rep("r", ncol(tab) - 1), collapse = ""))
+    align = paste0(
+      "l",
+      paste0(
+        rep(
+          "r",
+          ncol(tab) - 1
+        ),
+        collapse = ""
+      )
+    )
   )
 }
 

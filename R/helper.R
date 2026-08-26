@@ -177,6 +177,12 @@ pstprn <- function(x, compact = FALSE) {
 #' @return Character string with first element followed by remaining elements in parentheses
 #' @keywords internal
 psthr <- function(x, y = 2, compact = FALSE) {
+  # If the point estimate is not available, do not print
+  # confidence limits separately.
+  if (length(x) == 0L || is.na(x[1])) {
+    return("Not Estimable")
+  }
+
   x <- sapply(x, function(x) {
     ifelse(abs(x) < 0.01 | abs(x) > 1000,
            format(x, scientific = TRUE, digits = y),
