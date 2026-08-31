@@ -16,7 +16,9 @@ xvar_function(
   pvalue = TRUE,
   effSize = FALSE,
   show.tests = FALSE,
-  percentage = "col"
+  percentage = "col",
+  B = 1000,
+  seed = 1
 )
 }
 \arguments{

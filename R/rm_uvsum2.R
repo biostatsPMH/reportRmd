@@ -140,12 +140,8 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   if (missing(covs)) stop('covs is a required argument')
   if (missing(response)) stop('response is a required argument')
 
-  response_var <- tidyselect::eval_select(expr = enquo(response), data = data[unique(names(data))],
-                                          allow_rename = FALSE)
-  response <- names(response_var)
-  x_vars <- tidyselect::eval_select(expr = enquo(covs), data = data[unique(names(data))],
-                                    allow_rename = FALSE)
-  x_vars <- names(x_vars)
+  response <- eval_select_chr(enquo(response), data[unique(names(data))])
+  x_vars <- eval_select_chr(enquo(covs), data[unique(names(data))])
   covs <- unique(x_vars)
 
   if (!all(response %in% names(data))) stop("response is not a variable in data")
@@ -227,6 +223,12 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
       covs <- setdiff(covs,v)
     }
   }
+  # covs may have been reduced above (dates, the response itself, variables
+  # with a single observed value); the reduced list is what must be fit
+  if (length(covs) == 0)
+    stop("No covariates remain to be fit; see the warnings above.")
+  argList$covs <- covs
+
   # remove arguments not used by uvsum2
   valid_args <- names(formals(uvsum2))
   argList <- argList[names(argList) %in% valid_args]
@@ -235,6 +237,21 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   tab <- do.call(uvsum2,argList)
   # If user specifies return models, don't format a table, just return a list of models
   if (returnModels) return (tab$models)
+
+  if (removeInf) {
+    # Blank out unstable estimates rather than the whole row, so that the
+    # covariate is still listed in the table
+    est_col <- grep("\\([0-9.]+%CI\\)", names(tab))[1]
+    if (!is.na(est_col)) {
+      inf_rows <- grep("Inf|NaN", tab[[est_col]])
+      if (length(inf_rows) > 0) {
+        p_cols <- grep("p-value", names(tab))
+        for (cl in c(est_col, p_cols)) tab[inf_rows, cl] <- NA
+        message("Unstable estimates removed for: ",
+                paste(unique(stats::na.omit(tab[[1]][inf_rows])), collapse = ", "))
+      }
+    }
+  }
   to_indent <- attr(tab, "to_indent")
   bold_cells <- attr(tab, "bold_cells")
   att_tab <- attributes(tab)
@@ -324,8 +341,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
                                    ordered = TRUE)
       }
       if (!is.null(reflevel)) {
-        data[[response]] <- stats::relevel(data[[response]],
-                                           ref = reflevel)
+        data[[response]] <- set_ref_level(data[[response]], reflevel)
       }
     }
     else if (type %in% c("coxph", "crr")) {
@@ -352,8 +368,7 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     } else if (inherits(data[[response[1]]],"ordered")) {
       type <- "ordinal"
       if (!is.null(reflevel)) {
-        data[[response]] <- stats::relevel(data[[response]],
-                                           ref = reflevel)
+        data[[response]] <- set_ref_level(data[[response]], reflevel)
       }
     } else if (inherits(data[[response[1]]],"integer")) {
       type <- "poisson"
@@ -424,3 +439,47 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   if (returnModels) return(list(summaryList,models=modelList)) else return(summaryList)
 }
 
+
+
+#' Move a level to the front of a factor
+#'
+#' [stats::relevel] refuses ordered factors, which is the only case that
+#' `reflevel` is documented to apply to, so the reordering is done directly.
+#'
+#' @param x a factor or ordered factor
+#' @param ref the level to place first
+#' @return `x` with `ref` as its first level
+#' @keywords internal
+set_ref_level <- function(x, ref) {
+  if (!inherits(x, "factor")) x <- factor(x)
+  if (!ref %in% levels(x))
+    stop("reflevel '", ref, "' is not a level of the response variable. Levels are: ",
+         paste(levels(x), collapse = ", "))
+  factor(x, levels = c(ref, setdiff(levels(x), ref)), ordered = is.ordered(x))
+}
+
+
+#' Resolve a tidyselect argument that may hold a character vector
+#'
+#' Users routinely pass column names held in a variable, e.g.
+#' `v <- "age"; rm_uvsum(response = v, ...)`. Passing that straight to
+#' [tidyselect::eval_select] raises the "external vector in selections"
+#' deprecation warning, so character values are wrapped in `all_of()` first.
+#'
+#' @param q a quosure captured from the calling function
+#' @param data the data frame being selected from
+#' @return a character vector of column names
+#' @keywords internal
+eval_select_chr <- function(q, data) {
+  val <- tryCatch(rlang::eval_tidy(q), error = function(e) NULL)
+  if (is.character(val)) {
+    # equivalent to all_of(val), without routing a bare character vector
+    # through tidyselect
+    absent <- setdiff(val, names(data))
+    if (length(absent) > 0)
+      stop("Column(s) not found in data: ", paste(absent, collapse = ", "),
+           call. = FALSE)
+    return(unique(val))
+  }
+  names(tidyselect::eval_select(expr = q, data = data, allow_rename = FALSE))
+}

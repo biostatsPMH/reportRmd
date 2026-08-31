@@ -33,7 +33,9 @@ rm_covsum(
   fontsize,
   chunk_label,
   xvars = NULL,
-  grp = NULL
+  grp = NULL,
+  B = 1000,
+  seed = 1
 )
 }
 \arguments{
@@ -122,6 +124,14 @@ the covariate}
 \item{xvars}{Alias for \code{covs}. Supports tidyselect.}
 
 \item{grp}{Alias for \code{maincov}. Supports tidyselect.}
+
+\item{B}{number of replicates used when a Monte Carlo approximation to
+Fisher's exact test is required. Defaults to 1000.}
+
+\item{seed}{integer seed set for the duration of any Monte Carlo test so
+that p-values are reproducible; the calling session's random state is
+restored afterwards. Defaults to 1. Set to NULL to leave the random state
+untouched, in which case p-values will vary between calls.}
 }
 \value{
 A character vector of the table source code, unless tableOnly=TRUE in

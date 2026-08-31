@@ -1038,7 +1038,6 @@ create_base_plot <- function(
         colour = "transparent",
         fill = "transparent"
       ),
-      legend.key.spacing.y = unit(-.25, "lines"),
       legend.margin = margin(0, 0, 0, 0),
       legend.box.margin = margin(0, 0, 0, 0),
       legend.background = ggplot2::element_blank()
@@ -1050,6 +1049,11 @@ create_base_plot <- function(
     ) +
     ggplot2::coord_cartesian(xlim = c(0, maxxlim)) +
     ggplot2::scale_y_continuous(paste0(ylab, "\n"), limits = ylim)
+  # legend.key.spacing.y was introduced in ggplot2 3.5.0; setting it on an
+  # older version aborts the plot rather than being ignored
+  if (utils::packageVersion("ggplot2") >= "3.5.0") {
+    p <- p + ggplot2::theme(legend.key.spacing.y = unit(-.25, "lines"))
+  }
   if (is.null(legend.title)) {
     p <- p + ggplot2::theme(legend.title = element_blank())
   } else {
@@ -1072,12 +1076,22 @@ create_base_plot <- function(
   }
   # position the legend
   if (is.numeric(legend.pos)) {
-    p <- p +
-      ggplot2::theme(
-        legend.position = "inside",
-        legend.position.inside = legend.pos,
-        legend.justification.inside = legend.pos
-      )
+    # legend.position.inside was introduced in ggplot2 3.5.0; before that a
+    # numeric legend.position placed the legend inside the panel directly
+    if (utils::packageVersion("ggplot2") >= "3.5.0") {
+      p <- p +
+        ggplot2::theme(
+          legend.position = "inside",
+          legend.position.inside = legend.pos,
+          legend.justification.inside = legend.pos
+        )
+    } else {
+      p <- p +
+        ggplot2::theme(
+          legend.position = legend.pos,
+          legend.justification = legend.pos
+        )
+    }
   } else {
     p <- p + ggplot2::theme(legend.position = legend.pos)
   }
@@ -1723,6 +1737,10 @@ ggkmcif2 <- function(
     } else {
       "CIF"
     }
+  }
+  # Accept km/cif in any case rather than erroring on a valid-looking value
+  if (!is.null(type) && length(type) == 1 && is.character(type)) {
+    type <- toupper(trimws(type))
   }
   # Check & set legend position
   if (!("legend.pos" %in% names(mainArgs))) {

@@ -21,7 +21,8 @@ rm_cifsum(
   showGraystest = TRUE,
   digits = 2,
   caption = NULL,
-  tableOnly = FALSE
+  tableOnly = FALSE,
+  nocensored = FALSE
 )
 }
 \arguments{
@@ -29,16 +30,20 @@ rm_cifsum(
 
 \item{time}{string indicating survival time variable}
 
-\item{status}{string indicating event status variable; must have at least 3
-levels, e.g. 0 = censor, 1 = event, 2 = competing risk}
+\item{status}{string indicating the event status variable. The status
+variable may be numeric, character, or factor and must identify the event
+of interest and at least one competing event. Censoring and the event of
+interest are specified using \code{cencode} and \code{eventcode}.}
 
-\item{group}{string or character vector indicating the variable to group
-observations by}
+\item{group}{string or character vector indicating the variable(s) to group
+observations by. If this is left as NULL (the default), summaries are
+provided for the entire cohort.}
 
-\item{eventcode}{numerical variable indicating event, default is 1}
+\item{eventcode}{value of the status variable indicating the event of
+interest. May be numeric, character, or factor-compatible. Default is 1.}
 
-\item{cencode}{numerical variable indicating censored observation, default is
-0}
+\item{cencode}{value of the status variable indicating censoring. May be
+numeric, character, or factor-compatible. Default is 0.}
 
 \item{eventtimes}{numeric vector specifying when event probabilities should
 be calculated}
@@ -58,8 +63,8 @@ in conjunction with the digits argument.}
 \item{na.action}{default is to omit missing values, but can be set to throw
 and error using na.action='na.fail'}
 
-\item{showCounts}{boolean indicating if the at risk, events and censored
-columns should be output, default is TRUE}
+\item{showCounts}{boolean indicating if the event and total counts should be
+displayed; default is TRUE}
 
 \item{showGraystest}{boolean indicating Gray's test should be included in the
 final table, default is TRUE}
@@ -70,6 +75,12 @@ default is 2.}
 \item{caption}{table caption for markdown output}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
+
+\item{nocensored}{boolean indicating that the dataset genuinely contains no
+censored observations. If the value specified by \code{cencode} is not
+observed, the function will stop unless \code{nocensored = TRUE}; this
+provides protection against an incorrectly specified censoring value.
+Default is FALSE.}
 }
 \value{
 A character vector of the event table source code, unless
@@ -97,4 +108,12 @@ eventtimes=c(1825,3650),eventtimeunit='day')
 rm_cifsum(data=pbc,time='time',status='status',group=c('trt','sex'),
 eventtimes=c(1825,3650),eventtimeunit='day')
 
+#'
+# Character event status
+pbc$status_chr <- factor(pbc$status, levels = c(0, 1, 2),
+  labels = c("Censored", "Transplant", "Death"))
+
+rm_cifsum(data = pbc, time = "time", status = "status_chr", group = "trt",
+  eventcode = "Death", cencode = "Censored", eventtimes = c(1825, 3650),
+  eventtimeLbls = c(5, 10), eventtimeunit = "yr")
 }

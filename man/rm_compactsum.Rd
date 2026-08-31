@@ -24,7 +24,9 @@ rm_compactsum(
   show.sumstats = FALSE,
   show.tests = FALSE,
   full = TRUE,
-  percentage = "col"
+  percentage = "col",
+  B = 1000,
+  seed = 1
 )
 }
 \arguments{
@@ -91,6 +93,14 @@ table, ignored if grp is not specified}
 
 \item{percentage}{choice of how percentages are presented, either column
 (default) or row}
+
+\item{B}{number of replicates used when a Monte Carlo approximation to
+Fisher's exact test is required. Defaults to 1000.}
+
+\item{seed}{integer seed set for the duration of any Monte Carlo test so that
+p-values are reproducible; the calling session's random state is restored
+afterwards. Defaults to 1. Set to NULL to leave the random state untouched,
+in which case p-values will vary between calls.}
 }
 \value{
 A character vector of the table source code, unless tableOnly = TRUE

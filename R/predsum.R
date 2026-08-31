@@ -22,6 +22,10 @@
 #'   output has four columns: \code{Statistic}, \code{Estimate}, \code{lower},
 #'   \code{upper}.
 #' @param nboot Number of bootstrap replicates, default \code{2000}.
+#' @param seed integer seed set for the duration of the bootstrap so that
+#'   confidence intervals are reproducible; the calling session's random state
+#'   is restored afterwards. Defaults to 1. Set to NULL to leave the random
+#'   state untouched, in which case intervals will vary between calls.
 #' @param digits Number of digits for rounding, default \code{2}.
 #' @param output One of \code{"epi"} (default), \code{"data-science"},
 #'   \code{"all"}, or a character vector of statistic names. Recognised names
@@ -86,12 +90,29 @@ predsum <- function(true,
                     ci_width = 0.95,
                     ci_separate = FALSE,
                     nboot = 2000,
+                    seed = 1,
                     digits = 2,
                     output = "epi",
                     tableOnly = FALSE) {
 
   ci <- match.arg(ci)
   alpha <- 1 - ci_width
+
+  # Bootstrap CIs move between calls unless the seed is fixed, which makes a
+  # re-knitted report disagree with the one already circulated. The seed is set
+  # for the duration of this call only and the caller's random state restored.
+  if (!is.null(seed)) {
+    has_old <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+    old_seed <- if (has_old) get(".Random.seed", envir = globalenv()) else NULL
+    on.exit({
+      if (has_old) {
+        assign(".Random.seed", old_seed, envir = globalenv())
+      } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
+        rm(".Random.seed", envir = globalenv())
+      }
+    }, add = TRUE)
+    set.seed(seed)
+  }
 
 
   # Validate and coerce true
@@ -171,7 +192,8 @@ predsum <- function(true,
     else c(NA_real_, NA_real_)
 
     # Shared bootstrap resamples for F1, Brier, AUC-PR
-    message("Bootstrapping CIs for Brier, F1 and AUC-PR (", nboot, " replicates).")
+    message("Bootstrapping CIs for Brier, F1 and AUC-PR (", nboot, " replicates, seed = ",
+            if (is.null(seed)) "NULL" else seed, ").")
     boot_mat <- matrix(NA_real_, nrow = nboot, ncol = 3,
                        dimnames = list(NULL, c("f1", "brier", "aucpr")))
     for (b in seq_len(nboot)) {

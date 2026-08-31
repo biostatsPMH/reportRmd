@@ -38,7 +38,7 @@ Imports:
     cmprsk,
     cowplot,
     dplyr,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     ggpubr,
     kableExtra,
     knitr,
@@ -58,3 +58,4 @@ LazyData: no
 URL: https://biostatspmh.github.io/reportRmd/
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.1

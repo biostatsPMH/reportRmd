@@ -25,7 +25,9 @@ covsum(
   testcont = c("rank-sum test", "ANOVA"),
   testcat = c("Chi-squared", "Fisher"),
   include_missing = FALSE,
-  percentage = c("column", "row")
+  percentage = c("column", "row"),
+  B = 1000,
+  seed = 1
 )
 }
 \arguments{
@@ -92,6 +94,14 @@ be included in statistical tests}
 
 \item{percentage}{choice of how percentages are presented ,one of
 \emph{column} (default) or \emph{row}}
+
+\item{B}{number of replicates used when a Monte Carlo approximation to
+Fisher's exact test is required. Defaults to 1000.}
+
+\item{seed}{integer seed set for the duration of any Monte Carlo test so
+that p-values are reproducible; the calling session's random state is
+restored afterwards. Defaults to 1. Set to NULL to leave the random state
+untouched, in which case p-values will vary between calls.}
 }
 \description{
 Returns a dataframe corresponding to a descriptive table.

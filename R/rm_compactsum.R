@@ -10,7 +10,8 @@ fmt_pct <- function(fraction, digits.cat) {
 # Used by xvar_function.rm_binary, .rm_categorical, and .rm_two_level
 # @keywords internal
 # @noRd
-apply_cat_test <- function(df, cont_table, x_var, pvalue, effSize, show.tests) {
+apply_cat_test <- function(df, cont_table, x_var, pvalue, effSize, show.tests,
+                           B = 1000, seed = 1) {
   if (!(pvalue | effSize | show.tests)) return(df)
   if (!any(chi_test_rm(cont_table)$expected < 5)) {
     chisq_test <- chi_test_rm(cont_table)
@@ -25,7 +26,7 @@ apply_cat_test <- function(df, cont_table, x_var, pvalue, effSize, show.tests) {
     if (pvalue) attr(df, "stat_test") <- "chi-square test"
     if (show.tests & effSize) df[1, "effStat"] <- "Cramer's V"
   } else {
-    fisher_test <- fisher_test_rm(cont_table)
+    fisher_test <- fisher_test_rm(cont_table, B = B, seed = seed)
     df[1, "p-value"] <- fisher_test$p.value
     if (effSize) {
       output <- calc_CramerV(fisher_test)
@@ -104,6 +105,12 @@ apply_cat_test <- function(df, cont_table, x_var, pvalue, effSize, show.tests) {
 #'  p-values.
 #'@param full logical indicating if you want the full sample included in the
 #'  table, ignored if grp is not specified
+#'@param B number of replicates used when a Monte Carlo approximation to
+#'  Fisher's exact test is required. Defaults to 1000.
+#'@param seed integer seed set for the duration of any Monte Carlo test so that
+#'  p-values are reproducible; the calling session's random state is restored
+#'  afterwards. Defaults to 1. Set to NULL to leave the random state untouched,
+#'  in which case p-values will vary between calls.
 #'@param percentage choice of how percentages are presented, either column
 #'  (default) or row
 #'@returns A character vector of the table source code, unless tableOnly = TRUE
@@ -161,7 +168,7 @@ apply_cat_test <- function(df, cont_table, x_var, pvalue, effSize, show.tests) {
 #' #effSize = TRUE)
 #'
 #'@export
-rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.sumstats =FALSE,show.tests = FALSE, full = TRUE, percentage = "col") {
+rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly = FALSE, covTitle = "", digits = 1, digits.cat = 0,  nicenames = TRUE, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, p.adjust = "none", unformattedp = FALSE, show.sumstats =FALSE,show.tests = FALSE, full = TRUE, percentage = "col", B = 1000, seed = 1) {
   if (missing(data))
     stop("data is a required argument")
   if (!inherits(data, "data.frame"))
@@ -169,13 +176,9 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   if (missing(xvars))
     stop("xvars is a required argument")
 
-  x_vars <- tidyselect::eval_select(expr = tidyselect::enquo(xvars), data = data[unique(names(data))],
-                                    allow_rename = FALSE)
-  x_vars <- names(x_vars)
+  x_vars <- eval_select_chr(tidyselect::enquo(xvars), data[unique(names(data))])
   if (!missing(grp)) {
-    grouping_var <- tidyselect::eval_select(expr = tidyselect::enquo(grp), data = data[unique(names(data))],
-                                            allow_rename = FALSE)
-    grouping_var <- names(grouping_var)
+    grouping_var <- eval_select_chr(tidyselect::enquo(grp), data[unique(names(data))])
   }
   else {
     grouping_var <- NULL
@@ -184,7 +187,6 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
   argsToPass <- intersect(names(formals(xvar_function)), names(argList))
   argsToPass <- setdiff(argsToPass,"xvars")
   args <- argList[argsToPass]
-  xvars <- x_vars
   dt_msg <- FALSE
 
   if (!missing(grp) && length(grouping_var)>1) stop("Only one grouping variable is allowed")
@@ -256,6 +258,11 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
     stop("percentage argument must be either 'row' or 'col'")
   }
 
+  # x_vars may have been reduced above (all-missing variables, the grouping
+  # variable itself); take the reduced list, not the one requested
+  if (length(x_vars) == 0) stop("No variables remain to be summarised.")
+  xvars <- x_vars
+
   data <- dplyr::select(data, dplyr::all_of(c(grouping_var,x_vars)))
   data_lbls <- extract_labels(data)
 
@@ -289,6 +296,8 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 
   args$grp <- grouping_var
   args$data <- data
+  args["B"] <- list(B)
+  args["seed"] <- list(seed)
   if (tableOnly) {
     if (covTitle=="") args$covTitle <- "Covariate"  }
 
@@ -400,7 +409,7 @@ rm_compactsum <- function(data, xvars, grp, use_mean, caption = NULL, tableOnly 
 #'
 #' @keywords internal
 #' @export
-xvar_function <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   UseMethod("xvar_function", xvar)
 }
 
@@ -410,7 +419,7 @@ xvar_function.default <- function(xvar, ...) {
 }
 
 #' @export
-xvar_function.rm_date <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function.rm_date <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   # no testing implemented for dates, all stats not run, just summarised with median and either iqr or range
   pvalue=FALSE; effSize=FALSE; show.tests = FALSE
 
@@ -466,7 +475,7 @@ xvar_function.rm_date <- function(xvar, data, grp, covTitle = "", digits = 1, di
 
 
 #' @export
-xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
@@ -502,7 +511,8 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests)
+    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests,
+                         B = B, seed = seed)
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   attr(df, "stat_sum") <- "counts (%)"
@@ -510,7 +520,7 @@ xvar_function.rm_binary <- function(xvar, data, grp, covTitle = "", digits = 1, 
 }
 
 #' @export
-xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
@@ -587,7 +597,7 @@ xvar_function.rm_mean <- function(xvar, data, grp, covTitle = "", digits = 1, di
 }
 
 #' @export
-xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
@@ -705,7 +715,7 @@ xvar_function.rm_median <- function(xvar, data, grp, covTitle = "", digits = 1, 
 }
 
 #' @export
-xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
@@ -740,21 +750,22 @@ xvar_function.rm_categorical <- function(xvar, data, grp, covTitle = "", digits 
     }
     cont_table <- table(x_var, group_var)
     cont_table <- cont_table[rowSums(cont_table) > 0, colSums(cont_table) > 0]
-    if (is.null(dim(cont_table)) | min(dim(cont_table)) < 2) {
+    if (is.null(dim(cont_table)) || min(dim(cont_table)) < 2) {
       df[1, "Missing"] <- sum(is.na(x_var))
       if (interactive()) message(paste("Only non-missing data for one group, no statistical test for",xvar,"performed."))
       return(df)
     }
     no_na <- subset(data, !is.na(data[[xvar]]))
     no_na_tab <- table(no_na[[grp]])
-    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests)
+    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests,
+                         B = B, seed = seed)
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   return(df)
 }
 
 #' @export
-xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col") {
+xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 1, digits.cat = 0, iqr = TRUE, all.stats = FALSE, pvalue = TRUE, effSize = FALSE, show.tests = FALSE, percentage = "col", B = 1000, seed = 1) {
   if (!(pvalue | effSize)) {
     show.tests = FALSE
   }
@@ -806,7 +817,7 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
     }
     cont_table <- table(x_var, group_var)
     cont_table <- cont_table[rowSums(cont_table) > 0, colSums(cont_table) > 0]
-    if (is.null(dim(cont_table)) | min(dim(cont_table)) < 2) {
+    if (is.null(dim(cont_table)) || min(dim(cont_table)) < 2) {
       df[1, "Missing"] <- sum(is.na(x_var))
       return(df)
     }
@@ -817,7 +828,8 @@ xvar_function.rm_two_level <- function(xvar, data, grp, covTitle = "", digits = 
       pvalue <- FALSE
       show.tests <- FALSE
     }
-    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests)
+    df <- apply_cat_test(df, cont_table, x_var, pvalue, effSize, show.tests,
+                         B = B, seed = seed)
   }
   df[1, "Missing"] <- sum(is.na(x_var))
   attr(df, "stat_sum") <- "counts (%)"
@@ -1086,14 +1098,17 @@ uncorrectedChi <- function(x) {
   return(stats::chisq.test(x$observed,correct = FALSE))
 }
 
-fisher_test_rm <- function(x,...){
+fisher_test_rm <- function(x, B = 1000, seed = 1, ...){
   chi.out <- suppressWarnings(stats::chisq.test(x,...))
   rtn <- try(stats::fisher.test(x,...),silent=TRUE)
   if (inherits(rtn,"try-error")){
-    message("Using MC sim. Use set.seed() prior to function for reproducible results.")
-    rtn <- stats::fisher.test(x, simulate.p.value = TRUE)
-    rtn$p_type <- "MC sim"
-    rtn$stat_test <- "Fisher's exact test with Monte Carlo simulation"
+    message("Fisher's exact test could not be computed; using Monte Carlo ",
+            "simulation with B = ", B, " and seed = ",
+            if (is.null(seed)) "NULL" else seed, ".")
+    rtn <- with_seed(seed,
+                     stats::fisher.test(x, simulate.p.value = TRUE, B = B))
+    rtn$p_type <- paste0("MC sim (B=", B, ")")
+    rtn$stat_test <- paste0("Fisher's exact test with Monte Carlo simulation (B=", B, ")")
   } else {
     rtn$p_type <- "Fisher Exact"
     rtn$stat_test <- "Fisher's exact test"

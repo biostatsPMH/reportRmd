@@ -34,7 +34,7 @@ lung_missing$AgeGroup[sample(c(1:228),50)] <- NA
 #-------------------------------------------------------------------------------------
 
 test_that("covsum calculates correctly with no maincov", {
-  output = covsum(data=lung,
+  output = reportRmd:::covsum(data=lung,
                   covs=c('Status','Sex','wt.loss','OneLevelFactor'))
   expect_equal(names(output) , c("Covariate",'n=228'))
   expect_equal(output$Covariate , c("Status","0","1","Sex","Male","Female","wt loss","Mean (sd)","Median (Min,Max)","Missing","OneLevelFactor","one level"))
@@ -43,7 +43,7 @@ test_that("covsum calculates correctly with no maincov", {
 })
 
 test_that("covsum calculates correctly with maincov", {
-  output = covsum(data=lung,
+  output = reportRmd:::covsum(data=lung,
                   maincov='Status',
                   covs=c('Sex','wt.loss','OneLevelFactor'))
   expect_equal(names(output) ,c("Covariate","Full Sample (n=228)","0 (n=63)","1 (n=165)","p-value") )
@@ -53,7 +53,7 @@ test_that("covsum calculates correctly with maincov", {
 })
 
 test_that("covsum rounds variables correctly", {
-  output = covsum(data=lung,
+  output = reportRmd:::covsum(data=lung,
                   covs=c('Status','Sex','wt.loss','OneLevelFactor','x_pred'),
                   digits=3,
                   digits.cat = 1)
@@ -62,7 +62,7 @@ test_that("covsum rounds variables correctly", {
   expect_equal(names(output) , c("Covariate",'n=228'))
   expect_equal(output$Covariate , c("Status","0","1","Sex","Male","Female","wt loss","Mean (sd)","Median (Min,Max)","Missing","OneLevelFactor","one level","x pred","Mean (sd)",'Median (Min,Max)'))
   expect_equal(output$`n=228`,c("","63 (27.6)","165 (72.4)","","138 (60.5)","90 (39.5)","","9.832 (13.140)","7 (-24, 68)","14","","228 (100.0)","",mean_sd,med_min_max))
-  output = covsum(data=lung,
+  output = reportRmd:::covsum(data=lung,
                   covs=c('Status','Sex','wt.loss','OneLevelFactor','x_pred'),
                   digits=3,
                   digits.cat = 1,
@@ -75,7 +75,7 @@ test_that("covsum rounds variables correctly", {
 })
 
 test_that("covsum calculates rows correctly", {
-  output = covsum(data=test_row,
+  output = reportRmd:::covsum(data=test_row,
                   maincov='type',
                   covs=c('group','group2','group3','group4'),
                   percentage = 'row',testcat = 'Fisher')
@@ -93,7 +93,7 @@ test_that("covsum calculates rows correctly", {
 })
 
 test_that("covsum includes missing correctly", {
-  output = covsum(data=lung_missing,maincov = 'ph.ecog',
+  output = reportRmd:::covsum(data=lung_missing,maincov = 'ph.ecog',
                   covs=c('Sex','AgeGroup','age','meal.cal'),include_missing = TRUE,pvalue = FALSE)
 
   expect_equal(names(output) ,c("Covariate", "Full Sample (n=228)", "0 (n=49)", "1 (n=86)",
@@ -110,7 +110,7 @@ test_that("covsum includes missing correctly", {
 })
 
 test_that("covsum includes missing correctly when presenting row percentages", {
-  output = covsum(data=lung_missing,maincov = 'ph.ecog',
+  output = reportRmd:::covsum(data=lung_missing,maincov = 'ph.ecog',
                   covs=c('Sex','AgeGroup','age','meal.cal'),include_missing = TRUE,pvalue = FALSE,percentage = 'row',digits.cat = 3)
 
   expect_equal(names(output) ,c("Covariate", "Full Sample (n=228)", "0 (n=49)", "1 (n=86)",
@@ -156,7 +156,7 @@ test_that("covsum includes missing correctly when presenting row percentages", {
 #     #                paste(format(round(exp(x2[2,1]),digits),nsmall=digits),
 #     #                      paste0("(",paste0(format(round(c(exp(x2[2,1]-qnorm(1-(1-ci_width)/2)*x2[2,2]),exp(x2[2,1]+qnorm(1-(1-ci_width)/2)*x2[2,2])),digits),nsmall=digits),collapse=", "),")")))
 #     set.seed(1)
-#     output = uvsum2(response = 'Status',
+#     output = reportRmd:::uvsum2(response = 'Status',
 #                    covs=c('x_null','x_pred'),
 #                    data=lung,
 #                    type='logistic',
@@ -181,7 +181,7 @@ test_that("uvsum2 linear regression CIS are correct",{
                    paste(format(round(x2[2,1],digits),nsmall=digits),
                          paste0("(",paste0(format(round(c(x2[2,1]-qt(1-(1-ci_width)/2,m2$df.residual)*x2[2,2],x2[2,1]+qt(1-(1-ci_width)/2,m2$df.residual)*x2[2,2]),digits),nsmall=digits),collapse=", "),")")))
     expected = gsub(',  ',', ',expected)
-    output = uvsum2(response = 'age',
+    output = reportRmd:::uvsum2(response = 'age',
                    covs=c('wt.loss','Sex'),
                    data=lung,
                    type='linear',
@@ -242,7 +242,7 @@ test_that("uvsum2 outputs geeglm models correctly",{
   # gee1 <- geeglm(mf1, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
   # mf2 <- formula(Weight ~ Time)
   # gee2 <- geeglm(mf2, data=dietox, id=Pig, family=gaussian("identity"), corstr="ar1")
-  output = uvsum2(response = 'Weight',covs=c('Cu','Time'), gee=T,
+  output = reportRmd:::uvsum2(response = 'Weight',covs=c('Cu','Time'), gee=T,
                  data=dietox, id='Pig', family=gaussian("identity"), corstr="ar1",whichp='both')
   names = c('Variable','Estimate(95%CI)','p-value','N (obs|clusters)')
   covs = c('Cu','Cu000','Cu035','Cu175','Time')
@@ -280,8 +280,8 @@ test_that("rm_mvsum outputs geeglm models correctly",{
 #mvsum2(crrRx(time+crr_status~age+sex,data=lung),data=lung)
 #mvsum2(coxph(Surv(time,status)~age+sex,data=lung))
 
-#uvsum2(response = c('time','crr_status'),covs=c('age','sex'),data=lung)
-#uvsum2(response = c('time','status'),covs=c('age','sex'),data=lung)
+#reportRmd:::uvsum2(response = c('time','crr_status'),covs=c('age','sex'),data=lung)
+#reportRmd:::uvsum2(response = c('time','status'),covs=c('age','sex'),data=lung)
 
 #-------------------------------------------------------------------------------------
 # lmer (lme4) tests

@@ -66,7 +66,13 @@ in conjunction with the digits argument.}
 with a space}
 
 \item{include_unadjusted}{Logical. If TRUE, includes univariate estimates
-alongside multivariable estimates. Default is FALSE.}
+alongside multivariable estimates. Default is FALSE. The univariate models
+are fit on the same complete-case sample as the multivariable model, so
+that the two sets of estimates are directly comparable and the N column
+applies to both. Any p-value adjustment requested via \code{p.adjust} is applied
+to the multivariable p-values only. Covariates that appear only inside an
+interaction term are appended to the end of the table with an unadjusted
+estimate and no adjusted estimate.}
 
 \item{chunk_label}{Deprecated, previously used in Word to allow
 cross-referencing, this should now be done at the chunk level.}

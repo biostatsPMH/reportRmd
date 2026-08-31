@@ -514,6 +514,12 @@ covsum_prepare <- function(
 #' @param maincov covariate to stratify table by
 #' @param digits number of digits for summarizing mean data, does not affect
 #'   p-values
+#' @param B number of replicates used when a Monte Carlo approximation to
+#'   Fisher's exact test is required. Defaults to 1000.
+#' @param seed integer seed set for the duration of any Monte Carlo test so
+#'   that p-values are reproducible; the calling session's random state is
+#'   restored afterwards. Defaults to 1. Set to NULL to leave the random state
+#'   untouched, in which case p-values will vary between calls.
 #' @param numobs named list overriding the number of people you expect to have
 #'   the covariate
 #' @param markup boolean indicating if you want latex markup
@@ -585,7 +591,9 @@ covsum <- function(
   testcont = c("rank-sum test", "ANOVA"),
   testcat = c("Chi-squared", "Fisher"),
   include_missing = FALSE,
-  percentage = c("column", "row")
+  percentage = c("column", "row"),
+  B = 1000,
+  seed = 1
 ) {
   if (missing(data)) {
     stop("data is a required argument")
@@ -676,10 +684,9 @@ covsum <- function(
       if (!is.null(maincov)) {
         if (pvalue) {
           pdata = data[!(data[[cov]] %in% excludeLevel), ]
-          lowcounts <- sum(
-            table(pdata[[maincov]], pdata[[cov]], exclude = excludeLevel) < 5
-          ) >
-            0
+          lowcounts <- low_expected_counts(
+            table(pdata[[maincov]], pdata[[cov]], exclude = excludeLevel)
+          )
           if (!missing_testcat & testcat == "Chi-squared" & lowcounts) {
             warning(
               paste(
@@ -702,17 +709,19 @@ covsum <- function(
             }
             if (is.error(p)) {
               message(
-                "Using MC sim. Use set.seed() prior to function for reproducible results."
+                "Fisher's exact test could not be computed for ", cov,
+                "; using Monte Carlo simulation with B = ", B,
+                " and seed = ", if (is.null(seed)) "NULL" else seed, "."
               )
               p <- try(
-                stats::fisher.test(
-                  pdata[[maincov]],
-                  pdata[[cov]],
-                  simulate.p.value = TRUE
-                )$p.value,
+                with_seed(seed, stats::fisher.test(
+                  table(pdata[[cov]], pdata[[maincov]]),
+                  simulate.p.value = TRUE,
+                  B = B
+                )$p.value),
                 silent = TRUE
               )
-              p_type <- "MC sim"
+              p_type <- paste0("MC sim (B=", B, ")")
               if (effSize) {
                 e_type <- "Cramer's V"
                 e <- covsum_cramers_v(pdata[[maincov]], pdata[[cov]], N)
@@ -3377,6 +3386,12 @@ scrolling_table <- function(knitrTable, pixelHeight = 500) {
 #'   levels will be excluded from association tests, but not the table. This can
 #'   be useful for levels where there is a logical skip (ie not missing, but not
 #'   presented). Ignored if pvalue=FALSE.
+#' @param B number of replicates used when a Monte Carlo approximation to
+#'   Fisher's exact test is required. Defaults to 1000.
+#' @param seed integer seed set for the duration of any Monte Carlo test so
+#'   that p-values are reproducible; the calling session's random state is
+#'   restored afterwards. Defaults to 1. Set to NULL to leave the random state
+#'   untouched, in which case p-values will vary between calls.
 #' @param numobs named list overriding the number of people you expect to have
 #'   the covariate
 #' @param fontsize PDF/HTML output only, manually set the table fontsize
@@ -3444,7 +3459,9 @@ rm_covsum <- function(
   fontsize,
   chunk_label,
   xvars = NULL,
-  grp = NULL
+  grp = NULL,
+  B = 1000,
+  seed = 1
 ) {
   if (missing(data)) {
     stop("data is a required argument")
@@ -3455,40 +3472,27 @@ rm_covsum <- function(
 
   # Tidyselect resolution for covs/xvars
   if (!is.null(substitute(covs))) {
-    covs_sel <- tidyselect::eval_select(
-      expr = tidyselect::enquo(covs),
-      data = data[unique(names(data))],
-      allow_rename = FALSE
-    )
-    covs <- names(covs_sel)
+    covs <- eval_select_chr(tidyselect::enquo(covs), data[unique(names(data))])
   } else if (!is.null(substitute(xvars))) {
-    covs_sel <- tidyselect::eval_select(
-      expr = tidyselect::enquo(xvars),
-      data = data[unique(names(data))],
-      allow_rename = FALSE
-    )
-    covs <- names(covs_sel)
+    covs <- eval_select_chr(tidyselect::enquo(xvars), data[unique(names(data))])
   } else {
     stop("Either 'covs' or 'xvars' must be provided")
   }
 
   # Tidyselect resolution for maincov/grp
   if (!is.null(substitute(maincov))) {
-    mc_sel <- tidyselect::eval_select(
-      expr = tidyselect::enquo(maincov),
-      data = data[unique(names(data))],
-      allow_rename = FALSE
-    )
-    maincov <- names(mc_sel)
+    maincov <- eval_select_chr(tidyselect::enquo(maincov), data[unique(names(data))])
   } else if (!is.null(substitute(grp))) {
-    mc_sel <- tidyselect::eval_select(
-      expr = tidyselect::enquo(grp),
-      data = data[unique(names(data))],
-      allow_rename = FALSE
-    )
-    maincov <- names(mc_sel)
+    maincov <- eval_select_chr(tidyselect::enquo(grp), data[unique(names(data))])
   } else {
     maincov <- NULL
+  }
+
+  if (!is.null(maincov) && maincov %in% covs) {
+    warning(paste(maincov, "is the grouping variable and can not appear in the",
+                  "covariate list.\n It is omitted from the output."))
+    covs <- setdiff(covs, maincov)
+    if (length(covs) == 0) stop("No covariates remain to be summarised.")
   }
 
   argList <- as.list(match.call(expand.dots = TRUE)[-1])
@@ -3501,6 +3505,8 @@ rm_covsum <- function(
   covsumArgs[["nicenames"]] <- FALSE
   covsumArgs[["covs"]] <- covs
   covsumArgs[["maincov"]] <- maincov
+  covsumArgs["B"] <- list(B)
+  covsumArgs["seed"] <- list(seed)
 
   tab <- do.call(covsum, covsumArgs)
   Sys.sleep(1)
@@ -3513,16 +3519,22 @@ rm_covsum <- function(
   }
   names(tab)[1] <- covTitle
   if ("p-value" %in% names(tab)) {
+    # The column can hold entries that are not p-values at all, e.g. "excl"
+    # for levels removed with excludeLevels; those must be left untouched and
+    # excluded from the multiplicity adjustment
+    pv_num <- suppressWarnings(as.numeric(tab[["p-value"]]))
+    is_p <- !is.na(pv_num)
     if (p.adjust != 'none') {
-      #tab[["p (unadjusted)"]] <- tab[["p-value"]]
-      unadjusted_p <- tab[["p-value"]]
-      tab[["p-value"]] <- p.adjust(unadjusted_p, method = p.adjust)
+      pv_num[is_p] <- stats::p.adjust(pv_num[is_p], method = p.adjust)
     }
-    to_bold_p <- which(as.numeric(tab[["p-value"]]) < 0.05)
+    to_bold_p <- which(is_p & pv_num < 0.05)
+    new_p <- as.character(tab[["p-value"]])
     if (!unformattedp) {
-      #      if (!is.null(tab[["p (unadjusted)"]])) tab[["p (unadjusted)"]] <- sapply(tab[["p (unadjusted)"]],formatp)
-      tab[["p-value"]] <- sapply(tab[["p-value"]], formatp)
+      new_p[is_p] <- as.character(sapply(pv_num[is_p], formatp))
+    } else {
+      new_p[is_p] <- as.character(pv_num[is_p])
     }
+    tab[["p-value"]] <- new_p
     if (length(to_bold_p) > 0) {
       bold_cells <- rbind(
         bold_cells,
@@ -5034,7 +5046,7 @@ rm_cifsum <- function(
         "These variables are not in the data:\n",
         paste0(
           missing_vars,
-          collapse = reportRmd:::csep()
+          collapse = csep()
         )
       )
     )
@@ -5130,7 +5142,7 @@ rm_cifsum <- function(
       x
     }
   } else {
-    format_p <- reportRmd:::formatp
+    format_p <- formatp
   }
 
 
@@ -5624,7 +5636,7 @@ rm_cifsum <- function(
       drop = FALSE
     ],
     1,
-    reportRmd:::psthr,
+    psthr,
     digits
   )
 
@@ -6025,7 +6037,7 @@ rm_cifsum <- function(
       gray_row[
         ncol(tab)
       ] <- paste(
-        reportRmd:::niceNum(
+        niceNum(
           gray[1, "stat"],
           1
         ),
@@ -6055,7 +6067,7 @@ rm_cifsum <- function(
         ncol(tab)
       ] <- paste(
         "ChiSq",
-        reportRmd:::niceNum(
+        niceNum(
           gray[1, "stat"],
           1
         ),
@@ -6093,7 +6105,7 @@ rm_cifsum <- function(
     return(tab)
   }
 
-  reportRmd:::outTable(
+  outTable(
     tab,
     caption = caption,
     align = paste0(

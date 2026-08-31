@@ -10,7 +10,7 @@ rm_survsum(
   status,
   group = NULL,
   survtimes = NULL,
-  survtimeunit,
+  survtimeunit = NULL,
   survtimesLbls = NULL,
   CIwidth = 0.95,
   unformattedp = FALSE,
@@ -22,7 +22,11 @@ rm_survsum(
   digits = getOption("reportRmd.digits", 2),
   caption = NULL,
   tableOnly = FALSE,
-  fontsize
+  add.reverse.KM = FALSE,
+  fontsize = NULL,
+  cencode = 0,
+  eventcode = 1,
+  digits.reverse.KM = 1
 )
 }
 \arguments{
@@ -30,7 +34,9 @@ rm_survsum(
 
 \item{time}{string indicating survival time variable}
 
-\item{status}{string indicating event status variable}
+\item{status}{string indicating the event status variable. The status
+variable may be numeric, character, or factor; censoring and event values
+can be specified using \code{cencode} and \code{eventcode}.}
 
 \item{group}{string or character vector indicating the variable(s) to group
 observations by. If this is left as NULL (the default) then summaries are
@@ -73,7 +79,21 @@ the reportRmd.digits option is set}
 
 \item{tableOnly}{should a dataframe or a formatted object be returned}
 
+\item{add.reverse.KM}{boolean indicating if median follow-up and its
+confidence interval should be estimated using the reverse Kaplan-Meier
+method and displayed in the table; default is FALSE.}
+
 \item{fontsize}{PDF/HTML output only, manually set the table fontsize}
+
+\item{cencode}{value of the status variable indicating censoring. May be
+numeric, character, or factor-compatible. Default is 0.}
+
+\item{eventcode}{value of the status variable indicating the event of
+interest. May be numeric, character, or factor-compatible. Default is 1.}
+
+\item{digits.reverse.KM}{number of digits used to display the median
+follow-up and confidence interval estimated using the reverse
+Kaplan-Meier method; default is 1.}
 }
 \value{
 A character vector of the survival table source code, unless
@@ -112,6 +132,13 @@ survtimeunit='years')
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 group=c('sex','change_ctdna_group'),survtimes=c(12,24),survtimeunit='mo')
 
+
+Character event status and reverse Kaplan-Meier median follow-up
+pembrolizumab$status_chr <- ifelse(pembrolizumab$os_status == 1, "Death",
+  "Censored")
+rm_survsum(data = pembrolizumab, time = "os_time", status = "status_chr",
+  group = "sex", cencode = "Censored", eventcode = "Death",
+  survtimes = c(12, 24), survtimeunit = "mo", add.reverse.KM = TRUE)
 }
 \seealso{
 \code{\link[survival:survfit]{survival::survfit}}
