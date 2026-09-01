@@ -402,17 +402,46 @@ As of version 0.1.3, you can include univariate (unadjusted) estimates alongside
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-rm_mvsum(glm_fit, data = pembrolizumab, include_unadjusted = TRUE, showN = TRUE, vif = TRUE)
+rm_mvsum(glm_fit, include_unadjusted = TRUE, showN = TRUE, vif = TRUE)
 ```
 
-This feature works with all supported model types including Cox proportional hazards models:
+The data are taken from the model itself, so the `data` argument is not needed. This includes Cox proportional hazards models, where the response is a `Surv()` object:
 
 ```{r}
 require(survival)
 cox_fit <- coxph(Surv(os_time, os_status) ~ age + sex + baseline_ctdna,
                  data = pembrolizumab)
-rm_mvsum(cox_fit, data = pembrolizumab, include_unadjusted = TRUE, tableOnly = TRUE)
+rm_mvsum(cox_fit, include_unadjusted = TRUE, tableOnly = TRUE)
 ```
+
+Transformed terms are summarised on the scale they were fit on, so the
+unadjusted estimate for `log(l_size)` below is the slope from
+`glm(orr ~ log(l_size))`, not from `glm(orr ~ l_size)`:
+
+```{r}
+rm_mvsum(glm(orr ~ log(l_size) + sex, family = 'binomial', data = pembrolizumab),
+         include_unadjusted = TRUE, tableOnly = TRUE)
+```
+
+Two points are worth knowing when reading these tables.
+
+The univariate models are fit on the same complete-case sample as the
+multivariable model, so the two sets of estimates are directly comparable and
+the `N` column applies to both. This differs from calling `rm_uvsum()`
+yourself, which uses all rows available for each covariate.
+
+A covariate that appears only inside an interaction term has no adjusted
+estimate of its own. Such covariates are appended to the end of the table with
+an unadjusted estimate and a blank adjusted column, rather than being dropped:
+
+```{r}
+rm_mvsum(glm(orr ~ pdl1 + age:sex, family = 'binomial', data = pembrolizumab),
+         include_unadjusted = TRUE, tableOnly = TRUE)
+```
+
+Terms that expand to a matrix, such as `poly(age, 2)`, can not be fit
+univariately; these are skipped with a warning and their unadjusted cells are
+left blank.
 
 # Combining univariate and multivariable models
 
@@ -729,14 +758,14 @@ As of version 0.1.3, you can include both unadjusted and adjusted estimates in a
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
+forestplotMV(glm_fit, include_unadjusted = TRUE)
 ```
 
 ```{r, eval=F,echo=FALSE}
 glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
-forestplotMV(glm_fit, data = pembrolizumab, include_unadjusted = TRUE)
+forestplotMV(glm_fit, include_unadjusted = TRUE)
 ggsave('images/forestmv_unadj.png', scale = 0.5)
 ```
 
@@ -795,6 +824,52 @@ ggsave('images/forestuvmvlin.png', scale = 0.5)
 ![](images/forestuvmvlin.png){width=100%}
 
 \newpage
+# Prediction Metrics
+
+`predsum()` summarises how well a set of predicted probabilities recovers a
+binary outcome. Supply the observed outcome, the predicted probabilities and
+the cut-off used to turn those probabilities into predicted classes.
+
+```{r}
+d <- pembrolizumab[complete.cases(pembrolizumab[, c('change_ctdna_group',
+                                                    'baseline_ctdna',
+                                                    'age', 'l_size')]), ]
+fit <- glm(change_ctdna_group ~ baseline_ctdna + age + l_size,
+           family = 'binomial', data = d)
+d$predicted <- predict(fit, type = 'response')
+
+predsum(true = d$change_ctdna_group, predicted = d$predicted, cutoff = 0.5)
+```
+
+The default output is the set of statistics usually reported in a clinical
+setting: prevalence, sensitivity, specificity, positive and negative predictive
+value, accuracy and AUC. The table also records the sample size, the number of
+events, the cut-off used, and the level of the outcome being treated as the
+event.
+
+That last row is worth reading. For a factor outcome the second level is taken
+as the event, so above the model is predicting *Increase from baseline*. If
+that is not what you intended, set `positive` explicitly:
+
+```{r eval=FALSE}
+predsum(true = d$change_ctdna_group, predicted = d$predicted, cutoff = 0.5,
+        positive = 'Decrease from baseline')
+```
+
+## Choosing Which Statistics to Report
+
+The `output` argument selects statistics by name, and accepts several
+machine-learning measures that are not shown by default:
+
+```{r}
+predsum(true = d$change_ctdna_group, predicted = d$predicted, cutoff = 0.5,
+        output = c('accuracy', 'brier', 'f1', 'auc'))
+```
+
+Brier score, F1 and AUC-PR have no closed-form confidence interval, so
+`predsum()` obtains theirs by bootstrap. This is slower than the other
+statistics; `nboot` controls the number of replicates (default 2000).
+
 # Miscellaneous Functions
 
 ## excelCol
@@ -831,6 +906,57 @@ extract_package_details(ignore_comments = FALSE) |>
 | rmarkdown | run | 2.29 | Allaire J, Xie Y, Dervieux C, McPherson J, Luraschi J, Ushey K, Atkins A, Wickham H, Cheng J, Chang W, Iannone R (2024). *rmarkdown: Dynamic Documents for R*. R package version 2.29, <https://github.com/rstudio/rmarkdown>. Xie Y, Allaire J, Grolemund G (2018). *R Markdown: The Definitive Guide*. Chapman and Hall/CRC. Xie Y, Dervieux C, Riederer E (2020). *R Markdown Cookbook*. Chapman and Hall/CRC. |
 | survival | coxph | 3.8.3 | Therneau T (2024). *A Package for Survival Analysis in R*. R package version 3.8-3, <https://CRAN.R-project.org/package=survival>. Therneau TM, Grambsch PM (2000). *Modeling Survival Data: Extending the Cox Model*. Springer. |
 | R |  | 4.4.2 | R Core Team (2024). *R: A Language and Environment for Statistical Computing*. R Foundation for Statistical Computing, Vienna, Austria. <https://www.R-project.org/>. |
+
+\newpage
+
+# Reproducibility
+
+Two parts of the package draw random numbers, and both are seeded by default so
+that a report re-knitted next month produces the same table as the one already
+circulated.
+
+## Monte Carlo p-values
+
+`rm_covsum()` and `rm_compactsum()` compare categorical variables with a
+chi-squared test, switching to Fisher's exact test when any *expected* cell
+count falls below five. On a large or sparse table the exact test can exceed its
+workspace, in which case both functions fall back to a Monte Carlo
+approximation and say so:
+
+```{r eval=FALSE}
+Fisher's exact test could not be computed for site; using Monte Carlo
+simulation with B = 1000 and seed = 1.
+```
+
+`B` sets the number of replicates and `seed` fixes the random state for the
+duration of the call; the session's own random state is restored afterwards, so
+seeding here does not disturb anything else in your document. Setting
+`seed = NULL` restores the older behaviour in which the p-value varies between
+calls.
+
+```{r eval=FALSE}
+rm_covsum(data = pembrolizumab, maincov = 'cohort', covs = c('age', 'sex'),
+          B = 5000, seed = 2024)
+```
+
+When a Monte Carlo p-value has been used, `show.tests = TRUE` records the
+replicate count alongside the test name, so the table itself documents how the
+p-value was obtained.
+
+Because both functions now use the same expected-count rule, `rm_covsum()` and
+`rm_compactsum()` select the same test and report the same p-value for the same
+data.
+
+## Bootstrap confidence intervals
+
+`predsum()` bootstraps the intervals for Brier score, F1 and AUC-PR. It takes
+the same `seed` argument, with the same default and the same restoration
+behaviour:
+
+```{r eval=FALSE}
+predsum(true = d$change_ctdna_group, predicted = d$predicted, cutoff = 0.5,
+        output = c('brier', 'f1'), nboot = 5000, seed = 2024)
+```
 
 \newpage
 
