@@ -758,9 +758,16 @@ get_model_data.polr <- function(model){
 #' @export
 get_model_data.coxph <- function(model){
   if (is.null(model$data)){
-    df <- try(stats::model.frame(formula(model),
-                                 eval(parse(text = paste("data=",
-                                                         deparse(model$call$data))))), silent = TRUE)
+    # model.frame() resolves the data in the model's own environment; parsing
+    # the call text fails whenever the model was fit inside a function
+    df <- try(stats::model.frame(model), silent = TRUE)
+    if (inherits(df, "try-error")) {
+      env <- tryCatch(environment(stats::formula(model)), error = function(e) NULL)
+      if (is.null(env) || !is.environment(env)) env <- parent.frame()
+      df <- try(stats::model.frame(stats::formula(model),
+                                   data = eval(model$call$data, envir = env)),
+                silent = TRUE)
+    }
   } else { df <- model$data }
   if (inherits(df,'try-error')) {
     warning ("Model data could not be extracted")

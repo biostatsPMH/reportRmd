@@ -120,7 +120,9 @@ round_numeric_cols <- function(df, digits) {
 # @noRd
 format_bold_pvalues <- function(tab, bold_cells, unformattedp = FALSE,
                                 p.adjust = "none") {
-  pval_cols <- grep("p-value", names(tab), value = TRUE)
+  # "Global p-value" is handled separately: it belongs to a different family of
+  # tests and must not be adjusted or formatted twice
+  pval_cols <- setdiff(grep("p-value", names(tab), value = TRUE), "Global p-value")
   method <- p.adjust
   for (pcol in pval_cols) {
     tab[[pcol]] <- stats::p.adjust(tab[[pcol]], method = method)
@@ -1408,3 +1410,43 @@ extract_package_details <- function(ignore_comments = TRUE) {
   return(packages_df)
 }
 
+
+#' Are any expected cell counts below 5?
+#'
+#' The switch to an exact test is conventionally made on the expected counts
+#' under independence (Cochran's rule), not on the observed counts.
+#'
+#' @param x a two-way contingency table
+#' @return TRUE if any expected count is below 5, or if the expected counts
+#'   cannot be computed
+#' @keywords internal
+low_expected_counts <- function(x) {
+  ex <- try(suppressWarnings(stats::chisq.test(x)$expected), silent = TRUE)
+  if (inherits(ex, "try-error") || is.null(ex)) return(TRUE)
+  any(ex < 5, na.rm = TRUE)
+}
+
+#' Evaluate an expression under a fixed seed
+#'
+#' Monte Carlo p-values change from call to call, which makes a report that is
+#' re-knitted disagree with the one already circulated. The seed is set for the
+#' duration of `expr` only and the caller's RNG state is put back afterwards.
+#'
+#' @param seed integer seed, or NULL to leave the RNG alone
+#' @param expr expression to evaluate
+#' @return the value of `expr`
+#' @keywords internal
+with_seed <- function(seed, expr) {
+  if (is.null(seed)) return(expr)
+  has_old <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+  old <- if (has_old) get(".Random.seed", envir = globalenv()) else NULL
+  on.exit({
+    if (has_old) {
+      assign(".Random.seed", old, envir = globalenv())
+    } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
+      rm(".Random.seed", envir = globalenv())
+    }
+  }, add = TRUE)
+  set.seed(seed)
+  expr
+}

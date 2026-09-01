@@ -13,6 +13,7 @@ predsum(
   ci_width = 0.95,
   ci_separate = FALSE,
   nboot = 2000,
+  seed = 1,
   digits = 2,
   output = "epi",
   tableOnly = FALSE
@@ -44,13 +45,18 @@ output has four columns: \code{Statistic}, \code{Estimate}, \code{lower},
 
 \item{nboot}{Number of bootstrap replicates, default \code{2000}.}
 
+\item{seed}{integer seed set for the duration of the bootstrap so that
+confidence intervals are reproducible; the calling session's random state
+is restored afterwards. Defaults to 1. Set to NULL to leave the random
+state untouched, in which case intervals will vary between calls.}
+
 \item{digits}{Number of digits for rounding, default \code{2}.}
 
 \item{output}{One of \code{"epi"} (default), \code{"data-science"},
 \code{"all"}, or a character vector of statistic names. Recognised names
 (case-insensitive): \code{prevalence, sensitivity, specificity, ppv, npv,
-accuracy, auc, aucpr, f1, brier, tp, fp, tn, fn, n, events, positive,
-cutoff}. The aliases \code{recall} and \code{precision} are accepted and,
+  accuracy, auc, aucpr, f1, brier, tp, fp, tn, fn, n, events, positive,
+  cutoff}. The aliases \code{recall} and \code{precision} are accepted and,
 when supplied, are reflected in the row labels. Preset names cannot be
 combined with individual statistics.}
 

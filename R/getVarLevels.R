@@ -42,6 +42,17 @@ mterms.lmerModLmerTest <- mterms.lmerMod
 #' @export
 mterms.glmerMod <- mterms.lmerMod
 
+#' Escape regular expression metacharacters
+#'
+#' Variable names can legally contain regex metacharacters, most commonly the
+#' parentheses in terms such as `poly(x, 2)` or `log(x)`. Names used to build
+#' patterns must be escaped first.
+#'
+#' @param x character vector
+#' @return `x` with regex metacharacters escaped
+#' @keywords internal
+esc_rx <- function(x) gsub("([][{}()+*^$|\\.?\\\\])", "\\\\\\1", x)
+
 getVarLevels <- function(model){
   ord <- NULL
   nt <- function(str) length(strsplit(str,":")[[1]])-1
@@ -58,12 +69,12 @@ getVarLevels <- function(model){
   int_terms <- grep("[:]",vrs,value=TRUE)
   for (v in int_terms){
     vr <- unlist(strsplit(v, ":"))
-    p <- paste0("^", vr[1], ".*:", vr[2], ".*$")
+    p <- paste0("^", esc_rx(vr[1]), ".*:", esc_rx(vr[2]), ".*$")
     vind <- grep(p, df$terms)
     if (all(is.na(df$var[vind]))) df$var[vind] <- v
   }
   if (any(is.na(df$var))){
-    vind <- lapply(vrs,function(v) which(grepl(paste0("^",v),df$terms)|grepl(paste0("[:]",v),df$terms)))
+    vind <- lapply(vrs,function(v) which(grepl(paste0("^",esc_rx(v)),df$terms)|grepl(paste0("[:]",esc_rx(v)),df$terms)))
     names(vind) <- vrs
     vind <- vind[unlist(lapply(vind,length))>0]
     if (length(unlist(vind)) == 0) return(df)
@@ -83,7 +94,7 @@ getVarLevels <- function(model){
     lvl2 <- mapply(function(v,l){
       v=strsplit(v,"[:]")[[1]]
       l=strsplit(l,"[:]")[[1]]
-      paste0(mapply(function(v,l) sub(v,"",l),v,l,USE.NAMES = FALSE),collapse = ":")
+      paste0(mapply(function(v,l) sub(v,"",l,fixed=TRUE),v,l,USE.NAMES = FALSE),collapse = ":")
     }, df$var,df$lvl,USE.NAMES=FALSE)
     df$lvl=sub(":$","",sub("^:","",lvl2))
   }
