@@ -244,6 +244,7 @@ rm_uvsum(data=pembrolizumab, response='Counts', type='negbin',
 ```
 
 ## Survival Analysis
+
 If two response variables are specified and then survival analysis is run (specified with `type='coxph'`).
 
 ```{r }
@@ -251,6 +252,24 @@ rm_uvsum(data=pembrolizumab, response=c('os_time','os_status'),
 covs=c('age','pdl1','change_ctdna_group'),whichp = "levels")
 
 ```
+
+Clustered analyses can also be run
+
+```{r }
+data("diabetic", package = "survival")
+rm_uvsum(data=diabetic, response=c('time','status'),
+covs=c('trt','laser','age','eye'),id='id')
+
+```
+
+
+```{r, echo=F,eval=F}
+# # just a check that this works
+# cox_cl <- survival::coxph(survival::Surv(time,status)~trt+laser+age,
+# cluster = id,data = diabetic)
+# rm_mvsum(cox_cl)
+```
+
 
 ## Competing Risk
 Competing risk models need to be explicitly specified using `type='crr'`.

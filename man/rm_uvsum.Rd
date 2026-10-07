@@ -73,7 +73,9 @@ both ("both"). Irrelevant for continuous predictors.}
 correlated observations. If TRUE then the id argument must specify the
 column in the data which indicates the correlated clusters.}
 
-\item{id}{character vector which identifies clusters. Only used for geeglm}
+\item{id}{character naming the column that identifies clusters. Used for GEE
+models (gee = TRUE) and, for coxph models, to compute robust (sandwich)
+variances clustered on this variable}
 
 \item{corstr}{character string specifying the correlation structure. Only used
 for geeglm. The following are permitted: '"independence"', '"exchangeable"',
@@ -133,7 +135,8 @@ Global p-values are likelihood ratio tests for lm, glm and polr models. For
 lme models an attempt is made to re-fit the model using ML and if,successful
 LRT is used to obtain a global p-value. For coxph models the model is re-run
 without robust variances with and without each variable and a LRT is
-presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
+presented. For coxph models fit with clustering (id specified) a robust Wald
+global p-value is returned; otherwise a LRT is used.  For GEE and CRR models
 Wald global p-values are returned.
 
 As of version 0.1.1 if global p-values are requested they will be included in

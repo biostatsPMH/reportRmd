@@ -18,7 +18,9 @@ xcn <- function(v) {
     vals <- match(letters_vec, LETTERS)
     # bijective base-26: A=1, ..., Z=26, AA=27, ...
     rtn <- 0
-    for (val in vals) rtn <- rtn * 26 + val
+    for (val in vals) {
+      rtn <- rtn * 26 + val
+    }
     return(rtn)
   })
 }
@@ -41,33 +43,43 @@ csep <- function() {
   return(", ")
 }
 
-.negloglik.boxcox <- function (lambda.val, data, xmat, lik.method = "ML")
-{
+.negloglik.boxcox <- function(lambda.val, data, xmat, lik.method = "ML") {
   if (length(lambda.val) == 2) {
     data <- data + lambda.val[2]
     lambda <- lambda.val[1]
+  } else {
+    lambda <- lambda.val
   }
-  else lambda <- lambda.val
   lambda <- unname(lambda)
   n <- length(data)
   beta.size <- ncol(xmat)
-  if (isTRUE(all.equal(unname(lambda), 0)))
+  if (isTRUE(all.equal(unname(lambda), 0))) {
     yt <- log(data)
-  else yt <- ((data^lambda) - 1)/lambda
+  } else {
+    yt <- ((data^lambda) - 1) / lambda
+  }
   beta <- solve(crossprod(xmat), crossprod(xmat, yt))
   ss <- sum((drop(yt) - drop(xmat %*% beta))^2)
-  if (lik.method == "ML")
-    neglik <- (n/2) * log(ss) - ((lambda - 1) * sum(log(data)))
+  if (lik.method == "ML") {
+    neglik <- (n / 2) * log(ss) - ((lambda - 1) * sum(log(data)))
+  }
   if (lik.method == "RML") {
     xx <- crossprod(xmat)
-    if (length(as.vector(xx)) == 1)
+    if (length(as.vector(xx)) == 1) {
       choldet <- 0.5 * log(xx)
-    else choldet <- sum(log(diag(chol(xx))))
-    neglik <- ((n - beta.size)/2) * log(ss) + choldet - ((lambda -
-                                                            1) * sum(log(data)))
+    } else {
+      choldet <- sum(log(diag(chol(xx))))
+    }
+    neglik <- ((n - beta.size) / 2) *
+      log(ss) +
+      choldet -
+      ((lambda -
+        1) *
+        sum(log(data)))
   }
-  if (mode(neglik) != "numeric")
+  if (mode(neglik) != "numeric") {
     neglik <- Inf
+  }
   return(drop(neglik))
 }
 
@@ -86,8 +98,12 @@ csep <- function() {
 #' @noRd
 niceNum <- function(x, digits = 2) {
   rndx <- sapply(x, function(x) {
-    if (is.na(x)) return(x)
-    if (is.null(x)) return(x)
+    if (is.na(x)) {
+      return(x)
+    }
+    if (is.null(x)) {
+      return(x)
+    }
     format(round(as.numeric(x), digits), nsmall = digits)
   })
   return(gsub(" ", "", rndx))
@@ -103,7 +119,9 @@ round_numeric_cols <- function(df, digits) {
     colDigits <- rep_len(digits, length(numColIdx))
     for (i in seq_along(numColIdx)) {
       idx <- numColIdx[i]
-      df[[idx]] <- sapply(df[[idx]], function(x) niceNum(x, digits = colDigits[i]))
+      df[[idx]] <- sapply(df[[idx]], function(x) {
+        niceNum(x, digits = colDigits[i])
+      })
     }
   }
   df
@@ -118,11 +136,18 @@ round_numeric_cols <- function(df, digits) {
 # @return list(tab, bold_cells) with updated table and bold indices
 # @keywords internal
 # @noRd
-format_bold_pvalues <- function(tab, bold_cells, unformattedp = FALSE,
-                                p.adjust = "none") {
+format_bold_pvalues <- function(
+  tab,
+  bold_cells,
+  unformattedp = FALSE,
+  p.adjust = "none"
+) {
   # "Global p-value" is handled separately: it belongs to a different family of
   # tests and must not be adjusted or formatted twice
-  pval_cols <- setdiff(grep("p-value", names(tab), value = TRUE), "Global p-value")
+  pval_cols <- setdiff(
+    grep("p-value", names(tab), value = TRUE),
+    "Global p-value"
+  )
   method <- p.adjust
   for (pcol in pval_cols) {
     tab[[pcol]] <- stats::p.adjust(tab[[pcol]], method = method)
@@ -133,18 +158,28 @@ format_bold_pvalues <- function(tab, bold_cells, unformattedp = FALSE,
   }
   # Prefer "Adjusted p-value" for bolding, else fall back to "p-value"
   adj_col <- grep("Adjusted p-value", names(tab), value = TRUE)
-  bold_target <- if (length(adj_col) > 0) adj_col[1]
-                 else if ("p-value" %in% names(tab)) "p-value"
-                 else NULL
+  bold_target <- if (length(adj_col) > 0) {
+    adj_col[1]
+  } else if ("p-value" %in% names(tab)) {
+    "p-value"
+  } else {
+    NULL
+  }
   if (!is.null(bold_target)) {
     p_col_idx <- which(names(tab) == bold_target)
-    sig_rows <- which(as.numeric(gsub("[^0-9\\.]", "", tab[[bold_target]])) < 0.05)
+    sig_rows <- which(
+      as.numeric(gsub("[^0-9\\.]", "", tab[[bold_target]])) < 0.05
+    )
     if (length(sig_rows) > 0) {
-      bold_cells <- rbind(bold_cells,
-                          cbind(sig_rows, rep(p_col_idx, length(sig_rows))))
+      bold_cells <- rbind(
+        bold_cells,
+        cbind(sig_rows, rep(p_col_idx, length(sig_rows)))
+      )
     }
   }
-  if (!is.null(bold_cells) && nrow(bold_cells) < 1) bold_cells <- NULL
+  if (!is.null(bold_cells) && nrow(bold_cells) < 1) {
+    bold_cells <- NULL
+  }
   list(tab = tab, bold_cells = bold_cells)
 }
 
@@ -186,9 +221,11 @@ psthr <- function(x, y = 2, compact = FALSE) {
   }
 
   x <- sapply(x, function(x) {
-    ifelse(abs(x) < 0.01 | abs(x) > 1000,
-           format(x, scientific = TRUE, digits = y),
-           round_sprintf(x, y))
+    ifelse(
+      abs(x) < 0.01 | abs(x) > 1000,
+      format(x, scientific = TRUE, digits = y),
+      round_sprintf(x, y)
+    )
   })
   pstprn(x, compact = compact)
 }
@@ -209,13 +246,19 @@ covnm <- function(betanames, call) {
   sapply(betanames, function(betaname) {
     # Find indices where call elements are found in betaname
     # Changed from charmatch to grepl on Feb 21, 2019
-    indx <- which(sapply(call, function(cov) grepl(cov, betaname, fixed = TRUE)))
+    indx <- which(sapply(call, function(cov) {
+      grepl(cov, betaname, fixed = TRUE)
+    }))
 
-    if (length(indx) == 1) return(call[indx])
+    if (length(indx) == 1) {
+      return(call[indx])
+    }
 
     # If one factor name is a subset of another, choose longest match
     indx2 <- which.max(sapply(call[indx], nchar))
-    if (length(indx2) == 1) return(call[indx[indx2]])
+    if (length(indx2) == 1) {
+      return(call[indx[indx2]])
+    }
 
     # Check if betaname starts with the matched covariate
     indx3 <- which(sapply(call[indx2], function(c) {
@@ -274,8 +317,7 @@ betaindx <- function(x) {
 #' @noRd
 cap <- function(x) {
   s <- strsplit(x, " ")[[1]]
-  paste(toupper(substring(s, 1, 1)), substring(s, 2),
-        sep = "", collapse = " ")
+  paste(toupper(substring(s, 1, 1)), substring(s, 2), sep = "", collapse = " ")
 }
 
 #' Lean strings for printing
@@ -287,18 +329,16 @@ cap <- function(x) {
 #'   checked for and retained.
 #' @keywords internal
 #' @noRd
-nicename <-function (strings,check_numbers=TRUE)
-{
+nicename <- function(strings, check_numbers = TRUE) {
   out <- sapply(strings, function(x) {
     original_x <- x
     x <- chartr(".", " ", x)
     x <- chartr("_", " ", x)
-    if(check_numbers){
-      p.positions <- gregexpr(pattern ='\\d\\.[0-9]+',original_x)[[1]]+1
-      for(pos in p.positions){
-        substr(x,pos,pos) <- '.'
+    if (check_numbers) {
+      p.positions <- gregexpr(pattern = '\\d\\.[0-9]+', original_x)[[1]] + 1
+      for (pos in p.positions) {
+        substr(x, pos, pos) <- '.'
       }
-
     }
     x <- gsub(" +", " ", x)
     return(x)
@@ -330,10 +370,15 @@ nicename <-function (strings,check_numbers=TRUE)
 formatp <- function(pvalues) {
   p_out <- sapply(pvalues, function(x) {
     xsig <- suppressWarnings(as.numeric(x))
-    fmt_x <- ifelse(xsig < 0.001, "<0.001",
-                    ifelse(xsig < 0.1,
-                           format(round(xsig, 3), nsmall = 3),
-                           format(round(xsig, 2), nsmall = 2)))
+    fmt_x <- ifelse(
+      xsig < 0.001,
+      "<0.001",
+      ifelse(
+        xsig < 0.1,
+        format(round(xsig, 3), nsmall = 3),
+        format(round(xsig, 2), nsmall = 2)
+      )
+    )
     x <- ifelse(x == "excl", "excl", fmt_x)
     return(x)
   })
@@ -389,9 +434,13 @@ sanitize <- function(str) {
 #' @keywords internal
 #' @noRd
 sanitizestr <- function(str) {
-  as.vector(sapply(str, function(char) {
-    sanitize(char)
-  }, USE.NAMES = FALSE))
+  as.vector(sapply(
+    str,
+    function(char) {
+      sanitize(char)
+    },
+    USE.NAMES = FALSE
+  ))
 }
 
 #' Bold strings for LaTeX output
@@ -403,11 +452,20 @@ sanitizestr <- function(str) {
 #' @keywords internal
 #' @noRd
 lbld <- function(strings) {
-  sapply(strings, function(x) {
-    if (is.null(x)) return(x)
-    if (is.na(x)) return(x)
-    return(paste0("\\textbf{", x, "}"))
-  }, USE.NAMES = FALSE)}
+  sapply(
+    strings,
+    function(x) {
+      if (is.null(x)) {
+        return(x)
+      }
+      if (is.na(x)) {
+        return(x)
+      }
+      return(paste0("\\textbf{", x, "}"))
+    },
+    USE.NAMES = FALSE
+  )
+}
 
 
 #' Bold strings for HTML output
@@ -418,11 +476,19 @@ lbld <- function(strings) {
 #' @return Vector of strings wrapped in HTML bold span
 #' @keywords helper
 hbld <- function(strings) {
-  sapply(strings, function(x) {
-    if (is.null(x)) return(x)
-    if (is.na(x)) return(x)
-    return(paste0('<span style="font-weight: bold;">', x, "</span>"))
-  }, USE.NAMES = FALSE)
+  sapply(
+    strings,
+    function(x) {
+      if (is.null(x)) {
+        return(x)
+      }
+      if (is.na(x)) {
+        return(x)
+      }
+      return(paste0('<span style="font-weight: bold;">', x, "</span>"))
+    },
+    USE.NAMES = FALSE
+  )
 }
 
 #' Escape less-than and greater-than signs for HTML
@@ -435,21 +501,28 @@ hbld <- function(strings) {
 #' @keywords internal
 #' @noRd
 ltgt <- function(x) {
-  sapply(x, function(x) {
-    z <- try(gsub("<", "&lt;", x), silent = TRUE)
-    if (inherits(z, "try-error")) {
-      # Warn user and try to convert non-ASCII characters
-      warning(paste0(
-        "The following string contains non-ASCII characters ",
-        "and may not display properly:\n", x
-      ))
-      z <- try(gsub("<", "&lt;", iconv(x, to = "ASCII", sub = "")),
-               silent = TRUE)
-      if (inherits(z, "try-error")) return(NA)
-    }
-    z <- gsub(">", "&gt;", z)
-    return(z)
-  }, USE.NAMES = FALSE)
+  sapply(
+    x,
+    function(x) {
+      z <- try(gsub("<", "&lt;", x), silent = TRUE)
+      if (inherits(z, "try-error")) {
+        # Warn user and try to convert non-ASCII characters
+        warning(paste0(
+          "The following string contains non-ASCII characters ",
+          "and may not display properly:\n",
+          x
+        ))
+        z <- try(
+          gsub("<", "&lt;", iconv(x, to = "ASCII", sub = "")),
+          silent = TRUE
+        )
+        if (inherits(z, "try-error")) return(NA)
+      }
+      z <- gsub(">", "&gt;", z)
+      return(z)
+    },
+    USE.NAMES = FALSE
+  )
 }
 
 #' Replace dollar signs for HTML output
@@ -462,10 +535,14 @@ ltgt <- function(x) {
 #' @keywords internal
 #' @noRd
 rmds <- function(s) {
-  sapply(s, function(x) {
-    x <- ltgt(x)  # Handle < and >
-    gsub("[$]", '<span style="display: inline">&#36;</span>', x)
-  }, USE.NAMES = FALSE)
+  sapply(
+    s,
+    function(x) {
+      x <- ltgt(x) # Handle < and >
+      gsub("[$]", '<span style="display: inline">&#36;</span>', x)
+    },
+    USE.NAMES = FALSE
+  )
 }
 
 #' Add LaTeX spacing before string
@@ -531,13 +608,11 @@ lpvalue <- function(x, sigdigits = 2) {
 #' @keywords internal
 #' @noRd
 match_column_types <- function(source, target) {
-
   # Get common columns ----
   common_cols <- intersect(names(source), names(target))
 
   # Loop through common columns and match types ----
   for (col in common_cols) {
-
     # Handle factors specially to preserve levels ----
     if (is.factor(target[[col]])) {
       source[[col]] <- factor(source[[col]], levels = levels(target[[col]]))
@@ -638,7 +713,9 @@ nicecall <- function(model_call) {
 #' @keywords internal
 matchdata <- function(dataArg) {
   df_str <- as.character(dataArg)
-  if (length(df_str) > 1) df_str <- df_str[2]
+  if (length(df_str) > 1) {
+    df_str <- df_str[2]
+  }
 
   # Remove function calls
   no_fnc <- gsub("[A-Za-z]+[(]", "", df_str)
@@ -697,22 +774,30 @@ matchcovariate <- function(betanames, ucall) {
         grepl(cov, bname, fixed = TRUE)
       }))
 
-      if (length(indx) == 1) return(indx)
+      if (length(indx) == 1) {
+        return(indx)
+      }
 
       # If one factor name is a subset of another, choose longest match
       indx2 <- which.max(sapply(ucall[indx], nchar))
-      if (length(indx2) == 1) return(indx[indx2])
+      if (length(indx2) == 1) {
+        return(indx[indx2])
+      }
 
       # Check if betaname starts with matched covariate
       indx3 <- which(sapply(ucall[indx2], function(c) {
         substr(betaname, 1, nchar(c)) == c
       }))
-      if (length(indx3) == 1) return(ucall[indx[indx2[indx3]]])
+      if (length(indx3) == 1) {
+        return(ucall[indx[indx2[indx3]]])
+      }
 
       return(-1)
     })
 
-    if (-1 %in% out) return(-1)
+    if (-1 %in% out) {
+      return(-1)
+    }
 
     # Encode indices as base-100 number for sorting
     result <- 0
@@ -724,7 +809,9 @@ matchcovariate <- function(betanames, ucall) {
     return(result)
   }))
 
-  if (-1 %in% out) return(-1)
+  if (-1 %in% out) {
+    return(-1)
+  }
   return(out)
 }
 
@@ -768,7 +855,8 @@ GVIF <- function(model) {
   for (var in seq_along(xvar)) {
     terms <- which(ind == var)
     result[var, 1] <- det(as.matrix(R[terms, terms])) *
-      det(as.matrix(R[-terms, -terms])) / detR
+      det(as.matrix(R[-terms, -terms])) /
+      detR
     result[var, 2] <- length(terms)
   }
 
@@ -817,9 +905,7 @@ psthr0 <- function(x, digits = 2) psthr(x, y = digits, compact = TRUE)
 #' @return Numeric vector of break positions
 #' @keywords internal
 break_function_custom <- function(xmax) {
-  xmax_length <- ifelse(xmax > 1,
-                        nchar(round(xmax)),
-                        round(abs(log10(xmax))))
+  xmax_length <- ifelse(xmax > 1, nchar(round(xmax)), round(abs(log10(xmax))))
 
   byx <- if (xmax > 1) {
     round(xmax / 10, digits = 2 - xmax_length)
@@ -828,7 +914,9 @@ break_function_custom <- function(xmax) {
   }
 
   breaks <- seq(0, xmax, by = byx)
-  if (max(breaks) < byx) breaks <- c(breaks, max(breaks) + byx)
+  if (max(breaks) < byx) {
+    breaks <- c(breaks, max(breaks) + byx)
+  }
   return(breaks)
 }
 
@@ -877,182 +965,329 @@ lpvalue2 <- function(x, digits) {
   }
 }
 
-.extract_ggplot_colours <- function(p, grp.levels){
+.extract_ggplot_colours <- function(p, grp.levels) {
   g <- ggplot2::ggplot_build(p)
   .cols <- unlist(unique(g$data[[1]]["colour"]))
-  if(!is.null(grp.levels)){
-    if(length(.cols)==1) .cols <- rep(.cols, length(grp.levels))
+  if (!is.null(grp.levels)) {
+    if (length(.cols) == 1) {
+      .cols <- rep(.cols, length(grp.levels))
+    }
     names(.cols) <- grp.levels
   }
   .cols
 }
 
-.set_large_dash_as_ytext <- function(ggp){
-  ggp + ggplot2::theme(
-    axis.text.y = ggplot2::element_text(size = 50, vjust = 0.35),
-    axis.ticks.y = ggplot2::element_blank()
-  )
+.set_large_dash_as_ytext <- function(ggp) {
+  ggp +
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_text(size = 50, vjust = 0.35),
+      axis.ticks.y = ggplot2::element_blank()
+    )
 }
 
 ##This function is used by the survfit package
-survfit_confint <- function(p, se, logse=TRUE, conf.type, conf.int=0.95,
-                            selow, ulimit=TRUE) {
-  zval <- stats::qnorm(1- (1-conf.int)/2, 0, 1)
-  if (missing(selow)) scale <- 1.0
-  else scale <- ifelse(selow==0, 1.0, selow/se)  # avoid 0/0 at the origin
-  if (!logse) se <- ifelse(se==0, 0, se/p)   # se of log(survival) = log(p)
+survfit_confint <- function(
+  p,
+  se,
+  logse = TRUE,
+  conf.type,
+  conf.int = 0.95,
+  selow,
+  ulimit = TRUE
+) {
+  zval <- stats::qnorm(1 - (1 - conf.int) / 2, 0, 1)
+  if (missing(selow)) {
+    scale <- 1.0
+  } else {
+    scale <- ifelse(selow == 0, 1.0, selow / se)
+  } # avoid 0/0 at the origin
+  if (!logse) {
+    se <- ifelse(se == 0, 0, se / p)
+  } # se of log(survival) = log(p)
 
-  if (conf.type=='plain') {
-    se2 <- se* p * zval  # matches equation 4.3.1 in Klein & Moeschberger
-    if (ulimit) list(lower= pmax(p -se2*scale, 0), upper = pmin(p + se2, 1))
-    else  list(lower= pmax(p -se2*scale, 0), upper = p + se2)
-  }
-  else if (conf.type=='log') {
+  if (conf.type == 'plain') {
+    se2 <- se * p * zval # matches equation 4.3.1 in Klein & Moeschberger
+    if (ulimit) {
+      list(lower = pmax(p - se2 * scale, 0), upper = pmin(p + se2, 1))
+    } else {
+      list(lower = pmax(p - se2 * scale, 0), upper = p + se2)
+    }
+  } else if (conf.type == 'log') {
     #avoid some "log(0)" messages
-    xx <- ifelse(p==0, NA, p)
-    se2 <- zval* se
-    temp1 <- exp(log(xx) - se2*scale)
+    xx <- ifelse(p == 0, NA, p)
+    se2 <- zval * se
+    temp1 <- exp(log(xx) - se2 * scale)
     temp2 <- exp(log(xx) + se2)
-    if (ulimit) list(lower= temp1, upper= pmin(temp2, 1))
-    else  list(lower= temp1, upper= temp2)
-  }
-  else if (conf.type=='log-log') {
-    xx <- ifelse(p==0 | p==1, NA, p)
-    se2 <- zval * se/log(xx)
-    temp1 <- exp(-exp(log(-log(xx)) - se2*scale))
+    if (ulimit) {
+      list(lower = temp1, upper = pmin(temp2, 1))
+    } else {
+      list(lower = temp1, upper = temp2)
+    }
+  } else if (conf.type == 'log-log') {
+    xx <- ifelse(p == 0 | p == 1, NA, p)
+    se2 <- zval * se / log(xx)
+    temp1 <- exp(-exp(log(-log(xx)) - se2 * scale))
     temp2 <- exp(-exp(log(-log(xx)) + se2))
-    list(lower = temp1 , upper = temp2)
-  }
-  else if (conf.type=='logit') {
-    xx <- ifelse(p==0, NA, p)  # avoid log(0) messages
-    se2 <- zval * se *(1 + xx/(1-xx))
+    list(lower = temp1, upper = temp2)
+  } else if (conf.type == 'logit') {
+    xx <- ifelse(p == 0, NA, p) # avoid log(0) messages
+    se2 <- zval * se * (1 + xx / (1 - xx))
 
-    temp1 <- 1- 1/(1+exp(log(p/(1-p)) - se2*scale))
-    temp2 <- 1- 1/(1+exp(log(p/(1-p)) + se2))
-    list(lower = temp1, upper=temp2)
+    temp1 <- 1 - 1 / (1 + exp(log(p / (1 - p)) - se2 * scale))
+    temp2 <- 1 - 1 / (1 + exp(log(p / (1 - p)) + se2))
+    list(lower = temp1, upper = temp2)
+  } else if (conf.type == "arcsin") {
+    xx <- ifelse(p == 0, NA, p)
+    se2 <- .5 * zval * se * sqrt(xx / (1 - xx))
+    list(
+      lower = (sin(pmax(0, asin(sqrt(xx)) - se2 * scale)))^2,
+      upper = (sin(pmin(pi / 2, asin(sqrt(xx)) + se2)))^2
+    )
+  } else {
+    stop("invalid conf.int type")
   }
-  else if (conf.type=="arcsin") {
-    xx <- ifelse(p==0, NA, p)
-    se2 <- .5 *zval*se * sqrt(xx/(1-xx))
-    list(lower= (sin(pmax(0, asin(sqrt(xx)) - se2*scale)))^2,
-         upper= (sin(pmin(pi/2, asin(sqrt(xx)) + se2)))^2)
-  }
-  else stop("invalid conf.int type")
 }
 
 
-colour_palette_surv_ggplot <- function(length){
-  if(length==1) return("black")
-  if(length==2) return(c("#D53E4F","#3288BD"))
-  if(length==3) return(c("#D53E4F","#ABDDA4","#3288BD"))
-  if(length==4) return(c("#D53E4F","#FDAE61","#ABDDA4","#3288BD"))
-  if(length==5) return(c("#D53E4F","#FDAE61","#FEE08B","#ABDDA4","#3288BD"))
-  if(length==6) return(c("#D53E4F","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD"))
-  if(length==7) return(c("#D53E4F","#F46D43","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD"))
-  if(length==8) return(c("#D53E4F","#F46D43","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD","#5E4FA2"))
-  if(length==9) return(c("#9E0142","#D53E4F","#F46D43","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD","#5E4FA2"))
-  if(length==10) return(c("black","#9E0142","#D53E4F","#F46D43","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD","#5E4FA2"))
-  if(length>10) {message("10 colours maximum in default")}
-  return(rep(c("black","#9E0142","#D53E4F","#F46D43","#FDAE61","#FEE08B","#ABDDA4","#66C2A5","#3288BD","#5E4FA2"),length.out=length))
+colour_palette_surv_ggplot <- function(length) {
+  if (length == 1) {
+    return("black")
+  }
+  if (length == 2) {
+    return(c("#D53E4F", "#3288BD"))
+  }
+  if (length == 3) {
+    return(c("#D53E4F", "#ABDDA4", "#3288BD"))
+  }
+  if (length == 4) {
+    return(c("#D53E4F", "#FDAE61", "#ABDDA4", "#3288BD"))
+  }
+  if (length == 5) {
+    return(c("#D53E4F", "#FDAE61", "#FEE08B", "#ABDDA4", "#3288BD"))
+  }
+  if (length == 6) {
+    return(c("#D53E4F", "#FDAE61", "#FEE08B", "#ABDDA4", "#66C2A5", "#3288BD"))
+  }
+  if (length == 7) {
+    return(c(
+      "#D53E4F",
+      "#F46D43",
+      "#FDAE61",
+      "#FEE08B",
+      "#ABDDA4",
+      "#66C2A5",
+      "#3288BD"
+    ))
+  }
+  if (length == 8) {
+    return(c(
+      "#D53E4F",
+      "#F46D43",
+      "#FDAE61",
+      "#FEE08B",
+      "#ABDDA4",
+      "#66C2A5",
+      "#3288BD",
+      "#5E4FA2"
+    ))
+  }
+  if (length == 9) {
+    return(c(
+      "#9E0142",
+      "#D53E4F",
+      "#F46D43",
+      "#FDAE61",
+      "#FEE08B",
+      "#ABDDA4",
+      "#66C2A5",
+      "#3288BD",
+      "#5E4FA2"
+    ))
+  }
+  if (length == 10) {
+    return(c(
+      "black",
+      "#9E0142",
+      "#D53E4F",
+      "#F46D43",
+      "#FDAE61",
+      "#FEE08B",
+      "#ABDDA4",
+      "#66C2A5",
+      "#3288BD",
+      "#5E4FA2"
+    ))
+  }
+  if (length > 10) {
+    message("10 colours maximum in default")
+  }
+  return(rep(
+    c(
+      "black",
+      "#9E0142",
+      "#D53E4F",
+      "#F46D43",
+      "#FDAE61",
+      "#FEE08B",
+      "#ABDDA4",
+      "#66C2A5",
+      "#3288BD",
+      "#5E4FA2"
+    ),
+    length.out = length
+  ))
 }
 color_palette_surv_ggplot <- colour_palette_surv_ggplot
 
 
 # (forestplot2) ---------------------------------------------------------
-format_glm = function(glm_fit,conf.level = 0.95,digits=c(2,3),orderByRisk=TRUE){
-  if (!inherits(glm_fit, c('glm','geeglm','polr'))) stop('Only objects of class glm, geeglm and polr are accepted.')
-
-  #extracting ORs and p values
-  Z = stats::qnorm(1-(1-conf.level)/2)
-  tab <- as.data.frame(summary(glm_fit)$coefficients)
-  tab <- cbind(variable= rownames(tab),tab)
-  rownames(tab) <- NULL
-
-  if (inherits(glm_fit, c("glm", "geeglm"))){
-    names(tab) =  c("variable","estimate",  "std.error" ,"statistic", "p.value")
-    tab = tab[-which(tab$variable=='(Intercept)'),]
-  }  else {
-    names(tab) =  c("variable","estimate",  "std.error" ,"statistic")
-    tab$coef.type = ifelse(grepl("[|]",tab$variable),"scale","coefficient")
-    tab <- tab[tab$coef.type=='coefficient',]
-    tab$p.value = stats::pnorm(abs(tab$statistic),lower.tail = FALSE) * 2
+format_glm <- function(
+  glm_fit,
+  conf.level = 0.95,
+  digits = c(2, 3),
+  orderByRisk = TRUE
+) {
+  if (!inherits(glm_fit, c('glm', 'geeglm', 'polr'))) {
+    stop('Only objects of class glm, geeglm and polr are accepted.')
   }
 
-  tab$conf.low=exp(tab$estimate-Z*tab$std.error)
-  tab$conf.high=exp(tab$estimate+Z*tab$std.error)
-  tab$estimate = exp(tab$estimate)
-  tab$estimate.label = paste0(niceNum(tab$estimate), ' (',niceNum(tab$conf.low),', ',niceNum(tab$conf.high),')')
+  #extracting ORs and p values
+  Z <- stats::qnorm(1 - (1 - conf.level) / 2)
+  tab <- as.data.frame(summary(glm_fit)$coefficients)
+  tab <- cbind(variable = rownames(tab), tab)
+  rownames(tab) <- NULL
 
+  if (inherits(glm_fit, c("glm", "geeglm"))) {
+    names(tab) <- c("variable", "estimate", "std.error", "statistic", "p.value")
+    tab <- tab[-which(tab$variable == '(Intercept)'), ]
+  } else {
+    names(tab) <- c("variable", "estimate", "std.error", "statistic")
+    tab$coef.type <- ifelse(grepl("[|]", tab$variable), "scale", "coefficient")
+    tab <- tab[tab$coef.type == 'coefficient', ]
+    tab$p.value <- stats::pnorm(abs(tab$statistic), lower.tail = FALSE) * 2
+  }
 
-  tab$p.label = ifelse(tab$p.value<0.001, '<0.001', niceNum(tab$p.value,digits[2]))
-  names(tab)[1] = 'variable'
+  tab$conf.low <- exp(tab$estimate - Z * tab$std.error)
+  tab$conf.high <- exp(tab$estimate + Z * tab$std.error)
+  tab$estimate <- exp(tab$estimate)
+  tab$estimate.label <- paste0(
+    niceNum(tab$estimate),
+    ' (',
+    niceNum(tab$conf.low),
+    ', ',
+    niceNum(tab$conf.high),
+    ')'
+  )
 
-  tab = tab[,c('variable', 'estimate', 'p.label', 'p.value', 'conf.low', 'conf.high')]
+  tab$p.label <- ifelse(
+    tab$p.value < 0.001,
+    '<0.001',
+    niceNum(tab$p.value, digits[2])
+  )
+  names(tab)[1] <- 'variable'
 
+  tab <- tab[, c(
+    'variable',
+    'estimate',
+    'p.label',
+    'p.value',
+    'conf.low',
+    'conf.high'
+  )]
 
-  if (orderByRisk){
-    tab$var.order = rank(tab$estimate)
-  } else{
-    tab$var.order = 1:nrow(tab)
+  if (orderByRisk) {
+    tab$var.order <- rank(tab$estimate)
+  } else {
+    tab$var.order <- 1:nrow(tab)
   }
 
   # Extract the reference levels if needed
-  if (length(glm_fit$xlevels)!=0){
+  if (length(glm_fit$xlevels) != 0) {
     ref_levels <- NULL
-    for (i in seq_along(glm_fit$xlevels)){
-      ref_levels <- rbind(ref_levels,
-                          data.frame(var.name=rep(names(glm_fit$xlevels)[i],length(glm_fit$xlevels[[i]])+1),
-                                     level.name = c(names(glm_fit$xlevels)[i],glm_fit$xlevels[[i]]),
-                                     level.order=1:(length(glm_fit$xlevels[[i]])+1),
-                                     variable=paste0(names(glm_fit$xlevels)[i],c('',glm_fit$xlevels[[i]]))))
+    for (i in seq_along(glm_fit$xlevels)) {
+      ref_levels <- rbind(
+        ref_levels,
+        data.frame(
+          var.name = rep(
+            names(glm_fit$xlevels)[i],
+            length(glm_fit$xlevels[[i]]) + 1
+          ),
+          level.name = c(names(glm_fit$xlevels)[i], glm_fit$xlevels[[i]]),
+          level.order = 1:(length(glm_fit$xlevels[[i]]) + 1),
+          variable = paste0(
+            names(glm_fit$xlevels)[i],
+            c('', glm_fit$xlevels[[i]])
+          )
+        )
+      )
     }
 
+    tab <- merge(ref_levels, tab, by = 'variable', all = TRUE)
 
-    tab = merge(ref_levels, tab, by='variable',all = TRUE)
+    tab$estimate.label <- ifelse(
+      is.na(tab$estimate),
+      '1.0 (Reference)',
+      paste0(
+        niceNum(tab$estimate),
+        ' (',
+        niceNum(tab$conf.low),
+        ', ',
+        niceNum(tab$conf.high),
+        ')'
+      )
+    )
 
-    tab$estimate.label = ifelse(is.na(tab$estimate), '1.0 (Reference)',
-                                paste0(niceNum(tab$estimate), ' (',niceNum(tab$conf.low),', ',niceNum(tab$conf.high),')'))
+    varOrderLookup <- stats::na.omit(tab[, c("var.name", "var.order")])
 
-    varOrderLookup <- stats::na.omit(tab[,c("var.name","var.order")])
-
-    for (i in 1:nrow(varOrderLookup)){
-      tab$var.order[tab$var.name==varOrderLookup$var.name[i]] <- varOrderLookup$var.order[i]
+    for (i in 1:nrow(varOrderLookup)) {
+      tab$var.order[
+        tab$var.name == varOrderLookup$var.name[i]
+      ] <- varOrderLookup$var.order[i]
     }
 
-    tab$estimate.label = ifelse(tab$level.name %in% names(glm_fit$xlevels),NA_character_,tab$estimate.label)
-    tab[order(tab$var.order,tab$level.order,decreasing=c(FALSE,TRUE)),]
+    tab$estimate.label <- ifelse(
+      tab$level.name %in% names(glm_fit$xlevels),
+      NA_character_,
+      tab$estimate.label
+    )
+    tab[order(tab$var.order, tab$level.order, decreasing = c(FALSE, TRUE)), ]
   } else {
-    tab$estimate.label = paste0(niceNum(tab$estimate), ' (',niceNum(tab$conf.low),', ',niceNum(tab$conf.high),')')
-    tab$level.order=1
-    tab$var.name=tab$variable
-    tab$level.name=tab$variable
-    tab[order(tab$var.order),]
+    tab$estimate.label <- paste0(
+      niceNum(tab$estimate),
+      ' (',
+      niceNum(tab$conf.low),
+      ', ',
+      niceNum(tab$conf.high),
+      ')'
+    )
+    tab$level.order <- 1
+    tab$var.name <- tab$variable
+    tab$level.name <- tab$variable
+    tab[order(tab$var.order), ]
   }
-
 }
 
 # New function to strip centering from a covariate
-getvarname = function(betaname){
-  sapply(betaname,function(x){
-    x = gsub('I[(]','',x)
-    x = gsub('[-+].*','',x)
-    x = trimws(x)
+getvarname <- function(betaname) {
+  sapply(betaname, function(x) {
+    x <- gsub('I[(]', '', x)
+    x <- gsub('[-+].*', '', x)
+    x <- trimws(x)
     return(x)
   })
 }
 
-lbl_count <- function(y){
-  return(data.frame(y=max(y),  label=paste('n =',length(y))))
+lbl_count <- function(y) {
+  return(data.frame(y = max(y), label = paste('n =', length(y))))
 }
 
-betaWithCI <-function(betaname,CIwidth=0.95){
-  paste0(betaname,"(",100*CIwidth,"%CI)")
+betaWithCI <- function(betaname, CIwidth = 0.95) {
+  paste0(betaname, "(", 100 * CIwidth, "%CI)")
 }
 
-niceStr <- function (strings)
-{
+niceStr <- function(strings) {
   out <- sapply(strings, function(x) {
-    x <- chartr('/',' ',x)
+    x <- chartr('/', ' ', x)
     x <- chartr(".", " ", x)
     x <- chartr("_", " ", x)
     return(x)
@@ -1060,16 +1295,18 @@ niceStr <- function (strings)
   return(out)
 }
 
-wrp_lbl <- function(x,width = 10){
+wrp_lbl <- function(x, width = 10) {
   x <- niceStr(x)
   #  strwrap(x,width = width) # doesn't work nicely with spaces
-  lst <- strwrap(x,width = width,simplify = FALSE)
-  for (i in seq_along(lst)) lst[[i]] <- paste(lst[[i]],collapse='\n')
+  lst <- strwrap(x, width = width, simplify = FALSE)
+  for (i in seq_along(lst)) {
+    lst[[i]] <- paste(lst[[i]], collapse = '\n')
+  }
   unlist(lst)
 }
 
 
-label_wrap_reportRx <- function (width = 25, multi_line = TRUE) {
+label_wrap_reportRx <- function(width = 25, multi_line = TRUE) {
   fun <- function(labels) {
     labels <- ggplot2::label_value(labels, multi_line = multi_line)
     lapply(labels, function(x) {
@@ -1082,16 +1319,13 @@ label_wrap_reportRx <- function (width = 25, multi_line = TRUE) {
 }
 
 
-
-
-
-
 reportRx_pal <- function(
-    direction = 1
+  direction = 1
 ) {
-
   function(n) {
-    if (n>10) warning('Ten colour maximum, colours will be recycled.')
+    if (n > 10) {
+      warning('Ten colour maximum, colours will be recycled.')
+    }
 
     colour_list <- colour_palette_surv_ggplot(n)
 
@@ -1101,13 +1335,13 @@ reportRx_pal <- function(
 }
 
 scale_colour_reportRx <- function(
-    direction = 1,
-    ...
+  direction = 1,
+  ...
 ) {
   ggplot2::discrete_scale(
-    aesthetics = c("colour","fill"),
+    aesthetics = c("colour", "fill"),
     scale_name = "reportRx",
-    reportRx_pal( direction),
+    reportRx_pal(direction),
     ...
   )
 }
@@ -1185,7 +1419,6 @@ fillNAs <- function(x) {
 #' @importFrom dplyr distinct group_by summarise mutate
 #' @export
 extract_package_details <- function(ignore_comments = TRUE) {
-
   # Get the current file path
   # Try different methods to detect the current file
   get_current_file <- function() {
@@ -1212,12 +1445,15 @@ extract_package_details <- function(ignore_comments = TRUE) {
     }
 
     # If all else fails, prompt user
-    stop("Could not detect current file. Please ensure you're running this from RStudio with an active file, or use rstudioapi package.")
+    stop(
+      "Could not detect current file. Please ensure you're running this from RStudio with an active file, or use rstudioapi package."
+    )
   }
 
-  try(file_path <- get_current_file(),silent = TRUE)
-  if (inherits(file_path,"try-error")) stop("Current file can not be identified.")
-
+  try(file_path <- get_current_file(), silent = TRUE)
+  if (inherits(file_path, "try-error")) {
+    stop("Current file can not be identified.")
+  }
 
   # Read the file content
   text <- readLines(file_path, warn = FALSE) |>
@@ -1243,7 +1479,7 @@ extract_package_details <- function(ignore_comments = TRUE) {
         char <- chars[i]
 
         # Check for escape sequences
-        if (i > 1 && chars[i-1] == "\\") {
+        if (i > 1 && chars[i - 1] == "\\") {
           result <- c(result, char)
           next
         }
@@ -1273,7 +1509,12 @@ extract_package_details <- function(ignore_comments = TRUE) {
 
   # First, remove function definitions to avoid false positives
   # Match "function(" only when preceded by space, =, <-, or start of line
-  text_no_func_def <- gsub("(^|\\s|=|<-)function\\s*\\(", "\\1FUNCTION_DEFINITION(", text, perl = TRUE)
+  text_no_func_def <- gsub(
+    "(^|\\s|=|<-)function\\s*\\(",
+    "\\1FUNCTION_DEFINITION(",
+    text,
+    perl = TRUE
+  )
 
   # Initialize results list
   all_functions <- list()
@@ -1312,9 +1553,20 @@ extract_package_details <- function(ignore_comments = TRUE) {
     function_names <- gsub("\\s*\\($", "", regular_calls)
 
     # Remove some common non-function patterns
-    control_structures <- c("if", "for", "while", "repeat", "function",
-                            "case_when","c","list","data.frame","tibble",
-                            "FUNCTION_DEFINITION", "switch")
+    control_structures <- c(
+      "if",
+      "for",
+      "while",
+      "repeat",
+      "function",
+      "case_when",
+      "c",
+      "list",
+      "data.frame",
+      "tibble",
+      "FUNCTION_DEFINITION",
+      "switch"
+    )
     function_names <- function_names[!function_names %in% control_structures]
 
     # Add to list
@@ -1343,41 +1595,62 @@ extract_package_details <- function(ignore_comments = TRUE) {
   functions_df <- functions_df |> dplyr::distinct()
 
   # Check if not namespaced functions are base R function, and if so, remove
-  is_base_R <- function(func_name){
-    sapply(func_name, function(f){
+  is_base_R <- function(func_name) {
+    sapply(func_name, function(f) {
       exists(f, mode = "function", envir = baseenv())
     })
   }
 
   functions_df <- functions_df |>
     dplyr::mutate(
-      package_name = ifelse(is.na(package_name),ifelse(is_base_R(function_name),"base",NA),package_name)) |>
-    dplyr::filter(!grepl("base",package_name)) |>
+      package_name = ifelse(
+        is.na(package_name),
+        ifelse(is_base_R(function_name), "base", NA),
+        package_name
+      )
+    ) |>
+    dplyr::filter(!grepl("base", package_name)) |>
     dplyr::filter(function_name != "extract_package_details")
 
   # Get package information for non-namespaced functions
   get_function_package <- function(func_names) {
-    sapply(func_names,function(func_name) {
-      # find the function
-      where_found <- getAnywhere(func_name)
-      if (length(where_found$where)>0){
-        if ( ".GlobalEnv" %in% where_found$where) return("GlobalEnv")
-        pkg_list <- unique(gsub("package[:]|namespace[:]","",
-                                grep("package|namespace",where_found$where,value = TRUE)))
-        return(pkg_list[1])
-      } else return("Unknown")
-    },USE.NAMES=FALSE,simplify=TRUE)
+    sapply(
+      func_names,
+      function(func_name) {
+        # find the function
+        where_found <- getAnywhere(func_name)
+        if (length(where_found$where) > 0) {
+          if (".GlobalEnv" %in% where_found$where) {
+            return("GlobalEnv")
+          }
+          pkg_list <- unique(gsub(
+            "package[:]|namespace[:]",
+            "",
+            grep("package|namespace", where_found$where, value = TRUE)
+          ))
+          return(pkg_list[1])
+        } else {
+          return("Unknown")
+        }
+      },
+      USE.NAMES = FALSE,
+      simplify = TRUE
+    )
   }
 
   functions_df <- functions_df |>
     dplyr::mutate(
-      package_name = ifelse(is.na(package_name),
-                            get_function_package(function_name),package_name)) |>
-    dplyr::filter(!grepl("Unknown",package_name))
+      package_name = ifelse(
+        is.na(package_name),
+        get_function_package(function_name),
+        package_name
+      )
+    ) |>
+    dplyr::filter(!grepl("Unknown", package_name))
 
   # Function to get package version
   get_package_version <- function(pkg_name) {
-    sapply(pkg_name, function(pn){
+    sapply(pkg_name, function(pn) {
       tryCatch(
         as.character(packageVersion(pn)),
         error = function(e) NA_character_
@@ -1386,27 +1659,34 @@ extract_package_details <- function(ignore_comments = TRUE) {
   }
   # Function to get package citation
   get_package_citation <- function(pkg_name) {
-    sapply(pkg_name, function(pn){
+    sapply(pkg_name, function(pn) {
       tryCatch(
-        format(citation(pn),style = "text"),
+        format(citation(pn), style = "text"),
         error = function(e) NA_character_
       )
     })
   }
   packages_df <- functions_df |>
     dplyr::group_by(package_name) |>
-    dplyr::summarise(functions_called = paste(unique(function_name),collapse=", ")) |>
+    dplyr::summarise(
+      functions_called = paste(unique(function_name), collapse = ", ")
+    ) |>
     dplyr::ungroup() |>
-    dplyr::filter(package_name !="GlobalEnv") |>
-    dplyr::add_row(package_name ="utils") |>
-    dplyr::mutate(package_version = get_package_version(package_name),
-                  package_citation = get_package_citation(package_name)) |>
+    dplyr::filter(package_name != "GlobalEnv") |>
+    dplyr::add_row(package_name = "utils") |>
+    dplyr::mutate(
+      package_version = get_package_version(package_name),
+      package_citation = get_package_citation(package_name)
+    ) |>
     dplyr::group_by(package_citation) |>
-    dplyr::slice_tail(n=1) |>
+    dplyr::slice_tail(n = 1) |>
     dplyr::ungroup() |>
-    dplyr::mutate(package_name = gsub("utils","R",package_name))
-  ord <- c((1:nrow(packages_df))[-which(packages_df$package_name=="R")],which(packages_df$package_name=="R"))
-  packages_df <-packages_df[ord,]
+    dplyr::mutate(package_name = gsub("utils", "R", package_name))
+  ord <- c(
+    (1:nrow(packages_df))[-which(packages_df$package_name == "R")],
+    which(packages_df$package_name == "R")
+  )
+  packages_df <- packages_df[ord, ]
   return(packages_df)
 }
 
@@ -1422,7 +1702,9 @@ extract_package_details <- function(ignore_comments = TRUE) {
 #' @keywords internal
 low_expected_counts <- function(x) {
   ex <- try(suppressWarnings(stats::chisq.test(x)$expected), silent = TRUE)
-  if (inherits(ex, "try-error") || is.null(ex)) return(TRUE)
+  if (inherits(ex, "try-error") || is.null(ex)) {
+    return(TRUE)
+  }
   any(ex < 5, na.rm = TRUE)
 }
 
@@ -1437,16 +1719,70 @@ low_expected_counts <- function(x) {
 #' @return the value of `expr`
 #' @keywords internal
 with_seed <- function(seed, expr) {
-  if (is.null(seed)) return(expr)
+  if (is.null(seed)) {
+    return(expr)
+  }
   has_old <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
   old <- if (has_old) get(".Random.seed", envir = globalenv()) else NULL
-  on.exit({
-    if (has_old) {
-      assign(".Random.seed", old, envir = globalenv())
-    } else if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) {
-      rm(".Random.seed", envir = globalenv())
-    }
-  }, add = TRUE)
+  on.exit(
+    {
+      if (has_old) {
+        assign(".Random.seed", old, envir = globalenv())
+      } else if (
+        exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+      ) {
+        rm(".Random.seed", envir = globalenv())
+      }
+    },
+    add = TRUE
+  )
   set.seed(seed)
   expr
+}
+
+#' Find the environment a model was fit in
+#'
+#' Used to evaluate a model's call or data argument. Falls back to the global
+#' environment rather than the frame of the calling package function.
+#' @param model a fitted model
+#' @return an environment
+#' @keywords internal
+model_env <- function(model) {
+  env <- tryCatch(environment(stats::terms(model)), error = function(e) NULL)
+  if (!is.environment(env)) {
+    env <- tryCatch(environment(stats::formula(model)), error = function(e) {
+      NULL
+    })
+  }
+  if (!is.environment(env)) {
+    env <- globalenv()
+  }
+  env
+}
+
+#' Re-fit a model in the environment it was originally fit in
+#'
+#' stats::update() and nlme's update.lme() evaluate the modified call in the
+#' calling frame, which fails when the call refers to objects only visible
+#' where the model was fit (models fit inside functions, family or formula
+#' held in a variable, etc.). Replacement arguments are inserted into the call
+#' by value and the call is evaluated in the model's own environment.
+#' @param model a fitted model
+#' @param formula. optional formula update, as for stats::update()
+#' @param ... named replacement arguments; NULL values are ignored
+#' @return the re-fitted model, or NULL if the re-fit fails
+#' @keywords internal
+refit_in_env <- function(model, formula. = NULL, ...) {
+  cl <- stats::getCall(model)
+  if (is.null(cl)) {
+    return(NULL)
+  }
+  if (!is.null(formula.)) {
+    cl$formula <- stats::update(stats::formula(model), formula.)
+  }
+  args <- list(...)
+  for (a in names(args)) {
+    if (!is.null(args[[a]])) cl[[a]] <- args[[a]]
+  }
+  tryCatch(eval(cl, model_env(model)), error = function(e) NULL)
 }

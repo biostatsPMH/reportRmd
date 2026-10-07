@@ -42,8 +42,7 @@ also be displayed separately for easy plotting.
 Global p-values are likelihood ratio tests for lm, glm and polr models. For
 lme models an attempt is made to re-fit the model using ML and if,successful
 LRT is used to obtain a global p-value. For coxph models the model is re-run
-without robust variances with and without each variable and a LRT is
-presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
+with robust Wald tests. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned. For negative binomial models a deviance
 test is used. For logistf models, global p-values are penalized likelihood
 ratio tests computed by re-fitting the model without each variable and

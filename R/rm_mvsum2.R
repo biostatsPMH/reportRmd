@@ -126,43 +126,90 @@
 #' rm_mvsum(nb_fit, whichp = "both")
 #' }
 #' }
-rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitle='',showN=TRUE,showEvent=TRUE,CIwidth=0.95, vif=TRUE,
-                     whichp=c("levels","global","both"),
-                     caption=NULL,tableOnly=FALSE,p.adjust='none',unformattedp=FALSE,nicenames = TRUE,include_unadjusted=FALSE,
-                     chunk_label, fontsize){
-  if (unformattedp) formatp <- function(x) {as.numeric(x)}
+rm_mvsum <- function(
+  model,
+  data,
+  digits = getOption("reportRmd.digits", 2),
+  covTitle = '',
+  showN = TRUE,
+  showEvent = TRUE,
+  CIwidth = 0.95,
+  vif = TRUE,
+  whichp = c("levels", "global", "both"),
+  caption = NULL,
+  tableOnly = FALSE,
+  p.adjust = 'none',
+  unformattedp = FALSE,
+  nicenames = TRUE,
+  include_unadjusted = FALSE,
+  chunk_label,
+  fontsize
+) {
+  if (unformattedp) {
+    formatp <- function(x) {
+      as.numeric(x)
+    }
+  }
   whichp <- match.arg(whichp)
 
   # Handle multiply imputed (mira) models
   is_mira <- inherits(model, "mira")
   if (is_mira) {
-    if (!requireNamespace("mice", quietly = TRUE))
+    if (!requireNamespace("mice", quietly = TRUE)) {
       stop("The mice package is required for multiply imputed model summaries.")
+    }
     fit1 <- model$analyses[[1]]
   }
 
-  if (!missing(data)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(data)")
-  if (!missing(chunk_label)) lifecycle::deprecate_soft("0.1.1","rm_mvsum(chunk_label)")
+  if (!missing(data)) {
+    lifecycle::deprecate_soft("0.1.1", "rm_mvsum(data)")
+  }
+  if (!missing(chunk_label)) {
+    lifecycle::deprecate_soft("0.1.1", "rm_mvsum(chunk_label)")
+  }
   model_coef <- get_model_coef(model)
-  if (any(is.na(model_coef))) warning(paste0('The following model coefficients could not be estimated and are excluded from the table:\n',
-                                             paste(names(model_coef)[is.na(model_coef)],collapse = ", "),
-                                             "\nConsider re-fitting the model or running droplevels."))
+  if (any(is.na(model_coef))) {
+    warning(paste0(
+      'The following model coefficients could not be estimated and are excluded from the table:\n',
+      paste(names(model_coef)[is.na(model_coef)], collapse = ", "),
+      "\nConsider re-fitting the model or running droplevels."
+    ))
+  }
   # get the table
-  tab <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = FALSE)
+  tab <- m_summary(
+    model,
+    CIwidth = CIwidth,
+    digits = digits,
+    vif = vif,
+    whichp = whichp,
+    for_plot = FALSE
+  )
   if (include_unadjusted && is_mira) {
-    message("Unadjusted estimates are not supported for multiply imputed models.")
+    message(
+      "Unadjusted estimates are not supported for multiply imputed models."
+    )
     include_unadjusted <- FALSE
   }
   if (include_unadjusted && inherits(model, "logistf")) {
-    message("Unadjusted estimates are not supported for logistf models. ",
-            "Univariate models would be fit with ordinary (unpenalized) ",
-            "logistic regression, which is not comparable to the penalized ",
-            "multivariable estimates and may fail under separation.")
+    message(
+      "Unadjusted estimates are not supported for logistf models. ",
+      "Univariate models would be fit with ordinary (unpenalized) ",
+      "logistic regression, which is not comparable to the penalized ",
+      "multivariable estimates and may fail under separation."
+    )
     include_unadjusted <- FALSE
   }
   extra_terms <- character(0)
+
   if (include_unadjusted) {
-    m_sum <- m_summary(model, CIwidth = CIwidth, digits = digits, vif = vif, whichp = whichp, for_plot = TRUE)
+    m_sum <- m_summary(
+      model,
+      CIwidth = CIwidth,
+      digits = digits,
+      vif = vif,
+      whichp = whichp,
+      for_plot = TRUE
+    )
 
     # For the univariate models we need the original data with individual
     # columns, not the model frame which may hold Surv() objects or
@@ -171,25 +218,67 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     ma <- get_model_args(model, data = uv_data)
     uv <- prepare_uv_terms(model, ma, uv_data)
 
-    tabUV <- rm_uvsum(response = uv$response, covs = uv$covs, data = uv$data,
-                      digits = digits, CIwidth = CIwidth, whichp = whichp,
-                      showEvent = showEvent,
-                      tableOnly = TRUE, nicenames = FALSE, unformattedp = unformattedp)
-    tab <- combine_uv_mv(tabUV, m_sum, tab,
-                         term_labels = ma$term_labels,
-                         uv_terms = uv$covs, uv_labels = uv$labels)
+    cl_var <- NULL
+    if (inherits(model, "coxph") && !is.null(model$naive.var)) {
+      cl_expr <- stats::getCall(model)$cluster
+      if (is.null(cl_expr)) {
+        cl_expr <- stats::getCall(model)$id
+      }
+      if (is.null(cl_expr)) {
+        cl_term <- grep(
+          "^cluster\\(",
+          attr(stats::terms(model), "term.labels"),
+          value = TRUE
+        )
+        if (length(cl_term) == 1) cl_expr <- str2lang(cl_term)[[2]]
+      }
+      if (is.name(cl_expr) && as.character(cl_expr) %in% names(uv$data)) {
+        cl_var <- as.character(cl_expr)
+      } else {
+        message(
+          "The cluster variable could not be identified; unadjusted estimates use model-based variances."
+        )
+      }
+    }
+
+    tabUV <- rm_uvsum(
+      response = uv$response,
+      covs = uv$covs,
+      data = uv$data,
+      id = cl_var,
+      digits = digits,
+      CIwidth = CIwidth,
+      whichp = whichp,
+      showEvent = showEvent,
+      tableOnly = TRUE,
+      nicenames = FALSE,
+      unformattedp = unformattedp
+    )
+
+    tab <- combine_uv_mv(
+      tabUV,
+      m_sum,
+      tab,
+      term_labels = ma$term_labels,
+      uv_terms = uv$covs,
+      uv_labels = uv$labels
+    )
     extra_terms <- attr(tab, "extra_terms")
   }
   if (!showN) {
     rmc <- grep("^N(\\s|$)", names(tab))
-    if (length(rmc)>0) tab <- tab[,-rmc ]
+    if (length(rmc) > 0) tab <- tab[, -rmc]
   }
   if (!showEvent) {
     rmc <- grep("^Event(\\s|$)", names(tab))
-    if (length(rmc)>0) tab <- tab[,-rmc ]
+    if (length(rmc) > 0) tab <- tab[, -rmc]
   }
   att_tab <- attributes(tab)
-  model_terms <- if (is_mira) fit1$terms else tryCatch(model$terms, error = function(e) terms(model))
+  model_terms <- if (is_mira) {
+    fit1$terms
+  } else {
+    tryCatch(model$terms, error = function(e) terms(model))
+  }
   header_terms <- c(attr(model_terms, "term.labels"), extra_terms)
   is_header_row <- tab[["Variable"]] %in% header_terms
   to_indent <- which(!is_header_row)
@@ -209,14 +298,27 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   }
 
   # Format and bold p-values
-  pv <- format_bold_pvalues(tab, bold_cells,
-                            unformattedp = unformattedp, p.adjust = p.adjust)
-  tab <- pv$tab; bold_cells <- pv$bold_cells
+  pv <- format_bold_pvalues(
+    tab,
+    bold_cells,
+    unformattedp = unformattedp,
+    p.adjust = p.adjust
+  )
+  tab <- pv$tab
+  bold_cells <- pv$bold_cells
 
   # Restore unadjusted p-values in the correct position (after unadjusted estimate)
   if (!is.null(unadj_p_col)) {
-    unadj_est_col <- grep("^Unadjusted.*\\([0-9.]+%CI\\)", names(tab), value = TRUE)[1]
-    insert_pos <- if (!is.na(unadj_est_col)) which(names(tab) == unadj_est_col) + 1 else 2
+    unadj_est_col <- grep(
+      "^Unadjusted.*\\([0-9.]+%CI\\)",
+      names(tab),
+      value = TRUE
+    )[1]
+    insert_pos <- if (!is.na(unadj_est_col)) {
+      which(names(tab) == unadj_est_col) + 1
+    } else {
+      2
+    }
     tab <- data.frame(
       tab[, seq_len(insert_pos - 1), drop = FALSE],
       `Unadjusted p-value` = unadj_p_col,
@@ -231,8 +333,8 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
     tab[[ecol]] <- sapply(tab[[ecol]], process_ci)
   }
 
-  if (nicenames){
-    attr(tab,"termnames") <- tab$Variable
+  if (nicenames) {
+    attr(tab, "termnames") <- tab$Variable
     md <- try(get_model_data(if (is_mira) fit1 else model))
     if (inherits(md, "try-error")) {
       warning("Unable to extract data from model, using variable names")
@@ -242,18 +344,29 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
   }
 
   names(tab)[1] <- covTitle
-  for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
-  if (tableOnly){
-    if (names(tab)[1]=='') names(tab)[1] <- 'Covariate'
+  for (a in setdiff(names(att_tab), names(attributes(tab)))) {
+    attr(tab, a) <- att_tab[[a]]
+  }
+  if (tableOnly) {
+    if (names(tab)[1] == '') {
+      names(tab)[1] <- 'Covariate'
+    }
     attr(tab, 'to_indent') <- to_indent
-    attr(tab,'bold_cells') <- bold_cells
-    attr(tab,'dimchk') <- dim(tab)
+    attr(tab, 'bold_cells') <- bold_cells
+    attr(tab, 'dimchk') <- dim(tab)
     return(tab)
   }
-  argL <- list(tab=tab,to_indent=to_indent,bold_cells = bold_cells,
-               caption=caption, digits = digits,
-               chunk_label=ifelse(missing(chunk_label),'NOLABELTOADD',chunk_label))
-  if (!missing(fontsize)) argL[['fontsize']] <- fontsize
+  argL <- list(
+    tab = tab,
+    to_indent = to_indent,
+    bold_cells = bold_cells,
+    caption = caption,
+    digits = digits,
+    chunk_label = ifelse(missing(chunk_label), 'NOLABELTOADD', chunk_label)
+  )
+  if (!missing(fontsize)) {
+    argL[['fontsize']] <- fontsize
+  }
   do.call(outTable, argL)
 }
 
@@ -268,32 +381,42 @@ rm_mvsum <- function(model, data, digits=getOption("reportRmd.digits",2),covTitl
 #' @return a list with elements `response`, `predictors` and `term_labels`
 #' @keywords internal
 get_model_args <- function(model, data = NULL) {
-
   f <- tryCatch(stats::formula(model), error = function(e) NULL)
   tt <- tryCatch(stats::terms(model), error = function(e) NULL)
   if (is.null(tt) && !is.null(f)) {
     tt <- tryCatch(
       if (is.null(data)) stats::terms(f) else stats::terms(f, data = data),
-      error = function(e) NULL)
+      error = function(e) NULL
+    )
   }
 
   # Fall back to parsing the call for model classes with no terms/formula method
   if (is.null(tt)) {
     av <- as.character(model$call)
     av_f <- av[which(grepl("~", av))]
-    if (length(av_f) == 0)
+    if (length(av_f) == 0) {
       stop("Unable to extract the model formula; supply the data argument.")
+    }
     f <- stats::as.formula(av_f[1])
     tt <- stats::terms(f)
   }
-  if (is.null(f)) f <- stats::formula(tt)
+  if (is.null(f)) {
+    f <- stats::formula(tt)
+  }
 
   term_labels <- attr(tt, "term.labels")
   # drop random effect terms, e.g. (1 | id)
-  term_labels <- trimws(term_labels[!grepl("\\|", term_labels)])
+  term_labels <- trimws(term_labels[
+    !grepl("\\|", term_labels) &
+      !grepl("^cluster\\(", term_labels)
+  ])
 
   resp_idx <- attr(tt, "response")
-  response_vars <- if (!is.null(resp_idx) && resp_idx > 0) all.vars(f[[2]]) else character(0)
+  response_vars <- if (!is.null(resp_idx) && resp_idx > 0) {
+    all.vars(f[[2]])
+  } else {
+    character(0)
+  }
 
   predictor_vars <- unique(trimws(unlist(strsplit(term_labels, "[:*]"))))
 
@@ -316,18 +439,20 @@ get_model_args <- function(model, data = NULL) {
 #' @return a data frame, or NULL if the data can not be recovered
 #' @keywords internal
 get_uv_data <- function(model) {
-
   mf <- tryCatch(get_model_data(model), error = function(e) NULL)
 
   cl <- tryCatch(stats::getCall(model), error = function(e) NULL)
   orig <- NULL
   if (!is.null(cl) && !is.null(cl[["data"]])) {
-    env <- tryCatch(environment(stats::formula(model)), error = function(e) NULL)
-    if (is.null(env) || !is.environment(env)) env <- parent.frame()
-    orig <- tryCatch(eval(cl[["data"]], envir = env), error = function(e) NULL)
+    orig <- tryCatch(
+      eval(cl[["data"]], envir = model_env(model)),
+      error = function(e) NULL
+    )
   }
 
-  if (!is.data.frame(orig)) return(mf)
+  if (!is.data.frame(orig)) {
+    return(mf)
+  }
 
   # restrict the original data to the rows used in the fit
   if (is.data.frame(mf) && nrow(mf) < nrow(orig)) {
@@ -351,12 +476,16 @@ get_uv_data <- function(model) {
 #' @return a list with `data`, `covs`, `labels` and `response`
 #' @keywords internal
 prepare_uv_terms <- function(model, ma, uv_data) {
-
-  if (!is.data.frame(uv_data))
-    stop("Unable to extract the data used to fit the model; supply the data argument.")
+  if (!is.data.frame(uv_data)) {
+    stop(
+      "Unable to extract the data used to fit the model; supply the data argument."
+    )
+  }
 
   mf <- tryCatch(stats::model.frame(model), error = function(e) NULL)
-  if (!is.data.frame(mf)) mf <- tryCatch(get_model_data(model), error = function(e) NULL)
+  if (!is.data.frame(mf)) {
+    mf <- tryCatch(get_model_data(model), error = function(e) NULL)
+  }
 
   # Expand a composite response (e.g. Surv(time, status)) if the original
   # columns are not available
@@ -367,14 +496,19 @@ prepare_uv_terms <- function(model, ma, uv_data) {
     if (inherits(y, "Surv") && nrow(uv_data) == nrow(mf)) {
       ym <- as.matrix(y)
       if (ncol(ym) == length(response)) {
-        for (i in seq_along(response)) uv_data[[response[i]]] <- ym[, i]
+        for (i in seq_along(response)) {
+          uv_data[[response[i]]] <- ym[, i]
+        }
       }
     }
   }
   missing_resp <- setdiff(response, names(uv_data))
-  if (length(missing_resp) > 0)
-    stop("Response variable(s) not found in the model data: ",
-         paste(missing_resp, collapse = ", "))
+  if (length(missing_resp) > 0) {
+    stop(
+      "Response variable(s) not found in the model data: ",
+      paste(missing_resp, collapse = ", ")
+    )
+  }
 
   covs <- character(0)
   labels <- character(0)
@@ -382,23 +516,39 @@ prepare_uv_terms <- function(model, ma, uv_data) {
 
   for (cp in ma$predictors) {
     if (cp %in% names(uv_data)) {
-      covs <- c(covs, cp); labels <- c(labels, cp); next
+      covs <- c(covs, cp)
+      labels <- c(labels, cp)
+      next
     }
-    if (is.data.frame(mf) && cp %in% names(mf) && nrow(mf) == nrow(uv_data) &&
-        is.null(dim(mf[[cp]]))) {
+    if (
+      is.data.frame(mf) &&
+        cp %in% names(mf) &&
+        nrow(mf) == nrow(uv_data) &&
+        is.null(dim(mf[[cp]]))
+    ) {
       nm <- make.names(cp)
-      while (nm %in% c(names(uv_data), covs)) nm <- paste0(nm, ".")
+      while (nm %in% c(names(uv_data), covs)) {
+        nm <- paste0(nm, ".")
+      }
       uv_data[[nm]] <- mf[[cp]]
-      covs <- c(covs, nm); labels <- c(labels, cp); next
+      covs <- c(covs, nm)
+      labels <- c(labels, cp)
+      next
     }
     dropped <- c(dropped, cp)
   }
 
-  if (length(dropped) > 0)
-    warning("Unadjusted estimates could not be computed for: ",
-            paste(dropped, collapse = ", "))
-  if (length(covs) == 0)
-    stop("None of the model predictors could be matched to columns in the data.")
+  if (length(dropped) > 0) {
+    warning(
+      "Unadjusted estimates could not be computed for: ",
+      paste(dropped, collapse = ", ")
+    )
+  }
+  if (length(covs) == 0) {
+    stop(
+      "None of the model predictors could be matched to columns in the data."
+    )
+  }
 
   list(data = uv_data, covs = covs, labels = labels, response = response)
 }
@@ -423,7 +573,9 @@ add_var_lvl_keys <- function(x, varcol, terms) {
   m <- match(gsub("\\s", "", lab), gsub("\\s", "", terms))
   is_term <- !is.na(m)
   # the first row is always a term, even if the label can not be matched
-  if (length(is_term) > 0) is_term[1] <- TRUE
+  if (length(is_term) > 0) {
+    is_term[1] <- TRUE
+  }
   x$var <- ifelse(is_term, ifelse(is.na(m), lab, terms[m]), NA_character_)
   x <- tidyr::fill(x, "var", .direction = "down")
   x$lvl <- ifelse(is_term, NA_character_, lab)
@@ -431,17 +583,26 @@ add_var_lvl_keys <- function(x, varcol, terms) {
 }
 
 
-combine_uv_mv <- function(tabUV, m_sum, tabMV, term_labels = NULL,
-                          uv_terms = NULL, uv_labels = NULL) {
-
+combine_uv_mv <- function(
+  tabUV,
+  m_sum,
+  tabMV,
+  term_labels = NULL,
+  uv_terms = NULL,
+  uv_labels = NULL
+) {
   ci_pat <- "\\([0-9.]+%CI\\)"
 
   # Detect estimate column name dynamically
   est_col_uv <- grep(ci_pat, names(tabUV), value = TRUE)[1]
   est_col_mv <- grep(ci_pat, names(tabMV), value = TRUE)[1]
 
-  if (is.na(est_col_uv)) stop("Cannot find estimate column in tabUV")
-  if (is.na(est_col_mv)) stop("Cannot find estimate column in tabMV")
+  if (is.na(est_col_uv)) {
+    stop("Cannot find estimate column in tabUV")
+  }
+  if (is.na(est_col_mv)) {
+    stop("Cannot find estimate column in tabMV")
+  }
 
   # Standardize column names for internal processing
   tabUV_work <- tabUV
@@ -450,7 +611,9 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV, term_labels = NULL,
   tabMV_work <- tabMV
   names(tabMV_work)[names(tabMV_work) == est_col_mv] <- "Est_CI"
 
-  if (is.null(term_labels)) term_labels <- unique(stats::na.omit(tabMV_work$Variable))
+  if (is.null(term_labels)) {
+    term_labels <- unique(stats::na.omit(tabMV_work$Variable))
+  }
 
   # Map the sanitized names used for the univariate fits back to the model's
   # term labels so that the two tables can be joined
@@ -481,12 +644,18 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV, term_labels = NULL,
       `Adjusted p-value` = "p-value"
     ) |>
     dplyr::arrange(.data$mv_order) |>
-    dplyr::select(dplyr::any_of(c(
-      "Variable", "var",
-      "Unadjusted Est_CI", "Unadjusted p-value",
-      "Adjusted Est_CI", "Adjusted p-value",
-      "N", "Event", "VIF"
-    )))
+    dplyr::select(
+      dplyr::any_of(c(
+        "Variable",
+        "var",
+        "Unadjusted Est_CI",
+        "Unadjusted p-value",
+        "Adjusted Est_CI",
+        "Adjusted p-value"
+      )),
+      dplyr::matches("^(N|Event)( |$)"),
+      dplyr::any_of("VIF")
+    )
 
   # 2. Identify main effects that appear only inside interaction terms
   main_terms <- term_labels[!grepl(":", term_labels)]
@@ -495,7 +664,8 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV, term_labels = NULL,
   if (length(interaction_terms) > 0) {
     uv_only_vars <- setdiff(
       unique(unlist(strsplit(interaction_terms, ":"))),
-      main_terms)
+      main_terms
+    )
     uv_only_vars <- uv_only_vars[uv_only_vars %in% tabUV2$var]
   }
 
@@ -503,6 +673,11 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV, term_labels = NULL,
   out <- out |> dplyr::select(-"var")
   out_cols <- names(out)
   extra_terms <- character(0)
+
+  n_col <- grep("^N( |$)", out_cols, value = TRUE)[1]
+  ev_col <- grep("^Event( |$)", out_cols, value = TRUE)[1]
+  n_uv <- grep("^N( |$)", names(tabUV2), value = TRUE)[1]
+  ev_uv <- grep("^Event( |$)", names(tabUV2), value = TRUE)[1]
 
   # 3. Append UV-only main effects at the end
   if (length(uv_only_vars) > 0) {
@@ -516,37 +691,41 @@ combine_uv_mv <- function(tabUV, m_sum, tabMV, term_labels = NULL,
 
     for (v in uv_only_vars) {
       uv_rows <- tabUV2[which(tabUV2$var == v), , drop = FALSE]
-      if (nrow(uv_rows) == 0) next
+      if (nrow(uv_rows) == 0) {
+        next
+      }
       extra_terms <- c(extra_terms, v)
 
       level_rows <- uv_rows[!is.na(uv_rows$lvl), , drop = FALSE]
       term_row <- uv_rows[is.na(uv_rows$lvl), , drop = FALSE]
+      has_n <- !is.na(n_col) && !is.na(n_uv)
+      has_ev <- !is.na(ev_col) && !is.na(ev_uv)
 
       if (nrow(level_rows) > 0) {
-        # Categorical: header row then one row per level
         new_header <- blank_row(v)
-        if (nrow(term_row) > 0 && "N" %in% names(term_row)) new_header$N <- term_row$N[1]
-        uv_rows_to_add[[length(uv_rows_to_add) + 1]] <-
-          as.data.frame(new_header, check.names = FALSE, stringsAsFactors = FALSE)
-
-        for (k in seq_len(nrow(level_rows))) {
-          lv_row <- level_rows[k, ]
-          new_row <- blank_row(lv_row$lvl)
-          new_row$`Unadjusted Est_CI` <- lv_row$Est_CI
-          new_row$`Unadjusted p-value` <- lv_row$`p-value`
-          if ("N" %in% names(lv_row)) new_row$N <- lv_row$N
-          if ("Event" %in% out_cols && "Event" %in% names(lv_row)) new_row$Event <- lv_row$Event
-          uv_rows_to_add[[length(uv_rows_to_add) + 1]] <-
-            as.data.frame(new_row, check.names = FALSE, stringsAsFactors = FALSE)
+        if (nrow(term_row) > 0 && has_n) {
+          new_header[[n_col]] <- term_row[[n_uv]][1]
         }
-      } else if (nrow(term_row) > 0) {
-        # Continuous: single row
-        uv_row <- term_row[1, ]
-        new_row <- blank_row(v)
-        new_row$`Unadjusted Est_CI` <- uv_row$Est_CI
-        new_row$`Unadjusted p-value` <- uv_row$`p-value`
-        if ("N" %in% names(uv_row)) new_row$N <- uv_row$N
-        if ("Event" %in% out_cols && "Event" %in% names(uv_row)) new_row$Event <- uv_row$Event
+        uv_rows_to_add[[length(uv_rows_to_add) + 1]] <-
+          as.data.frame(
+            new_header,
+            check.names = FALSE,
+            stringsAsFactors = FALSE
+          )
+        src_rows <- level_rows
+      } else {
+        src_rows <- term_row[1, , drop = FALSE]
+      }
+      for (k in seq_len(nrow(src_rows))) {
+        new_row <- blank_row(if (nrow(level_rows) > 0) src_rows$lvl[k] else v)
+        new_row$`Unadjusted Est_CI` <- src_rows$Est_CI[k]
+        new_row$`Unadjusted p-value` <- src_rows$`p-value`[k]
+        if (has_n) {
+          new_row[[n_col]] <- src_rows[[n_uv]][k]
+        }
+        if (has_ev) {
+          new_row[[ev_col]] <- src_rows[[ev_uv]][k]
+        }
         uv_rows_to_add[[length(uv_rows_to_add) + 1]] <-
           as.data.frame(new_row, check.names = FALSE, stringsAsFactors = FALSE)
       }

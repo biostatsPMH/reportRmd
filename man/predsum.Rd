@@ -55,8 +55,8 @@ state untouched, in which case intervals will vary between calls.}
 \item{output}{One of \code{"epi"} (default), \code{"data-science"},
 \code{"all"}, or a character vector of statistic names. Recognised names
 (case-insensitive): \code{prevalence, sensitivity, specificity, ppv, npv,
-  accuracy, auc, aucpr, f1, brier, tp, fp, tn, fn, n, events, positive,
-  cutoff}. The aliases \code{recall} and \code{precision} are accepted and,
+accuracy, auc, aucpr, f1, brier, tp, fp, tn, fn, n, events, positive,
+cutoff}. The aliases \code{recall} and \code{precision} are accepted and,
 when supplied, are reflected in the row labels. Preset names cannot be
 combined with individual statistics.}
 

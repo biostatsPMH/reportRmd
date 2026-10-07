@@ -8,7 +8,8 @@
 #'lme models an attempt is made to re-fit the model using ML and if,successful
 #'LRT is used to obtain a global p-value. For coxph models the model is re-run
 #'without robust variances with and without each variable and a LRT is
-#'presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
+#'presented. For coxph models fit with clustering (id specified) a robust Wald
+#'global p-value is returned; otherwise a LRT is used.  For GEE and CRR models
 #'Wald global p-values are returned.
 #'
 #'As of version 0.1.1 if global p-values are requested they will be included in
@@ -47,7 +48,9 @@
 #'@param  gee boolean indicating if gee models should be fit to account for
 #'  correlated observations. If TRUE then the id argument must specify the
 #'  column in the data which indicates the correlated clusters.
-#'@param id character vector which identifies clusters. Only used for geeglm
+#'@param id character naming the column that identifies clusters. Used for GEE
+#'  models (gee = TRUE) and, for coxph models, to compute robust (sandwich)
+#'  variances clustered on this variable
 #'@param corstr character string specifying the correlation structure. Only used
 #'  for geeglm. The following are permitted: '"independence"', '"exchangeable"',
 #'  '"ar1"', '"unstructured"' and '"userdefined"'
@@ -124,28 +127,59 @@
 #' # Using tidyselect
 #' pembrolizumab |> rm_uvsum(response = sex,
 #' covs = c(age, cohort))
-rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits",2),
-                     covTitle='',caption=NULL,
-                     tableOnly=FALSE,removeInf=FALSE,p.adjust='none',unformattedp=FALSE,
-                     whichp=c("levels","global","both"),
-                     chunk_label,
-                     gee=FALSE,id = NULL,corstr = NULL,family = NULL,type = NULL,
-                     offset=NULL,
-                     strata = 1,
-                     nicenames = TRUE,showN=TRUE,showEvent=TRUE,CIwidth = 0.95,
-                     reflevel=NULL,returnModels=FALSE,fontsize,
-                     forceWald = FALSE){
-
-  if (missing(data)) stop('data is a required argument')
-  if (missing(covs)) stop('covs is a required argument')
-  if (missing(response)) stop('response is a required argument')
+rm_uvsum <- function(
+  response,
+  covs,
+  data,
+  digits = getOption("reportRmd.digits", 2),
+  covTitle = '',
+  caption = NULL,
+  tableOnly = FALSE,
+  removeInf = FALSE,
+  p.adjust = 'none',
+  unformattedp = FALSE,
+  whichp = c("levels", "global", "both"),
+  chunk_label,
+  gee = FALSE,
+  id = NULL,
+  corstr = NULL,
+  family = NULL,
+  type = NULL,
+  offset = NULL,
+  strata = 1,
+  nicenames = TRUE,
+  showN = TRUE,
+  showEvent = TRUE,
+  CIwidth = 0.95,
+  reflevel = NULL,
+  returnModels = FALSE,
+  fontsize,
+  forceWald = FALSE
+) {
+  data_call <- substitute(data)
+  if (missing(data)) {
+    stop('data is a required argument')
+  }
+  if (missing(covs)) {
+    stop('covs is a required argument')
+  }
+  if (missing(response)) {
+    stop('response is a required argument')
+  }
 
   response <- eval_select_chr(enquo(response), data[unique(names(data))])
   x_vars <- eval_select_chr(enquo(covs), data[unique(names(data))])
   covs <- unique(x_vars)
 
-  if (!all(response %in% names(data))) stop("response is not a variable in data")
-  if (!all(covs %in% names(data))) stop(paste("The following covs not found in data:",setdiff(covs,names(data))))
+  if (!all(response %in% names(data))) {
+    stop("response is not a variable in data")
+  }
+  if (!all(covs %in% names(data))) {
+    stop(paste(
+      "The following covs not found in data:",
+      setdiff(covs, names(data))
+    ))
+  }
 
   argList <- as.list(match.call()[-1])
 
@@ -155,7 +189,9 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     stop('id should be specified as a variable name')
   }
   if (length(type) == 1) {
-    if (type == "gee") stop('type == "gee" is not a valid argument; specify gee = TRUE instead')
+    if (type == "gee") {
+      stop('type == "gee" is not a valid argument; specify gee = TRUE instead')
+    }
   }
   empty <- NULL
   if ("" %in% c(strata, type, offset, id)) {
@@ -164,15 +200,32 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     for (var in empty) {
       assign(var, formals()[[var]])
     }
-    warning(paste0("empty string arguments ", paste(empty, collapse = ", "), " will be ignored"))
+    warning(paste0(
+      "empty string arguments ",
+      paste(empty, collapse = ", "),
+      " will be ignored"
+    ))
   }
 
-  if (length(response)>2) stop('The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.')
-  if (!inherits(data,'data.frame')) stop('data must be supplied as a data frame.')
+  if (length(response) > 2) {
+    stop(
+      'The response must be a single outcome for linear, logistic and ordinal models or must specify the time and event status variables for survival models.'
+    )
+  }
+  if (!inherits(data, 'data.frame')) {
+    stop('data must be supplied as a data frame.')
+  }
   # if (!inherits(covs,'character')) stop('covs must be supplied as a character vector or string indicating variables in data')
-  missing_vars = na.omit(setdiff(c(response, covs,id,ifelse(strata==1,NA,strata)), names(data)))
-  if (length(missing_vars) > 0) stop(paste("These variables are not in the data:\n",
-                                           paste0(missing_vars,collapse=csep())))
+  missing_vars <- na.omit(setdiff(
+    c(response, covs, id, ifelse(strata == 1, NA, strata)),
+    names(data)
+  ))
+  if (length(missing_vars) > 0) {
+    stop(paste(
+      "These variables are not in the data:\n",
+      paste0(missing_vars, collapse = csep())
+    ))
+  }
   if (is.null(strata)) {
     strata <- formals()[["strata"]]
     argList[["strata"]] <- formals()[["strata"]]
@@ -181,62 +234,98 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
     strata <- formals()[["strata"]]
     argList[["strata"]] <- formals()[["strata"]]
   }
-  if (length(strata) == 1 && strata == 1) nm <- c(response,covs) else nm <- na.omit(c(strata,response,covs))
-  if (!all(names(data[,nm])==names(data.frame(data[,nm])))) stop('Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.' )
+  if (length(strata) == 1 && strata == 1) {
+    nm <- c(response, covs)
+  } else {
+    nm <- na.omit(c(strata, response, covs))
+  }
+  if (!all(names(data[, nm]) == names(data.frame(data[, nm])))) {
+    stop(
+      'Non-standard variable names detected.\n Try converting data with new_data <- data.frame(data) \n then use new variable names in rm_uvsum.'
+    )
+  }
 
   argList$covs <- x_vars
   argList$response <- response
   if ("tableOnly" %in% names(argList)) {
     argList[["tableOnly"]] <- NULL
   }
-  if ("caption" %in% names(argList)) argList[["caption"]] <- NULL
+  if ("caption" %in% names(argList)) {
+    argList[["caption"]] <- NULL
+  }
   if (!is.null(empty)) {
     for (var in empty) {
       if (is.null(eval(as.name(var)))) {
         argList[var] <- list(NULL)
-      }
-      else {
+      } else {
         argList[[var]] <- eval(as.name(var))
       }
     }
   }
 
-  nomiss <- nrow(na.omit(data[,response,drop=FALSE]))
-  if (nrow(data)!=nomiss) warning(paste("Cases with missing response data have been removed.\n",
-                                        nrow(data)-nomiss,"case(s) removed."))
+  nomiss <- nrow(na.omit(data[, response, drop = FALSE]))
+  if (nrow(data) != nomiss) {
+    warning(paste(
+      "Cases with missing response data have been removed.\n",
+      nrow(data) - nomiss,
+      "case(s) removed."
+    ))
+  }
   for (v in covs) {
-    if (inherits(data[[v]], c("character", "ordered"))) data[[v]] <- factor(data[[v]], ordered = FALSE)
-    if (inherits(data[[v]],c('Date','POSIXt'))) {
-      covs <- setdiff(covs,v)
-      message(paste('Dates can not be used as predictors, try creating a time variable.\n The variable',v,'does not appear in the table.'))
+    if (inherits(data[[v]], c("character", "ordered"))) {
+      data[[v]] <- factor(data[[v]], ordered = FALSE)
+    }
+    if (inherits(data[[v]], c('Date', 'POSIXt'))) {
+      covs <- setdiff(covs, v)
+      message(paste(
+        'Dates can not be used as predictors, try creating a time variable.\n The variable',
+        v,
+        'does not appear in the table.'
+      ))
     }
 
-    df <- na.omit(data[,c(response,v)])
-    if (v %in% response){
-      warning(paste(v,'is the response and can not appear in the covariate list.\n',
-                    'It is omitted from the output.'))
-      covs <- setdiff(covs,v)
+    df <- na.omit(data[, c(response, v)])
+    if (v %in% response) {
+      warning(paste(
+        v,
+        'is the response and can not appear in the covariate list.\n',
+        'It is omitted from the output.'
+      ))
+      covs <- setdiff(covs, v)
     }
-    if (length(unique(df[[v]]))==1) {
-      warning(paste(v,'has only one unique value for non-missing response.\n',
-                    'It is omitted from the output.'))
-      covs <- setdiff(covs,v)
+    if (length(unique(df[[v]])) == 1) {
+      warning(paste(
+        v,
+        'has only one unique value for non-missing response.\n',
+        'It is omitted from the output.'
+      ))
+      covs <- setdiff(covs, v)
     }
   }
   # covs may have been reduced above (dates, the response itself, variables
   # with a single observed value); the reduced list is what must be fit
-  if (length(covs) == 0)
+  if (length(covs) == 0) {
     stop("No covariates remain to be fit; see the warnings above.")
+  }
   argList$covs <- covs
 
   # remove arguments not used by uvsum2
   valid_args <- names(formals(uvsum2))
   argList <- argList[names(argList) %in% valid_args]
+  # match.call() holds the caller's expressions (e.g. id = cl_var), which
+  # do.call() would look up in this frame; use the evaluated values instead.
+  # family is left as an expression because autoreg pastes it into the call
+  for (a in setdiff(names(argList), c("response", "covs", "data"))) {
+    argList[a] <- list(get(a))
+  }
+
   argList$data <- eval(data)
   # get the table
-  tab <- do.call(uvsum2,argList)
+  tab <- do.call(uvsum2, argList)
   # If user specifies return models, don't format a table, just return a list of models
-  if (returnModels) return (tab$models)
+  if (returnModels) {
+    return(tab$models)
+  }
 
   if (removeInf) {
     # Blank out unstable estimates rather than the whole row, so that the
@@ -246,9 +335,13 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
       inf_rows <- grep("Inf|NaN", tab[[est_col]])
       if (length(inf_rows) > 0) {
         p_cols <- grep("p-value", names(tab))
-        for (cl in c(est_col, p_cols)) tab[inf_rows, cl] <- NA
-        message("Unstable estimates removed for: ",
-                paste(unique(stats::na.omit(tab[[1]][inf_rows])), collapse = ", "))
+        for (cl in c(est_col, p_cols)) {
+          tab[inf_rows, cl] <- NA
+        }
+        message(
+          "Unstable estimates removed for: ",
+          paste(unique(stats::na.omit(tab[[1]][inf_rows])), collapse = ", ")
+        )
       }
     }
   }
@@ -256,162 +349,254 @@ rm_uvsum <- function(response, covs , data , digits=getOption("reportRmd.digits"
   bold_cells <- attr(tab, "bold_cells")
   att_tab <- attributes(tab)
 
-  pv <- format_bold_pvalues(tab, bold_cells,
-                            unformattedp = unformattedp, p.adjust = p.adjust)
-  tab <- pv$tab; bold_cells <- pv$bold_cells
+  pv <- format_bold_pvalues(
+    tab,
+    bold_cells,
+    unformattedp = unformattedp,
+    p.adjust = p.adjust
+  )
+  tab <- pv$tab
+  bold_cells <- pv$bold_cells
 
   names(tab)[1] <- covTitle
   lbl <- tab[, 1]
   if (nicenames) {
     tab[, 1] <- replaceLbl(data, lbl)
   }
-  argL <- list(tab=tab, digits = digits,
-               to_indent=to_indent,bold_cells=bold_cells,
-               caption=caption)
-
+  argL <- list(
+    tab = tab,
+    digits = digits,
+    to_indent = to_indent,
+    bold_cells = bold_cells,
+    caption = caption
+  )
 
   # Add attributes if returning a table
-  for (a in setdiff(names(att_tab),names(attributes(tab)))) attr(tab,a) <- att_tab[[a]]
-  if (tableOnly){
-    if (names(tab)[1]=='') names(tab)[1]<- 'Covariate'
-    attr(tab,"data call") <- deparse1(argList$data)
+  for (a in setdiff(names(att_tab), names(attributes(tab)))) {
+    attr(tab, a) <- att_tab[[a]]
+  }
+  if (tableOnly) {
+    if (names(tab)[1] == '') {
+      names(tab)[1] <- 'Covariate'
+    }
+    attr(tab, "data call") <- deparse1(data_call)
     attr(tab, 'to_indent') <- to_indent
-    attr(tab,'bold_cells') <- bold_cells
-    attr(tab,'dimchk') <- dim(tab)
+    attr(tab, 'bold_cells') <- bold_cells
+    attr(tab, 'dimchk') <- dim(tab)
     return(tab)
   }
   do.call(outTable, argL)
-
 }
 
-uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2),id = NULL, corstr = NULL, family = NULL,
-                    type = NULL, offset=NULL, gee=FALSE,strata = 1, nicenames = TRUE,
-                    showN = TRUE, showEvent = TRUE, CIwidth = 0.95, reflevel=NULL,returnModels=FALSE, whichp="levels")
-{
+uvsum2 <- function(
+  response,
+  covs,
+  data,
+  digits = getOption("reportRmd.digits", 2),
+  id = NULL,
+  corstr = NULL,
+  family = NULL,
+  type = NULL,
+  offset = NULL,
+  gee = FALSE,
+  strata = 1,
+  nicenames = TRUE,
+  showN = TRUE,
+  showEvent = TRUE,
+  CIwidth = 0.95,
+  reflevel = NULL,
+  returnModels = FALSE,
+  whichp = "levels"
+) {
   argList <- as.list(match.call()[-1])
-  if (inherits(data[[response[1]]],"character")) data[[response[1]]] <- factor(data[[response[1]]])
-  if (!inherits(strata,"numeric")) {
-    strataVar = strata
+  # family is pasted into the model call by autoreg, so it must be text
+  if (!is.null(family)) {
+    if (is.function(family)) {
+      family <- family()
+    }
+    if (inherits(family, "family")) {
+      default_link <- tryCatch(
+        get(family$family, mode = "function")()$link,
+        error = function(e) NA
+      )
+      family <- if (identical(family$link, default_link)) {
+        family$family
+      } else {
+        paste0(family$family, '(link = "', family$link, '")')
+      }
+    }
+    if (!is.character(family) || length(family) != 1) {
+      stop(
+        'family must be a family function, a family object (e.g. binomial(link = "log")) or a character string.'
+      )
+    }
+  }
+  if (inherits(data[[response[1]]], "character")) {
+    data[[response[1]]] <- factor(data[[response[1]]])
+  }
+  if (!inherits(strata, "numeric")) {
+    strataVar <- strata
     strata <- sapply(strata, function(stra) {
       paste("strata(", stra, ")", sep = "")
     })
-  }  else {
+  } else {
     strataVar <- ""
     strata <- ""
   }
-  if (length(response)==1) {
-    if (sum(is.na(data[[response]]))>0) message(paste(sum(is.na(data[[response]])),"observations with missing outcome removed."))
+  if (length(response) == 1) {
+    if (sum(is.na(data[[response]])) > 0) {
+      message(paste(
+        sum(is.na(data[[response]])),
+        "observations with missing outcome removed."
+      ))
+    }
     data <- data[!is.na(data[[response]]), ]
   } else {
-    if (sum(is.na(data[[response[1]]])|is.na(data[[response[2]]]))>0) message(paste(sum(is.na(data[[response[1]]])|is.na(data[[response[2]]])),"observations with missing outcome removed."))
+    if (sum(is.na(data[[response[1]]]) | is.na(data[[response[2]]])) > 0) {
+      message(paste(
+        sum(is.na(data[[response[1]]]) | is.na(data[[response[2]]])),
+        "observations with missing outcome removed."
+      ))
+    }
     data <- data[!(is.na(data[[response[1]]]) | is.na(data[[response[2]]])), ]
   }
   # Set family if user specifies type
   if (!is.null(type)) {
-    if (length(response)==2 & !(type %in% c('coxph','crr')))
+    if (length(response) == 2 & !(type %in% c('coxph', 'crr'))) {
       stop('Response can only be of length one for non-survival models.')
-    if (type == "logistic") {
-      if (is.null(family)) family='binomial'
     }
-    else if (type == "poisson") {
-      if (all(data[[response]]==as.integer(data[[response]]))){
-        data[[response]]=as.integer(data[[response]])
-      }
-      else {
+    if (type == "logistic") {
+      if (is.null(family)) family <- 'binomial'
+    } else if (type == "poisson") {
+      if (all(data[[response]] == as.integer(data[[response]]))) {
+        data[[response]] <- as.integer(data[[response]])
+      } else {
         stop('Poisson regression requires an integer response.')
       }
-      if (is.null(family)) family='poisson'
-    }
-    else if (type == "negbin") {
-      if (all(data[[response]]==as.integer(data[[response]]))){
-        data[[response]]=as.integer(data[[response]])
-      }
-      else {
+      if (is.null(family)) family <- 'poisson'
+    } else if (type == "negbin") {
+      if (all(data[[response]] == as.integer(data[[response]]))) {
+        data[[response]] <- as.integer(data[[response]])
+      } else {
         stop('Negative binomial regression requires an integer response.')
       }
-      if (!is.null(family)) message('For negative binomial regression currently only the log link is implemented.')
-    }
-    else if (type == "linear" | type == "boxcox") {
-      if (is.null(family)) family='gaussian'
-    }
-    else if (type == "ordinal") {
-      if (!inherits(data[[response[1]]],c("factor","ordered"))) {
-        warning("Response variable is not a factor, will be converted to an ordered factor")
-        data[[response]] <- factor(data[[response]],
-                                   ordered = TRUE)
+      if (!is.null(family)) {
+        message(
+          'For negative binomial regression currently only the log link is implemented.'
+        )
+      }
+    } else if (type == "linear" | type == "boxcox") {
+      if (is.null(family)) family <- 'gaussian'
+    } else if (type == "ordinal") {
+      if (!inherits(data[[response[1]]], c("factor", "ordered"))) {
+        warning(
+          "Response variable is not a factor, will be converted to an ordered factor"
+        )
+        data[[response]] <- factor(data[[response]], ordered = TRUE)
       }
       if (!is.null(reflevel)) {
         data[[response]] <- set_ref_level(data[[response]], reflevel)
       }
+    } else if (type %in% c("coxph", "crr")) {
+      if (length(response) == 1) {
+        stop(
+          'Please specify two variables in the response for survival models. \nExample: response=c("time","status")'
+        )
+      }
+    } else {
+      stop(
+        "type must be either coxph, logistic, linear, poisson, negbin, boxcox, crr, ordinal (or NULL)"
+      )
     }
-    else if (type %in% c("coxph", "crr")) {
-      if (length(response)==1 )
-        stop('Please specify two variables in the response for survival models. \nExample: response=c("time","status")')
-
-    }
-    else {
-      stop("type must be either coxph, logistic, linear, poisson, negbin, boxcox, crr, ordinal (or NULL)")
-    }
-  }    else {
+  } else {
     if (length(response) == 2) {
       # Check that responses are numeric
-      for (i in 1:2) if (!is.numeric(data[[response[i]]])) stop('Both response variables must be numeric')
+      for (i in 1:2) {
+        if (!is.numeric(data[[response[i]]])) {
+          stop('Both response variables must be numeric')
+        }
+      }
       if (length(unique(na.omit(data[[response[2]]]))) < 3) {
         type <- "coxph"
-      }
-      else {
+      } else {
         type <- "crr"
       }
     } else if (length(unique(na.omit(data[[response]]))) == 2) {
       type <- "logistic"
-      family="binomial"
-    } else if (inherits(data[[response[1]]],"ordered")) {
+      if (is.null(family)) family <- "binomial"
+    } else if (inherits(data[[response[1]]], "ordered")) {
       type <- "ordinal"
       if (!is.null(reflevel)) {
         data[[response]] <- set_ref_level(data[[response]], reflevel)
       }
-    } else if (inherits(data[[response[1]]],"integer")) {
+    } else if (inherits(data[[response[1]]], "integer")) {
       type <- "poisson"
-      family="poisson"
+      if (is.null(family)) family <- "poisson"
     } else {
-      if (!inherits(data[[response[1]]],"numeric")) stop('Response variable must be numeric')
+      if (!inherits(data[[response[1]]], "numeric")) {
+        stop('Response variable must be numeric')
+      }
       type <- "linear"
-      family='gaussian'
+      if (is.null(family)) family <- 'gaussian'
     }
   }
   # Do some more model checking --------
   if (strata != "" & type != "coxph") {
     stop("strata can only be used with coxph")
   }
-  if (!is.null(id)){
-    if (!(gee | type =='coxph')) {
-      warning('id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.')
+  if (!is.null(id)) {
+    if (!(gee | type == 'coxph')) {
+      warning(
+        'id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.'
+      )
     }
   }
-  if (!is.null(offset) & !(type %in% c('poisson','negbin'))) {
-    warning('Offset terms only used for Poisson and negative binomial regression.\nOffset term will be ignored.')
+  if (!is.null(offset) & !(type %in% c('poisson', 'negbin'))) {
+    warning(
+      'Offset terms only used for Poisson and negative binomial regression.\nOffset term will be ignored.'
+    )
   }
-  if (!is.null(corstr)){
-    if (! (gee | type =='coxph')) {
-      warning('id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.')
+  if (!is.null(corstr)) {
+    if (!(gee | type == 'coxph')) {
+      warning(
+        'id argument will be ignored. This is used only for survival strata or clustering in GEE. To run a GEE model set gee=TRUE.'
+      )
     }
   }
-  if (!is.null(offset)){
-    ovars <- unlist(strsplit(offset,"[^a-zA-Z_]"))
-    if(length(intersect(names(data),ovars))==0){
-      stop(paste('Variable names in the offset term contains special characters. \nPlease remove special characters, except "_" from the variable name and re-fit.\n',
-                 'offset =',offset))
-    } else ovars <- intersect(names(data),ovars)
-  } else ovars <- NULL
+  if (!is.null(offset)) {
+    ovars <- unlist(strsplit(offset, "[^a-zA-Z_]"))
+    if (length(intersect(names(data), ovars)) == 0) {
+      stop(paste(
+        'Variable names in the offset term contains special characters. \nPlease remove special characters, except "_" from the variable name and re-fit.\n',
+        'offset =',
+        offset
+      ))
+    } else {
+      ovars <- intersect(names(data), ovars)
+    }
+  } else {
+    ovars <- NULL
+  }
   if (gee) {
-    if (!type %in% c('linear','logistic','poisson')) {
-      stop('GEE models currently only implemented for Poisson, logistic or linear regression.')
+    if (!type %in% c('linear', 'logistic', 'poisson')) {
+      stop(
+        'GEE models currently only implemented for Poisson, logistic or linear regression.'
+      )
     }
     if (is.null(id)) {
       stop('The id argument must be set for gee models to indicate clusters.')
     }
-    if (is.null(corstr)) {
-      stop('You must provide correlation structure (i.e. corstr="independence") for GEE models.')
+    if (!is.null(corstr) & !gee) {
+      warning(
+        'corstr argument will be ignored. This is used only for GEE models; to run a GEE model set gee=TRUE.'
+      )
+    }
+    if (!is.null(id) && type == "coxph") {
+      n_miss <- sum(is.na(data[[id]]))
+      if (n_miss > 0) {
+        message(paste(n_miss, "observation(s) with missing", id, "removed."))
+        data <- data[!is.na(data[[id]]), ]
+      }
     }
   }
 
@@ -420,11 +605,28 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
   class(response) <- model_info$class
   modelList <- NULL
   for (cov in covs) {
-    modelList[[cov]] <- autoreg(response, data, cov, id, strata, family, offset, corstr)
+    modelList[[cov]] <- autoreg(
+      response,
+      data,
+      cov,
+      id,
+      strata,
+      family,
+      offset,
+      corstr
+    )
   }
 
   summaryList <- NULL
-  summaryList <- lapply(modelList,m_summary,digits= digits, CIwidth=CIwidth, vif = FALSE,whichp=whichp, for_plot = FALSE)
+  summaryList <- lapply(
+    modelList,
+    m_summary,
+    digits = digits,
+    CIwidth = CIwidth,
+    vif = FALSE,
+    whichp = whichp,
+    for_plot = FALSE
+  )
   summaryList <- dplyr::bind_rows(summaryList)
   if (!showN) {
     summaryList[["N"]] <- NULL
@@ -433,12 +635,18 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
     summaryList[["Event"]] <- NULL
   }
   to_indent <- which(!(summaryList[["Variable"]] %in% covs))
-  bold_cells <- cbind(which(summaryList[["Variable"]] %in% covs), rep(1, length(which(summaryList[["Variable"]] %in% covs))))
+  bold_cells <- cbind(
+    which(summaryList[["Variable"]] %in% covs),
+    rep(1, length(which(summaryList[["Variable"]] %in% covs)))
+  )
   attr(summaryList, "to_indent") <- to_indent
   attr(summaryList, "bold_cells") <- bold_cells
-  if (returnModels) return(list(summaryList,models=modelList)) else return(summaryList)
+  if (returnModels) {
+    return(list(summaryList, models = modelList))
+  } else {
+    return(summaryList)
+  }
 }
-
 
 
 #' Move a level to the front of a factor
@@ -451,10 +659,17 @@ uvsum2 <- function (response, covs, data, digits=getOption("reportRmd.digits",2)
 #' @return `x` with `ref` as its first level
 #' @keywords internal
 set_ref_level <- function(x, ref) {
-  if (!inherits(x, "factor")) x <- factor(x)
-  if (!ref %in% levels(x))
-    stop("reflevel '", ref, "' is not a level of the response variable. Levels are: ",
-         paste(levels(x), collapse = ", "))
+  if (!inherits(x, "factor")) {
+    x <- factor(x)
+  }
+  if (!ref %in% levels(x)) {
+    stop(
+      "reflevel '",
+      ref,
+      "' is not a level of the response variable. Levels are: ",
+      paste(levels(x), collapse = ", ")
+    )
+  }
   factor(x, levels = c(ref, setdiff(levels(x), ref)), ordered = is.ordered(x))
 }
 
@@ -476,9 +691,13 @@ eval_select_chr <- function(q, data) {
     # equivalent to all_of(val), without routing a bare character vector
     # through tidyselect
     absent <- setdiff(val, names(data))
-    if (length(absent) > 0)
-      stop("Column(s) not found in data: ", paste(absent, collapse = ", "),
-           call. = FALSE)
+    if (length(absent) > 0) {
+      stop(
+        "Column(s) not found in data: ",
+        paste(absent, collapse = ", "),
+        call. = FALSE
+      )
+    }
     return(unique(val))
   }
   names(tidyselect::eval_select(expr = q, data = data, allow_rename = FALSE))

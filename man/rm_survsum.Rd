@@ -119,7 +119,7 @@ rm_survsum(data=pembrolizumab,time='os_time',status='os_status')
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 survtimes=c(12,24),survtimesLbls=1:2, survtimeunit='yr')
 
-#Median survival by group
+# Median survival by group
 rm_survsum(data=pembrolizumab,time='os_time',status='os_status',group='sex')
 
 # Survival Summary by cohort, displayed in years
@@ -133,7 +133,7 @@ rm_survsum(data=pembrolizumab,time='os_time',status='os_status',
 group=c('sex','change_ctdna_group'),survtimes=c(12,24),survtimeunit='mo')
 
 
-Character event status and reverse Kaplan-Meier median follow-up
+# Character event status and reverse Kaplan-Meier median follow-up
 pembrolizumab$status_chr <- ifelse(pembrolizumab$os_status == 1, "Death",
   "Censored")
 rm_survsum(data = pembrolizumab, time = "os_time", status = "status_chr",
