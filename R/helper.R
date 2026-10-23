@@ -841,7 +841,10 @@ GVIF <- function(model) {
     ind <- ind[-1]
   }
 
-  xvar <- labels(stats::terms(model))
+  # Predictor-by-term indicator (drops response and offsets, which appear in no terms)
+  fac <- attr(stats::terms(model), "factors")
+  fac <- fac[rowSums(fac) > 0, , drop = FALSE]
+  xvar <- rownames(fac)
 
   # Return NA for models with < 2 predictors
   if (length(xvar) < 2) {
@@ -850,25 +853,59 @@ GVIF <- function(model) {
 
   R <- stats::cov2cor(v)
   detR <- det(R)
-  result <- matrix(0, length(xvar), 2)
 
-  for (var in seq_along(xvar)) {
-    terms <- which(ind == var)
-    result[var, 1] <- det(as.matrix(R[terms, terms])) *
-      det(as.matrix(R[-terms, -terms])) /
-      detR
-    result[var, 2] <- length(terms)
-  }
+  # Columns for each predictor: its main effect plus all interaction terms containing it
+  cols <- lapply(xvar, \(x) which(ind %in% which(fac[x, ] > 0)))
+  gvif <- vapply(
+    cols,
+    \(i) det(R[i, i, drop = FALSE]) * det(R[-i, -i, drop = FALSE]) / detR,
+    numeric(1)
+  )
+  df <- lengths(cols)
 
-  # Adjust GVIF for terms with df > 1
-  if (all(result[, 2] == 1)) {
-    rtn <- result[, 1]
-  } else {
-    rtn <- result[, 1]^(1 / (2 * result[, 2]))
-  }
+  # Adjust GVIF for predictors with df > 1
+  rtn <- if (all(df == 1)) gvif else gvif^(1 / (2 * df))
 
   data.frame(Covariate = xvar, VIF = rtn)
 }
+# GVIF <- function(model) {
+#   v <- stats::vcov(model)
+#   ind <- attr(stats::model.matrix(model), "assign")
+
+#   # Remove intercept if present
+#   if (0 %in% ind) {
+#     v <- v[-1, -1]
+#     ind <- ind[-1]
+#   }
+
+#   xvar <- labels(stats::terms(model))
+
+#   # Return NA for models with < 2 predictors
+#   if (length(xvar) < 2) {
+#     return(data.frame(Covariate = xvar, VIF = NA))
+#   }
+
+#   R <- stats::cov2cor(v)
+#   detR <- det(R)
+#   result <- matrix(0, length(xvar), 2)
+
+#   for (var in seq_along(xvar)) {
+#     terms <- which(ind == var)
+#     result[var, 1] <- det(as.matrix(R[terms, terms])) *
+#       det(as.matrix(R[-terms, -terms])) /
+#       detR
+#     result[var, 2] <- length(terms)
+#   }
+
+#   # Adjust GVIF for terms with df > 1
+#   if (all(result[, 2] == 1)) {
+#     rtn <- result[, 1]
+#   } else {
+#     rtn <- result[, 1]^(1 / (2 * result[, 2]))
+#   }
+
+#   data.frame(Covariate = xvar, VIF = rtn)
+# }
 
 # (ggsurv) ---------------------------------------------------------
 
