@@ -1,4 +1,5 @@
-# reportRmd 0.1.3
+
+# reportRmd 0.1.4
 
 ## New features
 
@@ -16,6 +17,7 @@
 - rm_uvsum fixes: fixed handling of integer predictors, various bug fixes for edge cases
 - more robust handling of tidy evaluation
 - HTML output improvements: improved display for special characters in HTML rendered tables
+- VIF calculation will now use type = "predictor" in the presence of interactions.
 
 # reportRmd 0.1.1
 

@@ -362,6 +362,8 @@ glm_fit <- glm(orr~change_ctdna_group+pdl1+age,
                family='binomial',
                data = pembrolizumab)
 rm_mvsum(glm_fit, showN = TRUE, vif=TRUE)
+
+
 ```
 
 p-values can be adjusted for multiple comparisons using any of the options available in the `p.adjust` function. This argument is also available for univariate models run with rm_uvsum.

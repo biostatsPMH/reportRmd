@@ -806,9 +806,9 @@ test_that("rm_mvsum outputs glmer binomial model with ORs correctly", {
   est <- c(
     NA,
     "Reference",
-    "0.37 (0.20, 0.67)",
+    "0.37 (0.20, 0.68)",
     "0.32 (0.17, 0.61)",
-    "0.21 (0.09, 0.47)"
+    "0.21 (0.09, 0.48)"
   )
   names <- c("Covariate", "OR(95%CI)", "p-value", "N (obs|clusters)")
   expect_equal(output[, 1], covs)

@@ -135,7 +135,7 @@ m_summary <- function(
     } else {
       names(VIF)[1] <- "terms"
       VIF$VIF <- round(VIF$VIF, digits)
-      cs <- suppressMessages(dplyr::full_join(
+      cs <- suppressMessages(dplyr::left_join(
         cs,
         VIF,
         by = dplyr::join_by(terms)
