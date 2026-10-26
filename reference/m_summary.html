@@ -19,7 +19,7 @@ also be displayed separately for easy plotting."><!-- mathjax --><script src="ht
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -104,10 +104,16 @@ for plotting. Default is FALSE</p></dd>
     <p>Global p-values are likelihood ratio tests for lm, glm and polr models. For
 lme models an attempt is made to re-fit the model using ML and if,successful
 LRT is used to obtain a global p-value. For coxph models the model is re-run
-without robust variances with and without each variable and a LRT is
-presented. If unsuccessful a Wald p-value is returned. For GEE and CRR models
+with robust Wald tests. If unsuccessful a Wald p-value is returned. For GEE and CRR models
 Wald global p-values are returned. For negative binomial models a deviance
-test is used.</p>
+test is used. For logistf models, global p-values are penalized likelihood
+ratio tests computed by re-fitting the model without each variable and
+comparing penalized likelihood ratios.</p>
+<p>For logistf models the displayed odds ratios use the profile penalized
+likelihood confidence limits stored in the model (or Wald limits, if the
+model was fit with pl=FALSE). Because logistf fixes the confidence level at
+the time of fitting, requesting a CIwidth different to 1-model$alpha will
+cause the model to be re-fit at the requested level.</p>
 <p>If the variance inflation factor is requested (VIF=TRUE) then a generalised VIF
 will be calculated in the same manner as the car package.</p>
 <p>As of R 4.4.0 the likelihood profiles are included in base R.</p>
@@ -141,7 +147,7 @@ desired.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

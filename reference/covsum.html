@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -71,7 +71,9 @@
 <span>  testcont <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rank-sum test"</span>, <span class="st">"ANOVA"</span><span class="op">)</span>,</span>
 <span>  testcat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Chi-squared"</span>, <span class="st">"Fisher"</span><span class="op">)</span>,</span>
 <span>  include_missing <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  percentage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"column"</span>, <span class="st">"row"</span><span class="op">)</span></span>
+<span>  percentage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"column"</span>, <span class="st">"row"</span><span class="op">)</span>,</span>
+<span>  B <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -184,6 +186,18 @@ be included in statistical tests</p></dd>
 <dd><p>choice of how percentages are presented ,one of
 <em>column</em> (default) or <em>row</em></p></dd>
 
+
+<dt id="arg-b">B<a class="anchor" aria-label="anchor" href="#arg-b"></a></dt>
+<dd><p>number of replicates used when a Monte Carlo approximation to
+Fisher's exact test is required. Defaults to 1000.</p></dd>
+
+
+<dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
+<dd><p>integer seed set for the duration of any Monte Carlo test so
+that p-values are reproducible; the calling session's random state is
+restored afterwards. Defaults to 1. Set to NULL to leave the random state
+untouched, in which case p-values will vary between calls.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -227,7 +241,7 @@ Frontiers in Psychology, 4; 863:1-12. <a href="https://doi.org/10.3389/fpsyg.201
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

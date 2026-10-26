@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -1281,7 +1281,13 @@ E
 <div class="section level2">
 <h2 id="compact-summary-statistics">Compact summary statistics<a class="anchor" aria-label="anchor" href="#compact-summary-statistics"></a>
 </h2>
-<p>Basic summary statistics</p>
+<p>The <code>rm_compactsum</code> function is similar to the
+<code>rm_covsum</code> function, but condenses the table by excluding
+the reference rows and missing data rows and creating instead a missing
+data column. The arguments largely function the same way with the
+exception that displaying the iqr is the default and the function
+provides more flexibility. Future versions will align the two
+functions.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pembrolizumab</span>, xvars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"change_ctdna_group"</span>, <span class="st">"l_size"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -1321,319 +1327,15 @@ baseline to cycle 3 - Increase from baseline</span>
 </tr>
 </tbody>
 </table>
-<p>Set <code>iqr = T</code> for interquartile range instead of
-Min/Max</p>
+<div class="section level3">
+<h3 id="using-mean-summary-statistic-instead-of-median">Using Mean Summary Statistic Instead of Median<a class="anchor" aria-label="anchor" href="#using-mean-summary-statistic-instead-of-median"></a>
+</h3>
+<p>The default summary statistic for numerical variables is median. To
+specify which numerical variables should have mean displayed instead,
+change the <code>use_mean</code> argument. Unspecified xvars will use
+the default median</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"change_ctdna_group"</span>, <span class="st">"l_size"</span><span class="op">)</span>, iqr<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Missing
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3 - Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-40 (55%)
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Target lesion size at baseline</span>
-</td>
-<td style="text-align:right;">
-73.5 (49.2-108.8)
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-</tbody>
-</table>
-<p>Or <code>all.stats=T</code> for both</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"change_ctdna_group"</span>, <span class="st">"l_size"</span><span class="op">)</span>, all.stats <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Missing
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3 - Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-40 (55%)
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Target lesion size at baseline
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Mean (sd)
-</td>
-<td style="text-align:right;">
-87.9 (59.6)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Median (Q1-Q3)
-</td>
-<td style="text-align:right;">
-73.5 (49.2-108.8)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Range (min-max)
-</td>
-<td style="text-align:right;">
-(11.0-387.0)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-</tbody>
-</table>
-<div class="section level3">
-<h3 id="summaries-by-group-1">Summaries By Group<a class="anchor" aria-label="anchor" href="#summaries-by-group-1"></a>
-</h3>
-<p>This will produce summary statistics by Sex:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Female (n=58)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Male (n=36)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-p-value
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Missing
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Age at study entry</span>
-</td>
-<td style="text-align:right;">
-59.1 (49.5-68.7)
-</td>
-<td style="text-align:right;">
-56.6 (45.8-67.8)
-</td>
-<td style="text-align:right;">
-61.2 (52.0-69.4)
-</td>
-<td style="text-align:right;">
-0.30
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">PD L1 percent</span>
-</td>
-<td style="text-align:right;">
-0.0 (0.0-10.0)
-</td>
-<td style="text-align:right;">
-0.5 (0.0-13.8)
-</td>
-<td style="text-align:right;">
-0.0 (0.0-4.5)
-</td>
-<td style="text-align:right;">
-0.76
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3 - Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-40 (55%)
-</td>
-<td style="text-align:right;">
-21 (52%)
-</td>
-<td style="text-align:right;">
-19 (58%)
-</td>
-<td style="text-align:right;">
-0.84
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="showing-statistical-tests-1">Showing Statistical Tests<a class="anchor" aria-label="anchor" href="#showing-statistical-tests-1"></a>
-</h3>
-<p>To indicate which statistical test was used use
-<code>show.tests=TRUE</code></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span>, show.tests<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Female (n=58)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Male (n=36)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-p-value
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Missing
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-pTest
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Age at study entry</span>
-</td>
-<td style="text-align:right;">
-59.1 (49.5-68.7)
-</td>
-<td style="text-align:right;">
-56.6 (45.8-67.8)
-</td>
-<td style="text-align:right;">
-61.2 (52.0-69.4)
-</td>
-<td style="text-align:right;">
-0.30
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">PD L1 percent</span>
-</td>
-<td style="text-align:right;">
-0.0 (0.0-10.0)
-</td>
-<td style="text-align:right;">
-0.5 (0.0-13.8)
-</td>
-<td style="text-align:right;">
-0.0 (0.0-4.5)
-</td>
-<td style="text-align:right;">
-0.76
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3 - Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-40 (55%)
-</td>
-<td style="text-align:right;">
-21 (52%)
-</td>
-<td style="text-align:right;">
-19 (58%)
-</td>
-<td style="text-align:right;">
-0.84
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-ChiSq
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="including-effect-sizes-1">Including Effect Sizes<a class="anchor" aria-label="anchor" href="#including-effect-sizes-1"></a>
-</h3>
-<p>Effect sizes can be added with <code>effSize = TRUE</code>. If
-<code>show.tests = TRUE</code> as well, the effStat will also be
-shown:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span>, use_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pdl1"</span><span class="op">)</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
@@ -1698,28 +1400,28 @@ Wilcoxon r
 <span style="font-weight: bold;">PD L1 percent</span>
 </td>
 <td style="text-align:right;">
-0.0 (0.0-10.0)
+13.9 (29.2)
 </td>
 <td style="text-align:right;">
-0.5 (0.0-13.8)
+15.0 (30.5)
 </td>
 <td style="text-align:right;">
-0.0 (0.0-4.5)
+12.1 (27.3)
 </td>
 <td style="text-align:right;">
-0.76
+0.63
 </td>
 <td style="text-align:right;">
-0.03 (-0.16, 0.06)
+0.10 (-0.37, 0.20)
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:right;">
-Wilcoxon Rank Sum
+t-test
 </td>
 <td style="text-align:right;">
-Wilcoxon r
+Cohen’s d
 </td>
 </tr>
 <tr>
@@ -1756,142 +1458,12 @@ Cramer’s V
 </table>
 </div>
 <div class="section level3">
-<h3 id="using-mean-summary-statistic-instead-of-median">Using Mean Summary Statistic Instead of Median<a class="anchor" aria-label="anchor" href="#using-mean-summary-statistic-instead-of-median"></a>
-</h3>
-<p>The default summary statistic for numerical variables is median. To
-specify which numerical variables should have mean displayed instead,
-change the <code>use_mean</code> argument. Unspecified xvars will use
-the default median</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span>, use_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pdl1"</span><span class="op">)</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Female (n=58)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Male (n=36)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-p-value
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Effect Size (95% CI)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Missing
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-pTest
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-effStat
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Age at study entry</span>
-</td>
-<td style="text-align:right;">
-59.1 (49.5-68.7)
-</td>
-<td style="text-align:right;">
-56.6 (45.8-67.8)
-</td>
-<td style="text-align:right;">
-61.2 (52.0-69.4)
-</td>
-<td style="text-align:right;">
-0.30
-</td>
-<td style="text-align:right;">
-0.11 (-0.09, 0.21)
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-Wilcoxon Rank Sum
-</td>
-<td style="text-align:right;">
-Wilcoxon r
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">PD L1 percent</span>
-</td>
-<td style="text-align:right;">
-13.9 (29.2)
-</td>
-<td style="text-align:right;">
-15.0 (30.5)
-</td>
-<td style="text-align:right;">
-12.1 (27.3)
-</td>
-<td style="text-align:right;">
-0.63
-</td>
-<td style="text-align:right;">
-0.10 (-0.39, 0.20)
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-t-test
-</td>
-<td style="text-align:right;">
-Cohen’s d
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3 - Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-40 (55%)
-</td>
-<td style="text-align:right;">
-21 (52%)
-</td>
-<td style="text-align:right;">
-19 (58%)
-</td>
-<td style="text-align:right;">
-0.84
-</td>
-<td style="text-align:right;">
-0.02 (-0.19, 0.05)
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-ChiSq
-</td>
-<td style="text-align:right;">
-Cramer’s V
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
 <h3 id="custom-digits-argument">Custom Digits Argument<a class="anchor" aria-label="anchor" href="#custom-digits-argument"></a>
 </h3>
 <p>The digits and digits.cat arguments can be changed to a custom
 numerical value. The default digits is 1, the default digits.cat is
 0</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span>, use_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pdl1"</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">2</span>, digits.cat <span class="op">=</span> <span class="fl">1</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
@@ -2016,7 +1588,7 @@ Cramer’s V
 <p>To specify custom digit arguments for different numerical variables,
 change the <code>digits</code> argument. Unspecified variables will use
 the default value.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'l_size'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'sex'</span>, digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span> <span class="op">=</span> <span class="fl">3</span>, <span class="st">"l_size"</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
@@ -2094,7 +1666,7 @@ Wilcoxon r
 0.76
 </td>
 <td style="text-align:right;">
-0.03 (-0.16, 0.05)
+0.03 (-0.16, 0.06)
 </td>
 <td style="text-align:right;">
 1
@@ -2123,7 +1695,7 @@ Wilcoxon r
 0.066
 </td>
 <td style="text-align:right;">
-0.19 (-0.02, 0.37)
+0.19 (-0.01, 0.36)
 </td>
 <td style="text-align:right;">
 0
@@ -2139,137 +1711,10 @@ Wilcoxon r
 </table>
 </div>
 <div class="section level3">
-<h3 id="row-vs-column-summaries-1">Row vs Column Summaries<a class="anchor" aria-label="anchor" href="#row-vs-column-summaries-1"></a>
-</h3>
-<p>The default is to indicate percentages by columns (ie. percentages
-within columns add to 100). But you can also specify to show by row
-instead</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'change_ctdna_group'</span>,<span class="st">'orr'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'cohort'</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span>, percentage <span class="op">=</span> <span class="st">"row"</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-A (n=16)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-B (n=18)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-C (n=18)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-D (n=12)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-E (n=30)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-p-value
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Effect Size (95% CI)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-pTest
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-effStat
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Missing
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3 - Increase from baseline</span>
-</td>
-<td style="text-align:right;">
-40
-</td>
-<td style="text-align:right;">
-8 (20%)
-</td>
-<td style="text-align:right;">
-7 (18%)
-</td>
-<td style="text-align:right;">
-5 (12%)
-</td>
-<td style="text-align:right;">
-2 (5%)
-</td>
-<td style="text-align:right;">
-18 (45%)
-</td>
-<td style="text-align:right;">
-0.18
-</td>
-<td style="text-align:right;">
-0.30 (0.21, 0.51)
-</td>
-<td style="text-align:right;">
-Fisher Exact
-</td>
-<td style="text-align:right;">
-Cramer’s V
-</td>
-<td style="text-align:right;">
-21
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Objective Response - SD/PD</span>
-</td>
-<td style="text-align:right;">
-78
-</td>
-<td style="text-align:right;">
-13 (17%)
-</td>
-<td style="text-align:right;">
-18 (23%)
-</td>
-<td style="text-align:right;">
-18 (23%)
-</td>
-<td style="text-align:right;">
-4 (5%)
-</td>
-<td style="text-align:right;">
-25 (32%)
-</td>
-<td style="text-align:right;">
-<span style="font-weight: bold;">&lt;0.001</span>
-</td>
-<td style="text-align:right;">
-0.55 (0.76, 1.02)
-</td>
-<td style="text-align:right;">
-Fisher Exact
-</td>
-<td style="text-align:right;">
-Cramer’s V
-</td>
-<td style="text-align:right;">
-0
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
 <h3 id="viewing-the-self-generated-description">Viewing the Self-Generated Description<a class="anchor" aria-label="anchor" href="#viewing-the-self-generated-description"></a>
 </h3>
 <p>To view the self-generated description for the summary table:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summary_tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, xvars<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'change_ctdna_group'</span>,<span class="st">'orr'</span>, <span class="st">'age'</span><span class="op">)</span>, grp <span class="op">=</span> <span class="st">'cohort'</span>, effSize <span class="op">=</span> <span class="cn">T</span>, show.tests <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">summary_tab</span>, <span class="st">"description"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -2279,7 +1724,7 @@ Cramer’s V
 <p>Both <code>rm_covsum</code> and <code>rm_compactsum</code> support
 tidyselect syntax, allowing you to use bare column names instead of
 character strings. This also enables piping with <code>|&gt;</code>:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pembrolizumab</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>xvars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">pdl1</span>, <span class="va">change_ctdna_group</span><span class="op">)</span>, grp <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
@@ -2365,203 +1810,9 @@ baseline to cycle 3 - Increase from baseline</span>
 </tr>
 </tbody>
 </table>
-<p>The same tidyselect syntax works with <code>rm_covsum</code>:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pembrolizumab</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>covs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">pdl1</span>, <span class="va">change_ctdna_group</span><span class="op">)</span>, maincov <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></code></pre></div>
-<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<thead><tr>
-<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Full Sample (n=94)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Female (n=58)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Male (n=36)
-</th>
-<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-p-value
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Age at study entry</span>
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-0.30
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Mean (sd)
-</td>
-<td style="text-align:right;">
-57.9 (12.8)
-</td>
-<td style="text-align:right;">
-56.9 (12.6)
-</td>
-<td style="text-align:right;">
-59.3 (13.1)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Median (Min,Max)
-</td>
-<td style="text-align:right;">
-59.1 (21.1, 81.8)
-</td>
-<td style="text-align:right;">
-56.6 (34.1, 78.2)
-</td>
-<td style="text-align:right;">
-61.2 (21.1, 81.8)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">PD L1 percent</span>
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-0.76
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Mean (sd)
-</td>
-<td style="text-align:right;">
-13.9 (29.2)
-</td>
-<td style="text-align:right;">
-15.0 (30.5)
-</td>
-<td style="text-align:right;">
-12.1 (27.3)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Median (Min,Max)
-</td>
-<td style="text-align:right;">
-0 (0, 100)
-</td>
-<td style="text-align:right;">
-0.5 (0.0, 100.0)
-</td>
-<td style="text-align:right;">
-0 (0, 100)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Missing
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-<span style="font-weight: bold;">Did ctDNA increase or decrease from
-baseline to cycle 3</span>
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-</td>
-<td style="text-align:right;">
-0.84
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Decrease from baseline
-</td>
-<td style="text-align:right;">
-33 (45)
-</td>
-<td style="text-align:right;">
-19 (48)
-</td>
-<td style="text-align:right;">
-14 (42)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Increase from baseline
-</td>
-<td style="text-align:right;">
-40 (55)
-</td>
-<td style="text-align:right;">
-21 (52)
-</td>
-<td style="text-align:right;">
-19 (58)
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-<tr>
-<td style="text-align:left;padding-left: 2em;" indentlevel="1">
-Missing
-</td>
-<td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-18
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-</td>
-</tr>
-</tbody>
-</table>
 <p>The <code>xvars</code>/<code>grp</code> aliases can also be used with
 <code>rm_covsum</code> for a consistent interface:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pembrolizumab</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>xvars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">pdl1</span>, <span class="va">change_ctdna_group</span><span class="op">)</span>, grp <span class="op">=</span> <span class="va">sex</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
@@ -2763,7 +2014,7 @@ Missing
 works for HTML, PDF and Word output. The argument takes a named vector
 where the names are the header labels and the values are the number of
 columns each label spans.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pembrolizumab</span>, maincov <span class="op">=</span> <span class="va">cohort</span>,</span>
 <span>                  covs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>, <span class="va">pdl1</span>, <span class="va">sex</span><span class="op">)</span>, full <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                  pvalue <span class="op">=</span> <span class="cn">FALSE</span>, tableOnly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -3003,7 +2254,7 @@ Male
 <p>Combining multiple univariate regression analyses into a single
 table. The function will try to determine the most appropriate model
 from the data.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -3114,7 +2365,7 @@ Increase from baseline
 </h3>
 <p>If the response is continuous linear regression is the default. Using
 <code>type = 'linear'</code> will ensure linear regression.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'l_size'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -3235,7 +2486,7 @@ E
 </h3>
 <p>If the response is binomial, logistic regression will be run (or
 specified with <code>type = 'logistic'</code>).</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -3380,7 +2631,7 @@ E
 </h3>
 <p>If the response is integer, poisson regression will be run (or
 specified with <code>type = 'poisson'</code>).</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pembrolizumab</span><span class="op">$</span><span class="va">Counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">)</span>,lambda <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'Counts'</span>,covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -3406,7 +2657,7 @@ N
 1.00 (0.99, 1.01)
 </td>
 <td style="text-align:right;">
-0.48
+0.70
 </td>
 <td style="text-align:right;">
 94
@@ -3442,10 +2693,10 @@ Reference
 B
 </td>
 <td style="text-align:right;">
-0.95 (0.66, 1.37)
+1.01 (0.70, 1.46)
 </td>
 <td style="text-align:right;">
-0.79
+0.97
 </td>
 <td style="text-align:right;">
 18
@@ -3456,10 +2707,10 @@ B
 C
 </td>
 <td style="text-align:right;">
-0.83 (0.57, 1.20)
+0.79 (0.53, 1.17)
 </td>
 <td style="text-align:right;">
-0.32
+0.24
 </td>
 <td style="text-align:right;">
 18
@@ -3470,10 +2721,10 @@ C
 D
 </td>
 <td style="text-align:right;">
-0.77 (0.50, 1.18)
+0.86 (0.55, 1.31)
 </td>
 <td style="text-align:right;">
-0.24
+0.48
 </td>
 <td style="text-align:right;">
 12
@@ -3484,10 +2735,10 @@ D
 E
 </td>
 <td style="text-align:right;">
-0.81 (0.58, 1.14)
+1.06 (0.76, 1.48)
 </td>
 <td style="text-align:right;">
-0.23
+0.74
 </td>
 <td style="text-align:right;">
 30
@@ -3497,7 +2748,7 @@ E
 </table>
 <p>offset terms can be specified as well, but must correspond to a
 variable in the data set</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pembrolizumab</span><span class="op">$</span><span class="va">length_followup</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">)</span>,mean <span class="op">=</span> <span class="fl">72</span>,sd<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">pembrolizumab</span><span class="op">$</span><span class="va">log_length_followup</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">$</span><span class="va">length_followup</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'Counts'</span>,covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span><span class="op">)</span>,</span>
@@ -3525,7 +2776,7 @@ N
 1.00 (0.99, 1.01)
 </td>
 <td style="text-align:right;">
-0.51
+0.69
 </td>
 <td style="text-align:right;">
 94
@@ -3561,10 +2812,10 @@ Reference
 B
 </td>
 <td style="text-align:right;">
-0.96 (0.67, 1.38)
+1.01 (0.70, 1.47)
 </td>
 <td style="text-align:right;">
-0.83
+0.95
 </td>
 <td style="text-align:right;">
 18
@@ -3575,10 +2826,10 @@ B
 C
 </td>
 <td style="text-align:right;">
-0.83 (0.57, 1.20)
+0.80 (0.54, 1.19)
 </td>
 <td style="text-align:right;">
-0.32
+0.28
 </td>
 <td style="text-align:right;">
 18
@@ -3589,10 +2840,10 @@ C
 D
 </td>
 <td style="text-align:right;">
-0.78 (0.50, 1.19)
+0.87 (0.56, 1.33)
 </td>
 <td style="text-align:right;">
-0.26
+0.52
 </td>
 <td style="text-align:right;">
 12
@@ -3603,10 +2854,10 @@ D
 E
 </td>
 <td style="text-align:right;">
-0.81 (0.58, 1.14)
+1.06 (0.77, 1.49)
 </td>
 <td style="text-align:right;">
-0.23
+0.71
 </td>
 <td style="text-align:right;">
 30
@@ -3620,7 +2871,7 @@ E
 </h3>
 <p>To run negative binomial regression instead specify
 <code>type = 'negbin'</code></p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'Counts'</span>, type<span class="op">=</span><span class="st">'negbin'</span>,</span>
 <span>         covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span><span class="op">)</span>,</span>
 <span>         offset <span class="op">=</span> <span class="st">"log_length_followup"</span><span class="op">)</span></span></code></pre></div>
@@ -3647,7 +2898,7 @@ N
 1.00 (0.99, 1.01)
 </td>
 <td style="text-align:right;">
-0.51
+0.69
 </td>
 <td style="text-align:right;">
 94
@@ -3683,10 +2934,10 @@ Reference
 B
 </td>
 <td style="text-align:right;">
-0.96 (0.67, 1.38)
+1.01 (0.70, 1.47)
 </td>
 <td style="text-align:right;">
-0.83
+0.95
 </td>
 <td style="text-align:right;">
 18
@@ -3697,10 +2948,10 @@ B
 C
 </td>
 <td style="text-align:right;">
-0.83 (0.57, 1.20)
+0.80 (0.54, 1.19)
 </td>
 <td style="text-align:right;">
-0.32
+0.28
 </td>
 <td style="text-align:right;">
 18
@@ -3711,10 +2962,10 @@ C
 D
 </td>
 <td style="text-align:right;">
-0.78 (0.50, 1.19)
+0.87 (0.56, 1.33)
 </td>
 <td style="text-align:right;">
-0.26
+0.52
 </td>
 <td style="text-align:right;">
 12
@@ -3725,10 +2976,10 @@ D
 E
 </td>
 <td style="text-align:right;">
-0.81 (0.58, 1.14)
+1.06 (0.77, 1.49)
 </td>
 <td style="text-align:right;">
-0.23
+0.71
 </td>
 <td style="text-align:right;">
 30
@@ -3742,7 +2993,7 @@ E
 </h3>
 <p>If two response variables are specified and then survival analysis is
 run (specified with <code>type='coxph'</code>).</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'os_time'</span>,<span class="st">'os_status'</span><span class="op">)</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,whichp <span class="op">=</span> <span class="st">"levels"</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -3848,13 +3099,168 @@ Increase from baseline
 </tr>
 </tbody>
 </table>
+<p>Clustered analyses can also be run</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"diabetic"</span>, package <span class="op">=</span> <span class="st">"survival"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">diabetic</span>, response<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'time'</span>,<span class="st">'status'</span><span class="op">)</span>,</span>
+<span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'trt'</span>,<span class="st">'laser'</span>,<span class="st">'age'</span>,<span class="st">'eye'</span><span class="op">)</span>,id<span class="op">=</span><span class="st">'id'</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+HR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+N (obs|clusters)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Event (total|clusters with event)
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">trt</span>
+</td>
+<td style="text-align:right;">
+0.46 (0.34, 0.61)
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">&lt;0.001</span>
+</td>
+<td style="text-align:right;">
+394|197
+</td>
+<td style="text-align:right;">
+155|117
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">laser</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+394|197
+</td>
+<td style="text-align:right;">
+155|117
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+xenon
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+228|114
+</td>
+<td style="text-align:right;">
+87|63
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+argon
+</td>
+<td style="text-align:right;">
+1.02 (0.73, 1.44)
+</td>
+<td style="text-align:right;">
+0.90
+</td>
+<td style="text-align:right;">
+166|83
+</td>
+<td style="text-align:right;">
+68|54
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">age</span>
+</td>
+<td style="text-align:right;">
+1.00 (0.99, 1.01)
+</td>
+<td style="text-align:right;">
+0.64
+</td>
+<td style="text-align:right;">
+394|197
+</td>
+<td style="text-align:right;">
+155|117
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">eye</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+394|197
+</td>
+<td style="text-align:right;">
+155|117
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+left
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+197|197
+</td>
+<td style="text-align:right;">
+69|69
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+right
+</td>
+<td style="text-align:right;">
+1.32 (1.00, 1.76)
+</td>
+<td style="text-align:right;">
+0.053
+</td>
+<td style="text-align:right;">
+197|197
+</td>
+<td style="text-align:right;">
+86|86
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="competing-risk">Competing Risk<a class="anchor" aria-label="anchor" href="#competing-risk"></a>
 </h3>
 <p>Competing risk models need to be explicitly specified using
 <code>type='crr'</code>.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'os_time'</span>,<span class="st">'os_status'</span><span class="op">)</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,</span>
 <span>type<span class="op">=</span><span class="st">'crr'</span><span class="op">)</span></span></code></pre></div>
@@ -3966,7 +3372,7 @@ Increase from baseline
 <h3 id="gee-models">GEE Models<a class="anchor" aria-label="anchor" href="#gee-models"></a>
 </h3>
 <p>Correlated observations can be handled using GEE</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"ctDNA"</span><span class="op">)</span></span>
 <span> <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>response <span class="op">=</span> <span class="st">'size_change'</span>,</span>
 <span> covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'time'</span>,<span class="st">'ctdna_status'</span><span class="op">)</span>,</span>
@@ -4062,8 +3468,9 @@ No clearance, increase from baseline
 <div class="section level3">
 <h3 id="mice-output">MICE output<a class="anchor" aria-label="anchor" href="#mice-output"></a>
 </h3>
-<p>Outputs from multiple imputations can be summarised as follows:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<p>Outputs from multiple imputations can be summarised as follows (not
+run):</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">miss_data</span> <span class="op">&lt;-</span> <span class="va">pembrolizumab</span></span>
 <span><span class="va">miss_data</span><span class="op">$</span><span class="va">age</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">)</span>,<span class="fl">50</span>,replace<span class="op">=</span><span class="cn">F</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span><span class="va">miss_data</span><span class="op">$</span><span class="va">cohort</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">)</span>,<span class="fl">50</span>,replace<span class="op">=</span><span class="cn">F</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
@@ -4086,7 +3493,7 @@ No clearance, increase from baseline
 </h3>
 <p>If you want to check the underlying models, set
 <code>returnModels = TRUE</code></p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>response <span class="op">=</span> <span class="st">'orr'</span>,</span>
 <span> covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span>,</span>
 <span> data<span class="op">=</span><span class="va">pembrolizumab</span>,returnModels <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -4103,7 +3510,7 @@ No clearance, increase from baseline
 <span><span class="co">## Residual Deviance: 82.53     AIC: 86.53</span></span></code></pre>
 <p>The data analysed can be examined by interrogating the data object
 appended to each model</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mList</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>response <span class="op">=</span> <span class="st">'orr'</span>,</span>
 <span> covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span>,</span>
 <span> data<span class="op">=</span><span class="va">pembrolizumab</span>,returnModels <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -4127,7 +3534,7 @@ appended to each model</p>
 <p>Multiple comparisons can be controlled for with the p.adjust
 argument, which accepts any of the options from the
 <code>p.adjust</code> function.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span> <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>response <span class="op">=</span> <span class="st">'orr'</span>,</span>
 <span> covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'sex'</span>,<span class="st">'pdl1'</span><span class="op">)</span>,</span>
 <span> data<span class="op">=</span><span class="va">pembrolizumab</span>,p.adjust <span class="op">=</span> <span class="st">'fdr'</span><span class="op">)</span></span></code></pre></div>
@@ -4248,7 +3655,7 @@ model first needs to be fit.</p>
 multicollinearity. To suppress this column set <code>vif=FALSE</code>.
 Note: variance inflation factors are not computed (yet) for multilevel
 or GEE models.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
 <span>               family<span class="op">=</span><span class="st">'binomial'</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
@@ -4375,7 +3782,7 @@ Increase from baseline
 <p>p-values can be adjusted for multiple comparisons using any of the
 options available in the <code>p.adjust</code> function. This argument
 is also available for univariate models run with rm_uvsum.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">glm_fit</span>, showN <span class="op">=</span> <span class="cn">TRUE</span>, vif<span class="op">=</span><span class="cn">TRUE</span>,p.adjust <span class="op">=</span> <span class="st">'holm'</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
@@ -4504,11 +3911,11 @@ estimates alongside the multivariable estimates in a single table by
 setting <code>include_unadjusted = TRUE</code>. This provides a
 convenient way to compare unadjusted and adjusted estimates
 side-by-side.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
 <span>               family<span class="op">=</span><span class="st">'binomial'</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">glm_fit</span>, data <span class="op">=</span> <span class="va">pembrolizumab</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span>, showN <span class="op">=</span> <span class="cn">TRUE</span>, vif <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">glm_fit</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span>, showN <span class="op">=</span> <span class="cn">TRUE</span>, vif <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
@@ -4612,10 +4019,10 @@ Increase from baseline
 <span style="font-weight: bold;">PD L1 percent</span>
 </td>
 <td style="text-align:right;">
-0.97 (0.95, 0.98)
+0.97 (0.96, 0.99)
 </td>
 <td style="text-align:right;">
-&lt;0.001
+0.002
 </td>
 <td style="text-align:right;">
 <span style="font-weight: bold;">0.97 (0.95, 0.99)</span>
@@ -4638,10 +4045,10 @@ Increase from baseline
 <span style="font-weight: bold;">Age at study entry</span>
 </td>
 <td style="text-align:right;">
-0.96 (0.91, 1.00)
+0.96 (0.90, 1.00)
 </td>
 <td style="text-align:right;">
-0.089
+0.078
 </td>
 <td style="text-align:right;">
 0.94 (0.87, 1.00)
@@ -4661,25 +4068,523 @@ Increase from baseline
 </tr>
 </tbody>
 </table>
-<p>This feature works with all supported model types including Cox
-proportional hazards models:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<p>The data are taken from the model itself, so the <code>data</code>
+argument is not needed. This includes Cox proportional hazards models,
+where the response is a <code><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv()</a></code> object:</p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
 <span><span class="va">cox_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">os_time</span>, <span class="va">os_status</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">baseline_ctdna</span>,</span>
 <span>                 data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">cox_fit</span>, data <span class="op">=</span> <span class="va">pembrolizumab</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span>, tableOnly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##            Covariate Unadjusted HR(95%CI) Unadjusted p-value Adjusted HR(95%CI)</span></span>
-<span><span class="co">## 1 Age at study entry    0.99 (0.97, 1.01)               0.16  0.98 (0.96, 1.00)</span></span>
-<span><span class="co">## 2        Patient Sex                 &lt;NA&gt;               &lt;NA&gt;               &lt;NA&gt;</span></span>
-<span><span class="co">## 3             Female            Reference               &lt;NA&gt;          Reference</span></span>
-<span><span class="co">## 4               Male    1.21 (0.73, 2.00)               0.46  1.19 (0.70, 2.02)</span></span>
-<span><span class="co">## 5     Baseline ctDNA    1.00 (1.00, 1.00)              0.019  1.00 (1.00, 1.00)</span></span>
-<span><span class="co">##   Adjusted p-value  N Event  VIF</span></span>
-<span><span class="co">## 1            0.088 94    64 1.06</span></span>
-<span><span class="co">## 2             &lt;NA&gt; 94    64 1.11</span></span>
-<span><span class="co">## 3             &lt;NA&gt; 58    39   NA</span></span>
-<span><span class="co">## 4             0.52 36    25   NA</span></span>
-<span><span class="co">## 5            0.021 94    64 1.09</span></span></code></pre>
+<span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">cox_fit</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted HR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted HR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+N
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Event
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+VIF
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Age at study entry</span>
+</td>
+<td style="text-align:right;">
+0.99 (0.97, 1.01)
+</td>
+<td style="text-align:right;">
+0.16
+</td>
+<td style="text-align:right;">
+0.98 (0.96, 1.00)
+</td>
+<td style="text-align:right;">
+0.088
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+64
+</td>
+<td style="text-align:right;">
+1.06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">sex</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+64
+</td>
+<td style="text-align:right;">
+1.11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Female
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+58
+</td>
+<td style="text-align:right;">
+39
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Male
+</td>
+<td style="text-align:right;">
+1.21 (0.73, 2.00)
+</td>
+<td style="text-align:right;">
+0.46
+</td>
+<td style="text-align:right;">
+1.19 (0.70, 2.02)
+</td>
+<td style="text-align:right;">
+0.52
+</td>
+<td style="text-align:right;">
+36
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Baseline ctDNA</span>
+</td>
+<td style="text-align:right;">
+1.00 (1.00, 1.00)
+</td>
+<td style="text-align:right;">
+0.019
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">1.00 (1.00, 1.00)</span>
+</td>
+<td style="text-align:right;">
+0.021
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+64
+</td>
+<td style="text-align:right;">
+1.09
+</td>
+</tr>
+</tbody>
+</table>
+<p>Transformed terms are summarised on the scale they were fit on, so
+the unadjusted estimate for <code>log(l_size)</code> below is the slope
+from <code>glm(orr ~ log(l_size))</code>, not from
+<code>glm(orr ~ l_size)</code>:</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">l_size</span><span class="op">)</span> <span class="op">+</span> <span class="va">sex</span>, family <span class="op">=</span> <span class="st">'binomial'</span>, data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span>,</span>
+<span>         include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted OR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted OR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+N
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Event
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+VIF
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Target lesion size at baseline</span>
+</td>
+<td style="text-align:right;">
+1.66 (0.75, 3.72)
+</td>
+<td style="text-align:right;">
+0.21
+</td>
+<td style="text-align:right;">
+1.86 (0.83, 4.39)
+</td>
+<td style="text-align:right;">
+0.14
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+78
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Patient Sex</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+78
+</td>
+<td style="text-align:right;">
+1.04
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Female
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+58
+</td>
+<td style="text-align:right;">
+51
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Male
+</td>
+<td style="text-align:right;">
+0.41 (0.13, 1.22)
+</td>
+<td style="text-align:right;">
+0.11
+</td>
+<td style="text-align:right;">
+0.36 (0.11, 1.09)
+</td>
+<td style="text-align:right;">
+0.074
+</td>
+<td style="text-align:right;">
+36
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+<p>Two points are worth knowing when reading these tables.</p>
+<p>The univariate models are fit on the same complete-case sample as the
+multivariable model, so the two sets of estimates are directly
+comparable and the <code>N</code> column applies to both. This differs
+from calling <code><a href="../reference/rm_uvsum.html">rm_uvsum()</a></code> yourself, which uses all rows
+available for each covariate.</p>
+<p>A covariate that appears only inside an interaction term has no
+adjusted estimate of its own. Such covariates are appended to the end of
+the table with an unadjusted estimate and a blank adjusted column,
+rather than being dropped:</p>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span> <span class="op">~</span> <span class="va">pdl1</span> <span class="op">+</span> <span class="va">age</span><span class="op">:</span><span class="va">sex</span>, family <span class="op">=</span> <span class="st">'binomial'</span>, data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span>,</span>
+<span>         include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted OR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Unadjusted p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted OR(95%CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Adjusted p-value
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+N
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Event
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+VIF
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">PD L1 percent</span>
+</td>
+<td style="text-align:right;">
+0.97 (0.95, 0.98)
+</td>
+<td style="text-align:right;">
+&lt;0.001
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">0.96 (0.94, 0.98)</span>
+</td>
+<td style="text-align:right;">
+&lt;0.001
+</td>
+<td style="text-align:right;">
+93
+</td>
+<td style="text-align:right;">
+77
+</td>
+<td style="text-align:right;">
+1.15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">age:sex</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+93
+</td>
+<td style="text-align:right;">
+77
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+age:sexFemale
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+0.95 (0.88, 1.01)
+</td>
+<td style="text-align:right;">
+0.11
+</td>
+<td style="text-align:right;">
+58
+</td>
+<td style="text-align:right;">
+51
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+age:sexMale
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+<span style="font-weight: bold;">0.93 (0.87, 0.98)</span>
+</td>
+<td style="text-align:right;">
+0.018
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Age at study entry</span>
+</td>
+<td style="text-align:right;">
+0.96 (0.91, 1.00)
+</td>
+<td style="text-align:right;">
+0.085
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+93
+</td>
+<td style="text-align:right;">
+77
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<span style="font-weight: bold;">Patient Sex</span>
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+93
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Female
+</td>
+<td style="text-align:right;">
+Reference
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+58
+</td>
+<td style="text-align:right;">
+51
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;padding-left: 2em;" indentlevel="1">
+Male
+</td>
+<td style="text-align:right;">
+0.40 (0.13, 1.18)
+</td>
+<td style="text-align:right;">
+0.098
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+</td>
+</tr>
+</tbody>
+</table>
+<p>Terms that expand to a matrix, such as <code>poly(age, 2)</code>, can
+not be fit univariately; these are skipped with a warning and their
+unadjusted cells are left blank.</p>
 </div>
 </div>
 <div class="section level2">
@@ -4687,7 +4592,7 @@ proportional hazards models:</p>
 </h2>
 <p>To display both models in a single table run the rm_uvsum and
 rm_mvsum functions with <code>tableOnly=TRUE</code> and combine.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">uvsumTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'sex'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,tableOnly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -4839,7 +4744,7 @@ Increase from baseline
 </table>
 <p><strong>Note:</strong> This can also be done with adjusted p-values,
 but when combined the raw p-values are dropped.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">uvsumTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'sex'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>,tableOnly <span class="op">=</span> <span class="cn">TRUE</span>,p.adjust<span class="op">=</span><span class="st">'holm'</span><span class="op">)</span></span>
 <span></span>
@@ -4997,7 +4902,7 @@ Increase from baseline
 <code>tableOnly=TRUE</code> will return a data frame for any of the
 <code>rm_</code> functions. Changes can be made, and the table output
 using <code><a href="../reference/outTable.html">outTable()</a></code></p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mvsumTable</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_mvsum.html">rm_mvsum</a></span><span class="op">(</span><span class="va">glm_fit</span>, showN <span class="op">=</span> <span class="cn">TRUE</span>,tableOnly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mvsumTable</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span><span class="st">'Predictor'</span></span>
 <span><span class="fu"><a href="../reference/outTable.html">outTable</a></span><span class="op">(</span><span class="va">mvsumTable</span><span class="op">)</span></span></code></pre></div>
@@ -5105,8 +5010,8 @@ Increase from baseline
 <div class="section level2">
 <h2 id="combining-tables">Combining tables<a class="anchor" aria-label="anchor" href="#combining-tables"></a>
 </h2>
-<p>#Tables can be nested with the <code><a href="../reference/nestTable.html">nestTable()</a></code> function</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<p>Tables can be nested with the <code><a href="../reference/nestTable.html">nestTable()</a></code> function</p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cohortA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_uvsum.html">rm_uvsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">pembrolizumab</span>,<span class="va">cohort</span><span class="op">==</span><span class="st">'A'</span><span class="op">)</span>, </span>
 <span>                     response <span class="op">=</span> <span class="st">'pdl1'</span>,</span>
 <span>                     covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'sex'</span><span class="op">)</span>,</span>
@@ -5271,10 +5176,10 @@ Male
 <code>scrollTable</code> function to create a scrollable table. This is
 useful for tables with many rows. If the output format is not html then
 a regular table will be displayed.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">long_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rm_compactsum.html">rm_compactsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,xvars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age</span>,<span class="va">sex</span>,<span class="va">cohort</span>,<span class="va">pdl1</span>,<span class="va">tmb</span>,<span class="va">baseline_ctdna</span>,<span class="va">change_ctdna_group</span>,<span class="va">orr</span>,<span class="va">cbr</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/scrolling_table.html">scrolling_table</a></span><span class="op">(</span><span class="va">long_table</span>,pixelHeight <span class="op">=</span> <span class="fl">300</span><span class="op">)</span></span></code></pre></div>
-<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:300px;; ">
+<div style="border: 1px solid #ddd; padding: 5px; overflow-y: scroll; height:300px;; ">
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead><tr>
 <th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;position: sticky; top:0; background-color: #FFFFFF;">
@@ -5448,7 +5353,7 @@ PD/SD&lt;C6</span>
 </h2>
 <p>Displaying survival probabilities at different times by sex using
 Kaplan Meier estimates</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_survsum.html">rm_survsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>,</span>
 <span> group<span class="op">=</span><span class="st">"sex"</span>,survtimes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">36</span>,<span class="fl">12</span><span class="op">)</span>,survtimeunit<span class="op">=</span><span class="st">'months'</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -5460,7 +5365,7 @@ Group
 Events/Total
 </th>
 <th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
-Median (95%CI)
+Median (95% CI)
 </th>
 <th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
 12months (95% CI)
@@ -5490,7 +5395,7 @@ Female
 0.34 (0.24, 0.50)
 </td>
 <td style="text-align:right;">
-0.29 (0.18, 0.45)
+Not Estimable
 </td>
 </tr>
 <tr>
@@ -5510,7 +5415,112 @@ Male
 0.31 (0.18, 0.52)
 </td>
 <td style="text-align:right;">
-0.27 (0.15, 0.48)
+Not Estimable
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+Log Rank Test
+</td>
+<td style="text-align:right;">
+ChiSq
+</td>
+<td style="text-align:right;">
+0.5 on 1 df
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+</td>
+<td style="text-align:right;">
+p-value
+</td>
+<td style="text-align:right;">
+0.46
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="including-median-follow-up">Including Median Follow-up<a class="anchor" aria-label="anchor" href="#including-median-follow-up"></a>
+</h3>
+<p>The reverse Kaplan-Meier follow-up time can also be displayed.</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_survsum.html">rm_survsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>,</span>
+<span> group<span class="op">=</span><span class="st">"sex"</span>,survtimes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">24</span>,<span class="fl">12</span><span class="op">)</span>,survtimeunit<span class="op">=</span><span class="st">'months'</span>,</span>
+<span> add.reverse.KM <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Group
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Median follow-up (months; 95% CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Events/Total
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Median (95% CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+12months (95% CI)
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+24months (95% CI)
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Female
+</td>
+<td style="text-align:right;">
+27.2 (25.1, 30.8)
+</td>
+<td style="text-align:right;">
+39/58
+</td>
+<td style="text-align:right;">
+14.29 (9.69, 23.82)
+</td>
+<td style="text-align:right;">
+0.55 (0.44, 0.69)
+</td>
+<td style="text-align:right;">
+0.34 (0.24, 0.50)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Male
+</td>
+<td style="text-align:right;">
+28.8 (25.9, Not Estimable)
+</td>
+<td style="text-align:right;">
+25/36
+</td>
+<td style="text-align:right;">
+11.24 (6.14, 25.33)
+</td>
+<td style="text-align:right;">
+0.50 (0.36, 0.69)
+</td>
+<td style="text-align:right;">
+0.31 (0.18, 0.52)
 </td>
 </tr>
 <tr>
@@ -5550,12 +5560,13 @@ p-value
 </table>
 <div style="page-break-after: always;"></div>
 </div>
+</div>
 <div class="section level2">
 <h2 id="survival-times-in-long-format">Survival Times in Long Format<a class="anchor" aria-label="anchor" href="#survival-times-in-long-format"></a>
 </h2>
 <p>Displaying survival probabilities at different times by sex using Cox
 PH estimates</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_survtime.html">rm_survtime</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>,</span>
 <span> strata<span class="op">=</span><span class="st">"sex"</span>,survtimes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">24</span><span class="op">)</span>,survtimeunit<span class="op">=</span><span class="st">'mo'</span>,type<span class="op">=</span><span class="st">'PH'</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -5728,7 +5739,7 @@ Male
 </h3>
 <p>Displaying survival probabilities at different times by sex,
 adjusting for age using Cox PH estimates</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_survtime.html">rm_survtime</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>, covs<span class="op">=</span><span class="st">'age'</span>,</span>
 <span> strata<span class="op">=</span><span class="st">"sex"</span>,survtimes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">24</span><span class="op">)</span>,survtimeunit<span class="op">=</span><span class="st">'mo'</span>,type<span class="op">=</span><span class="st">'PH'</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -5902,7 +5913,7 @@ Male
 <h2 id="stratified-survival-summary">Stratified Survival Summary<a class="anchor" aria-label="anchor" href="#stratified-survival-summary"></a>
 </h2>
 <p>To combine estimates across strata</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_survdiff.html">rm_survdiff</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>,</span>
 <span>            covs<span class="op">=</span><span class="st">'sex'</span>,strata<span class="op">=</span><span class="st">'cohort'</span>,digits<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -6012,7 +6023,7 @@ p-value = 0.17
 cumulative incidence probabilities at specific time points. This
 requires the cmprsk package and a status variable coded with different
 event types.</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Using pbc data from survival package as example</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pbc</span>, package <span class="op">=</span> <span class="st">"survival"</span><span class="op">)</span></span>
 <span><span class="co"># Create competing risk status: 0=censored, 1=transplant, 2=death</span></span>
@@ -6141,7 +6152,7 @@ labels</li>
 <p>Get some descriptive stats for the ctDNA data that comes with the
 package. The <code>nicenames</code> argument is TRUE by default so
 underscores are replaced by spaces</p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">ctDNA</span>,</span>
 <span>          covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'cohort'</span>,<span class="st">'ctdna_status'</span>,<span class="st">'size_change'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -6271,7 +6282,7 @@ Missing
 <p>If we have a lookup table of variable names and labels that we
 imported from a data dictionary we can set the variable labels for the
 data frame and these will be used in the <code>rm_</code> functions</p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctDNA_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>var<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ctDNA</span><span class="op">)</span>,</span>
 <span>                          label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Patient ID'</span>,</span>
 <span>                                  <span class="st">'Study Cohort'</span>,</span>
@@ -6409,7 +6420,7 @@ Missing
 </h4>
 <p>Individual labels can be changed with with the
 <code>set_var_labels</code> command</p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctDNA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/set_var_labels.html">set_var_labels</a></span><span class="op">(</span><span class="va">ctDNA</span>,</span>
 <span>                        cohort<span class="op">=</span><span class="st">"A new cohort label"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">ctDNA</span>,</span>
@@ -6540,7 +6551,7 @@ Missing
 <h4 id="sec-extract_labels">extract_labels<a class="anchor" aria-label="anchor" href="#sec-extract_labels"></a>
 </h4>
 <p>Extract the variable labels to a data frame</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">var_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_labels.html">extract_labels</a></span><span class="op">(</span><span class="va">ctDNA</span><span class="op">)</span></span>
 <span><span class="va">var_labels</span></span></code></pre></div>
 <pre><code><span><span class="co">##       variable                                   label</span></span>
@@ -6557,27 +6568,214 @@ Missing
 <p>This function will accept a ggplot plot and replace the variable
 names (x-axis, y-axis and legend) with the variable labels. This is
 useful for more professional looking plots.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">ctDNA</span>,<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">ctdna_status</span>,y<span class="op">=</span><span class="va">size_change</span>,colour<span class="op">=</span><span class="va">cohort</span><span class="op">)</span><span class="op">)</span><span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/replace_plot_labels.html">replace_plot_labels</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reportRmd_files/figure-html/unnamed-chunk-56-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="reportRmd_files/figure-html/unnamed-chunk-54-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level4">
 <h4 id="sec-clear_labels">clear_labels<a class="anchor" aria-label="anchor" href="#sec-clear_labels"></a>
 </h4>
 <p>Or clear them all</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctDNA</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clear_labels.html">clear_labels</a></span><span class="op">(</span><span class="va">ctDNA</span><span class="op">)</span></span></code></pre></div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
 </div>
 <div class="section level2">
+<h2 id="prediction-metrics">Prediction Metrics<a class="anchor" aria-label="anchor" href="#prediction-metrics"></a>
+</h2>
+<p><code><a href="../reference/predsum.html">predsum()</a></code> summarises how well a set of predicted
+probabilities recovers a binary outcome. Supply the observed outcome,
+the predicted probabilities and the cut-off used to turn those
+probabilities into predicted classes.</p>
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">pembrolizumab</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'change_ctdna_group'</span>,</span>
+<span>                                                    <span class="st">'baseline_ctdna'</span>,</span>
+<span>                                                    <span class="st">'age'</span>, <span class="st">'l_size'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">change_ctdna_group</span> <span class="op">~</span> <span class="va">baseline_ctdna</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">l_size</span>,</span>
+<span>           family <span class="op">=</span> <span class="st">'binomial'</span>, data <span class="op">=</span> <span class="va">d</span><span class="op">)</span></span>
+<span><span class="va">d</span><span class="op">$</span><span class="va">predicted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, type <span class="op">=</span> <span class="st">'response'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/predsum.html">predsum</a></span><span class="op">(</span>true <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">change_ctdna_group</span>, predicted <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">predicted</span>, cutoff <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Statistic
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Value (95%CI)
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Prevalence
+</td>
+<td style="text-align:right;">
+0.55 (0.43, 0.66)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sensitivity
+</td>
+<td style="text-align:right;">
+0.72 (0.56, 0.85)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Specificity
+</td>
+<td style="text-align:right;">
+0.55 (0.36, 0.72)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PPV
+</td>
+<td style="text-align:right;">
+0.66 (0.50, 0.80)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NPV
+</td>
+<td style="text-align:right;">
+0.62 (0.42, 0.79)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Accuracy
+</td>
+<td style="text-align:right;">
+0.64 (0.52, 0.75)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AUC
+</td>
+<td style="text-align:right;">
+0.62 (0.49, 0.74)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Sample Size
+</td>
+<td style="text-align:right;">
+73
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Events
+</td>
+<td style="text-align:right;">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Positive Category
+</td>
+<td style="text-align:right;">
+Increase from baseline
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cut-off
+</td>
+<td style="text-align:right;">
+0.5
+</td>
+</tr>
+</tbody>
+</table>
+<p>The default output is the set of statistics usually reported in a
+clinical setting: prevalence, sensitivity, specificity, positive and
+negative predictive value, accuracy and AUC. The table also records the
+sample size, the number of events, the cut-off used, and the level of
+the outcome being treated as the event.</p>
+<p>That last row is worth reading. For a factor outcome the second level
+is taken as the event, so above the model is predicting <em>Increase
+from baseline</em>. If that is not what you intended, set
+<code>positive</code> explicitly:</p>
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/predsum.html">predsum</a></span><span class="op">(</span>true <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">change_ctdna_group</span>, predicted <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">predicted</span>, cutoff <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>        positive <span class="op">=</span> <span class="st">'Decrease from baseline'</span><span class="op">)</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="choosing-which-statistics-to-report">Choosing Which Statistics to Report<a class="anchor" aria-label="anchor" href="#choosing-which-statistics-to-report"></a>
+</h3>
+<p>The <code>output</code> argument selects statistics by name, and
+accepts several machine-learning measures that are not shown by
+default:</p>
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/predsum.html">predsum</a></span><span class="op">(</span>true <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">change_ctdna_group</span>, predicted <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">predicted</span>, cutoff <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>        output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'accuracy'</span>, <span class="st">'brier'</span>, <span class="st">'f1'</span>, <span class="st">'auc'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<table class="table table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead><tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+Statistic
+</th>
+<th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;">
+Value (95%CI)
+</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Accuracy
+</td>
+<td style="text-align:right;">
+0.64 (0.52, 0.75)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Brier
+</td>
+<td style="text-align:right;">
+0.24 (0.21, 0.26)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+F1
+</td>
+<td style="text-align:right;">
+0.69 (0.56, 0.79)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AUC
+</td>
+<td style="text-align:right;">
+0.62 (0.49, 0.74)
+</td>
+</tr>
+</tbody>
+</table>
+<p>Brier score, F1 and AUC-PR have no closed-form confidence interval,
+so <code><a href="../reference/predsum.html">predsum()</a></code> obtains theirs by bootstrap. This is slower
+than the other statistics; <code>nboot</code> controls the number of
+replicates (default 2000).</p>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div class="section level2">
 <h2 id="plotting-functions">Plotting Functions<a class="anchor" aria-label="anchor" href="#plotting-functions"></a>
 </h2>
-<p><img src="images/ggkmcif_sm.png" style="width:100.0%">{width=100%}</p>
 <div class="section level3">
 <h3 id="plotting-bivariate-relationships">Plotting bivariate relationships<a class="anchor" aria-label="anchor" href="#plotting-bivariate-relationships"></a>
 </h3>
@@ -6585,13 +6783,13 @@ useful for more professional looking plots.</p>
 for publication. This is the plotting version of rm_uvsum. As of 0.1.1
 the variable names will be replaced by variable labels if they
 exist.</p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotuv.html">plotuv</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
 <span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="images/plotuv.png" style="width:100.0%"></p>
 <p>The plotuv function can also be used without a response variable to
 display summary of variables</p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotuv.html">plotuv</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pembrolizumab</span>, covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'cohort'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span>, showN <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 <p><img src="images/plotuv_nores.png" style="width:100.0%"></p>
 <div style="page-break-after: always;"></div>
@@ -6601,7 +6799,7 @@ display summary of variables</p>
 </h3>
 <p>Survival curves are now ggplot2-based, the older version, ggkmcif is
 deprecated from version 0.1.0</p>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ggkmcif2.html">ggkmcif2</a></span><span class="op">(</span>response <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'os_time'</span>,<span class="st">'os_status'</span><span class="op">)</span>,</span>
 <span>cov<span class="op">=</span><span class="st">'cohort'</span>,</span>
 <span>data<span class="op">=</span><span class="va">pembrolizumab</span><span class="op">)</span></span></code></pre></div>
@@ -6616,60 +6814,33 @@ forestplot2 is deprecated from version 0.1.0. Variable labels are not
 yet incorporated into the forest plots.</p>
 <p>This will default to a log scale, but can be set to linear using
 <code>logScale=FALSE</code></p>
-<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/forestplotUV.html">forestplotUV</a></span><span class="op">(</span>response<span class="op">=</span><span class="st">"orr"</span>, covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"change_ctdna_group"</span>, <span class="st">"sex"</span>, <span class="st">"age"</span>, <span class="st">"l_size"</span><span class="op">)</span>,</span>
 <span>data<span class="op">=</span><span class="va">pembrolizumab</span>, family<span class="op">=</span><span class="st">'binomial'</span><span class="op">)</span></span></code></pre></div>
-<p><img src="images/forestuv.png" style="width:100.0%"> ###
-Multivariable Model Forest Plot</p>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
+<p><img src="images/forestuv.png" style="width:100.0%"></p>
+<div class="section level4">
+<h4 id="multivariable-model-forest-plot">Multivariable Model Forest Plot<a class="anchor" aria-label="anchor" href="#multivariable-model-forest-plot"></a>
+</h4>
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
 <span>               family<span class="op">=</span><span class="st">'binomial'</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/forestplotMV.html">forestplotMV</a></span><span class="op">(</span><span class="va">glm_fit</span><span class="op">)</span></span></code></pre></div>
 <p><img src="images/forestmv.png" style="width:100.0%"></p>
+</div>
 <div class="section level4">
 <h4 id="multivariable-forest-plot-with-unadjusted-estimates">Multivariable Forest Plot with Unadjusted Estimates<a class="anchor" aria-label="anchor" href="#multivariable-forest-plot-with-unadjusted-estimates"></a>
 </h4>
 <p>As of version 0.1.3, you can include both unadjusted and adjusted
 estimates in a multivariable forest plot by setting
 <code>include_unadjusted = TRUE</code>:</p>
-<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">pdl1</span><span class="op">+</span><span class="va">age</span>,</span>
 <span>               family<span class="op">=</span><span class="st">'binomial'</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/forestplotMV.html">forestplotMV</a></span><span class="op">(</span><span class="va">glm_fit</span>, data <span class="op">=</span> <span class="va">pembrolizumab</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/forestplotMV.html">forestplotMV</a></span><span class="op">(</span><span class="va">glm_fit</span>, include_unadjusted <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="images/forestmv_unadj.png" style="width:100.0%"></p>
-<p>This provides a convenient alternative to the
-<code>forestplotUVMV</code> function for comparing unadjusted and
-adjusted estimates.</p>
 </div>
-</div>
-<div class="section level3">
-<h3 id="combining-univariable-and-multivariable-models-into-a-single-plot">Combining univariable and multivariable models into a single
-plot<a class="anchor" aria-label="anchor" href="#combining-univariable-and-multivariable-models-into-a-single-plot"></a>
-</h3>
-<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">UVp</span> <span class="op">=</span> <span class="fu"><a href="../reference/forestplotUV.html">forestplotUV</a></span><span class="op">(</span>response<span class="op">=</span><span class="st">"orr"</span>, covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"change_ctdna_group"</span>, <span class="st">"sex"</span>, <span class="st">"age"</span>,</span>
-<span> <span class="st">"l_size"</span><span class="op">)</span>, data<span class="op">=</span><span class="va">pembrolizumab</span>, family<span class="op">=</span><span class="st">'binomial'</span><span class="op">)</span></span>
-<span> <span class="va">MVp</span> <span class="op">=</span> <span class="fu"><a href="../reference/forestplotMV.html">forestplotMV</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">sex</span><span class="op">+</span><span class="va">age</span><span class="op">+</span><span class="va">l_size</span>,</span>
-<span> data<span class="op">=</span><span class="va">pembrolizumab</span>,family <span class="op">=</span> <span class="st">'binomial'</span><span class="op">)</span><span class="op">)</span></span>
-<span> <span class="fu"><a href="../reference/forestplotUVMV.html">forestplotUVMV</a></span><span class="op">(</span><span class="va">UVp</span>, <span class="va">MVp</span><span class="op">)</span></span></code></pre></div>
-<p><img src="images/forestuvmv.png" style="width:100.0%"></p>
-<p>This can also be done with linear scale odds ratios. Number of
-subjects and/or number of events can also be turned off, as well as
-different colours used.</p>
-<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">uvFP</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forestplotUV.html">forestplotUV</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>, response<span class="op">=</span><span class="st">'orr'</span>,</span>
-<span>covs<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>,<span class="st">'sex'</span>,<span class="st">'pdl1'</span>,<span class="st">'change_ctdna_group'</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">glm_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">orr</span><span class="op">~</span><span class="va">change_ctdna_group</span><span class="op">+</span><span class="va">pdl1</span>,</span>
-<span>               family<span class="op">=</span><span class="st">'binomial'</span>,</span>
-<span>               data <span class="op">=</span> <span class="va">pembrolizumab</span><span class="op">)</span></span>
-<span><span class="va">mvFP</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forestplotMV.html">forestplotMV</a></span><span class="op">(</span><span class="va">glm_fit</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/forestplotUVMV.html">forestplotUVMV</a></span><span class="op">(</span><span class="va">uvFP</span>,<span class="va">mvFP</span>,showN<span class="op">=</span><span class="cn">F</span>,showEvent<span class="op">=</span><span class="cn">F</span>,colours<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"orange"</span>,<span class="st">"black"</span>,<span class="st">"blue"</span><span class="op">)</span>,logScale<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span></code></pre></div>
-<p><img src="images/forestuvmvlin.png" style="width:100.0%"></p>
-<div style="page-break-after: always;"></div>
 </div>
 </div>
 <div class="section level2">
@@ -6679,7 +6850,7 @@ different colours used.</p>
 <h3 id="excelcol">excelCol<a class="anchor" aria-label="anchor" href="#excelcol"></a>
 </h3>
 <p>To identify the number of a column given the Excel column header</p>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/excelCol.html">excelCol</a></span><span class="op">(</span><span class="va">G</span>,<span class="va">AB</span>,<span class="va">Az</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  G AB AZ </span></span>
 <span><span class="co">##  7 28 52</span></span></code></pre>
@@ -6688,7 +6859,7 @@ different colours used.</p>
 <h3 id="excelcolletters">excelColLetters<a class="anchor" aria-label="anchor" href="#excelcolletters"></a>
 </h3>
 <p>To identify the Excel header given a columns number</p>
-<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/excelColLetters.html">excelColLetters</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">28</span>,<span class="fl">52</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    7   28   52 </span></span>
 <span><span class="co">##  "G" "AB" "AZ"</span></span></code></pre>
@@ -6701,10 +6872,10 @@ packages and record the package name, functions called, the package
 version and the citation(s) for the package. By default, function calls
 and packages that only appear in commented code will be ignored, but
 they can be included by setting <code>ignore_comments</code> = FALSE</p>
-<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_package_details.html">extract_package_details</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/outTable.html">outTable</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_package_details.html">extract_package_details</a></span><span class="op">(</span>ignore_comments <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/outTable.html">outTable</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -6764,6 +6935,52 @@ Vienna, Austria. <a href="https://www.R-project.org/" class="external-link uri">
 </tr>
 </tbody>
 </table>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="reproducibility">Reproducibility<a class="anchor" aria-label="anchor" href="#reproducibility"></a>
+</h2>
+<p>Two parts of the package draw random numbers, and both are seeded by
+default so that a report re-knitted next month produces the same table
+as the one already circulated.</p>
+<div class="section level3">
+<h3 id="monte-carlo-p-values">Monte Carlo p-values<a class="anchor" aria-label="anchor" href="#monte-carlo-p-values"></a>
+</h3>
+<p><code><a href="../reference/rm_covsum.html">rm_covsum()</a></code> and <code><a href="../reference/rm_compactsum.html">rm_compactsum()</a></code> compare
+categorical variables with a chi-squared test, switching to Fisher’s
+exact test when any <em>expected</em> cell count falls below five. On a
+large or sparse table the exact test can exceed its workspace, in which
+case both functions fall back to a Monte Carlo approximation and say
+so:</p>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" tabindex="-1"></a>Fisher<span class="st">'s exact test could not be computed for site; using Monte Carlo</span></span>
+<span id="cb73-2"><a href="#cb73-2" tabindex="-1"></a><span class="st">simulation with B = 1000 and seed = 1.</span></span></code></pre></div>
+<p><code>B</code> sets the number of replicates and <code>seed</code>
+fixes the random state for the duration of the call; the session’s own
+random state is restored afterwards, so seeding here does not disturb
+anything else in your document. Setting <code>seed = NULL</code>
+restores the older behaviour in which the p-value varies between
+calls.</p>
+<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rm_covsum.html">rm_covsum</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pembrolizumab</span>, maincov <span class="op">=</span> <span class="st">'cohort'</span>, covs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span>, <span class="st">'sex'</span><span class="op">)</span>,</span>
+<span>          B <span class="op">=</span> <span class="fl">5000</span>, seed <span class="op">=</span> <span class="fl">2024</span><span class="op">)</span></span></code></pre></div>
+<p>When a Monte Carlo p-value has been used,
+<code>show.tests = TRUE</code> records the replicate count alongside the
+test name, so the table itself documents how the p-value was
+obtained.</p>
+<p>Because both functions now use the same expected-count rule,
+<code><a href="../reference/rm_covsum.html">rm_covsum()</a></code> and <code><a href="../reference/rm_compactsum.html">rm_compactsum()</a></code> select the
+same test and report the same p-value for the same data.</p>
+</div>
+<div class="section level3">
+<h3 id="bootstrap-confidence-intervals">Bootstrap confidence intervals<a class="anchor" aria-label="anchor" href="#bootstrap-confidence-intervals"></a>
+</h3>
+<p><code><a href="../reference/predsum.html">predsum()</a></code> bootstraps the intervals for Brier score, F1
+and AUC-PR. It takes the same <code>seed</code> argument, with the same
+default and the same restoration behaviour:</p>
+<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/predsum.html">predsum</a></span><span class="op">(</span>true <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">change_ctdna_group</span>, predicted <span class="op">=</span> <span class="va">d</span><span class="op">$</span><span class="va">predicted</span>, cutoff <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>        output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'brier'</span>, <span class="st">'f1'</span><span class="op">)</span>, nboot <span class="op">=</span> <span class="fl">5000</span>, seed <span class="op">=</span> <span class="fl">2024</span><span class="op">)</span></span></code></pre></div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -7111,7 +7328,7 @@ measurement</li>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>

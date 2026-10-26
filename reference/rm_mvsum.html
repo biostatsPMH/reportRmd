@@ -18,7 +18,7 @@ and a global p-value is added for the evaluation of factor variables."><!-- math
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -147,7 +147,13 @@ with a space</p></dd>
 
 <dt id="arg-include-unadjusted">include_unadjusted<a class="anchor" aria-label="anchor" href="#arg-include-unadjusted"></a></dt>
 <dd><p>Logical. If TRUE, includes univariate estimates
-alongside multivariable estimates. Default is FALSE.</p></dd>
+alongside multivariable estimates. Default is FALSE. The univariate models
+are fit on the same complete-case sample as the multivariable model, so
+that the two sets of estimates are directly comparable and the N column
+applies to both. Any p-value adjustment requested via <code>p.adjust</code> is applied
+to the multivariable p-values only. Covariates that appear only inside an
+interaction term are appended to the end of the table with an unadjusted
+estimate and no adjusted estimate.</p></dd>
 
 
 <dt id="arg-chunk-label">chunk_label<a class="anchor" aria-label="anchor" href="#arg-chunk-label"></a></dt>
@@ -239,7 +245,7 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 73 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 40 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 1.02 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;padding-left: 2em;" indentlevel="1"&gt; sexFemale:age &lt;/td&gt;</span>
@@ -335,7 +341,7 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;/thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tbody&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; &lt;span style="font-weight: bold;"&gt;Patient Sex&lt;/span&gt; &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; &lt;span style="font-weight: bold;"&gt;sex&lt;/span&gt; &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 94 &lt;/td&gt;</span>
@@ -525,7 +531,7 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;padding-left: 2em;" indentlevel="1"&gt; 2 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.37 (0.20, 0.67) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.37 (0.20, 0.68) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; &lt;span style="font-weight: bold;"&gt;0.001&lt;/span&gt; &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 14|14 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0|0 &lt;/td&gt;</span>
@@ -539,7 +545,7 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;padding-left: 2em;" indentlevel="1"&gt; 4 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.21 (0.09, 0.47) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.21 (0.09, 0.48) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; &lt;span style="font-weight: bold;"&gt;&amp;lt;0.001&lt;/span&gt; &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 13|13 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0|0 &lt;/td&gt;</span>
@@ -115908,6 +115914,8 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Variance inflation factor can not be calculated</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Model is nearly unidentifiable: very large eigenvalue</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>  - Rescale variables?</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Model failed to converge with max|grad| = 0.00427372 (tol = 0.002, component 1)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   See ?lme4::convergence and ?lme4::troubleshooting.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Model is nearly unidentifiable: very large eigenvalue</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>  - Rescale variables?</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;"&gt;</span>
@@ -115934,13 +115942,13 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;padding-left: 2em;" indentlevel="1"&gt; Cu035 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.98 (0.93, 1.04) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.98 (0.93, 1.05) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.60 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 300|25 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;padding-left: 2em;" indentlevel="1"&gt; Cu175 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 1.03 (0.97, 1.09) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 1.03 (0.96, 1.09) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.42 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 287|24 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
@@ -115967,7 +115975,7 @@ Regression, Third Edition. Thousand Oaks CA: Sage.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

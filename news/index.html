@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -45,9 +45,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.3" id="reportrmd-013">reportRmd 0.1.3<small>2026-03-20</small><a class="anchor" aria-label="anchor" href="#reportrmd-013"></a></h2>
+<h2 class="page-header" data-toc-text="0.1.4" id="reportrmd-014">reportRmd 0.1.4<a class="anchor" aria-label="anchor" href="#reportrmd-014"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-1-3">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-3"></a></h3>
+<h3 id="new-features-0-1-4">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-4"></a></h3>
 <ul><li>
 <code><a href="../reference/rm_mvsum.html">rm_mvsum()</a></code> and <code><a href="../reference/forestplotMV.html">forestplotMV()</a></code> now support <code>include_unadjusted</code> parameter to display univariate (unadjusted) estimates alongside multivariable (adjusted) estimates in a single table or plot</li>
 <li>
@@ -56,7 +56,7 @@
 <li>new <code><a href="../reference/scrolling_table.html">scrolling_table()</a></code> creates scrollable HTML tables for long outputs or keeps regular tables for non-HTML formats</li>
 </ul></div>
 <div class="section level3">
-<h3 id="minor-improvements-and-fixes-0-1-3">Minor improvements and fixes<a class="anchor" aria-label="anchor" href="#minor-improvements-and-fixes-0-1-3"></a></h3>
+<h3 id="minor-improvements-and-fixes-0-1-4">Minor improvements and fixes<a class="anchor" aria-label="anchor" href="#minor-improvements-and-fixes-0-1-4"></a></h3>
 <ul><li>improved plotting of survival curves</li>
 <li>Cox proportional hazards clustering: fixed bug when clustering is used in coxph models</li>
 <li>Date handling in Word tables fixed bug where tables with date columns containing NA values caused errors in Word output</li>
@@ -64,6 +64,7 @@
 <li>rm_uvsum fixes: fixed handling of integer predictors, various bug fixes for edge cases</li>
 <li>more robust handling of tidy evaluation</li>
 <li>HTML output improvements: improved display for special characters in HTML rendered tables</li>
+<li>VIF calculation will now use type = “predictor” in the presence of interactions.</li>
 </ul></div>
 </div>
     <div class="section level2">
@@ -75,10 +76,12 @@
 <li>more comprehensive model summary function to allow plot extensions</li>
 <li>incorporated tidyselect into main summary functions</li>
 <li>support for tidycmprsk models</li>
+<li>ability to output to a scrolling table in HTML formats</li>
 </ul></div>
 <div class="section level3">
 <h3 id="minor-improvements-and-fixes-0-1-1">Minor improvements and fixes<a class="anchor" aria-label="anchor" href="#minor-improvements-and-fixes-0-1-1"></a></h3>
-<ul><li>removed ability to force Wald confidence intervals, confidence intervals now computed by the updated confint in base R</li>
+<ul><li>fixes to special characters in HTML output</li>
+<li>removed ability to force Wald confidence intervals, confidence intervals now computed by the updated confint in base R</li>
 <li>rm_mvsum and rm_uvsum have been updated in the backend to enable easier extendibility to different model types</li>
 <li>bug fix in nestTable so variables order properly with repeat level names</li>
 <li>numerous bug fixes in formatting of tables, especially with duplicated variable and level names</li>
@@ -137,7 +140,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

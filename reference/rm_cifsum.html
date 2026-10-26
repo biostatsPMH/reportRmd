@@ -19,7 +19,7 @@ displayed."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -71,7 +71,8 @@ displayed.</p>
 <span>  showGraystest <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  tableOnly <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  tableOnly <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  nocensored <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,22 +89,26 @@ displayed.</p>
 
 
 <dt id="arg-status">status<a class="anchor" aria-label="anchor" href="#arg-status"></a></dt>
-<dd><p>string indicating event status variable; must have at least 3
-levels, e.g. 0 = censor, 1 = event, 2 = competing risk</p></dd>
+<dd><p>string indicating the event status variable. The status
+variable may be numeric, character, or factor and must identify the event
+of interest and at least one competing event. Censoring and the event of
+interest are specified using <code>cencode</code> and <code>eventcode</code>.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
-<dd><p>string or character vector indicating the variable to group
-observations by</p></dd>
+<dd><p>string or character vector indicating the variable(s) to group
+observations by. If this is left as NULL (the default), summaries are
+provided for the entire cohort.</p></dd>
 
 
 <dt id="arg-eventcode">eventcode<a class="anchor" aria-label="anchor" href="#arg-eventcode"></a></dt>
-<dd><p>numerical variable indicating event, default is 1</p></dd>
+<dd><p>value of the status variable indicating the event of
+interest. May be numeric, character, or factor-compatible. Default is 1.</p></dd>
 
 
 <dt id="arg-cencode">cencode<a class="anchor" aria-label="anchor" href="#arg-cencode"></a></dt>
-<dd><p>numerical variable indicating censored observation, default is
-0</p></dd>
+<dd><p>value of the status variable indicating censoring. May be
+numeric, character, or factor-compatible. Default is 0.</p></dd>
 
 
 <dt id="arg-eventtimes">eventtimes<a class="anchor" aria-label="anchor" href="#arg-eventtimes"></a></dt>
@@ -137,8 +142,8 @@ and error using na.action='na.fail'</p></dd>
 
 
 <dt id="arg-showcounts">showCounts<a class="anchor" aria-label="anchor" href="#arg-showcounts"></a></dt>
-<dd><p>boolean indicating if the at risk, events and censored
-columns should be output, default is TRUE</p></dd>
+<dd><p>boolean indicating if the event and total counts should be
+displayed; default is TRUE</p></dd>
 
 
 <dt id="arg-showgraystest">showGraystest<a class="anchor" aria-label="anchor" href="#arg-showgraystest"></a></dt>
@@ -157,6 +162,14 @@ default is 2.</p></dd>
 
 <dt id="arg-tableonly">tableOnly<a class="anchor" aria-label="anchor" href="#arg-tableonly"></a></dt>
 <dd><p>should a dataframe or a formatted object be returned</p></dd>
+
+
+<dt id="arg-nocensored">nocensored<a class="anchor" aria-label="anchor" href="#arg-nocensored"></a></dt>
+<dd><p>boolean indicating that the dataset genuinely contains no
+censored observations. If the value specified by <code>cencode</code> is not
+observed, the function will stop unless <code>nocensored = TRUE</code>; this
+provides protection against an incorrectly specified censoring value.
+Default is FALSE.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -247,28 +260,28 @@ tableOnly=TRUE in which case a data frame is returned</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;/thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tbody&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 1, f &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 7/137 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.04 (0.01, 0.08) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (0.03, 0.12) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 1, m &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 3/21 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.10 (0.02, 0.27) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.16 (0.03, 0.36) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 2, m &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0/15 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0e+00 (0e+00, 0e+00) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0e+00 (0e+00, 0e+00) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 1, f &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 7/137 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.04 (0.01, 0.08) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (0.03, 0.12) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 2, f &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 9/139 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.05 (0.02, 0.09) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.09 (0.04, 0.17) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 2, m &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0/15 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0e+00 (NA, NA) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0e+00 (NA, NA) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt;  &lt;/td&gt;</span>
@@ -285,6 +298,51 @@ tableOnly=TRUE in which case a data frame is returned</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/tbody&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/table&gt;</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">#'</span></span></span>
+<span class="r-in"><span><span class="co"># Character event status</span></span></span>
+<span class="r-in"><span><span class="va">pbc</span><span class="op">$</span><span class="va">status_chr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">pbc</span><span class="op">$</span><span class="va">status</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Censored"</span>, <span class="st">"Transplant"</span>, <span class="st">"Death"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">rm_cifsum</span><span class="op">(</span>data <span class="op">=</span> <span class="va">pbc</span>, time <span class="op">=</span> <span class="st">"time"</span>, status <span class="op">=</span> <span class="st">"status_chr"</span>, group <span class="op">=</span> <span class="st">"trt"</span>,</span></span>
+<span class="r-in"><span>  eventcode <span class="op">=</span> <span class="st">"Death"</span>, cencode <span class="op">=</span> <span class="st">"Censored"</span>, eventtimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1825</span>, <span class="fl">3650</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  eventtimeLbls <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">10</span><span class="op">)</span>, eventtimeunit <span class="op">=</span> <span class="st">"yr"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 106 observations with missing data were removed.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;"&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;thead&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Strata &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Event/Total &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 5yr (95% CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 10yr (95% CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;/thead&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tbody&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 1 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 65/158 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.28 (0.21, 0.36) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.54 (0.42, 0.65) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; 2 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 60/154 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.28 (0.21, 0.36) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.51 (0.40, 0.62) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Gray's Test &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; ChiSq &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.1 on 1 df &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; p-value &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.80 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/tbody&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/table&gt;</span>
 </code></pre></div>
     </div>
   </div>
@@ -299,7 +357,7 @@ tableOnly=TRUE in which case a data frame is returned</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

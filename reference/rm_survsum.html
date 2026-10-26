@@ -19,7 +19,7 @@ differences in survival curves is displayed."><!-- mathjax --><script src="https
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">reportRmd</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -60,7 +60,7 @@ differences in survival curves is displayed.</p>
 <span>  <span class="va">status</span>,</span>
 <span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  survtimes <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">survtimeunit</span>,</span>
+<span>  survtimeunit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  survtimesLbls <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  CIwidth <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  unformattedp <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -72,7 +72,11 @@ differences in survival curves is displayed.</p>
 <span>  digits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"reportRmd.digits"</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tableOnly <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  <span class="va">fontsize</span></span>
+<span>  add.reverse.KM <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  fontsize <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cencode <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  eventcode <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  digits.reverse.KM <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -89,7 +93,9 @@ differences in survival curves is displayed.</p>
 
 
 <dt id="arg-status">status<a class="anchor" aria-label="anchor" href="#arg-status"></a></dt>
-<dd><p>string indicating event status variable</p></dd>
+<dd><p>string indicating the event status variable. The status
+variable may be numeric, character, or factor; censoring and event values
+can be specified using <code>cencode</code> and <code>eventcode</code>.</p></dd>
 
 
 <dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
@@ -161,8 +167,30 @@ the reportRmd.digits option is set</p></dd>
 <dd><p>should a dataframe or a formatted object be returned</p></dd>
 
 
+<dt id="arg-add-reverse-km">add.reverse.KM<a class="anchor" aria-label="anchor" href="#arg-add-reverse-km"></a></dt>
+<dd><p>boolean indicating if median follow-up and its
+confidence interval should be estimated using the reverse Kaplan-Meier
+method and displayed in the table; default is FALSE.</p></dd>
+
+
 <dt id="arg-fontsize">fontsize<a class="anchor" aria-label="anchor" href="#arg-fontsize"></a></dt>
 <dd><p>PDF/HTML output only, manually set the table fontsize</p></dd>
+
+
+<dt id="arg-cencode">cencode<a class="anchor" aria-label="anchor" href="#arg-cencode"></a></dt>
+<dd><p>value of the status variable indicating censoring. May be
+numeric, character, or factor-compatible. Default is 0.</p></dd>
+
+
+<dt id="arg-eventcode">eventcode<a class="anchor" aria-label="anchor" href="#arg-eventcode"></a></dt>
+<dd><p>value of the status variable indicating the event of
+interest. May be numeric, character, or factor-compatible. Default is 1.</p></dd>
+
+
+<dt id="arg-digits-reverse-km">digits.reverse.KM<a class="anchor" aria-label="anchor" href="#arg-digits-reverse-km"></a></dt>
+<dd><p>number of digits used to display the median
+follow-up and confidence interval estimated using the reverse
+Kaplan-Meier method; default is 1.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -191,7 +219,7 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Events/Total &lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95%CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;/thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tbody&gt;</span>
@@ -209,7 +237,7 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Events/Total &lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95%CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 1yr (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 2yr (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
@@ -224,14 +252,14 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/tbody&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/table&gt;</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">#Median survival by group</span></span></span>
+<span class="r-in"><span><span class="co"># Median survival by group</span></span></span>
 <span class="r-in"><span><span class="fu">rm_survsum</span><span class="op">(</span>data<span class="op">=</span><span class="va">pembrolizumab</span>,time<span class="op">=</span><span class="st">'os_time'</span>,status<span class="op">=</span><span class="st">'os_status'</span>,group<span class="op">=</span><span class="st">'sex'</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;"&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Group &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Events/Total &lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95%CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;/thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tbody&gt;</span>
@@ -263,12 +291,17 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-in"><span>group<span class="op">=</span><span class="st">"cohort"</span>,survtimes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">12</span>,<span class="fl">72</span>,<span class="fl">12</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>survtimesLbls<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">6</span>,<span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>survtimeunit<span class="op">=</span><span class="st">'years'</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For stratum 'cohort=A', requested survival time(s) 36, 48, 60, 72 exceed the maximum follow-up time of 28.780287474332. Survival probabilities could not be estimated and were set to 'Not Estimable'.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For stratum 'cohort=B', requested survival time(s) 24, 36, 48, 60, 72 exceed the maximum follow-up time of 23.9835728952775. Survival probabilities could not be estimated and were set to 'Not Estimable'.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For stratum 'cohort=C', requested survival time(s) 36, 48, 60, 72 exceed the maximum follow-up time of 35.3839835728967. Survival probabilities could not be estimated and were set to 'Not Estimable'.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For stratum 'cohort=D', requested survival time(s) 36, 48, 60, 72 exceed the maximum follow-up time of 32.9199178644757. Survival probabilities could not be estimated and were set to 'Not Estimable'.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For stratum 'cohort=E', requested survival time(s) 36, 48, 60, 72 exceed the maximum follow-up time of 35.4168377823416. Survival probabilities could not be estimated and were set to 'Not Estimable'.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;"&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;thead&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Group &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Events/Total &lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95%CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 1years (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 2years (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 3years (95% CI) &lt;/th&gt;</span>
@@ -284,21 +317,21 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 8.30 (4.24, Not Estimable) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.38 (0.20, 0.71) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.23 (0.09, 0.59) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.23 (0.09, 0.59) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.23 (0.09, 0.59) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.23 (0.09, 0.59) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.23 (0.09, 0.59) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; B &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 16/18 &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 8.82 (4.67, 20.73) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.32 (0.16, 0.64) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (9.6e-03, 0.42) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (9.6e-03, 0.42) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (9.6e-03, 0.42) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (9.6e-03, 0.42) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.06 (9.6e-03, 0.42) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; C &lt;/td&gt;</span>
@@ -306,21 +339,21 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 17.56 (7.95, Not Estimable) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.61 (0.42, 0.88) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.44 (0.27, 0.74) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.31 (0.15, 0.64) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.31 (0.15, 0.64) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.31 (0.15, 0.64) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.31 (0.15, 0.64) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; D &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 4/12 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable (6.44, Not Estimable) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.45, 0.99) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.45, 0.99) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.45, 0.99) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.45, 0.99) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.45, 0.99) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.45, 0.99) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; E &lt;/td&gt;</span>
@@ -328,10 +361,10 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 14.26 (9.69, Not Estimable) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.63 (0.48, 0.83) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.34 (0.20, 0.57) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.29 (0.15, 0.53) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.29 (0.15, 0.53) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.29 (0.15, 0.53) &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.29 (0.15, 0.53) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt;  &lt;/td&gt;</span>
@@ -367,7 +400,7 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Group &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Events/Total &lt;/th&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95%CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 12mo (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 24mo (95% CI) &lt;/th&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
@@ -376,7 +409,7 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; Female, Decrease from baseline &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 7/19 &lt;/td&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable (23.82, Not Estimable) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Not Estimable &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.84 (0.69, 1.00) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.67 (0.48, 0.93) &lt;/td&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
@@ -418,6 +451,59 @@ summarise differences in survival rates controlling for covariates see
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/tbody&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/table&gt;</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Character event status and reverse Kaplan-Meier median follow-up</span></span></span>
+<span class="r-in"><span><span class="va">pembrolizumab</span><span class="op">$</span><span class="va">status_chr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">pembrolizumab</span><span class="op">$</span><span class="va">os_status</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"Death"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"Censored"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">rm_survsum</span><span class="op">(</span>data <span class="op">=</span> <span class="va">pembrolizumab</span>, time <span class="op">=</span> <span class="st">"os_time"</span>, status <span class="op">=</span> <span class="st">"status_chr"</span>,</span></span>
+<span class="r-in"><span>  group <span class="op">=</span> <span class="st">"sex"</span>, cencode <span class="op">=</span> <span class="st">"Censored"</span>, eventcode <span class="op">=</span> <span class="st">"Death"</span>,</span></span>
+<span class="r-in"><span>  survtimes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">24</span><span class="op">)</span>, survtimeunit <span class="op">=</span> <span class="st">"mo"</span>, add.reverse.KM <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;table class="table table" style="margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;"&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;thead&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;"&gt; Group &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median follow-up (mo; 95% CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Events/Total &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; Median (95% CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 12mo (95% CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;th style="text-align:right;position: sticky; top:0; background-color: #FFFFFF;"&gt; 24mo (95% CI) &lt;/th&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  &lt;/thead&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;tbody&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; Female &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 27.2 (25.1, 30.8) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 39/58 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 14.29 (9.69, 23.82) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.55 (0.44, 0.69) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.34 (0.24, 0.50) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt; Male &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 28.8 (25.9, Not Estimable) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 25/36 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 11.24 (6.14, 25.33) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.50 (0.36, 0.69) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.31 (0.18, 0.52) &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; Log Rank Test &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; ChiSq &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.5 on 1 df &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:left;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt;  &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; p-value &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    &lt;td style="text-align:right;"&gt; 0.46 &lt;/td&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/tr&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/tbody&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/table&gt;</span>
 </code></pre></div>
     </div>
   </div>
@@ -432,7 +518,7 @@ summarise differences in survival rates controlling for covariates see
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>
