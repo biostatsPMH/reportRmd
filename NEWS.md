@@ -1,23 +1,27 @@
-
 # reportRmd 0.1.4
 
 ## New features
 
-- `rm_mvsum()` and `forestplotMV()` now support `include_unadjusted` parameter to display univariate (unadjusted) estimates alongside multivariable (adjusted) estimates in a single table or plot
-- `forestplotMV()` data parameter is now optional - data will be automatically extracted from the model object if not provided
-- new `extract_package_details()` function to extract R packages used by a script or markdown file, along with citations.
-- new `scrolling_table()` creates scrollable HTML tables for long outputs or keeps regular tables for non-HTML formats
+- new `predsum()` summarises binary prediction model performance (sensitivity, specificity, PPV, NPV, accuracy, AUC, AUC-PR, F1, Brier score) with Clopper-Pearson or bootstrap CIs; `output` presets "epi", "data-science", "all" or a custom set of statistics
+- support for Firth-penalised logistic regression (`logistf`) models in `rm_mvsum()`, with penalised likelihood ratio global p-values and profile penalised likelihood CIs
+- `rm_uvsum()` and `rm_mvsum()` now support clustered `coxph` models, reporting robust Wald tests
+- `rm_survsum()` and `rm_cifsum()` now accept factor or character status variables; `rm_cifsum()` works when there are no censored observations
+- `rm_covsum()` and `rm_compactsum()` Monte Carlo p-values and `predsum()` bootstrap CIs are now reproducible (`B` and `seed` arguments; RNG state is restored)
+- VIF calculation now uses `type = "predictor"` in the presence of interactions
 
 ## Minor improvements and fixes
 
-- improved plotting of survival curves
-- Cox proportional hazards clustering: fixed bug when clustering is used in coxph models
-- Date handling in Word tables fixed bug where tables with date columns containing NA values caused errors in Word output
-- rm_compactsum improvements: fixed output formatting issues, fixed bug with difftime variable handling, improved bolding for corrected p-values, better handling of negative numbers
-- rm_uvsum fixes: fixed handling of integer predictors, various bug fixes for edge cases
-- more robust handling of tidy evaluation
-- HTML output improvements: improved display for special characters in HTML rendered tables
-- VIF calculation will now use type = "predictor" in the presence of interactions.
+- `rm_mvsum(include_unadjusted = TRUE)`: fixed failures with `coxph` models, non-95% `CIwidth`, formulas stored in variables, dot formulas and transformed terms; continuous covariates and continuous:continuous interactions are no longer dropped from the unadjusted column; `digits`, `CIwidth`, `whichp` and `showEvent` are now passed to the univariate models
+- `rm_uvsum()`: excluded covariates (dates, the response, single-value variables) are no longer fit; `reflevel` now works with ordered factors; `removeInf` is now applied
+- `rm_covsum()` and `rm_compactsum()` now use expected rather than observed cell counts to choose the exact test, so the two functions agree; the grouping variable is dropped from covariates; non-numeric p-values (e.g. "excl") are no longer adjusted
+- `rm_covsum()`: fixed error with date variables on Windows
+- `ggkmcif2()`: fixed curves being cut off when `times` was shorter than the data range; accepts US spelling of arguments; works with ggplot2 >= 3.4.0 (now the stated minimum)
+- `psthr()` displays "Not Estimable" only when all values are NA
+- fixed display of special characters in column headers
+- fixed unescaped variable names in `getVarLevels()`, Global p-values being adjusted and double-formatted in bolded output, and a tidyselect deprecation warning for character column names
+- consistent tidy evaluation (`enquo`) for variable selection
+- vignette: corrected `include_unadjusted` section; new Prediction Metrics and Reproducibility sections
+- expanded test suite
 
 # reportRmd 0.1.1
 
